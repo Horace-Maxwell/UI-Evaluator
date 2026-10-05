@@ -1,0 +1,443 @@
+<!doctype html>
+<!--
+  ================================================================
+  REPAIR CAFÉ – ONE-PAGE SITE (plain HTML + CSS, tiny bit of JS)
+
+  BEFORE YOU PUBLISH, search this file for "EDIT" and change:
+    1. Your café name and the hall's name/address
+    2. repaircafe@example.org  -> your real email address
+       (use find-and-replace: it appears several times)
+    3. 01632 960123 / +441632960123 -> your real phone number
+       (the one here is a made-up number reserved for examples)
+    4. The "Open in Maps" link in the Find us section
+
+  The next date is worked out automatically (first Saturday of
+  each month). To skip a month, edit skipDates at the top of
+  script.js.
+
+  To publish: upload the four files (index.html, styles.css,
+  script.js, favicon.svg) to any web host – no build step.
+  ================================================================
+-->
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Repair Café – free repairs, first Saturday of every month</title>
+  <meta name="description" content="Bring your broken toasters, lamps, bikes and clothes. Volunteers fix them for free on the first Saturday of every month, 10am till 1pm, at the church hall. Book a repair slot online.">
+  <meta name="theme-color" content="#faf6ee">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Repair Café – don’t bin it, bring it">
+  <meta property="og:description" content="Free repairs by volunteers on the first Saturday of every month, 10am till 1pm. Book a slot online.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Icons used around the page (drawn once, reused with <use>). -->
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-toaster" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 9V6.75C6.5 5.78 7.28 5 8.25 5h1c.97 0 1.75.78 1.75 1.75V9"/>
+        <path d="M13 9V6.75C13 5.78 13.78 5 14.75 5h1c.97 0 1.75.78 1.75 1.75V9"/>
+        <rect x="3" y="9" width="18" height="11" rx="3"/>
+        <path d="M6.5 15h4"/>
+        <circle cx="16.5" cy="15" r="1.5"/>
+      </symbol>
+      <symbol id="i-lamp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3.5h8l3.5 7.5h-15z"/>
+        <path d="M12 11v8.5"/>
+        <path d="M7.5 20.5h9"/>
+        <path d="M16.5 11v3"/>
+      </symbol>
+      <symbol id="i-bike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="5.5" cy="16" r="3.5"/>
+        <circle cx="18.5" cy="16" r="3.5"/>
+        <path d="M5.5 16H11L9 9.5z"/>
+        <path d="M9 9.5h7L11 16"/>
+        <path d="M16 9.5 18.5 16"/>
+        <path d="M7.75 7.5h2.75M9.4 7.5 9 9.5"/>
+        <path d="M16 9.5 15.4 7h2.3"/>
+      </symbol>
+      <symbol id="i-shirt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 3.5 5 5.2 2.5 9.5l3 1.6L7 10v10.5h10V10l1.5 1.1 3-1.6L19 5.2l-4-1.7c-.5 1.3-1.6 2-3 2s-2.5-.7-3-2z"/>
+      </symbol>
+      <!-- Wrench: "tool" icon from Feather Icons (MIT licence) -->
+      <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7.5V12l3 2"/>
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21.5s-7-6-7-11.5a7 7 0 0 1 14 0c0 5.5-7 11.5-7 11.5z"/>
+        <circle cx="12" cy="10" r="2.5"/>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4.5 12.5l5 5L19.5 7"/>
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>
+      </symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7.5v5.5M12 16.5v.01"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <!-- EDIT: your café's name. No logo yet? This text does the job. -->
+      <a class="brand" href="#top">
+        <span class="brand-name">Repair Café</span>
+        <span class="brand-place">at the Church Hall</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="#fix">What we fix</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#find-us">Find us</a></li>
+        </ul>
+        <a class="btn btn-small" href="#book">Book a slot</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===================== HERO + NEXT DATE ===================== -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-inner">
+        <div class="hero-head">
+          <p class="eyebrow">Community repair café</p>
+          <h1 id="hero-title">Don’t bin it. <br><span class="accent">Bring it.</span></h1>
+        </div>
+
+        <div class="tag-wrap">
+          <svg class="tag-string" viewBox="0 0 80 70" aria-hidden="true" focusable="false">
+            <path d="M6 68C2 40 40 44 46 2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <div class="tag">
+            <h2 class="tag-label">Next repair café</h2>
+            <!-- script.js swaps this for the actual date, e.g. "Saturday 3 October" -->
+            <p class="tag-date is-fallback" id="next-date">First Saturday<br>of every month</p>
+            <p class="tag-when" id="next-when" hidden></p>
+            <ul class="tag-details" role="list">
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"></use></svg>
+                <span>10am till 1pm<small>Last arrivals 12:30</small></span>
+              </li>
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"></use></svg>
+                <!-- EDIT: hall name and street -->
+                <span>The Church Hall<small>Church Street, Your Town</small></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hero-body">
+          <p class="lede">Our volunteers fix toasters, lamps, bikes and clothes for free. Come along on the first Saturday of every month, 10am till 1pm, at the church hall.</p>
+          <div class="hero-actions">
+            <a class="btn btn-large" href="#book">Book a repair slot</a>
+            <a class="link-arrow" href="#fix">What can we fix?</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== WHAT WE CAN / CAN'T FIX ===================== -->
+    <section class="section" id="fix" aria-labelledby="fix-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="fix-title">What we can and can’t fix</h2>
+          <p>If you can carry it in, there’s a good chance we can help.</p>
+        </div>
+
+        <div class="fix-layout">
+          <div class="can">
+            <h3 class="list-head">
+              <span class="badge" aria-hidden="true"><svg class="icon"><use href="#i-check"></use></svg></span>
+              We can fix
+            </h3>
+            <ul class="fix-grid" role="list">
+              <li class="fix-card">
+                <span class="fix-icon" aria-hidden="true"><svg class="icon"><use href="#i-toaster"></use></svg></span>
+                <h4>Small electricals</h4>
+                <p>Toasters, kettles, radios, hairdryers, food mixers and fans.</p>
+              </li>
+              <li class="fix-card">
+                <span class="fix-icon" aria-hidden="true"><svg class="icon"><use href="#i-lamp"></use></svg></span>
+                <h4>Lamps and lights</h4>
+                <p>Table and floor lamps, fairy lights, frayed flexes, loose plugs and dodgy switches.</p>
+              </li>
+              <li class="fix-card">
+                <span class="fix-icon" aria-hidden="true"><svg class="icon"><use href="#i-bike"></use></svg></span>
+                <h4>Bikes</h4>
+                <p>Punctures, brakes, gears, chains, wobbly wheels, lights and bells.</p>
+              </li>
+              <li class="fix-card">
+                <span class="fix-icon" aria-hidden="true"><svg class="icon"><use href="#i-shirt"></use></svg></span>
+                <h4>Clothes and fabric</h4>
+                <p>Hems, seams, holes, zips, buttons and patches. Bags, cushions and soft toys too.</p>
+              </li>
+            </ul>
+          </div>
+
+          <div class="cant">
+            <h3 class="list-head">
+              <span class="badge" aria-hidden="true"><svg class="icon"><use href="#i-x"></use></svg></span>
+              We can’t fix
+            </h3>
+            <p class="cant-intro">For safety, or because we don’t have the skills or the space:</p>
+            <ul class="cant-list" role="list">
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                <span><strong>Microwaves</strong> – they can hold a dangerous charge even when unplugged.</span>
+              </li>
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                <span><strong>Anything with gas or petrol</strong> – heaters, camping stoves, lawnmowers, strimmers.</span>
+              </li>
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                <span><strong>E-bike and e-scooter batteries</strong> – lithium batteries are a fire risk.</span>
+              </li>
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                <span><strong>Phones, laptops, tablets and TVs</strong> – we don’t have volunteers for these yet.</span>
+              </li>
+              <li>
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                <span><strong>Anything too big to carry in</strong> – washing machines, fridges, cookers, furniture.</span>
+              </li>
+            </ul>
+            <!-- EDIT: email -->
+            <p class="cant-note">Not sure? Email a photo to <a href="mailto:repaircafe@example.org">repaircafe@example.org</a> and we’ll tell you if it’s worth bringing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW IT WORKS ===================== -->
+    <section class="section section-alt" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="how-title">How it works</h2>
+        </div>
+        <ol class="steps" role="list">
+          <li>
+            <h3>Book a slot</h3>
+            <p>Choose a half-hour arrival time, so we’re not all queuing at 10. No booking? Drop in anyway – people with a slot are seen first.</p>
+          </li>
+          <li>
+            <h3>Bring it along</h3>
+            <p>Please bring it clean – crumbs out of the toaster, clothes washed – plus any chargers, spare parts or instructions you have.</p>
+          </li>
+          <li>
+            <h3>Fix it together</h3>
+            <p>Sit with a volunteer while they work and see how it’s done. Repairs are free, and donations help keep us going.</p>
+          </li>
+        </ol>
+        <p class="small-print">We can’t promise every repair will work, but we’ll always give it a good go. Repairs are done at your own risk, and you stay responsible for your item.</p>
+      </div>
+    </section>
+
+    <!-- ===================== BOOKING ===================== -->
+    <section class="section" id="book" aria-labelledby="book-title">
+      <div class="wrap book-inner">
+        <div class="book-intro">
+          <h2 id="book-title">Book a repair slot</h2>
+          <p>Pick a half-hour arrival time so the morning is spread out – and so we can have the right volunteer ready for you.</p>
+          <ul class="checklist" role="list">
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg><span>It’s free – donations welcome</span></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg><span>One item per booking – book again for a second</span></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg><span>We’ll get back to you to confirm your slot</span></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg><span>No booking? Drop in – people with a slot are seen first</span></li>
+          </ul>
+        </div>
+
+        <div class="book-card">
+          <p class="setup-note" id="setup-note" hidden>
+            <strong>Note for the organisers:</strong> bookings currently go to
+            <code>repaircafe@example.org</code>, which isn’t a real address. Put your own email
+            in <code>index.html</code> (search for “EDIT”) before sharing this page.
+            This note disappears once you do.
+          </p>
+
+          <!--
+            EDIT: where bookings go.
+            By default each booking opens the visitor's email app with everything
+            filled in, addressed to the email in action="mailto:...".
+            Want bookings without anyone's email app? Sign up to a free form
+            service (e.g. Formspree), then paste its address into data-endpoint,
+            e.g. data-endpoint="https://formspree.io/f/abcd1234".
+          -->
+          <form id="booking-form" class="booking-form" action="mailto:repaircafe@example.org" method="post" enctype="text/plain" data-endpoint="">
+
+            <div class="field">
+              <label for="b-date">Which Saturday?</label>
+              <p class="hint" id="b-date-hint">We’re open on the first Saturday of every month.</p>
+              <select id="b-date" name="date" required aria-describedby="b-date-hint b-date-error">
+                <option value="Next session">The next one (first Saturday of the month)</option>
+              </select>
+              <p class="field-error" id="b-date-error" hidden></p>
+            </div>
+
+            <fieldset class="field" id="b-slot-group" aria-describedby="b-slot-hint b-slot-error">
+              <legend>What time will you arrive?</legend>
+              <p class="hint" id="b-slot-hint">Later slots are usually quieter. Last arrivals 12:30, so we can finish by 1.</p>
+              <div class="chips chips-time">
+                <div class="chip"><input type="radio" id="slot-1000" name="slot" value="10:00" required><label for="slot-1000">10:00</label></div>
+                <div class="chip"><input type="radio" id="slot-1030" name="slot" value="10:30" required><label for="slot-1030">10:30</label></div>
+                <div class="chip"><input type="radio" id="slot-1100" name="slot" value="11:00" required><label for="slot-1100">11:00</label></div>
+                <div class="chip"><input type="radio" id="slot-1130" name="slot" value="11:30" required><label for="slot-1130">11:30</label></div>
+                <div class="chip"><input type="radio" id="slot-1200" name="slot" value="12:00" required><label for="slot-1200">12:00</label></div>
+                <div class="chip"><input type="radio" id="slot-1230" name="slot" value="12:30" required><label for="slot-1230">12:30</label></div>
+              </div>
+              <p class="field-error" id="b-slot-error" hidden></p>
+            </fieldset>
+
+            <fieldset class="field" id="b-item-group" aria-describedby="b-item-error">
+              <legend>What are you bringing?</legend>
+              <div class="chips chips-item">
+                <div class="chip"><input type="radio" id="item-electrical" name="item" value="Small electrical" required><label for="item-electrical"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-toaster"></use></svg>Small electrical</label></div>
+                <div class="chip"><input type="radio" id="item-lamp" name="item" value="Lamp or light" required><label for="item-lamp"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lamp"></use></svg>Lamp or light</label></div>
+                <div class="chip"><input type="radio" id="item-bike" name="item" value="Bike" required><label for="item-bike"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bike"></use></svg>Bike</label></div>
+                <div class="chip"><input type="radio" id="item-clothes" name="item" value="Clothes or fabric" required><label for="item-clothes"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shirt"></use></svg>Clothes or fabric</label></div>
+                <div class="chip"><input type="radio" id="item-other" name="item" value="Something else" required><label for="item-other"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wrench"></use></svg>Something else</label></div>
+              </div>
+              <p class="field-error" id="b-item-error" hidden></p>
+            </fieldset>
+
+            <div class="field">
+              <label for="b-details">What is it, and what’s wrong with it?</label>
+              <p class="hint" id="b-details-hint">For example: “Bedside lamp – flickers when I touch the switch.” It helps us find the right volunteer.</p>
+              <textarea id="b-details" name="details" rows="3" maxlength="500" required aria-describedby="b-details-hint b-details-error"></textarea>
+              <p class="field-error" id="b-details-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="b-name">Your name</label>
+              <input id="b-name" name="name" type="text" autocomplete="name" required aria-describedby="b-name-error">
+              <p class="field-error" id="b-name-error" hidden></p>
+            </div>
+
+            <fieldset class="field" id="b-contact-group" aria-describedby="b-contact-hint b-contact-error">
+              <legend>How can we confirm your slot?</legend>
+              <p class="hint" id="b-contact-hint">Give us an email address, a phone number, or both.</p>
+              <div class="two-up">
+                <div>
+                  <label class="sub-label" for="b-email">Email</label>
+                  <input id="b-email" name="email" type="email" autocomplete="email" spellcheck="false">
+                </div>
+                <div>
+                  <label class="sub-label" for="b-phone">Phone</label>
+                  <input id="b-phone" name="phone" type="tel" autocomplete="tel">
+                </div>
+              </div>
+              <p class="field-error" id="b-contact-error" hidden></p>
+            </fieldset>
+
+            <!-- Spam trap: people never see this; bots fill it in. -->
+            <div class="hp" aria-hidden="true">
+              <label for="b-website">Leave this empty</label>
+              <input id="b-website" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-large">Request this slot</button>
+              <p class="hint" id="submit-hint">This opens your email app with your booking filled in – just press Send.</p>
+            </div>
+            <p class="privacy">We only use your details to arrange your repair.</p>
+          </form>
+
+          <!-- Shown after someone books (script.js fills in the details). -->
+          <div class="booking-done" id="booking-done" hidden>
+            <div class="done-badge" aria-hidden="true">
+              <svg class="icon" data-show="email sent"><use href="#i-check"></use></svg>
+              <svg class="icon" data-show="failed"><use href="#i-alert"></use></svg>
+            </div>
+            <h3 class="done-title" id="done-title" tabindex="-1">Nearly done</h3>
+            <p data-show="email">Your email app should now be open with your request for <strong data-fill="when"></strong>. <strong>Press Send</strong> and we’ll reply to confirm your slot.</p>
+            <p data-show="sent">Your request is in for <strong data-fill="when"></strong>. A volunteer will be in touch to confirm. If you don’t hear from us, come along anyway – drop-ins are always welcome.</p>
+            <p data-show="failed">Something went wrong sending your request for <strong data-fill="when"></strong>. Please email it to us instead – it only takes a moment.</p>
+
+            <div class="copy-box" data-show="email failed">
+              <h4 data-show="email">Email app didn’t open?</h4>
+              <!-- EDIT: phone number -->
+              <p>Copy your booking below and email it to <a data-fill="org-email" href="mailto:repaircafe@example.org">repaircafe@example.org</a>, or ring or text us on <a href="tel:+441632960123">01632 960123</a>.</p>
+              <label class="visually-hidden" for="booking-text">Your booking details</label>
+              <textarea id="booking-text" data-fill="text" rows="8" readonly></textarea>
+              <div class="copy-row">
+                <button type="button" class="btn btn-ghost btn-small" data-action="copy">Copy details</button>
+                <p class="copy-status" role="status" data-copy-status></p>
+              </div>
+            </div>
+
+            <button type="button" class="link-button" data-action="again">Book another item</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FIND US ===================== -->
+    <section class="section section-alt" id="find-us" aria-labelledby="find-title">
+      <div class="wrap find-inner">
+        <div>
+          <h2 id="find-title">Find us</h2>
+          <!-- EDIT: the hall's full address and the map link below -->
+          <address class="address">
+            <strong>The Church Hall</strong><br>
+            Church Street<br>
+            Your Town AB1 2CD
+          </address>
+          <a class="btn btn-ghost" href="https://www.google.com/maps/search/?api=1&amp;query=The%20Church%20Hall%2C%20Church%20Street%2C%20Your%20Town">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"></use></svg>
+            Open in Maps
+          </a>
+        </div>
+        <dl class="facts">
+          <div>
+            <dt>When</dt>
+            <dd>First Saturday of every month, 10am till 1pm. Last arrivals 12:30.</dd>
+          </div>
+          <div>
+            <dt>Cost</dt>
+            <dd>Repairs are free. Donations are very welcome and help keep us going.</dd>
+          </div>
+          <div>
+            <dt>Need a hand?</dt>
+            <dd>If you need help carrying something in, or have any access needs, tell us when you book.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div>
+        <p class="footer-brand">Repair Café</p>
+        <p>Free repairs by volunteers.<br>First Saturday of every month, 10am till 1pm.</p>
+      </div>
+      <div>
+        <h2>Get in touch</h2>
+        <!-- EDIT: email and phone -->
+        <ul role="list">
+          <li><a href="mailto:repaircafe@example.org">repaircafe@example.org</a></li>
+          <li><a href="tel:+441632960123">01632 960123</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Fancy volunteering?</h2>
+        <p>Handy with a screwdriver, spanner or sewing machine? We’d love to hear from you.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

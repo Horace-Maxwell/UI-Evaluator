@@ -21,9 +21,9 @@ Ask a coding agent for a web page and you get one in minutes. Too often it is th
 
 Same prompt, same model: one page built without the skill, one with it. Under each page are the numbers from the `uie` audit of the shipped files.
 
-<img src="docs/assets/before-after-cafe-en.png" width="880" alt="Two repair café pages at 1280 pixels. Left, built without the skill: a cream page with a small capitals label, the two-tone headline Don't bin it. Bring it., a luggage-tag date card and four icon cards; its audit found 4 hard AI tells, 2 failed WCAG criteria and 10 failed craft criteria, and it met 1 of 11 brief and gate checks. Right, built with UI-Evaluator: a deep blue page with a centred headline, a repair tag listing date, time, place and cost, and a booking form; 0 hard AI tells, 0 failed WCAG criteria, 1 failed craft criterion, 10 of 11 checks met.">
+<img src="docs/assets/before-after-cafe-en.png" width="880" alt="Two repair café pages at 1280 pixels. Left, built without the skill: a cream page with a small capitals label, the two-tone headline Don't bin it. Bring it., a luggage-tag date card and four icon cards; its audit found 4 hard AI tells, 2 failed WCAG criteria and 10 failed craft criteria, and it passed 1 of 6 checks on the page and the reply. Right, built with UI-Evaluator: a deep blue page with a centred headline, a repair tag listing date, time, place and cost, and a booking form; 0 hard AI tells, 0 failed WCAG criteria, 1 failed craft criterion, 5 of 6 checks passed.">
 
-<img src="docs/assets/before-after-calligraphy-en.png" width="880" alt="Two Chinese sign-up pages for a calligraphy class for older learners at 375 pixels. Left, built without the skill: a red seal, a brush-style title and rounded white cards; 1 hard AI tell, 1 failed WCAG criterion, 5 failed craft criteria, 6 of 11 checks met. Right, built with UI-Evaluator: a seal, the timetable set in a regular-script face on paper, and class choices with a sample character; 0, 0 and 0, with 11 of 11 checks met.">
+<img src="docs/assets/before-after-calligraphy-en.png" width="880" alt="Two Chinese sign-up pages for a calligraphy class for older learners at 375 pixels. Left, built without the skill: a red seal, a brush-style title and rounded white cards; 1 hard AI tell, 1 failed WCAG criterion, 5 failed craft criteria, 6 of 10 checks passed. Right, built with UI-Evaluator: a seal, the timetable set in a regular-script face on paper, and class choices with a sample character; 0, 0 and 0, with 10 of 10 checks passed.">
 
 > [!NOTE]
 > These two pairs were picked because the project owner, judging blind, preferred the skill's page in both. They are not typical. Across the four benchmark rounds, the page built without the skill was more often judged the more beautiful one. What the skill changes reliably is the numbers: no hard AI tells, the accessibility floor, honest content and the brief met. See [Measured results](#measured-results).
@@ -156,13 +156,15 @@ Four build iterations on four prompts, 14 runs with the skill and 8 without, all
 
 | | With the skill | Without |
 |---|---|---|
-| Brief and gate assertions met | 90–100% | 0–64% |
+| Checks on the page and the reply (the same for both) | 83–100% | 0–70% |
 | Hard AI tells | none | in most runs (7 of 8 in the latest round) |
 | Invented contact details, prices or testimonials | none | in several runs |
 | Blind human judgement, latest round: more beautiful | 2 of 8 | 6 of 8 |
 | Blind human judgement: less template-like | 3 of 8 | 5 of 8 |
 | Blind human judgement: would publish | 2 of 8 (1 tie) | 5 of 8 |
 | Median cost of one build | about 860k tokens, 94 min | about 315k tokens, 41 min |
+
+The grader also checks the skill's own files (PRODUCT.md, DESIGN.md, the direction roll, the ledger), which a build without the skill cannot have. Counting those as well gives 90–100% against 0–64%, but that gap is partly built in, so the table leaves them out.
 
 - **The detectors find their seeded defects.** On six fixtures at 320, 768 and 1280 px, the audit and lint found all 51 deterministic seeded defects and reported no false positive on the clean control page. The fixtures are small, so this does not estimate precision on real sites.
 - **The skill reliably lifts what it can verify.** It costs about 2.7 times the tokens and 2.3 times the time of an unaided build, mostly in audits, gates and records.
@@ -183,7 +185,8 @@ docs/framework/           the specification: framework, quality bar, methods, ar
 docs/research/            the evidence base: eleven research notes, 592 adopt items with sources
 docs/assets/              the images in this README and where each one comes from
 evals/                    fixtures, prompts and assertions; evals/results/ holds every benchmark round
-tests/  tools/            unit and integration tests; maintenance and scoring scripts
+tests/                    unit and integration tests
+tools/                    maintenance scripts; bench/ runs the build benchmark, readme-media/ draws these images
 ```
 
 ## Develop
@@ -196,7 +199,7 @@ npm test
 npm run validate
 ```
 
-`npm test` runs the core tests (no dependencies). `npm run validate` checks packaging, links, agents and rules against the specification, and research traceability. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`npm test` runs the core tests (no dependencies). `npm run validate` checks packaging, links, agents and rules against the specification, and research traceability. [tools/bench/](tools/bench/README.md) runs the build benchmark, and `node tools/readme-media/build.mjs` redraws the images in this README from its stored results. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence and acknowledgements
 

@@ -4,10 +4,13 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## Unreleased
 
-Documentation only; the skill, the CLI and the plugin are unchanged.
+Documentation and repository tools only; the skill, the CLI and the plugin are unchanged.
 
 - **README.** Both READMEs are rewritten around pictures: a title banner with the gates and levels, two before-and-after pairs from the build benchmark with the `uie` audit numbers under each page, the repair café audit with the detectors' own boxes, and a workflow diagram. A note under the pairs says they were picked because the owner preferred the skill's page, and that they are not typical. The measured results are now a table, and the gate list and CLI reference fold away.
 - **Images.** `docs/assets/` holds the images in English and Chinese, a social preview for the repository, and a README naming the run behind every image and how its numbers were read.
+- **Benchmark tools.** `tools/bench/` holds the build benchmark that was run by hand before: prepare a round (a frozen skill and one prompt per run), grade a run, pair the runs, write the comparator prompts, make a blind judging page whose result line carries no key, and record the round with its tallies. The grader marks each assertion as output (the page or the reply) or process (the skill's own files). `tests/core/bench-tools.test.mjs` tests the helpers.
+- **Image tools.** `tools/readme-media/build.mjs` draws every README image from the stored runs and stops when a caption no longer matches the stored judgement. `audit-capture.mjs` takes the annotated audit's boxes and capture from the baseline page, which is kept in `docs/assets/src/`.
+- **A fairer comparison.** The headline rates (90–100% against 0–64% of assertions met) counted process assertions that a build without the skill cannot pass. The READMEs, the pair images and the overview now compare the output assertions only: 83–100% against 0–70%. `evals/README.md` gives both.
 - **Other documents.** CONTRIBUTING covers build benchmarks and README images. NOTICE covers the images. `evals/README.md` counts 18 prompts and lists `results/`. The documentation map and the Chinese overview follow, and the overview now states the appeal criterion, the finish pass and the measured results.
 
 ## 2.0.0 — 2026-10-04

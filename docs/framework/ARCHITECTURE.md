@@ -53,13 +53,16 @@ UI-Evaluator/
 │   ├── README.md                # map of all documentation
 │   ├── OVERVIEW.zh-CN.md        # Chinese overview
 │   ├── research/                # evidence base (00–10) + index
-│   └── framework/               # this specification set
+│   ├── framework/               # this specification set
+│   └── assets/                  # README images, their sources and provenance
 ├── evals/
 │   ├── evals.json               # skill-creator eval prompts and assertions
 │   ├── fixtures/                # seeded-defect apps and pages, feedback datasets
-│   └── labels/                  # human labels for detector calibration
+│   ├── labels/                  # human labels for detector calibration
+│   └── results/                 # detector scores and every build-benchmark round
 ├── tests/                       # node:test unit and integration tests
-├── tools/                       # repo maintenance: sync-agents, validate-skill, check-traceability
+├── tools/                       # repo maintenance: sync-agents, validate-skill, check-traceability, build-rules, score-fixtures;
+│                                #   bench/ runs the build benchmark, readme-media/ draws the README images
 ├── README.md · README.zh-CN.md · LICENSE (Apache-2.0) · NOTICE.md · CHANGELOG.md · CONTRIBUTING.md
 └── package.json                 # dev scripts only (test, validate, sync)
 ```
@@ -513,6 +516,7 @@ All other colour maths (parsing every CSS colour syntax, sRGB ↔ OKLab and OKLC
 | Integration | init → run → capture → audit → journey → diff → gates → report through the CLI on fixtures served locally; the doctor smoke test on `assets/fixtures/known-bad.html` | `tests/browser/commands.test.mjs`, `tests/core/e2e.test.mjs`, `uie doctor` |
 | Detector calibration | per-rule precision and recall on the seeded fixtures; false positives on `clean-control`; the deterministic release thresholds of EVALUATION-PLAN §6 | `tools/score-fixtures.mjs`, `evals/fixtures/`, `evals/labels/` |
 | Skill behaviour | with-skill vs without-skill runs on eval prompts; trace assertions (files read, commands run, gates computed) across ≥ 2 model families [IMP-058] | `evals/` (skill-creator loop; `claude plugin eval` where available) |
+| Build benchmark | the same build prompt with and without the skill, graded by one script on the shipped files (output assertions compared, process assertions kept apart), judged blind in pairs by model comparators and a person | `tools/bench/` (helpers tested in `tests/core/bench-tools.test.mjs`), `evals/results/` |
 | Packaging | `skills-ref validate skills/ui-evaluator`; `claude plugin validate .` and `claude plugin validate .claude-plugin/plugin.json`; `tools/validate-skill.mjs` (frontmatter, line budgets, TOCs, links, CLI commands, flags and check names named in guidance, agents in sync, `rules.json` ⊇ QUALITY-BAR IDs, fixture names kept out of the skill); `tools/check-traceability.mjs` (every research adopt ID has a disposition) | `npm run validate`, CI |
 
 Release checklist: all of the above green; CHANGELOG entry; version bump in `plugin.json`, `SKILL.md` metadata and `scripts/package.json`; tell catalogue statuses reviewed.

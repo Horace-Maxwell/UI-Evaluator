@@ -18,8 +18,8 @@ Thank you for helping. UI-Evaluator holds itself to the same rule it applies to 
 | a file format | `skills/ui-evaluator/assets/schemas/<name>.schema.json` and ARCHITECTURE §8 | `npm test` |
 | a research-backed practice | cite its adopt ID in square brackets, e.g. `[CRAFT-018]` | `node tools/check-traceability.mjs` |
 | a new adopt item in `docs/research/` | the note's adopt table | `node tools/check-traceability.mjs --write`, then give it a disposition |
-| a benchmark round | `evals/results/build-benchmark-<date>/` and a dated subsection under Results in `evals/README.md` | update the measured results in both READMEs |
-| an image in the README | `docs/assets/` and its row in `docs/assets/README.md` | check every number in it against the run's `grading.json` |
+| a benchmark round | the scripts in `tools/bench/`, then a dated subsection under Results in `evals/README.md` | `node tools/bench/record-round.mjs`; update the measured results in both READMEs |
+| an image in the README | `tools/readme-media/build.mjs` and its row in `docs/assets/README.md` | `node tools/readme-media/build.mjs` (it reads every number from the stored runs) |
 
 ## Checks
 
@@ -48,16 +48,16 @@ Changes to detectors, gates or workflows are measured, not argued: see [EVALUATI
 
 ### Build benchmarks
 
-A change meant to make builds better is measured with paired builds, as in [evals/README.md](evals/README.md#results):
+A change meant to make builds better is measured with paired builds. The scripts are in [tools/bench/](tools/bench/README.md), and [evals/README.md](evals/README.md#running-a-build-benchmark) walks through a round:
 
 - Run the same prompt with the skill (from a frozen snapshot) and without it, or with the previous snapshot, on the same model and tools. Repeat old prompts and add new ones, because runs vary a lot.
-- Grade both configurations with one script: `uie audit`, `uie lint` and `uie gates` on a copy of the shipped files only, plus the eval's assertions.
+- Grade both configurations with `tools/bench/grade-build.mjs`: `uie audit`, `uie lint` and `uie gates` on a copy of the shipped files only, plus the eval's assertions. Compare configurations on the output assertions; the process assertions check the skill's own files, which a baseline cannot have.
 - Judge looks blind and in pairs, from screenshots, with keys hidden until every answer is in. Ask a person where you can: the model judges are Claude models too, so they may favour what Claude builds.
-- Store grading, timing, screenshots, pair keys and judgements under `evals/results/build-benchmark-<date>/`, and write the round up with its caveats. Report a loss as plainly as a win, and update the measured results in both READMEs.
+- Store the round with `tools/bench/record-round.mjs`, and write it up with its caveats. Report a loss as plainly as a win, and update the measured results in both READMEs.
 
 ### README images
 
-The images in `docs/assets/` are evidence too. Every number in them comes from a stored run, and [docs/assets/README.md](docs/assets/README.md) names the run behind each image and how a pair was chosen. A picked pair must say that it was picked. When a new round changes the picture, update the images and their captions, or remove them.
+The images in `docs/assets/` are evidence too. `node tools/readme-media/build.mjs` draws them from the stored runs and stops when a caption no longer matches the stored judgement, and [docs/assets/README.md](docs/assets/README.md) names the run behind each image and how a pair was chosen. A picked pair must say that it was picked. When a new round changes the picture, update the images and their captions, or remove them.
 
 ## Licence
 

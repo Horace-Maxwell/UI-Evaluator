@@ -54,7 +54,7 @@ UI-Evaluator bundles no fonts. Its guidance never self-hosts SF Pro or New York,
 
 ## Images in this repository
 
-The images in `docs/assets/` show pages that Claude built for this project's own benchmark, with the numbers from their graded runs; [docs/assets/README.md](docs/assets/README.md) lists the run behind each one. They are part of this repository and covered by its licence. They were rendered with fonts installed on macOS (Avenir Next, SF Mono, PingFang SC), and no font file is included. The pages in them may show web fonts they loaded, which remain under their own licences.
+The images in `docs/assets/` show pages that Claude built for this project's own benchmark, with the numbers from their graded runs; [docs/assets/README.md](docs/assets/README.md) lists the run behind each one. They are part of this repository and covered by its licence, as is `docs/assets/src/cafe-baseline-site/`, the page Claude built without the skill in the first round, kept as the source of the annotated audit image. They were rendered with fonts installed on macOS (Avenir Next, SF Mono, PingFang SC), and no font file is included. The pages in them may show web fonts they loaded, which remain under their own licences.
 
 ## Runtime dependencies (installed on request, not vendored)
 

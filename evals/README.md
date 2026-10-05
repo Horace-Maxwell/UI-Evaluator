@@ -13,8 +13,9 @@ The material for testing UI-Evaluator itself (EVALUATION-PLAN): seeded fixtures 
 7. [Skill-behaviour evals (evals.json)](#skill-behaviour-evals-evalsjson)
 8. [Detector calibration labels](#detector-calibration-labels)
 9. [Rules for changing this folder](#rules-for-changing-this-folder)
-10. [Results](#results)
-11. [Calibration notes](#calibration-notes)
+10. [Running a build benchmark](#running-a-build-benchmark)
+11. [Results](#results)
+12. [Calibration notes](#calibration-notes)
 
 ## Layout
 
@@ -140,9 +141,23 @@ Assertions name real artefacts: `runs/<id>/manifest.json` (`depth`, `evaluators[
 - Validate after every change: each `ground-truth.json` against `ground-truth.schema.json`, each journey with `uie findings validate <file> --schema journey`, and `uie lint evals/fixtures/clean-control` with no gate-level hit.
 - Only synthetic personal data, on reserved domains and fictional number ranges.
 
+## Running a build benchmark
+
+A build benchmark runs a build prompt with the skill and without it, grades both with one script, and has the pages judged blind. The scripts are in [tools/bench/](../tools/bench/README.md). Keep the round folder outside the repository, so the baseline runs cannot read the skill.
+
+1. `node tools/bench/prepare-round.mjs <round> --evals 1,2,17,18 --runs 3` freezes a copy of the skill and writes one prompt per run to `run-prompts.json`. The prompt with the skill points at the copy and sets the scope: the skill's workflows up to the build's mechanical self-check, one quick audit, at most one fix round, then the gates. The baseline prompt only keeps the agent away from the skill. Give each prompt to a fresh agent, and save the harness's token count and wall-clock time as `timing.json` in its run folder.
+2. `node tools/bench/grade-build.mjs <run-dir> <eval-id>` copies only the shipped files, serves them, and runs `uie audit` (remote assets allowed), `uie lint` and `uie gates` on them. It then checks the eval's assertions. Each assertion is `output`, a check on the page or the reply that is the same for both configurations, or `process`, a check on the skill's own files that only a run with the skill can pass. Compare configurations on the output assertions.
+3. `node tools/bench/make-pairs.mjs <round> --seed <n>` pairs run n of each configuration and hides them as A and B. `node tools/bench/comparator-prompts.mjs <round>` writes one prompt per pair for a model comparator, who sees only the screenshots.
+4. `node tools/bench/judge-page.mjs <round> --seed <n>` writes a self-contained page for a person, with each pair shown as X and Y (a separate shuffle) and three questions. The page holds no key: the person copies back a line of X/Y answers.
+5. `node tools/bench/record-round.mjs <round> --date <YYYY-MM-DD> --human "<line>" --judge "<who>"` unblinds both judges, tallies them and stores the round under `results/`.
+
+The comparators are Claude models, like the builders, and may favour Claude's own house look, so a person's judgement decides beauty. Report the caveats with every round: who judged, how many runs, how many presentation orders, and what the judge had seen before.
+
 ## Results
 
 Each round's files are under [results/](results/). The before-and-after images in the project README come from two of these runs; [docs/assets/README.md](../docs/assets/README.md) says which, and why those two.
+
+In the build benchmarks below, "assertions met" counts every assertion. For the repair-cafe and calligraphy prompts, that includes checks on the skill's own files (PRODUCT.md, DESIGN.md, the direction roll, the ledger, the self-check run), which a build without the skill cannot pass. Counting only the output assertions, on the page and the reply, the runs with the skill met 83–100% and the runs without it 0–70% over the four rounds.
 
 ### Detector calibration, 2026-10-01
 
@@ -168,6 +183,7 @@ Two build prompts (an English one-page site for a repair cafe; a Chinese sign-up
 | | With the skill | Without the skill |
 |---|---|---|
 | Brief and gate assertions met | 21 of 22 | 7 of 22 |
+| Output assertions met (the page and the reply) | 15 of 16 | 7 of 16 |
 | Hard tells | none | SLP-05, 06, 07, 13 (cafe); SLP-07 (calligraphy) |
 | Blind verdicts won (beauty, less generic, overall × 2 evals) | 0 of 6 | 6 of 6 |
 | Comparator scores, visual / distinct / honesty (mean of both orders) | 3.0 / 2.5 / 5.0 (cafe); 3.0 / 3.0 / 5.0 (calligraphy) | 4.0 / 3.5 / 3.0 (cafe); 4.0 / 4.0 / 3.5 (calligraphy) |
@@ -182,6 +198,7 @@ The same two prompts were run again with the skill after ADR-035, from a frozen 
 | | Iteration 1 (with / without) | Iteration 2 (with / without) |
 |---|---|---|
 | Brief and gate assertions met | 21 / 7 of 22 | 21 / 7 of 22 |
+| Output assertions met (the page and the reply) | 15 / 7 of 16 | 15 / 7 of 16 |
 | Blind verdicts won by the skill: less generic | 0 of 2 | **2 of 2** |
 | Blind verdicts won by the skill: more beautiful, better overall | 0 of 4 | 0 of 4 |
 | Comparator distinctiveness (cafe; calligraphy) | 2.5 / 3.5; 3.0 / 4.0 | **4.0 / 3.0; 4.0 / 3.0** |
@@ -223,7 +240,7 @@ The prompts were run again with the skill after the colour, depth and finish-pas
 | Calligraphy: less generic | with | with | with |
 | Calligraphy: would publish | with | tie | — |
 
-Assertions: 21 of 22 with the skill, as before. The only miss is COL-03 on the cafe page, measured without its `DESIGN.md` strategy. The cafe page changed most: a workshop-blue ground, a tilted buff repair tag with a string and a soft shadow in the first viewport, and tag-shaped item labels. The person's three verdicts turned to the skill. The model still preferred the baseline's look, with its slab serif and warm cream. The calligraphy page moved back a step for the person. Three problems in that run explain this. The page kept no sign-ups: it showed a slip and said nothing was sent, which `knowledge/content-copy.md` §3.5 has since corrected. The primary button was ink black. The desktop layout was lopsided. The model judges named the same button and layout, plus flat headings and plain controls. These now have finish-pass checks: the accent belongs on the action, the wide layout is composed, controls are styled, and the type has a voice.
+Assertions: 21 of 22 with the skill, as before (15 of 16 output assertions, against 7 of 16 for the baselines). The only miss is COL-03 on the cafe page, measured without its `DESIGN.md` strategy. The cafe page changed most: a workshop-blue ground, a tilted buff repair tag with a string and a soft shadow in the first viewport, and tag-shaped item labels. The person's three verdicts turned to the skill. The model still preferred the baseline's look, with its slab serif and warm cream. The calligraphy page moved back a step for the person. Three problems in that run explain this. The page kept no sign-ups: it showed a slip and said nothing was sent, which `knowledge/content-copy.md` §3.5 has since corrected. The primary button was ink black. The desktop layout was lopsided. The model judges named the same button and layout, plus flat headings and plain controls. These now have finish-pass checks: the accent belongs on the action, the wide layout is composed, controls are styled, and the type has a voice.
 
 The judge warned that their judgement may be biased and is one sample, and they had seen the iteration-2 key. The direction across three iterations is clear, but none of these differences is a measured effect. More judges, more prompts and more than one run per configuration are needed before any claim about beauty.
 
@@ -234,7 +251,8 @@ This round added two new prompts and repeated the two old ones (eval ids 17 and 
 | | With the skill | Without the skill |
 |---|---|---|
 | Runs | 8 | 6 new + 2 reused |
-| Brief and gate assertions met | 90–100% | 0–64% |
+| Output assertions met (the page and the reply) | 83–100% | 0–70% |
+| All assertions met, including the skill's own files | 90–100% | 0–64% |
 | Hard AI tells | none | in 7 of 8 runs (SLP-07 in all 7; SLP-05 and SLP-13 in every cafe run) |
 | Made-up contact details shown as real | none | in 3 runs (example addresses, a reserved fake phone number, an invented shop name and mobile number) |
 | Human: more beautiful | 2 of 8 | 6 of 8 |
@@ -246,7 +264,7 @@ This round added two new prompts and repeated the two old ones (eval ids 17 and 
 Per prompt, the person preferred the skill's page in only one of three calligraphy runs, on all three questions. The other two calligraphy runs lost all three. On the cafe, the skill's page lost on beauty in all three runs but was judged less template-like in two. On the food-bank tool, the skill's page was more beautiful but more template-like, and the two were equal to publish. On the watch-repair shop, the person preferred the baseline on all three questions. That baseline had invented a shop name, a phone number and the brands it services, and the person may not have noticed. The model judge agreed with the person on beauty in 7 of 8 pairs and on genericness in 4 of 8: it credits a concept carried through the page more readily than the person does.
 
 The measured picture after four iterations:
-- The skill reliably raises what can be verified: no tells, the WCAG floor, honest content, and higher assertion pass rates.
+- The skill reliably raises what can be verified: no tells, the WCAG floor, honest content, and more of the output assertions met.
 - It does not yet reliably produce the page a person finds more beautiful.
 - Runs vary a lot.
 - The skill costs roughly 2.7 times the tokens and 2.3 times the time.
