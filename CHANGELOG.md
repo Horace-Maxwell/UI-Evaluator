@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
+## Unreleased
+
+Documentation only; the skill, the CLI and the plugin are unchanged.
+
+- **README.** Both READMEs are rewritten around pictures: a title banner with the gates and levels, two before-and-after pairs from the build benchmark with the `uie` audit numbers under each page, the repair café audit with the detectors' own boxes, and a workflow diagram. A note under the pairs says they were picked because the owner preferred the skill's page, and that they are not typical. The measured results are now a table, and the gate list and CLI reference fold away.
+- **Images.** `docs/assets/` holds the images in English and Chinese, a social preview for the repository, and a README naming the run behind every image and how its numbers were read.
+- **Other documents.** CONTRIBUTING covers build benchmarks and README images. NOTICE covers the images. `evals/README.md` counts 18 prompts and lists `results/`. The documentation map and the Chinese overview follow, and the overview now states the appeal criterion, the finish pass and the measured results.
+
 ## 2.0.0 — 2026-10-04
 
 A major release under the rule above: DES-07 adds a G6 criterion that can make an earlier pass fail. Measured results for this version are in [evals/README.md](evals/README.md#results).

@@ -20,7 +20,7 @@ The material for testing UI-Evaluator itself (EVALUATION-PLAN): seeded fixtures 
 
 ```
 evals/
-├── evals.json                  # skill-creator prompts and assertions (16)
+├── evals.json                  # skill-creator prompts and assertions (18)
 ├── ground-truth.schema.json    # JSON Schema 2020-12 for every ground-truth.json
 ├── fixtures/
 │   ├── slop-landing/           # each web fixture: pages, fixture.json, journeys/, PRODUCT.md, ground-truth.json
@@ -30,7 +30,8 @@ evals/
 │   ├── journey-app/
 │   ├── clean-control/
 │   └── feedback-set/           # feedback.csv, roster.csv, labels.json
-└── labels/                     # human labels for detector calibration (starts empty; see its README)
+├── labels/                     # human labels for detector calibration (starts empty; see its README)
+└── results/                    # detector scores and every build-benchmark round: grading, timing, screenshots, judgements
 ```
 
 Every web fixture is plain HTML, CSS and vanilla JavaScript with no build step and no network request: fonts are named in CSS stacks only, icons are inline SVG, and the favicon is `data:,`.
@@ -117,7 +118,7 @@ Planted personal data, all fictional: 26 email addresses on reserved domains (ex
 
 ## Skill-behaviour evals (evals.json)
 
-`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 16 prompts cover build (English and Chinese), audit at quick, standard and rigorous depth on different fixtures, a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
+`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 18 prompts cover build (English and Chinese: two one-page sites, a sign-up page and a front-desk tool), audit at quick, standard and rigorous depth on different fixtures, a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
 
 Run them through the skill-creator loop (EVALUATION-PLAN §5.1):
 
@@ -140,6 +141,8 @@ Assertions name real artefacts: `runs/<id>/manifest.json` (`depth`, `evaluators[
 - Only synthetic personal data, on reserved domains and fictional number ranges.
 
 ## Results
+
+Each round's files are under [results/](results/). The before-and-after images in the project README come from two of these runs; [docs/assets/README.md](../docs/assets/README.md) says which, and why those two.
 
 ### Detector calibration, 2026-10-01
 

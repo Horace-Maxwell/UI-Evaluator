@@ -52,6 +52,10 @@ Shopify Polaris (licence restricted to Shopify-integrated apps), the Atlassian D
 
 UI-Evaluator bundles no fonts. Its guidance never self-hosts SF Pro or New York, Segoe UI, PingFang, Microsoft YaHei or GDS Transport. It flags HarmonyOS Sans and MiSans for licence review before subsetting. Gallery sites whose terms forbid AI use (e.g. Mobbin, Dribbble) are recommended for human browsing only.
 
+## Images in this repository
+
+The images in `docs/assets/` show pages that Claude built for this project's own benchmark, with the numbers from their graded runs; [docs/assets/README.md](docs/assets/README.md) lists the run behind each one. They are part of this repository and covered by its licence. They were rendered with fonts installed on macOS (Avenir Next, SF Mono, PingFang SC), and no font file is included. The pages in them may show web fonts they loaded, which remain under their own licences.
+
 ## Runtime dependencies (installed on request, not vendored)
 
 Playwright (Apache-2.0), axe-core and @axe-core/playwright (MPL-2.0, used unmodified), colorjs.io (MIT), pixelmatch (ISC), pngjs (MIT), web-vitals (Apache-2.0).

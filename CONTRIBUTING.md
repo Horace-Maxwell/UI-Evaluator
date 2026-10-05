@@ -18,6 +18,8 @@ Thank you for helping. UI-Evaluator holds itself to the same rule it applies to 
 | a file format | `skills/ui-evaluator/assets/schemas/<name>.schema.json` and ARCHITECTURE §8 | `npm test` |
 | a research-backed practice | cite its adopt ID in square brackets, e.g. `[CRAFT-018]` | `node tools/check-traceability.mjs` |
 | a new adopt item in `docs/research/` | the note's adopt table | `node tools/check-traceability.mjs --write`, then give it a disposition |
+| a benchmark round | `evals/results/build-benchmark-<date>/` and a dated subsection under Results in `evals/README.md` | update the measured results in both READMEs |
+| an image in the README | `docs/assets/` and its row in `docs/assets/README.md` | check every number in it against the run's `grading.json` |
 
 ## Checks
 
@@ -43,6 +45,19 @@ npm run validate
 ## Evaluation
 
 Changes to detectors, gates or workflows are measured, not argued: see [EVALUATION-PLAN.md](docs/framework/EVALUATION-PLAN.md). `node tools/score-fixtures.mjs` audits and lints every fixture in `evals/fixtures/` through the CLI and scores the detections against each fixture's `ground-truth.json`: per-rule precision and recall, false positives on `clean-control`, and the deterministic release thresholds of EVALUATION-PLAN §6. Fixture product names and seeded defects in `evals/` must never appear in `skills/`, so the skill cannot learn the test; `npm run validate` checks the product names.
+
+### Build benchmarks
+
+A change meant to make builds better is measured with paired builds, as in [evals/README.md](evals/README.md#results):
+
+- Run the same prompt with the skill (from a frozen snapshot) and without it, or with the previous snapshot, on the same model and tools. Repeat old prompts and add new ones, because runs vary a lot.
+- Grade both configurations with one script: `uie audit`, `uie lint` and `uie gates` on a copy of the shipped files only, plus the eval's assertions.
+- Judge looks blind and in pairs, from screenshots, with keys hidden until every answer is in. Ask a person where you can: the model judges are Claude models too, so they may favour what Claude builds.
+- Store grading, timing, screenshots, pair keys and judgements under `evals/results/build-benchmark-<date>/`, and write the round up with its caveats. Report a loss as plainly as a win, and update the measured results in both READMEs.
+
+### README images
+
+The images in `docs/assets/` are evidence too. Every number in them comes from a stored run, and [docs/assets/README.md](docs/assets/README.md) names the run behind each image and how a pair was chosen. A picked pair must say that it was picked. When a new round changes the picture, update the images and their captions, or remove them.
 
 ## Licence
 

@@ -11,6 +11,8 @@
 | see how conflicting sources were reconciled | [framework/CONFLICT-REGISTER.md](framework/CONFLICT-REGISTER.md) |
 | write or review guidance and prompts | [framework/AUTHORING.md](framework/AUTHORING.md) |
 | see how the skill itself is tested | [framework/EVALUATION-PLAN.md](framework/EVALUATION-PLAN.md) |
+| see what has been measured so far, with the data | [../evals/README.md](../evals/README.md#results) |
+| find the run behind an image in the README | [assets/README.md](assets/README.md) |
 | trace a rule to its evidence, or a lecture concept to its implementation | [framework/TRACEABILITY.md](framework/TRACEABILITY.md) |
 | look up a term (English / 中文) | [framework/GLOSSARY.md](framework/GLOSSARY.md) |
 | read the evidence base | [research/README.md](research/README.md) |
@@ -28,7 +30,7 @@ framework/FRAMEWORK ──▶ QUALITY-BAR (gate criteria IDs) ──▶ skills/�
       ├──▶ ARCHITECTURE ──────▶ skills/…/scripts (uie CLI), assets/schemas, agents/, hooks/
       ├──▶ DECISIONS + CONFLICT-REGISTER (why; rulings)
       ├──▶ AUTHORING (how everything is written)
-      └──▶ EVALUATION-PLAN ───▶ evals/, tests/
+      └──▶ EVALUATION-PLAN ───▶ evals/ (results/ ──▶ docs/assets/, the README images), tests/
 TRACEABILITY ties research IDs and lecture concepts to all of the above.
 ```
 
