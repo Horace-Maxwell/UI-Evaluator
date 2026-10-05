@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyboard trap</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; padding: 16px; color: #1a1a1a; background: #fff; }
+  a { color: #0b4f9c; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  .picker { display: inline-flex; gap: 8px; padding: 8px; border: 1px solid #767676; }
+  .picker button { font: inherit; padding: 8px 12px; border: 2px solid #0b4f9c; background: #fff; color: #0b4f9c; }
+</style>
+</head>
+<body>
+  <!-- Defect seeded for the keyboard check: the colour picker keeps Tab and Shift+Tab inside itself and ignores
+       Escape, although it is not a modal dialog (A11Y-03, 2.1.2). #after is never reached. -->
+  <h1>Keyboard trap</h1>
+  <p><a href="#intro" id="before">Read the introduction</a></p>
+  <div class="picker" id="picker" role="group" aria-label="Colour">
+    <button type="button" id="red">Red</button><button type="button" id="green">Green</button><button type="button" id="blue">Blue</button>
+  </div>
+  <p><a href="#next" id="after">Continue to checkout</a></p>
+<script>
+  const picker = document.getElementById('picker');
+  picker.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const items = [...picker.querySelectorAll('button')];
+    const i = items.indexOf(document.activeElement);
+    e.preventDefault();
+    const next = e.shiftKey ? (i - 1 + items.length) % items.length : (i + 1) % items.length;
+    items[next].focus();
+  });
+</script>
+</body>
+</html>

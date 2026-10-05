@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "words-zh.schema.json",
+  "title": "Chinese copy lists (assets/data/words-zh.json): CPY-02 and CPY-04 strings, I18N-17 terms, the I18N-18 review list",
+  "type": "object",
+  "required": ["schema", "version", "as_of", "source", "lists"],
+  "properties": {
+    "schema": { "const": "words-zh" },
+    "version": { "type": "integer", "minimum": 1 },
+    "as_of": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+    "source": { "type": "string", "minLength": 1 },
+    "note": { "type": "string" },
+    "lists": {
+      "type": "object",
+      "required": ["error_generic", "error_blame", "link_text_vague", "placeholder_text", "jargon_review", "canonical_terms"],
+      "properties": {
+        "jargon_review": {
+          "allOf": [{ "$ref": "#/$defs/list" }],
+          "required": ["heuristic", "never_evidence_for"],
+          "properties": { "heuristic": { "const": true }, "never_evidence_for": { "const": "SLP-14" } }
+        },
+        "canonical_terms": {
+          "type": "object",
+          "required": ["entries"],
+          "properties": {
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "object", "required": ["use", "not"], "properties": { "use": { "type": "string" }, "not": { "type": "array", "items": { "type": "string" } }, "pattern": { "type": "string" } } }
+            }
+          }
+        },
+        "not_hits": { "type": "object" }
+      },
+      "additionalProperties": { "$ref": "#/$defs/list" }
+    }
+  },
+  "patternProperties": { "^_": {} },
+  "additionalProperties": false,
+  "$defs": {
+    "list": {
+      "type": "object",
+      "required": ["entries"],
+      "properties": {
+        "rule": { "type": "string", "pattern": "^[A-Z0-9]+-\\d{2}$" },
+        "level": { "enum": ["gate", "advisory"] },
+        "static_level": { "enum": ["gate", "advisory"] },
+        "heuristic": { "type": "boolean" },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["text", "pattern"],
+            "properties": { "text": { "type": "string", "minLength": 1 }, "pattern": { "type": "string", "minLength": 1 }, "heuristic": { "type": "boolean" }, "category": { "type": "string" } }
+          }
+        },
+        "review_heuristic": { "type": "array", "items": { "type": "object", "required": ["text", "pattern"] } }
+      }
+    }
+  }
+}

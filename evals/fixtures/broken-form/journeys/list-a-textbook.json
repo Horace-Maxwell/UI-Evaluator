@@ -1,0 +1,55 @@
+{
+  "_comment": "Critical journey for the broken-form fixture. Test values only: the email uses a reserved domain, 07700 900456 is in Ofcom's drama range, and the password is a fixture-only string with no account behind it.",
+  "schema_version": 1,
+  "id": "list-a-textbook",
+  "title": "List a used textbook for sale",
+  "criticality": "critical",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Students selling last year's course books at the end of term",
+    "knows": [
+      "their university email address and mobile number",
+      "the book's title, edition and condition",
+      "what they paid for it"
+    ],
+    "does_not_know": [
+      "where the ISBN is printed",
+      "which handover points the exchange uses"
+    ],
+    "context": "On a phone between lectures, holding the book, often in a hurry"
+  },
+  "goal": "Get the book in front of buyers before next term starts",
+  "scenario": "You have a copy of Introductory statistics, 4th edition, in good condition, ISBN 9780306406157. You would like 18 pounds for it and can meet a buyer at the Students' Union. You have not used the exchange before. Put the book up for sale.",
+  "avoided_hints": ["Create account", "Continue", "Publish listing", "Handover point"],
+  "start_state": {
+    "url": "/",
+    "data": "no account exists for this student",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/done\\.html" },
+      { "text": "Your listing is live" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "fill", "target": "role=textbox[name=\"Full name\"]", "value": "Test Seller" },
+    { "action": "fill", "target": "role=textbox[name=\"University email\"]", "value": "seller@example.org" },
+    { "action": "fill", "target": "role=textbox[name=\"Mobile number\"]", "value": "07700 900456" },
+    { "action": "fill", "target": "label=\"Password\"", "value": "fixture-only-pass-1" },
+    { "action": "click", "target": "role=button[name=\"Create account\"]" },
+    { "action": "expect", "url": "/listing\\.html" },
+    { "action": "fill", "target": "placeholder=ISBN", "value": "9780306406157" },
+    { "action": "fill", "target": "placeholder=Title", "value": "Introductory statistics" },
+    { "action": "fill", "target": "placeholder=Edition", "value": "4th" },
+    { "action": "select", "target": "role=combobox[name=\"Condition\"]", "value": "good" },
+    { "action": "fill", "target": "placeholder=Price in £", "value": "18" },
+    { "action": "click", "target": "role=button[name=\"Continue\"]" },
+    { "action": "expect", "url": "/handover\\.html" },
+    { "action": "check", "target": "role=radio[name=\"Students’ Union exchange desk\"]" },
+    { "action": "click", "target": "role=button[name=\"Publish listing\"]" },
+    { "action": "expect", "text": "Your listing is live" }
+  ]
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reduced-motion defects</title>
+<style>
+  body { margin: 0; font: 16px/1.5 Georgia, serif; color: #1d1d1f; background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px; }
+  /* A finite hero entrance that travels 360 px and has no reduced-motion path (MOT-04 large displacement). */
+  .hero { padding: 32px; border: 1px solid #ccc; animation: fly-in 1.2s ease-out both; }
+  @keyframes fly-in { from { transform: translateY(360px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .tall { height: 2400px; position: relative; }
+  /* JS parallax that keeps running under reduce (MOT-04 scroll-linked). */
+  .layer { position: absolute; left: 0; right: 0; top: 200px; height: 160px; background: #dfe7f3; }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero"><h1>Freight, planned</h1><p>Every pallet tracked from the dock to the door.</p></section>
+  <div class="tall"><div class="layer" id="layer"><p>Depot map</p></div></div>
+</main>
+<script>
+  const layer = document.getElementById('layer');
+  addEventListener('scroll', () => { layer.style.transform = `translateY(${Math.round(scrollY * 0.4)}px)`; }, { passive: true });
+</script>
+</body>
+</html>

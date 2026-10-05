@@ -1,0 +1,67 @@
+{
+  "name": "clean-control",
+  "product": "Hollin Lane seed library",
+  "description": "A community seed-library lending desk: a seed catalogue to read and a request form to operate. Built to the floor by hand with no seeded defect; every detection on it is a false positive (EVALUATION-PLAN §3, §6).",
+  "routes": [
+    {
+      "path": "/",
+      "surface": "catalogue",
+      "mode": "read",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "empty",
+          "actions": [
+            { "action": "fill", "target": "role=searchbox[name=\"Search varieties\"]", "value": "okra" },
+            { "action": "click", "target": "role=button[name=\"Show varieties\"]" },
+            { "action": "expect", "text": "No varieties match" }
+          ]
+        },
+        {
+          "name": "loading",
+          "actions": [
+            { "action": "goto", "url": "/?state=loading" },
+            { "action": "expect", "text": "Loading the catalogue" }
+          ]
+        },
+        {
+          "name": "error",
+          "actions": [
+            { "action": "goto", "url": "/?state=error" },
+            { "action": "expect", "target": "role=alert", "text": "The catalogue did not load" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/borrow.html",
+      "surface": "request-form",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Request packets\"]" },
+            { "action": "expect", "target": "role=alert", "state": "focused" }
+          ]
+        },
+        {
+          "name": "sent",
+          "actions": [
+            { "action": "fill", "target": "role=textbox[name=\"Library card number\"]", "value": "20004817" },
+            { "action": "fill", "target": "role=textbox[name=\"Full name\"]", "value": "Test Member" },
+            { "action": "fill", "target": "role=textbox[name=\"Email address\"]", "value": "member@example.org" },
+            { "action": "check", "target": "role=checkbox[name=\"Sweet basil\"]" },
+            { "action": "select", "target": "role=combobox[name=\"Collect from\"]", "value": "brook-street" },
+            { "action": "click", "target": "role=button[name=\"Request packets\"]" },
+            { "action": "expect", "target": "role=status", "text": "Request sent" }
+          ]
+        }
+      ]
+    }
+  ],
+  "journeys": ["request-seed-packets"],
+  "themes": ["light"],
+  "locales": { "list": ["en-GB"], "default": "en-GB" }
+}

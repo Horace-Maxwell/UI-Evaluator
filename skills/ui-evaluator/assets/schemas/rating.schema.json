@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rating.schema.json",
+  "title": "One severity rater's blind ratings (METHODS §5 step 3; ADR-029)",
+  "type": "object",
+  "required": [
+    "rater",
+    "ratings"
+  ],
+  "properties": {
+    "schema": {
+      "const": "rating"
+    },
+    "run": {
+      "type": "string"
+    },
+    "rater": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "isolation": {
+      "enum": [
+        "subagent",
+        "process",
+        "single-context"
+      ]
+    },
+    "ratings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "frequency",
+          "impact",
+          "persistence",
+          "validity",
+          "note"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "frequency": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "impact": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "persistence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "business": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 2
+          },
+          "value": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "validity": {
+            "enum": [
+              "problem",
+              "trade_off",
+              "not_a_problem"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "if": {
+          "properties": {
+            "validity": {
+              "const": "not_a_problem"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "value": {
+              "type": "null"
+            }
+          }
+        },
+        "else": {
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            }
+          }
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  }
+}

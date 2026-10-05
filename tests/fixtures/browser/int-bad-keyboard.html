@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyboard defects</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; color: #1a1a1a; background: #fff; }
+  header.bar { position: sticky; top: 0; height: 96px; background: #fff; border-bottom: 1px solid #767676; z-index: 5; display: flex; align-items: center; gap: 16px; padding: 0 16px; }
+  a { color: #0b4f9c; }
+  a:hover { color: #062f5e; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  main { padding: 16px 16px 120px; }
+  .btn { font: inherit; padding: 10px 16px; border: 2px solid #0b4f9c; background: #fff; color: #0b4f9c; border-radius: 6px; }
+  .btn:hover { background: #e8f0fb; }
+  .noring:focus, .noring:focus-visible { outline: none; }
+  .clickable { cursor: pointer; display: inline-block; padding: 8px 12px; background: #eef2fb; }
+  .row { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 24px; }
+  .long { list-style: none; padding: 0; margin: 0; }
+  .long li { height: 48px; display: flex; align-items: center; }
+  .cookie { position: fixed; left: 0; right: 0; bottom: 0; height: 80px; background: #f4f4f4; border-top: 1px solid #767676; display: flex; align-items: center; gap: 16px; padding: 0 16px; }
+</style>
+</head>
+<body>
+  <!-- Defects seeded for the keyboard check:
+       #silent        no visible focus change (A11Y-04)
+       #div-click     clickable div, not focusable (A11Y-03, 2.1.1)
+       #span-role     role=button without tabindex (A11Y-03, 2.1.1)
+       #second-in-dom row-reverse puts it before #first-in-dom visually (A11Y-03, 2.4.3)
+       sticky header and fixed cookie bar without scroll-padding hide list links when focus moves (A11Y-05)
+       #popup-field   opens a window on focus (A11Y-03, 3.2.1) -->
+  <header class="bar"><a href="#main" id="home-link">Home</a><a href="#about" id="about-link">About</a></header>
+  <main id="main">
+    <h1>Keyboard defects</h1>
+    <p><button type="button" class="btn noring" id="silent">No focus ring</button></p>
+    <div class="clickable" id="div-click" onclick="this.textContent = 'Opened'">Open details</div>
+    <p><span role="button" id="span-role">Fake button</span></p>
+    <div class="row"><a href="#one" id="first-in-dom">First in DOM</a><a href="#two" id="second-in-dom">Second in DOM</a></div>
+    <h2>Archive</h2>
+    <ul class="long">
+      <li><a href="#a1">Archive item 1</a></li><li><a href="#a2">Archive item 2</a></li><li><a href="#a3">Archive item 3</a></li>
+      <li><a href="#a4">Archive item 4</a></li><li><a href="#a5">Archive item 5</a></li><li><a href="#a6">Archive item 6</a></li>
+      <li><a href="#a7">Archive item 7</a></li><li><a href="#a8">Archive item 8</a></li><li><a href="#a9">Archive item 9</a></li>
+      <li><a href="#a10">Archive item 10</a></li><li><a href="#a11">Archive item 11</a></li><li><a href="#a12">Archive item 12</a></li>
+      <li><a href="#a13">Archive item 13</a></li><li><a href="#a14">Archive item 14</a></li><li><a href="#a15">Archive item 15</a></li>
+      <li><a href="#a16">Archive item 16</a></li><li><a href="#a17">Archive item 17</a></li><li><a href="#a18">Archive item 18</a></li>
+      <li><a href="#a19">Archive item 19</a></li><li><a href="#a20">Archive item 20</a></li><li><a href="#a21">Archive item 21</a></li>
+      <li><a href="#a22">Archive item 22</a></li><li><a href="#a23">Archive item 23</a></li><li><a href="#a24">Archive item 24</a></li>
+    </ul>
+    <p><label for="popup-field">Promo code</label> <input id="popup-field" onfocus="window.open('about:blank')"></p>
+  </main>
+  <div class="cookie" id="cookie-bar">We use cookies for sign-in only. <button type="button" class="btn" id="cookie-ok">Got it</button></div>
+</body>
+</html>

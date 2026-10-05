@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "words-en.schema.json",
+  "title": "English copy lexicons for uie lint and the copy check (assets/data/words-en.json)",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "as_of",
+    "source",
+    "lists"
+  ],
+  "properties": {
+    "schema": {
+      "const": "words-en"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "as_of": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}$"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "note": {
+      "type": "string"
+    },
+    "lists": {
+      "type": "object",
+      "required": [
+        "gov_uk_words_to_avoid",
+        "ai_buzzwords",
+        "theatre_phrases",
+        "generic_hero_phrases",
+        "generic_ctas",
+        "aphorism_patterns",
+        "error_generic",
+        "error_blame",
+        "link_text_vague",
+        "placeholder_text",
+        "placeholder_identities"
+      ],
+      "properties": {
+        "gov_uk_words_to_avoid": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/list"
+            }
+          ],
+          "required": [
+            "attribution"
+          ],
+          "properties": {
+            "attribution": {
+              "const": "Contains public sector information licensed under the Open Government Licence v3.0."
+            }
+          }
+        },
+        "aphorism_patterns": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/list"
+            }
+          ],
+          "required": [
+            "min_count"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/list"
+      }
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "list": {
+      "type": "object",
+      "required": [
+        "entries"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]+-\\d{2}$"
+        },
+        "level": {
+          "enum": [
+            "gate",
+            "advisory"
+          ]
+        },
+        "static_level": {
+          "enum": [
+            "gate",
+            "advisory"
+          ]
+        },
+        "table": {
+          "enum": [
+            "A",
+            "B"
+          ]
+        },
+        "flags": {
+          "type": "string",
+          "pattern": "^[iu]*$"
+        },
+        "min_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "attribution": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": [
+        "pattern"
+      ],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flags": {
+          "type": "string",
+          "pattern": "^[iu]*$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "word": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instead": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "heuristic": {
+          "type": "boolean"
+        },
+        "ambiguous": {
+          "type": "boolean"
+        },
+        "also_table_b": {
+          "type": "boolean"
+        },
+        "cpy09_only": {
+          "type": "boolean"
+        },
+        "literal_after": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regular-expression source matched against the text right after a hit; a match marks a literal or domain use (CPY-19 exceptions) that is not a copy tell."
+        },
+        "literal_note": {
+          "type": "string"
+        },
+        "fragment": {
+          "type": "boolean",
+          "description": "Two-part aphorism shape: counts only when the second part has no finite verb (a slogan fragment, not a sentence)."
+        },
+        "note": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "technical": {
+          "type": "boolean",
+          "description": "The word has a common technical sense (robust estimators, statistical leverage, streamlines): in articles and documentation it is read as technical vocabulary, not a copy tell."
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "required": [
+            "word"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    }
+  }
+}

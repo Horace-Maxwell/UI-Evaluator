@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fix-review.schema.json",
+  "title": "Independent fix review (FRAMEWORK §10 step 10)",
+  "type": "object",
+  "required": [
+    "items",
+    "disposition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "fix-review"
+    },
+    "run": {
+      "type": "string"
+    },
+    "baseline_run": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "evidence_valid": {
+      "type": "boolean"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "verdict"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "confirmed_fixed",
+              "partially_fixed",
+              "not_fixed",
+              "recapture"
+            ]
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "regressions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "regression",
+              "tell_swap",
+              "collateral"
+            ]
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "location": {}
+        }
+      }
+    },
+    "disposition": {
+      "enum": [
+        "recapture",
+        "rebuild",
+        "fix",
+        "ship"
+      ]
+    },
+    "scope": {},
+    "isolation": {
+      "enum": [
+        "subagent",
+        "process",
+        "single-context"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  }
+}

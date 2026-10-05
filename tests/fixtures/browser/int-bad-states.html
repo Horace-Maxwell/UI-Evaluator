@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State defects</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; padding: 16px; color: #1a1a1a; background: #fff; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  a.plain { color: #0b4f9c; }
+  .flat { font: inherit; padding: 10px 16px; border: 2px solid #0b4f9c; background: #0b4f9c; color: #fff; border-radius: 6px; }
+  .ok { font: inherit; padding: 10px 16px; border: 2px solid #0b5cad; background: #fff; color: #0b5cad; border-radius: 6px; cursor: pointer; }
+  .ok:hover { background: #e7f0fa; }
+  .ok:active { background: #c9dcf1; }
+  .ok.faded:disabled { opacity: 0.15; cursor: not-allowed; }
+  .ok:disabled { background: #efefef; border-color: #8f8f8f; color: #595959; cursor: not-allowed; }
+  p { margin: 12px 0; }
+</style>
+</head>
+<body>
+  <!-- Defects seeded for the states check:
+       .flat buttons (#preview, #slow-flat)  no hover and no pressed state (CMP-01)
+       a.plain                               no hover state (CMP-01)
+       #slow-flat     1.5 s operation: no acknowledgement within 0.1 s and no progress (CMP-04)
+       #loading-btn   1.5 s operation with only a static "Loading…" (CMP-04)
+       #ghost         disabled with one cue: the attribute; it looks the same as enabled (CMP-03)
+       #faded         disabled at 15 % opacity: label and outline below 2:1 (CMP-03)
+       #create        primary submit disabled at rest: an H1/H9 candidate, not a CMP-03 hit (ADR-032)
+       Non-defects: .ok buttons have hover and pressed states; #quick responds at once. -->
+  <main>
+    <h1>Report settings</h1>
+    <p><a href="#help" class="plain" id="plain-link">Read the help page</a></p>
+    <p><button type="button" class="flat" id="preview">Preview</button></p>
+    <p><button type="button" class="flat" id="slow-flat">Generate report</button> <span id="slow-out"></span></p>
+    <p><button type="button" class="ok" id="loading-btn">Refresh data</button> <span id="load-out"></span></p>
+    <p><button type="button" class="ok" id="quick">Toggle details</button> <span id="quick-out"></span></p>
+    <p><button type="button" class="flat" id="ghost" disabled>Archive</button></p>
+    <p><button type="button" class="ok faded" id="faded" disabled>Export</button></p>
+    <form id="signup">
+      <p><label for="su-email">Email address</label> <input type="email" id="su-email" autocomplete="email"></p>
+      <p><button type="submit" class="ok" id="create" disabled>Create account</button></p>
+    </form>
+  </main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  $('slow-flat').addEventListener('click', () => setTimeout(() => { $('slow-out').textContent = 'Report ready'; }, 1500));
+  $('loading-btn').addEventListener('click', () => {
+    $('load-out').textContent = 'Loading…';
+    setTimeout(() => { $('load-out').textContent = 'Data refreshed'; }, 1500);
+  });
+  $('quick').addEventListener('click', () => { $('quick-out').textContent = $('quick-out').textContent ? '' : 'Details shown'; });
+  $('su-email').addEventListener('input', () => { $('create').disabled = !$('su-email').value; });
+  $('signup').addEventListener('submit', (e) => e.preventDefault());
+</script>
+</body>
+</html>

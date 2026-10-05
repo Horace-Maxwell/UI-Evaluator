@@ -1,0 +1,53 @@
+{
+  "_comment": "Example critical journey (ARCHITECTURE §8.2, journey.schema.json) for a fictional bicycle-parts inventory. Save real journeys as .ui-evaluator/journeys/<id>.json, one per critical or core task in PRODUCT.md. `uie journey <id>` replays correct_actions and checks success_condition (FUN-03). The walkthrough evaluator treats each action as one step and asks the four questions of METHODS §4.2 for the persona. Fields without their own note: id (the file name, lowercase words joined by hyphens), title (the task, verb first), goal (what the persona wants, in their own terms). Keys starting with _ are notes for people. Never put passwords or real personal data in a journey.",
+  "id": "record-delivery",
+  "title": "Record a delivery of parts",
+  "criticality": "critical",
+  "_criticality": "critical | core | peripheral, from the task's rank in PRODUCT.md. Peripheral journeys cap their findings at P2 (FRAMEWORK §4.5).",
+  "frequency": "frequent",
+  "_frequency": "frequent (several times a day) | regular (weekly) | occasional (a few times a year) | rare (once or twice). Used to rank journeys and by the motion frequency budget.",
+  "persona": {
+    "_comment": "Built from a user group in PRODUCT.md. knows and does_not_know drive the walkthrough's questions about whether the user will try, notice and connect the right action.",
+    "group": "Workshop staff who unpack supplier deliveries",
+    "knows": [
+      "part numbers as printed on delivery notes",
+      "which supplier each box comes from",
+      "how to use the shared workshop laptop"
+    ],
+    "does_not_know": [
+      "the inventory's own word for adding received stock",
+      "whether a delivery must match an order first"
+    ],
+    "context": "Standing at the workbench with the open box; the laptop is shared and interruptions are common"
+  },
+  "goal": "Make the shop's records match what has just arrived, so the parts can be sold today",
+  "scenario": "A box from your brake supplier has just arrived. The delivery note lists 12 sets of disc brake pads, part number BP-2207. Make sure the shop's records show that these 12 sets are now on the shelf.",
+  "_scenario": "Written for a person, with every detail needed and no words from the interface (no labels, menu names or icons). Task cards for user tests start from this text.",
+  "start_state": {
+    "_comment": "Where replay starts and what must exist first. Sign-in comes from a stored session or a seeded test account in the project's fixtures, never from credentials in this file.",
+    "url": "/parts",
+    "auth": "signed-in staff account from fixtures/staff.json",
+    "data": "part BP-2207 exists with 3 sets on hand; no open deliveries",
+    "locale": "en-GB",
+    "viewport_width": 1280
+  },
+  "success_condition": {
+    "_comment": "Observable and checkable by script; every predicate in all must hold after the last action. A predicate has a url (regular expression), or text with an optional target locator, or a target with a state.",
+    "all": [
+      { "url": "^/parts/BP-2207$" },
+      { "target": "role=status", "text": "12 sets added" },
+      { "text": "On hand: 15" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/parts" },
+    { "action": "fill", "target": "role=searchbox[name=\"Search parts\"]", "value": "BP-2207" },
+    { "action": "press", "target": "role=searchbox[name=\"Search parts\"]", "key": "Enter" },
+    { "action": "click", "target": "role=link[name=\"BP-2207 Disc brake pads\"]" },
+    { "action": "click", "target": "role=button[name=\"Record delivery\"]" },
+    { "action": "fill", "target": "role=spinbutton[name=\"Quantity received\"]", "value": "12" },
+    { "action": "click", "target": "role=button[name=\"Save delivery\"]" },
+    { "action": "expect", "target": "role=status", "text": "12 sets added" }
+  ],
+  "_correct_actions": "The one correct path, fixed before anyone walks it (METHODS §4.2). Actions: goto {url}; click {target}; fill {target, value}; press {key, optional target}; expect {text with optional target, or url, or target with state: visible, hidden, enabled, focused}. Targets are Playwright-style locators; prefer role plus accessible name, so replay also checks that controls are named."
+}

@@ -1,0 +1,584 @@
+/* Hollin Lane seed library: one stylesheet for the catalogue and the request form.
+   Colour, type and spacing values live in the token layer below; components only reference tokens. */
+
+:root {
+  color-scheme: light;
+
+  --color-paper: #f6f7f4;
+  --color-surface: #ffffff;
+  --color-ink: #1f2421;
+  --color-ink-muted: #4b5450;
+  --color-rule: #c9cfc9;
+  --color-control-edge: #6b766e;
+  --color-accent: #3d5a1f;
+  --color-accent-hover: #2f4717;
+  --color-accent-active: #243812;
+  --color-accent-tint: #eef2e6;
+  --color-hover-tint: #eef0ec;
+  --color-error: #a4161a;
+  --color-error-hover: #830f13;
+  --color-error-active: #690d0e;
+  --color-error-tint: #fbeceb;
+  --color-focus: #1f2421;
+
+  --font-body: "Iowan Old Style", "Charter", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  --font-heading: "Avenir Next", Avenir, "Segoe UI", "Trebuchet MS", sans-serif;
+
+  --text-small: 1rem;
+  --text-body: 1.125rem;
+  --text-h3: 1.5rem;
+  --text-h2: 1.875rem;
+  --text-h1: 2.5rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --radius-control: 6px;
+  --radius-panel: 8px;
+
+  --duration-feedback: 120ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+fieldset,
+legend {
+  margin: 0;
+  padding: 0;
+}
+
+fieldset {
+  border: 0;
+  min-width: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration-line: underline;
+  text-underline-offset: 0.15em;
+  transition: color var(--duration-feedback) ease-out;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+a:active {
+  color: var(--color-accent-active);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.skip-link:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  display: inline-block;
+  margin: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+/* Header and navigation */
+
+.site-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.site-header__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+}
+
+.site-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-family: var(--font-heading);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration-line: none;
+}
+
+.site-name:hover {
+  color: var(--color-accent);
+}
+
+.site-name:active {
+  color: var(--color-accent-active);
+}
+
+.site-name svg {
+  flex: none;
+}
+
+.site-nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  font-family: var(--font-heading);
+  font-size: var(--text-small);
+  color: var(--color-ink);
+  text-decoration-line: none;
+  transition: background-color var(--duration-feedback) ease-out;
+}
+
+.site-nav a:hover {
+  background: var(--color-hover-tint);
+}
+
+.site-nav a:active {
+  background: var(--color-accent-tint);
+}
+
+.site-nav a[aria-current="page"] {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.35em;
+}
+
+/* Page layout and type */
+
+.page {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.prose {
+  max-width: 36em;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--space-4);
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--space-3);
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.lede {
+  margin-bottom: var(--space-6);
+}
+
+.section {
+  margin-top: var(--space-7);
+}
+
+.steps {
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Forms */
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.search .field {
+  flex: 1 1 14rem;
+}
+
+.form-stack {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 36rem;
+}
+
+label,
+legend {
+  font-family: var(--font-heading);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="search"],
+input[type="email"],
+select {
+  width: 100%;
+  max-width: 24rem;
+  min-height: 44px;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-control-edge);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  transition: border-color var(--duration-feedback) ease-out;
+}
+
+input[type="text"]:hover,
+input[type="search"]:hover,
+input[type="email"]:hover,
+select:hover {
+  border-color: var(--color-ink);
+}
+
+input[type="text"]:active,
+input[type="search"]:active,
+input[type="email"]:active,
+select:active {
+  border-color: var(--color-accent);
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: var(--color-hover-tint);
+}
+
+.choice input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.choice input:hover,
+.choice input:active {
+  box-shadow: 0 0 0 2px var(--color-accent-tint);
+}
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  margin: 0;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-heading);
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background-color var(--duration-feedback) ease-out;
+}
+
+.button--primary {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.button--primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.button--primary:active {
+  background: var(--color-accent-active);
+}
+
+.button--secondary {
+  background: var(--color-surface);
+  border-color: var(--color-control-edge);
+  color: var(--color-ink);
+}
+
+.button--secondary:hover {
+  background: var(--color-hover-tint);
+}
+
+.button--secondary:active {
+  background: var(--color-accent-tint);
+}
+
+/* Catalogue results */
+
+.results {
+  margin-top: var(--space-6);
+}
+
+.result-count {
+  font-family: var(--font-heading);
+  font-size: var(--text-small);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+
+.varieties {
+  list-style: none;
+  border-top: 1px solid var(--color-rule);
+}
+
+.variety {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.variety dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-small);
+}
+
+.variety dt {
+  color: var(--color-ink-muted);
+}
+
+.notice {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+.notice--error {
+  border-color: var(--color-error);
+}
+
+.notice__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.notice progress {
+  width: 100%;
+  max-width: 24rem;
+  height: 12px;
+  accent-color: var(--color-accent);
+}
+
+/* Load states (?state=loading, ?state=error). The script in the head of index.html sets data-state on the root
+   before the first paint, so showing a state never moves content that is already on screen. */
+.load-state {
+  display: none;
+}
+
+:root[data-state="loading"] .load-state--loading,
+:root[data-state="error"] .load-state--error {
+  display: grid;
+}
+
+:root[data-state] .needs-catalogue {
+  display: none;
+}
+
+/* Request form feedback */
+
+.error-summary {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 36rem;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background: var(--color-error-tint);
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-panel);
+}
+
+.error-summary h2 {
+  font-size: var(--text-h3);
+  margin-bottom: 0;
+}
+
+.error-summary ul {
+  padding-left: var(--space-5);
+}
+
+.error-summary a {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* The rule above outranks a:hover and a:active (same specificity, later), so the summary links need their own states. */
+.error-summary a:hover {
+  color: var(--color-error-hover);
+}
+
+.error-summary a:active {
+  color: var(--color-error-active);
+}
+
+.confirmation:not(:empty) {
+  max-width: 36rem;
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-accent-tint);
+  border-radius: var(--radius-panel);
+}
+
+/* Footer */
+
+.site-footer {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-rule);
+}
+
+.site-footer__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

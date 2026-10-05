@@ -1,0 +1,452 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "config.schema.json",
+  "title": ".ui-evaluator/config.json (ARCHITECTURE §8.5)",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "work": {
+          "enum": [
+            "new",
+            "redesign",
+            "existing"
+          ]
+        },
+        "ai_features": {
+          "type": "boolean"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "app": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "base_url": {
+          "type": "string"
+        },
+        "ready_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "env": {
+          "type": "object"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "mode"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "persuade",
+              "operate",
+              "read",
+              "experience"
+            ]
+          },
+          "criticality": {
+            "enum": [
+              "critical",
+              "core",
+              "peripheral"
+            ]
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/action"
+                  }
+                }
+              },
+              "patternProperties": {
+                "^_": {}
+              }
+            }
+          },
+          "two_d_regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mask": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "patternProperties": {
+          "^_": {}
+        }
+      }
+    },
+    "matrix": {
+      "type": "object",
+      "properties": {
+        "widths": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 200
+          }
+        },
+        "height": {
+          "type": "integer"
+        },
+        "device_scale_factor": {
+          "type": "number"
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "light",
+              "dark"
+            ]
+          }
+        },
+        "preferences": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "default",
+              "reduced-motion"
+            ]
+          }
+        },
+        "g2_preferences": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "forced-colors",
+              "more-contrast"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "locales": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "type": "string"
+        },
+        "switch": {}
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "platform_profile": {
+      "enum": [
+        "web",
+        "apple",
+        "material",
+        "fluent",
+        "enterprise-zh"
+      ]
+    },
+    "depth": {
+      "enum": [
+        "quick",
+        "standard",
+        "rigorous"
+      ]
+    },
+    "target_level": {
+      "enum": [
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ]
+    },
+    "evaluator_models": {
+      "type": "object"
+    },
+    "fix_policy": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "direct",
+            "auto"
+          ]
+        },
+        "record": {
+          "enum": [
+            "commit",
+            "patch"
+          ]
+        },
+        "branch": {
+          "type": "string"
+        },
+        "max_attempts_per_finding": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "max_fixes_per_run": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "max_judgment_rounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "risk_pause_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "threshold_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion",
+          "reason",
+          "decided_by"
+        ],
+        "properties": {
+          "criterion": {
+            "type": "string"
+          },
+          "parameter": {
+            "type": "string"
+          },
+          "default": {},
+          "value": {},
+          "scope": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          },
+          "decided_by": {
+            "type": "string"
+          },
+          "review_by": {
+            "type": "string"
+          }
+        },
+        "patternProperties": {
+          "^_": {}
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "properties": {
+        "scrub_pii": {
+          "type": "boolean"
+        },
+        "roster": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "capture": {
+      "type": "object",
+      "description": "Capture settings.",
+      "properties": {
+        "clock": {
+          "type": "string",
+          "description": "ISO date-time the frozen page clock shows; default 10:00 UTC on the day the run was opened."
+        }
+      },
+      "additionalProperties": false
+    },
+    "audit": {
+      "type": "object",
+      "description": "Audit settings.",
+      "properties": {
+        "remote_assets": {
+          "type": "boolean",
+          "description": "Load a page's own remote assets (fonts, styles, images, media, scripts; GET only) so captures look as they do for visitors. Other remote requests are always blocked. Default true."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "action": {
+      "type": "object",
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "goto",
+            "click",
+            "dblclick",
+            "hover",
+            "focus",
+            "fill",
+            "select",
+            "check",
+            "uncheck",
+            "press",
+            "tab",
+            "scroll",
+            "wait",
+            "expect",
+            "screenshot",
+            "viewport",
+            "emulate"
+          ]
+        },
+        "url": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "shift": {
+          "type": "boolean"
+        },
+        "y": {
+          "type": "number"
+        },
+        "ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "state": {
+          "enum": [
+            "visible",
+            "hidden",
+            "enabled",
+            "disabled",
+            "focused",
+            "checked"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "full_page": {
+          "type": "boolean"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "colorScheme": {
+          "enum": [
+            "light",
+            "dark",
+            "no-preference"
+          ]
+        },
+        "reducedMotion": {
+          "enum": [
+            "reduce",
+            "no-preference"
+          ]
+        },
+        "forcedColors": {
+          "enum": [
+            "active",
+            "none"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    }
+  }
+}

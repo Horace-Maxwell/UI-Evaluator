@@ -1,0 +1,2581 @@
+{
+  "schema": "tells",
+  "version": 1,
+  "as_of": "2026-10",
+  "source": "skills/ui-evaluator/references/knowledge/anti-slop.md (hard SLP-01…15, soft SLP-20…26, catalogue additions SLP-27…46 and SLP-50…65); QUALITY-BAR G4 for the gated wording; default severities from tools/build-rules.mjs HARD_SEV (soft and experimental 1).",
+  "note": "Machine twin of the tell catalogue. `statement` repeats the QUALITY-BAR criterion for SLP-01…26; detect.params holds the exact detector thresholds. Experimental tells (SLP-50+) are reported as possible only and never count toward G4 or density. SLP-12 and SLP-13 can never be accepted through DESIGN.md.",
+  "count": 58,
+  "tells": {
+    "SLP-01": {
+      "id": "SLP-01",
+      "title": "Gradient text",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "background-clip: text with a gradient on the same element",
+      "looks_like": "A headline, metric or key word filled with a colour gradient through clipped text.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "css_clip": [
+            "background-clip: text",
+            "-webkit-background-clip: text"
+          ],
+          "requires": "a gradient background on the same element or rule",
+          "tailwind_clip": "bg-clip-text",
+          "tailwind_gradients": [
+            "bg-gradient-to-*",
+            "bg-linear-*",
+            "bg-radial*",
+            "bg-conic*",
+            "bg-[linear-gradient(...)]"
+          ],
+          "hook_tier": true
+        },
+        "summary": "CSS `background-clip: text` with a `gradient` in the same rule, or Tailwind `bg-clip-text` with `bg-gradient-to-*`; in the DOM, computed `background-clip: text` over a gradient background image. It runs in the per-edit hook tier."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "A rare brand moment the direction names, never on body text.",
+      "fix": "Decide which lever the type system gives emphasis (size, weight, position or a solid colour role) and use that token; if no emphasis rule exists, write one in `DESIGN.md` first. See [typography.md](typography.md).",
+      "sources": [
+        "CRAFT-017",
+        "IMP-014",
+        "07 A-CO6",
+        "A-DC1",
+        "impeccable `gradient-text`",
+        "gstack"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-02": {
+      "id": "SLP-02",
+      "title": "Default indigo-violet accent",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "gradient stops or filled CTA backgrounds in the indigo-violet band (OKLCH hue 260–310° with chroma ≥ 0.10 and lightness 0.25–0.85 [calibrating], or HSL hue 250–310° with saturation > 0.25 and 0.15 < L < 0.85), or from-/to-/bg-{purple,violet,indigo}-* utilities on calls to action, when the hue is not in the documented brand palette",
+      "looks_like": "Purple, violet or indigo gradient washes and filled calls to action that nothing in the brand explains.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "oklch": {
+            "hue_deg": [
+              260,
+              310
+            ],
+            "chroma_min": 0.1,
+            "lightness": [
+              0.25,
+              0.85
+            ],
+            "calibrating": true
+          },
+          "hsl": {
+            "hue_deg": [
+              250,
+              310
+            ],
+            "saturation_gt": 0.25,
+            "lightness_gt": 0.15,
+            "lightness_lt": 0.85
+          },
+          "tailwind_families": [
+            "purple",
+            "violet",
+            "indigo"
+          ],
+          "tailwind_prefixes": [
+            "from-",
+            "to-",
+            "bg-"
+          ],
+          "applies_to": [
+            "gradient stops",
+            "filled call-to-action backgrounds",
+            "palette utilities on calls to action"
+          ],
+          "exempt_when": "the hue is in the documented brand palette (DESIGN.md colours or ramps), or a declared AI-feature marker is accepted in DESIGN.md"
+        },
+        "summary": "The window is the union of Krebs' 250–300° and impeccable's 260–310°. The OKLCH branch exists because Tailwind `indigo-500` and `indigo-600` have HSL hues near 239° and 243°, outside the HSL window, while their OKLCH hues (about 277°) fall inside impeccable's 260–310°."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "status_note": "active (migrating in some model families, §5)",
+      "first_seen": "≤2025-08 (era 2024–25)",
+      "acceptable_via_brief": true,
+      "allowed_when": "The hue is in the documented brand palette; or the gradient is a declared AI-feature marker, the convention Semi Design encodes as tokens, recorded in `DESIGN.md` and passing contrast at its worst point.",
+      "fix": "Derive the accent from what the brand already owns and from the subject's world, give it one job (action, selection or state) under the declared colour strategy, and change it at the accent token. Moving to the next most probable accent (SLP-28) or to an untinted default grey is a swap; decide the neutral temperature deliberately too. See [color.md](color.md).",
+      "sources": [
+        "CRAFT-016",
+        "PLAT-067",
+        "PLAT-068",
+        "DSL-020",
+        "07 A-CO1",
+        "Krebs `isPurple`",
+        "impeccable `TellHue`"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-03": {
+      "id": "SLP-03",
+      "title": "Emoji or Unicode glyphs as icons",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "emoji or pictographic glyphs used as icons, bullets or navigation prefixes (chat and user content exempt)",
+      "looks_like": "Rockets, sparkles, bolts or check marks typed as characters in headings, list markers, buttons or navigation.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "contexts": [
+            "headings",
+            "list markers",
+            "buttons",
+            "navigation prefixes"
+          ],
+          "glyphs": "emoji and pictographic code points (Extended_Pictographic) and check marks typed as characters",
+          "exempt": [
+            "chat",
+            "social",
+            "user content"
+          ]
+        },
+        "summary": "emoji and pictographic code points in headings, list markers, buttons and navigation, in source and in the DOM (Krebs `sidebar-emoji`)."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "S",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04 (era 2024–25)",
+      "acceptable_via_brief": true,
+      "allowed_when": "Exempt by definition: chat, social and user content. Accept with a reason in casual products whose voice uses emoji as content.",
+      "fix": "Decide whether the item needs an icon at all; type alone is a valid answer. If it does, use the one icon family `DESIGN.md` names and pick the glyph for its meaning. See [components-states.md](components-states.md).",
+      "sources": [
+        "CRAFT-025",
+        "IMP-014",
+        "PLAT-127",
+        "DSL-030",
+        "07 A-IC1",
+        "A-IC3",
+        "Krebs",
+        "Hallmark gate 30"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-04": {
+      "id": "SLP-04",
+      "title": "Decorative side stripe",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "coloured side border ≥ 3 px (≥ 2 px if rounded), or ≥ 2× the other sides, on non-semantic cards, callouts or list items",
+      "looks_like": "A thick coloured border down one side of a card, callout or list item that marks no state.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "side_min_px": 3,
+          "side_min_px_rounded": 2,
+          "ratio_to_other_sides": 2,
+          "tailwind_side_min": 4,
+          "tailwind_side_min_rounded": 2,
+          "top_bottom_min_px_rounded_card": 3,
+          "out_of_scope": [
+            "links",
+            "inputs",
+            "table cells",
+            "buttons"
+          ],
+          "exempt": [
+            "real alerts",
+            "blockquotes",
+            "active navigation"
+          ],
+          "known_miss": "a stripe drawn as a separate narrow child element"
+        },
+        "summary": "`border-left/right/inline-start/end` in a non-neutral colour, Tailwind `border-l/r-N` with N ≥ 4 (N ≥ 2 if rounded), and accent top or bottom borders ≥ 3 px on rounded cards; links, inputs, table cells and buttons are out of scope. Known miss: a stripe drawn as a separate narrow child element."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "S",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "Exempt by definition: real alerts, blockquotes and active navigation, where the stripe is the state cue.",
+      "fix": "Name what the stripe was meant to signal. A state uses the state system's own cues, at least two of them; a grouping uses space; if it signals nothing, remove it. See [shape-depth.md](shape-depth.md).",
+      "sources": [
+        "CRAFT-014",
+        "IMP-014",
+        "PLAT-050",
+        "07 A-SU1",
+        "impeccable `side-tab`",
+        "Krebs `accent-stripe`",
+        "gstack"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-05": {
+      "id": "SLP-05",
+      "title": "Eyebrow or kicker labels",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "short uppercase or tracked label (≤ 14 px, letter-spacing ≥ 0.06em, 2–34 characters) directly above an h1–h4 ≥ 20 px, used more than ceil(sections ÷ 3) times on a page or split into a different grid column; any pill or eyebrow above an h1 ≥ 48 px",
+      "looks_like": "A small tracked or uppercase label stacked over section headings, or a pill badge over the hero headline.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "label_max_px": 14,
+          "tracking_min_em": 0.06,
+          "label_chars": [
+            2,
+            34
+          ],
+          "heading_levels": [
+            "h1",
+            "h2",
+            "h3",
+            "h4"
+          ],
+          "heading_min_px": 20,
+          "max_uses_per_page": "ceil(sections / 3)",
+          "split_grid_column": true,
+          "label_elements": [
+            "p",
+            "span",
+            "div",
+            "small"
+          ],
+          "hero": {
+            "h1_min_px": 48,
+            "label_chars": [
+              2,
+              60
+            ],
+            "label_max_px": 14,
+            "uppercase_tracking_min_px": 1.6,
+            "bold_min_weight": 700,
+            "dash_prefixed": true
+          },
+          "exempt": [
+            "document numbering",
+            "breadcrumbs",
+            "dates",
+            "meta lines"
+          ]
+        },
+        "summary": "the label is non-heading text (`p`, `span`, `div`, `small`); the hero variant is a 2–60 character label ≤ 14 px that is uppercase with ≥ 1.6 px tracking, bold (≥ 700) in an accent colour, or dash-prefixed."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M (S when on every section)",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "Exempt: document numbering, breadcrumbs, dates and meta lines. Accept when the label carries information (a count, a date, a real category) and never on consecutive sections.",
+      "fix": "Decide whether the label says something the heading does not. If it does, move that information into the heading or body, or make the label informative in the product's case convention; if not, delete it. Restyling an empty label clears the detector, not the problem. See [typography.md](typography.md).",
+      "sources": [
+        "CRAFT-018",
+        "IMP-014",
+        "IMP-025",
+        "DSL-031",
+        "07 A-TY4",
+        "C10",
+        "impeccable `kicker-above-heading`, `hero-eyebrow-chip`",
+        "Krebs `hero-eyebrow-pill`",
+        "Hallmark gate 54"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-06": {
+      "id": "SLP-06",
+      "title": "Icon-tile feature template",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "≥ 3 equal sibling cards, each with a 32–128 px near-square icon tile above a heading",
+      "looks_like": "A row of equal cards, each with an icon in a tinted rounded square, a bold title and two lines of text.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "min_cards": 3,
+          "tile_px": [
+            32,
+            128
+          ],
+          "tile_aspect": [
+            0.7,
+            1.4
+          ],
+          "tile_radius_lt": "width / 2",
+          "requires": [
+            "visible background or border",
+            "an icon child",
+            "directly above the heading"
+          ]
+        },
+        "summary": "tile aspect 0.7–1.4, visible background or border, radius < width/2 (not a circle), an icon child, directly above the heading."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "era 2024–25",
+      "acceptable_via_brief": true,
+      "allowed_when": "Content that genuinely comes in equal parts may pass with a note.",
+      "fix": "Let the content set count, order and weight: how many items exist, and do they matter equally? Showing the product doing the thing often replaces the row. Re-gridding the same items as a bento (SLP-50) is a swap, not a decision. See [layout.md](layout.md).",
+      "sources": [
+        "CRAFT-019",
+        "IMP-014",
+        "DSL-031",
+        "07 A-LA2",
+        "impeccable `icon-tile-stack`",
+        "gstack",
+        "Hallmark gate 3"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-07": {
+      "id": "SLP-07",
+      "title": "Card kit",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "a card-like element nested in a card-like ancestor; or identical box-shadow on ≥ 4 cards together with one radius ≥ 16 px on > 80% of rounded elements",
+      "looks_like": "Everything boxed: cards inside cards, or one soft grey shadow and one large radius on every container.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "identical_shadow_min_cards": 4,
+          "radius_min_px": 16,
+          "radius_share_gt": 0.8,
+          "card_like": "a border or shadow plus a radius or background",
+          "impeccable_card_min_box_px": [
+            50,
+            30
+          ],
+          "impeccable_card_min_text_chars": 10
+        },
+        "summary": "QUALITY-BAR: a card-like element nested in a card-like ancestor; or identical `box-shadow` on ≥ 4 cards together with one radius ≥ 16 px on > 80% of rounded elements. Card-like means a border or shadow plus a radius or background; impeccable also requires ≥ 50 × 30 px and ≥ 10 characters of text. A hairline border with a wide shadow on one element is SHP-02 (G3), not this tell."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "The card is the object the user acts on, as in kanban boards and product tiles.",
+      "fix": "Decide one depth strategy for the product (borders, subtle shadows, layered shadows or tonal surfaces) and, per container, whether it is an object or a group; groups get proximity, type and dividers. See [shape-depth.md](shape-depth.md).",
+      "sources": [
+        "CRAFT-022",
+        "CRAFT-023",
+        "CRAFT-042",
+        "PLAT-032",
+        "IMP-014",
+        "07 A-LA4",
+        "A-SU4",
+        "impeccable `nested-cards`",
+        "Anthropic skill v3",
+        "OpenAI frontend guide"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-08": {
+      "id": "SLP-08",
+      "title": "Decorative glow",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "zero-offset chromatic shadow (CIE LCh chroma ≥ 30, blur > 4 px); chromatic blurred shadow on a ground with luminance < 0.1; chromatic radial washes behind heroes, unless named in the direction",
+      "looks_like": "Coloured halos round buttons and cards, neon edges on near-black, or a soft coloured bloom behind the hero.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "cie_lch_chroma_min": 30,
+          "blur_gt_px": 4,
+          "zero_offset": true,
+          "dark_ground_luminance_lt": 0.1,
+          "bloom_footprint_cap": [
+            0.2,
+            0.3
+          ],
+          "variants": [
+            "zero-offset chromatic shadow",
+            "dark-neon: chromatic blurred shadow on a ground with luminance < 0.1",
+            "chromatic radial wash behind a hero"
+          ]
+        },
+        "summary": "impeccable `dark-glow` (per-edit tier), `radial-halo` (a chromatic `radial-gradient` fading to transparent on a dark page) and `radial-spotlight-glow` (a low-opacity accent spotlight)."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M (W for the dark-neon look alone)",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "The direction names the light as part of the subject's world; atmospheric genres may keep one static bloom, which Hallmark caps at 20–30% of the footprint. Expect false positives on brands that built this look by hand.",
+      "fix": "Decide where light comes from in this product's world. If nowhere, express depth through the declared elevation system, with an offset; if somewhere, write it into the direction contract so the tell becomes requested. See [shape-depth.md](shape-depth.md).",
+      "sources": [
+        "CRAFT-021",
+        "CRAFT-042",
+        "IMP-023",
+        "07 A-CO2",
+        "A-CO10",
+        "C2",
+        "impeccable",
+        "Hallmark gate 29"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-09": {
+      "id": "SLP-09",
+      "title": "Uniform entrance animation",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "the same entrance keyframes or variants on ≥ 3 sections",
+      "looks_like": "Every section fades and rises into view the same way as the page scrolls.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "min_sections": 3,
+          "provisional": true,
+          "provisional_note": "rated weak alone; the owner may disposition it with a reason, as for a soft tell"
+        },
+        "summary": "identical keyframes or motion variants in source; in the DOM, elements at opacity 0 with a transform before scrolling."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W alone",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-06",
+      "acceptable_via_brief": true,
+      "allowed_when": "A real list appearing as a list, with a capped total stagger.",
+      "fix": "Decide the one authored moment the surface mode allows (Persuade and Experience: at most one orchestrated sequence; Operate and Read: nothing beyond one page fade) and let everything else be visible at rest. See [motion.md](motion.md).",
+      "sources": [
+        "CRAFT-028",
+        "IMP-021",
+        "07 A-MO1",
+        "C11",
+        "Anthropic skill v3",
+        "impeccable craft floor"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-10": {
+      "id": "SLP-10",
+      "title": "Fake chrome",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "traffic-light title bars, mock URL pills, CSS or SVG device frames, div-built \"screenshots\" of dashboards or terminals",
+      "looks_like": "Browser bars with three coloured dots, mock URL pills, CSS phone frames, or a dashboard or terminal assembled from boxes to pass as a screenshot.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom",
+          "pix"
+        ],
+        "params": {
+          "signals": [
+            "three small red, yellow and green circles in a title bar",
+            "a mock URL pill",
+            "CSS or SVG device frames",
+            "div-built screenshots of dashboards or terminals"
+          ],
+          "confirm_on": "screenshot",
+          "exempt": [
+            "real screenshots in a <figure>"
+          ]
+        },
+        "summary": "three small red, yellow and green circles in a title bar, a mock URL pill, nested box \"screens\", confirmed on the screenshot."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M–S",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-08",
+      "acceptable_via_brief": true,
+      "allowed_when": "Exempt: real screenshots in a `<figure>`. Accept with a reason when a developer tool shows its actual output.",
+      "fix": "Decide what the visual must prove and show the real thing: a real screenshot, a small working component, or a labelled slot reported to the owner.",
+      "sources": [
+        "CRAFT-026",
+        "CRAFT-045",
+        "DSL-034",
+        "07 A-IM1",
+        "Hallmark gate 47",
+        "taste-skill"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-11": {
+      "id": "SLP-11",
+      "title": "Simulated liveness",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "pulsing dots, blinking cursors outside inputs, marquees, count-up numbers not tied to live data",
+      "looks_like": "Pulsing status dots, blinking cursors outside inputs, scrolling logo marquees and counters that tick up on load.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {
+          "signals": [
+            "infinite keyframes on small round elements",
+            "marquee or scroll keyframes",
+            "blinking cursors outside inputs",
+            "count-up scripts not tied to live data"
+          ],
+          "exempt": "indicators bound to genuinely live data"
+        },
+        "summary": "infinite keyframes on small round elements, marquee or scroll keyframes, counter scripts."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "[unverified]",
+      "acceptable_via_brief": true,
+      "allowed_when": "The indicator is bound to genuinely live data.",
+      "fix": "Decide whether the data is live. If it is, bind the indicator to it and label what it shows; if not, make it static. See [motion.md](motion.md).",
+      "sources": [
+        "CRAFT-027",
+        "07 A-MO4",
+        "impeccable `pulsing-dot`, `blinking-cursor`, `marquee`",
+        "avoid-ai-design"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-12": {
+      "id": "SLP-12",
+      "title": "Fabricated proof",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "numbers, \"trusted by\" logo sets, testimonials, ratings, badges or customer names absent from the facts section and not labelled as placeholders",
+      "looks_like": "Usage numbers, logo walls, testimonials, star ratings, compliance badges or uptime figures that nobody supplied.",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy",
+          "src",
+          "dom"
+        ],
+        "params": {
+          "claim_kinds": [
+            "usage numbers",
+            "percent and multiplier claims",
+            "star ratings",
+            "trusted-by logo sets",
+            "testimonials",
+            "compliance badges",
+            "customer names"
+          ],
+          "compare_with": "PRODUCT.md, Facts section",
+          "exempt": [
+            "facts listed in PRODUCT.md",
+            "visibly labelled placeholders",
+            "labelled sample data inside a product mock-up"
+          ],
+          "acceptable_via_brief": false
+        },
+        "summary": "numerals with %, × or stars, logo sets and testimonial blocks compared with the facts section in `PRODUCT.md`; Krebs' stat-banner geometry flags candidates (SLP-30)."
+      },
+      "default_severity": 3,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "S",
+      "reliability_note": "S when false",
+      "audience": null,
+      "audience_note": "n/a (honesty, P12)",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-08",
+      "acceptable_via_brief": false,
+      "allowed_when": "The fact is in the facts section, or clearly labelled sample data sits inside a product mock-up. An `accepted_tells` entry cannot make an invented claim acceptable (§1).",
+      "fix": "Ask the owner for the facts. Otherwise use a visible placeholder or remove the section; never make an invented figure look more plausible, and never show third-party logos without evidence of the relationship. See [content-copy.md](content-copy.md).",
+      "sources": [
+        "CRAFT-007",
+        "IMP-028",
+        "DSL-051",
+        "07 A-FC1…A-FC4",
+        "A-DC4",
+        "C6",
+        "Hallmark gate 46"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-13": {
+      "id": "SLP-13",
+      "title": "Placeholder identities",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "\"Jane Doe\", \"John Smith\", \"Acme\", example.com addresses and similar in shipped UI outside labelled demo data",
+      "looks_like": "Stock personal names, a fictitious company and example addresses left in shipped screens.",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy",
+          "src"
+        ],
+        "params": {
+          "lexicons": [
+            "words-en.json#placeholder_identities",
+            "words-zh.json#placeholder_identities"
+          ],
+          "exempt": [
+            "wireframes",
+            "visibly labelled demo data"
+          ],
+          "not_this_tell": {
+            "broken placeholder images": "FUN-04",
+            "lorem ipsum": "CPY-01"
+          }
+        },
+        "summary": "a lexicon of placeholder people, companies and domains; broken placeholder images are FUN-04 and lorem ipsum is CPY-01."
+      },
+      "default_severity": 3,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "S",
+      "audience": null,
+      "audience_note": "n/a (honesty, P12)",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-08",
+      "acceptable_via_brief": false,
+      "allowed_when": "Wireframes and visibly labelled demo data.",
+      "fix": "Replace with real content from the owner, or label the demo data where users see it. See [content-copy.md](content-copy.md).",
+      "sources": [
+        "CRAFT-007",
+        "DSL-053",
+        "02 §3.1 C4",
+        "07 A-FC5",
+        "Hallmark gate 19",
+        "taste-skill"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-14": {
+      "id": "SLP-14",
+      "title": "Copy tells",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "buzzword or theatre-phrase hits; ≥ 3 aphoristic constructions; generic hero copy; ≥ 8 em dashes at ≥ 1 per 500 characters of Latin-script text (the Chinese 破折号 —— is standard punctuation and is not counted)",
+      "looks_like": "Buzzword-heavy lines, slogans built on manufactured contrast, launch-theatre phrases, headlines that fit any product, and dense em dashes.",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy"
+        ],
+        "params": {
+          "buzzword_hits_min": 1,
+          "aphorism_min": 3,
+          "generic_hero_hits_min": 1,
+          "em_dash": {
+            "count_min": 8,
+            "per_chars": 500,
+            "latin_script_only": true,
+            "excluded": "the Chinese 破折号 —— (standard punctuation)",
+            "body_text_only": true
+          },
+          "lexicons": [
+            "words-en.json#ai_buzzwords",
+            "words-en.json#theatre_phrases",
+            "words-en.json#generic_hero_phrases",
+            "words-en.json#aphorism_patterns"
+          ],
+          "exempt": [
+            "quoted customer language",
+            "one deliberate aphorism",
+            "correct dashes below the density threshold"
+          ]
+        },
+        "summary": "impeccable's 29-phrase buzzword list (any hit) with gstack's additions; aphoristic shapes such as `Not a X. A Y.` and `X. No Y.` plus negation pivots, counted from 3; theatre and generic-hero phrase lists; dashes counted in body text only. The lexicons live in [content-copy.md](content-copy.md)."
+      },
+      "default_severity": 2,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M at density (W per instance)",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "Quoted customer language and one deliberate aphorism. Correct dashes below the density threshold are never flagged; ui-craft's lower threshold for UI chrome is not adopted, and dash-built labels are SLP-27.",
+      "fix": "Decide what the product literally does, for whom, in the user's words, and test the line with the swap test: would it fit a competitor unchanged? Delete rather than rephrase into a new formula.",
+      "sources": [
+        "CRAFT-024",
+        "CRAFT-058",
+        "IMP-027",
+        "PLAT-121",
+        "DSL-053",
+        "07 A-CP1…A-CP5",
+        "C5",
+        "impeccable",
+        "gstack"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-15": {
+      "id": "SLP-15",
+      "title": "Generic CTA set",
+      "class": "hard",
+      "gate": "G4",
+      "statement": "the only calls to action are generic (\"Get started\", \"Learn more\" and equivalents)",
+      "looks_like": "Every call to action on the page is a generic start or learn label.",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy",
+          "dom"
+        ],
+        "params": {
+          "lexicon": "words-en.json#generic_ctas",
+          "condition": "every call to action on the page is generic",
+          "link_text_alone": "CPY-02"
+        },
+        "summary": "QUALITY-BAR: the only calls to action are generic (\"Get started\", \"Learn more\" and equivalents). Equivalents include `Click here`, `Submit` and `OK`. Link text on its own is CPY-02 (G3)."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-06",
+      "acceptable_via_brief": true,
+      "allowed_when": "Nothing is flagged once at least one call to action names its outcome.",
+      "fix": "Name each action's outcome with the product's own verbs, and keep one label per intent through the flow. See [content-copy.md](content-copy.md).",
+      "sources": [
+        "CRAFT-024",
+        "CRAFT-056",
+        "DSL-052",
+        "07 A-CP6",
+        "gstack",
+        "ui-craft"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-20": {
+      "id": "SLP-20",
+      "title": "Saturated display or only face without a recorded reason (dated list)",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Saturated display or only face without a recorded reason (dated list)",
+      "looks_like": "The display voice, or the only face, is on the dated list in §6.2 and `DESIGN.md` gives no reason.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "src"
+        ],
+        "params": {
+          "cluster_text_share_min": 0.25,
+          "roles": [
+            "display",
+            "only face"
+          ],
+          "list": "saturated-faces.json",
+          "sources_in_code": [
+            "font-family",
+            "Google Fonts URLs",
+            "next/font imports"
+          ]
+        },
+        "summary": "dom: the first non-generic family of body text and of display roles, and each family's share of rendered text, warning on a cluster face at ≥ 25% of text or on headings; src: `font-family`, Google Fonts URLs and `next/font` imports."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W alone (first-order faces), M (second-order cluster)",
+      "audience": "P0",
+      "audience_note": "P0 first-order, P1 cluster",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2025-11",
+      "acceptable_via_brief": true,
+      "allowed_when": "Exempt: brand faces on their own domain, and a declared body and UI face on Operate and Read surfaces. Accept when `DESIGN.md` records the job the face does that no other candidate does; an association with the subject alone is not that reason.",
+      "fix": "Write voice words from the subject's physical world, name your reflex faces and set them aside, search a licensed catalogue or foundry with the words, then check the pick against §6.2 and the last three ledger entries. Record the reason and the verified licence. See [typography.md](typography.md).",
+      "sources": [
+        "CRAFT-009",
+        "CRAFT-015",
+        "IMP-013",
+        "DSL-011",
+        "07 A-TY1",
+        "A-TY2",
+        "C1",
+        "C12",
+        "02 §3.2 X4",
+        "impeccable `overused-font`",
+        "Krebs `slop-fonts`",
+        "gstack"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-21": {
+      "id": "SLP-21",
+      "title": "Second-order house looks when unrequested",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Second-order house looks when unrequested: cream ground + high-contrast serif + terracotta; near-black + single acid accent; broadsheet hairlines + italic serif + tracked mono labels",
+      "looks_like": "cream ground + high-contrast serif + terracotta; near-black + single acid accent; broadsheet hairlines + italic serif + tracked mono labels.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "pix",
+          "jdg"
+        ],
+        "params": {
+          "cream": {
+            "min_rgb": 209,
+            "order": "R >= G >= B",
+            "r_minus_b": [
+              6,
+              48
+            ]
+          },
+          "near_black": {
+            "ground_luminance_lt": 0.05,
+            "accent_hue_deg": [
+              [
+                90,
+                150
+              ],
+              [
+                10,
+                30
+              ]
+            ],
+            "calibrating": true
+          },
+          "broadsheet": "judged on screenshots"
+        },
+        "summary": "Cream: page background with min(R,G,B) ≥ 209, R ≥ G ≥ B and 6 ≤ R−B ≤ 48 (impeccable `is_cream_color`), with a high-contrast or italic serif display and a terracotta or clay accent. Near-black: ground luminance < 0.05 with one high-chroma accent at hue 90–150° or 10–30°. Broadsheet: hairline rules, zero radius, dense columns and tiny tracked mono labels, judged on screenshots. Report each as a second-order default."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "rising",
+      "first_seen": "≤2026-04",
+      "acceptable_via_brief": true,
+      "allowed_when": "The brief or brand asks for it; genuine heritage, editorial and publication identities.",
+      "fix": "Return to the direction process: was the look guessable from the category, or from the category plus avoidance? Name a concrete referent before choosing a colour strategy, draw candidates from the audience's world, and take the seeded deal. See [brand-expression.md](brand-expression.md).",
+      "sources": [
+        "CRAFT-020",
+        "IMP-012",
+        "IMP-054",
+        "07 A-CO3",
+        "A-CO4",
+        "A-LA10, §2.3",
+        "impeccable `cream-palette`",
+        "Anthropic skill v2 and v3"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-22": {
+      "id": "SLP-22",
+      "title": "SaaS hero formula",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "SaaS hero formula: badge + oversized centred headline + two CTAs incl. gradient primary + decorative orb + generic copy",
+      "looks_like": "badge + oversized centred headline + two CTAs incl. gradient primary + decorative orb + generic copy.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "copy"
+        ],
+        "params": {
+          "parts": [
+            "badge",
+            "oversized centred headline",
+            "two CTAs incl. gradient primary",
+            "decorative orb",
+            "generic copy"
+          ]
+        },
+        "summary": "dom: a hero with `text-align: center` holding an h1, ≥ 2 buttons and an eyebrow (Krebs `centered-hero`), or eyebrow, title, lede and CTA on one centred axis (Hallmark gate 6). Flag the formula, not centring itself; its parts also count as their own tells (SLP-02, SLP-05, SLP-08, SLP-14)."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "era 2024–25",
+      "acceptable_via_brief": true,
+      "allowed_when": "Manifesto and launch pages where the message is the design.",
+      "fix": "Decide what the first viewport must prove, usually the most characteristic thing in the subject's world, and give it one call-to-action group. Moving the same parts off-centre is a swap (SLP-44). See [layout.md](layout.md).",
+      "sources": [
+        "07 A-LA1",
+        "C13",
+        "DSL-032",
+        "Krebs",
+        "Hallmark gate 6",
+        "taste-skill"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-23": {
+      "id": "SLP-23",
+      "title": "Radius monotony",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Radius monotony: > 80% of non-zero radii share one value ≥ 16 px without a documented system",
+      "looks_like": "> 80% of non-zero radii share one value ≥ 16 px without a documented system.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "src"
+        ],
+        "params": {
+          "share_gt": 0.8,
+          "radius_min_px": 16,
+          "documented_system_exempt": true
+        },
+        "summary": "A computed `border-radius` histogram over rounded elements, with radius utilities in source (gstack's threshold)."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-09",
+      "acceptable_via_brief": true,
+      "allowed_when": "A documented all-pill or all-soft system applied by rule.",
+      "fix": "Decide a radius scale by component role and size, with concentric nesting, and record it. See [shape-depth.md](shape-depth.md).",
+      "sources": [
+        "CRAFT-023",
+        "CRAFT-043",
+        "PLAT-032",
+        "PLAT-071",
+        "DSL-028",
+        "07 A-SU2",
+        "gstack"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-24": {
+      "id": "SLP-24",
+      "title": "Mixed icon libraries, or default glyphs in default roles",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Mixed icon libraries, or default glyphs in default roles",
+      "looks_like": "Two icon sets on one page, Unicode filling the gaps, or the stock glyph per role: sparkles for AI, a bolt for speed, a shield for security, an arrow on every button.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "default_role_imports": [
+            "Sparkles",
+            "Zap",
+            "Shield",
+            "ArrowRight"
+          ],
+          "mixed_packages_gt": 1
+        },
+        "summary": "src: more than one icon package imported; default-role imports such as `Sparkles`, `Zap`, `Shield` or `ArrowRight` in feature and CTA components; dom: mixed SVG stroke widths."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "audience_note": "P1 (P0 for the AI sparkle)",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-08",
+      "acceptable_via_brief": true,
+      "allowed_when": "The library is a brand choice; only default glyphs in default roles and mixed families are the tell.",
+      "fix": "Decide one family with a reason, pick each glyph for its meaning, and label AI features in words. See [components-states.md](components-states.md) and [ai-features.md](ai-features.md).",
+      "sources": [
+        "CRAFT-025",
+        "CRAFT-044",
+        "DSL-030",
+        "07 A-IC2",
+        "A-IC3",
+        "C17",
+        "NN/g 2024"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-25": {
+      "id": "SLP-25",
+      "title": "Structure that carries no information",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Structure that carries no information: 01/02/03 markers on non-sequential content, monospace meta labels, unmotivated italic accent word in a headline",
+      "looks_like": "01/02/03 markers on non-sequential content, monospace meta labels, unmotivated italic accent word in a headline.",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "copy"
+        ],
+        "params": {
+          "mono_exempt": [
+            "code",
+            "pre",
+            "kbd",
+            "samp",
+            "data cells"
+          ],
+          "accent_run_heading_min_px": 32,
+          "accent_run_heading_max_chars": 140
+        },
+        "summary": "dom: small numeric labels beside section headings, repeated across sections (impeccable `numbered-section-labels`); a monospace family on text outside `code`, `pre`, `kbd`, `samp` and data cells; inside a heading ≥ 32 px and ≤ 140 characters, a run with a different family, style or colour (Krebs `hero-font-mix`)."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "rising",
+      "first_seen": "≤2026-06",
+      "acceptable_via_brief": true,
+      "allowed_when": "Real sequences such as steps and timelines; monospace in developer tools and tabular data; an editorial register that commits to the contrast throughout.",
+      "fix": "Ask what each device encodes; keep it only where that is true, and otherwise carry emphasis in the whole headline's treatment. See [typography.md](typography.md).",
+      "sources": [
+        "IMP-025",
+        "IMP-054",
+        "01 §3.3 C7",
+        "07 A-LA6",
+        "A-TY8",
+        "A-TY3",
+        "Anthropic skill v2 and v3",
+        "Anthropic Opus 5.5 docs"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-26": {
+      "id": "SLP-26",
+      "title": "Motion clichés",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Motion clichés: image hover zoom, uniform hover-scale on unrelated elements, > 1 simultaneous hover property change",
+      "looks_like": "image hover zoom, uniform hover-scale on unrelated elements, > 1 simultaneous hover property change.",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {
+          "hover_property_changes_gt": 1,
+          "image_hover_scale": true
+        },
+        "summary": "`:hover` with `transform: scale` on images (impeccable `image-hover-transform`); the same hover scale on unrelated elements; more than one property changing on hover on one element."
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": "P1",
+      "precision": null,
+      "status": "active",
+      "first_seen": "≤2026-08",
+      "acceptable_via_brief": true,
+      "allowed_when": "The sources list no default exception; accept only with a reason tied to the direction.",
+      "fix": "Decide which element is actionable and give feedback on that container with one property, gated to hover-capable pointers. See [motion.md](motion.md).",
+      "sources": [
+        "CRAFT-028",
+        "DSL-049",
+        "07 A-MO2",
+        "Hallmark gates 11 and 13",
+        "impeccable"
+      ],
+      "counts_toward_g4": true
+    },
+    "SLP-27": {
+      "id": "SLP-27",
+      "title": "Typographic template chrome",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Typographic template chrome: A · B · C meta strings, WORD — fragment labels, an arrow appended to every link and button, version stamps",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy",
+          "src"
+        ],
+        "params": {
+          "counts_calibrating": true
+        },
+        "summary": "copy, src: middle dots and spaced dashes in short labels, trailing arrows on all links and buttons in a region [counts calibrating]; exempt: one middle dot in a metadata line, an arrow on a genuinely directional control"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-TY9",
+      "counts_toward_g4": true,
+      "sources": [
+        "IMP-012",
+        "07 A-TY9",
+        "07 C5"
+      ]
+    },
+    "SLP-28": {
+      "id": "SLP-28",
+      "title": "Purple-escape accent",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Purple-escape accent: emerald or teal as the sole accent with no brief reason",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "sole_accent_hue_deg": [
+            150,
+            175
+          ],
+          "calibrating": true
+        },
+        "summary": "dom: sole accent hue ≈ 150–175° [07 heuristic; calibrating]; exempt: finance, health or success semantics"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "status_note": "rising (successor of SLP-02)",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO5",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-011",
+        "07 A-CO5"
+      ]
+    },
+    "SLP-29": {
+      "id": "SLP-29",
+      "title": "Perma-dark muted copy",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Perma-dark muted copy",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "body_text_below_aaa_share_min": 0.12
+        },
+        "summary": "dom: dark theme with ≥ 12% of body-text samples below AAA contrast (Krebs `perma-dark`); below AA it is A11Y-11, not a tell"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M/S",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO7",
+      "counts_toward_g4": true,
+      "sources": [
+        "07 A-CO7",
+        "COL-04"
+      ]
+    },
+    "SLP-30": {
+      "id": "SLP-30",
+      "title": "Hero-metric template",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Hero-metric template: big number, small label, supporting stats",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "row_children": [
+            3,
+            6
+          ],
+          "row_min_width_px": 300,
+          "number_min_px": 22,
+          "number_max_chars": 10,
+          "gradient_numeral_min_px": 48
+        },
+        "summary": "dom: row of 3–6 children ≥ 300 px wide, each with a ≥ 22 px number ≤ 10 characters (Krebs `stat-banner`); a ≥ 48 px numeral with gradient clip; exempt: sourced metrics that matter to the reader, a dashboard's primary KPI; unsourced numbers are SLP-12"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA5, A-DC1",
+      "counts_toward_g4": true,
+      "sources": [
+        "IMP-014",
+        "07 A-LA5",
+        "A-DC1"
+      ]
+    },
+    "SLP-31": {
+      "id": "SLP-31",
+      "title": "Framework default accent as the brand primary (extends SLP-02)",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Framework default accent as the brand primary (extends SLP-02)",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "tailwind_defaults": [
+            "#6366F1",
+            "#4F46E5",
+            "#7C3AED",
+            "#2563EB"
+          ],
+          "match_tolerance_calibrating": true
+        },
+        "summary": "src, dom: the primary equals a Tailwind default such as v3 `#6366F1` (indigo-500), `#4F46E5` (indigo-600), `#7C3AED` (violet-600), `#2563EB` (blue-600) or their v4 OKLCH values [match tolerance calibrating]; exempt: a value the brand owns, recorded in `DESIGN.md`"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO1",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-020",
+        "05 §2.10",
+        "02 §2.1"
+      ]
+    },
+    "SLP-32": {
+      "id": "SLP-32",
+      "title": "Centred everything",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Centred everything",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "centred_share_gt": 0.6
+        },
+        "summary": "dom: > 60% of text containers with `text-align: center` (gstack); exempt: short marketing moments, ceremonial pages"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA8",
+      "counts_toward_g4": true,
+      "sources": [
+        "07 A-LA8"
+      ]
+    },
+    "SLP-33": {
+      "id": "SLP-33",
+      "title": "Split section header",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Split section header: a big heading in one grid column, its lede floating in another",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "calibrating": true
+        },
+        "summary": "dom: heading and lede of one section header in > 1 grid column [Hallmark gate 54 geometry applied to the lede; calibrating]; label-over-heading splits stay SLP-05; exempt: real two-column content"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA11",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-031",
+        "07 A-LA11"
+      ]
+    },
+    "SLP-34": {
+      "id": "SLP-34",
+      "title": "Decorative glass",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Decorative glass",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "glass_containers_gt": 1
+        },
+        "summary": "src, dom: `backdrop-filter: blur` on > 1 container (gstack); exempt: overlays on imagery or maps, floating navigation with a solid fallback under reduced transparency, 1–2 glass surfaces with a recorded purpose"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M (over-blamed, 0.2% of complaints)",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-SU5",
+      "counts_toward_g4": true,
+      "sources": [
+        "PLAT-075",
+        "DSL-079",
+        "07 A-SU5",
+        "02 §3.2 X17"
+      ]
+    },
+    "SLP-35": {
+      "id": "SLP-35",
+      "title": "Blueprint and grain textures",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Blueprint and grain textures",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {
+          "signals": [
+            "tiled hairline linear-gradient layers with a fixed px cell",
+            "repeating-linear-gradient stripes",
+            "SVG feTurbulence noise"
+          ]
+        },
+        "summary": "src: tiled hairline `linear-gradient` layers with a fixed px cell, `repeating-linear-gradient` stripes, SVG `feTurbulence` noise; exempt: real canvas, map or measurement surfaces, texture the direction names from the subject's world"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-SU6",
+      "counts_toward_g4": true,
+      "sources": [
+        "IMP-023",
+        "IMP-054",
+        "07 A-SU6",
+        "C2"
+      ]
+    },
+    "SLP-36": {
+      "id": "SLP-36",
+      "title": "Costume block shadow",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Costume block shadow",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {
+          "blur_px": 0,
+          "offsets": "positive"
+        },
+        "summary": "src: `box-shadow` with zero blur and positive offsets; exempt: a committed neo-brutalist direction"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-SU7",
+      "counts_toward_g4": true,
+      "sources": [
+        "IMP-023",
+        "07 A-SU7"
+      ]
+    },
+    "SLP-37": {
+      "id": "SLP-37",
+      "title": "Generic or generated imagery",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Generic or generated imagery",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {
+          "signals": [
+            "placeholder image hosts in shipped UI"
+          ]
+        },
+        "summary": "src: placeholder image hosts in shipped UI; pix, jdg: generic stock, glossy 3D blobs, generated people; exempt: labelled placeholders, art-directed generated images that are labelled and never shown as people in testimonials"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M–S",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-IM3",
+      "counts_toward_g4": true,
+      "sources": [
+        "CRAFT-045",
+        "07 A-IM3",
+        "C14"
+      ]
+    },
+    "SLP-38": {
+      "id": "SLP-38",
+      "title": "Buried or faked material",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Buried or faked material",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {
+          "wash_stop_alpha_min": 0.9,
+          "image_opacity_lt": 0.15,
+          "polygon_vertices_min": 10,
+          "path_curve_segments_min": 3
+        },
+        "summary": "src, dom: an image under a gradient wash whose stops are all ≥ 0.9 alpha, or at opacity < 0.15; `clip-path: polygon()` with ≥ 10 off-grid vertices or `path()` with ≥ 3 curve segments; exempt: geometric clip paths"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-IM4",
+      "counts_toward_g4": true,
+      "sources": [
+        "IMP-029",
+        "07 A-IM4"
+      ]
+    },
+    "SLP-39": {
+      "id": "SLP-39",
+      "title": "Untouched component kit",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Untouched component kit",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {},
+        "summary": "src, dom: kit components (e.g. `components/ui/*`) with unmodified default token values; the wider Tailwind default signature is reported through its parts (SLP-02, SLP-07, SLP-23, LAY-02); exempt: internal tools where convention is the point"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "reliability_note": "M (most-named specific complaint, 2.5%)",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CS1",
+      "counts_toward_g4": true,
+      "sources": [
+        "PLAT-060",
+        "07 A-CS1",
+        "05 §2.10"
+      ]
+    },
+    "SLP-40": {
+      "id": "SLP-40",
+      "title": "Generator leftovers",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Generator leftovers",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {},
+        "summary": "src, dom: generator meta tags or tagger packages, built-with badges, the framework's default favicon in shipped UI; reported as unfinished defaults, never as authorship"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "S",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-FP1",
+      "counts_toward_g4": true,
+      "sources": [
+        "07 A-FP1"
+      ]
+    },
+    "SLP-41": {
+      "id": "SLP-41",
+      "title": "Status-chip soup",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Status-chip soup",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "decorative_dots_per_section_max": 1
+        },
+        "summary": "dom: small coloured dots or pills with no state meaning (decorative row dots, coloured trend pills); dose cap ≤ 1 decorative status dot per section; meaning confirmed by jdg; exempt: real status indicators"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CS5",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-033",
+        "DSL-079",
+        "07 A-CS5"
+      ]
+    },
+    "SLP-42": {
+      "id": "SLP-42",
+      "title": "Editorial-serif reflex",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Editorial-serif reflex: high-contrast serif display with an italic accent word on a brief with no editorial, literary or heritage attribute",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {},
+        "summary": "dom: italic known serif on h1, or on h2 ≥ 48 px (impeccable `italic-serif-display`), checked against the brief's attributes; the italic word alone is SLP-25"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "status_note": "rising (successor of the neutral sans)",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-TY2, A-TY3",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-011",
+        "07 A-TY3",
+        "C12",
+        "02 §3.2 X5"
+      ]
+    },
+    "SLP-43": {
+      "id": "SLP-43",
+      "title": "Beige-and-brass premium palette",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Beige-and-brass premium palette",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {},
+        "summary": "dom: cream ground (SLP-21 thresholds) with brass, clay or oxblood accents and espresso-brown text on a premium or artisan brief; anchor values in DSL-021; rotate palette families across projects"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO3",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-021",
+        "02 §2.6, §2.8"
+      ]
+    },
+    "SLP-44": {
+      "id": "SLP-44",
+      "title": "Split-fold default",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Split-fold default",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {},
+        "summary": "dom: rendered fold classified `split` (headline on one side, visual cropped at the far edge, often a floating proof card) when no fold class was drawn and recorded, or when it repeats the previous ledger entry"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated (10 of 10 builds in one small study)",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA1",
+      "counts_toward_g4": true,
+      "sources": [
+        "DSL-010",
+        "02 §2.6, §3.2 X6"
+      ]
+    },
+    "SLP-45": {
+      "id": "SLP-45",
+      "title": "Cross-page system drift",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "Cross-page system drift",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {},
+        "summary": "src, dom: families, palette, radius set, nav or footer markup differ between routes or from `DESIGN.md` tokens; audience P0"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": "P0",
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-FP2",
+      "counts_toward_g4": true,
+      "sources": [
+        "CRAFT-030",
+        "IMP-051",
+        "07 A-FP2"
+      ]
+    },
+    "SLP-46": {
+      "id": "SLP-46",
+      "title": "All-caps UI text by default",
+      "class": "soft",
+      "gate": "G4",
+      "statement": "All-caps UI text by default",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "tracked_label_max_px": 13,
+          "uppercase_run_gt_chars_is": "TYP-08"
+        },
+        "summary": "dom: headings, navigation or buttons in uppercase without a role declared in `DESIGN.md`; exempt: ≤ 13 px tracked labels declared as a role; runs > 30 characters are TYP-08"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": true,
+      "sources": [
+        "01 §3.3 C6",
+        "02 §2.6",
+        "Anthropic skill v3"
+      ]
+    },
+    "SLP-50": {
+      "id": "SLP-50",
+      "title": "Bento by default",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Bento by default: a bento grid where items do not differ in size or importance, or with empty filler cells",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "min_cells": 5
+        },
+        "summary": "dom: ≥ 5 card cells with varied spans; cell count ≠ content item count; allowed when items genuinely differ"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W (0.1% of complaints)",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "status_note": "rising (successor of SLP-06)",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA9",
+      "counts_toward_g4": false,
+      "sources": [
+        "DSL-011",
+        "07 A-LA9",
+        "02 §3.2 X7"
+      ]
+    },
+    "SLP-51": {
+      "id": "SLP-51",
+      "title": "Template page sequence",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Template page sequence: hero, logo wall, three features, testimonials, stats, three-tier pricing with a highlighted middle, FAQ, CTA, four-column footer; stock nav and footer fingerprints",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {},
+        "summary": "dom: section-sequence fingerprint; a tell only with zero deviation plus other defaults"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W alone",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-LA3",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-LA3",
+        "Hallmark gates 42–43"
+      ]
+    },
+    "SLP-52": {
+      "id": "SLP-52",
+      "title": "Monotone section rhythm",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Monotone section rhythm",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "zigzag_gt": 2,
+          "families_min_for_8_sections": 4
+        },
+        "summary": "dom: a layout family repeated on one page, or > 2 consecutive image and text zigzags (≥ 4 families for 8 sections) [heuristic; needs a layout-family classifier]"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": false,
+      "sources": [
+        "DSL-031"
+      ]
+    },
+    "SLP-53": {
+      "id": "SLP-53",
+      "title": "Timid, evenly weighted palette",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Timid, evenly weighted palette",
+      "detect": {
+        "layer": "pix",
+        "layers": [
+          "pix"
+        ],
+        "params": {},
+        "summary": "pix: colour-area histogram with no dominant colour and no high-chroma accent [no published threshold]; exempt: deliberate monochrome"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO8",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-CO8"
+      ]
+    },
+    "SLP-54": {
+      "id": "SLP-54",
+      "title": "Theme picked by category",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Theme picked by category",
+      "detect": {
+        "layer": "jdg",
+        "layers": [
+          "jdg"
+        ],
+        "params": {},
+        "summary": "jdg: light or dark without a use-scene sentence in `DESIGN.md`"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CO9",
+      "counts_toward_g4": false,
+      "sources": [
+        "IMP-011",
+        "07 A-CO9",
+        "C15"
+      ]
+    },
+    "SLP-55": {
+      "id": "SLP-55",
+      "title": "Decorative filler shapes",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Decorative filler shapes: blobs, floating circles, wavy dividers",
+      "detect": {
+        "layer": "pix",
+        "layers": [
+          "pix",
+          "jdg"
+        ],
+        "params": {},
+        "summary": "pix, jdg"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W–M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-SU8",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-SU8"
+      ]
+    },
+    "SLP-56": {
+      "id": "SLP-56",
+      "title": "Shape-assembled illustration, sketchy doodles, generated mascots",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Shape-assembled illustration, sketchy doodles, generated mascots",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src",
+          "dom"
+        ],
+        "params": {},
+        "summary": "src, dom: large inline SVG built from many primitives at hero size [primitive count unpublished]; exempt: icons, logos, data graphics"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-IM2",
+      "counts_toward_g4": false,
+      "sources": [
+        "IMP-054",
+        "07 A-IM2"
+      ]
+    },
+    "SLP-57": {
+      "id": "SLP-57",
+      "title": "Stock effect components dropped in unmodified",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Stock effect components dropped in unmodified",
+      "detect": {
+        "layer": "src",
+        "layers": [
+          "src"
+        ],
+        "params": {},
+        "summary": "src: effect-library imports; jdg: rendered with demo defaults"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CS6",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-CS6"
+      ]
+    },
+    "SLP-58": {
+      "id": "SLP-58",
+      "title": "Content stand-ins",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Content stand-ins: sparklines, progress rings, fake avatars or rounded rectangles with no data behind them",
+      "detect": {
+        "layer": "jdg",
+        "layers": [
+          "jdg"
+        ],
+        "params": {},
+        "summary": "jdg, dom"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-DC2",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-DC2"
+      ]
+    },
+    "SLP-59": {
+      "id": "SLP-59",
+      "title": "Dashboard-card mosaic",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Dashboard-card mosaic: app UI built from stacked equal cards",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {},
+        "summary": "dom: many card-like boxes in the primary workspace [count unpublished]"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-DC3",
+      "counts_toward_g4": false,
+      "sources": [
+        "DSL-033",
+        "07 A-DC3"
+      ]
+    },
+    "SLP-60": {
+      "id": "SLP-60",
+      "title": "Boilerplate FAQ accordion that paraphrases the page",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Boilerplate FAQ accordion that paraphrases the page",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom"
+        ],
+        "params": {
+          "collapsibles_min": 3
+        },
+        "summary": "dom: an FAQ heading with ≥ 3 collapsibles (Krebs `faq-accordion`); exempt: questions from real support data"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CS7",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-CS7"
+      ]
+    },
+    "SLP-61": {
+      "id": "SLP-61",
+      "title": "Performative labels",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Performative labels: mock-poetic section labels, Title Case Everything, tricolon slogans",
+      "detect": {
+        "layer": "copy",
+        "layers": [
+          "copy"
+        ],
+        "params": {},
+        "summary": "copy [no published threshold]"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": "W",
+      "reliability_note": "W–M",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": "A-CP7",
+      "counts_toward_g4": false,
+      "sources": [
+        "07 A-CP7"
+      ]
+    },
+    "SLP-62": {
+      "id": "SLP-62",
+      "title": "Ornamental meta chrome",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Ornamental meta chrome: vertical rotated text, locale or weather strips, crosshair lines, pills over images, fake photo credits, scroll cues",
+      "detect": {
+        "layer": "dom",
+        "layers": [
+          "dom",
+          "copy"
+        ],
+        "params": {},
+        "summary": "dom, copy; a single source's list"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": false,
+      "sources": [
+        "02 §2.6, §2.8"
+      ]
+    },
+    "SLP-63": {
+      "id": "SLP-63",
+      "title": "Purposeless carousel",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Purposeless carousel",
+      "detect": {
+        "layer": "jdg",
+        "layers": [
+          "jdg"
+        ],
+        "params": {},
+        "summary": "jdg: a carousel with no narrative order"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "active",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": false,
+      "sources": [
+        "07 §2.2",
+        "02 §2.6"
+      ]
+    },
+    "SLP-64": {
+      "id": "SLP-64",
+      "title": "Sterile default",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Sterile default: white page, thin grey borders, default face, no focal point, no signature",
+      "detect": {
+        "layer": "jdg",
+        "layers": [
+          "jdg"
+        ],
+        "params": {},
+        "summary": "jdg: the signature test (point to five places the signature appears)"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "status_note": "rising [unverified]",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": false,
+      "sources": [
+        "DSL-075",
+        "DSL-080"
+      ]
+    },
+    "SLP-65": {
+      "id": "SLP-65",
+      "title": "Handmade anti-AI reflex",
+      "class": "experimental",
+      "gate": "G4",
+      "statement": "Handmade anti-AI reflex: grain, hand-drawn type and collage worn as a costume",
+      "detect": {
+        "layer": null,
+        "layers": [],
+        "params": {},
+        "summary": "none yet; partly SLP-35"
+      },
+      "default_severity": 1,
+      "modes": [
+        "persuade",
+        "operate",
+        "read",
+        "experience"
+      ],
+      "reliability": null,
+      "reliability_note": "unrated",
+      "audience": null,
+      "precision": null,
+      "status": "rising",
+      "status_note": "rising [predicted, unverified]",
+      "first_seen": null,
+      "acceptable_via_brief": true,
+      "from": null,
+      "counts_toward_g4": false,
+      "sources": [
+        "07 §2.2, §7 Q5"
+      ]
+    }
+  }
+}

@@ -1,0 +1,659 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "panel.schema.json",
+  "title": "Design critic output (METHODS §4.4; QUALITY-BAR G6)",
+  "type": "object",
+  "required": [
+    "agent",
+    "tests",
+    "verdict",
+    "rubric"
+  ],
+  "properties": {
+    "schema": {
+      "const": "panel"
+    },
+    "role": {
+      "const": "design-critic"
+    },
+    "run": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "isolation": {
+      "enum": [
+        "subagent",
+        "process",
+        "single-context"
+      ]
+    },
+    "packet_hash": {
+      "type": "string"
+    },
+    "inventory": {
+      "type": "array"
+    },
+    "tests": {
+      "type": "object",
+      "required": [
+        "swap",
+        "category_guess",
+        "similar_prompt"
+      ],
+      "properties": {
+        "swap": {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "evidence": {}
+          }
+        },
+        "category_guess": {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "evidence": {}
+          }
+        },
+        "similar_prompt": {
+          "type": "object",
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "enum": [
+                "pass",
+                "fail"
+              ]
+            },
+            "evidence": {}
+          }
+        }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "specific",
+            "partly_specific",
+            "generic"
+          ]
+        },
+        "evidence": {}
+      }
+    },
+    "verdict_at": {
+      "type": "string"
+    },
+    "unsealed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "brand_fit": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "array"
+        },
+        "overall": {
+          "enum": [
+            "reflected",
+            "partly",
+            "not"
+          ]
+        }
+      }
+    },
+    "mode_fit": {},
+    "rubric": {
+      "type": "object",
+      "required": [
+        "specificity",
+        "hierarchy",
+        "coherence",
+        "restraint",
+        "brand_fit",
+        "execution",
+        "appeal"
+      ],
+      "properties": {
+        "specificity": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "hierarchy": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "coherence": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "restraint": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "brand_fit": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "execution": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        },
+        "appeal": {
+          "type": "object",
+          "required": [
+            "score",
+            "evidence"
+          ],
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "evidence": {}
+          }
+        }
+      }
+    },
+    "detector_comparison": {
+      "type": "object"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/candidate"
+      }
+    },
+    "pairwise": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "first_order": {
+          "enum": [
+            "current",
+            "baseline",
+            "tie"
+          ]
+        },
+        "second_order": {
+          "enum": [
+            "current",
+            "baseline",
+            "tie"
+          ]
+        },
+        "result": {
+          "enum": [
+            "current",
+            "baseline",
+            "tie"
+          ]
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "appeal": {
+      "type": "object",
+      "description": "ADR-035: written before detector output is unsealed. 'plain' and 'unappealing' list the signs of unfinish in 'unfinished'.",
+      "required": [
+        "value",
+        "evidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "appealing",
+            "plain",
+            "unappealing"
+          ]
+        },
+        "unfinished": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "heuristic",
+            "cw",
+            "wcag",
+            "rule",
+            "iso",
+            "hax",
+            "design",
+            "principle"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primary": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "route": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          }
+        },
+        "theme": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "bbox": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "crop": {
+          "type": "string"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "journey": {
+          "type": "string"
+        },
+        "step": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "col": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "method": {
+              "type": "string"
+            },
+            "confidence": {
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ]
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "measurement",
+            "screenshot",
+            "probe",
+            "trace",
+            "aria",
+            "console",
+            "network",
+            "quote",
+            "metric",
+            "tool",
+            "annotation",
+            "video",
+            "absence",
+            "code"
+          ]
+        },
+        "ref": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "value": {}
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "foundBy": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "HE",
+            "CW",
+            "critic",
+            "a11y",
+            "code",
+            "tool",
+            "feedback",
+            "study",
+            "verifier",
+            "human",
+            "pure",
+            "klm"
+          ]
+        },
+        "pass": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "check": {
+          "type": "string"
+        },
+        "engine": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "factorNotes": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "type": "string"
+        },
+        "impact": {
+          "type": "string"
+        },
+        "persistence": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "problem_type",
+        "criteria"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "problem_type": {
+          "enum": [
+            "single_location",
+            "multiple_locations",
+            "overall_structure",
+            "missing_element"
+          ]
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/criterion"
+          }
+        },
+        "impact": {
+          "type": "string"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/location"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "found_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/foundBy"
+          }
+        },
+        "factor_notes": {
+          "$ref": "#/$defs/factorNotes"
+        },
+        "evidence_level": {
+          "enum": [
+            "E0",
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ]
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "post_unseal": {
+          "type": "boolean"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "if": {
+        "properties": {
+          "problem_type": {
+            "const": "missing_element"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "evidence"
+        ]
+      },
+      "else": {
+        "required": [
+          "locations"
+        ]
+      }
+    }
+  }
+}

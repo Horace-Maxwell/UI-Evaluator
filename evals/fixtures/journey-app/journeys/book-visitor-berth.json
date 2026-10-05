@@ -1,0 +1,60 @@
+{
+  "_comment": "Critical journey for the journey-app fixture (a tidal harbour's visitor-berth booking). The walkthrough evaluator walks these steps; the analytical CW ground truth is in ground-truth.json (defects with a cw field). Test values only: MMSI 123456789 has no valid country prefix and 07700 900123 is in Ofcom's drama range.",
+  "schema_version": 1,
+  "id": "book-visitor-berth",
+  "title": "Book a visitor berth for a weekend",
+  "criticality": "critical",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Skippers of visiting cruising yachts who have not used this harbour before",
+    "knows": [
+      "their boat's length overall, 10.4 metres including the bowsprit, and its hull length, 9.6 metres",
+      "their boat's draught, 1.5 metres",
+      "their boat's MMSI, because the radio has digital selective calling",
+      "that tidal harbours can only be entered around high water"
+    ],
+    "does_not_know": [
+      "which pontoon is long enough for their boat",
+      "whether the harbour publishes tide times in local time or UTC",
+      "when the sill gate opens"
+    ],
+    "context": "On a phone in the cockpit the evening before, with patchy mobile data and one hand on the tiller line"
+  },
+  "goal": "Have a safe place for the boat for two nights, arriving on the afternoon tide",
+  "scenario": "You are sailing to the quay on Saturday 17 October 2026 and want to stay two nights. You expect to arrive around three in the afternoon. Your yacht is 10.4 metres long including the bowsprit and draws 1.5 metres. Make sure there is a place waiting for you.",
+  "avoided_hints": ["Check berths", "Continue", "Confirm booking", "pontoon space", "mooring"],
+  "start_state": {
+    "url": "/",
+    "data": "all four visitor berths are free on 17 and 18 October 2026",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/confirmed\\.html" },
+      { "text": "Booking confirmed" },
+      { "target": "#c-berth", "text": "Pontoon C, berth 3" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "fill", "target": "label=Arrival date", "value": "2026-10-17" },
+    { "action": "select", "target": "role=combobox[name=\"Nights\"]", "value": "2" },
+    { "action": "select", "target": "role=combobox[name=\"Arrival time\"]", "value": "15:00" },
+    { "action": "click", "target": "role=button[name=\"Check berths\"]" },
+    { "action": "expect", "url": "/berths\\.html" },
+    { "action": "check", "target": "role=radio[name=/Pontoon C, berth 3/]" },
+    { "action": "click", "target": "role=button[name=\"Continue\"]" },
+    { "action": "expect", "url": "/boat\\.html" },
+    { "action": "fill", "target": "role=textbox[name=\"Boat name\"]", "value": "Curlew" },
+    { "action": "fill", "target": "role=textbox[name=\"Length\"]", "value": "10.4" },
+    { "action": "fill", "target": "role=textbox[name=\"Draught in metres\"]", "value": "1.5" },
+    { "action": "fill", "target": "role=textbox[name=\"MMSI\"]", "value": "123456789" },
+    { "action": "click", "target": "role=button[name=\"Continue\"]" },
+    { "action": "expect", "url": "/review\\.html" },
+    { "action": "fill", "target": "role=textbox[name=\"Skipper’s name\"]", "value": "Test Skipper" },
+    { "action": "fill", "target": "role=textbox[name=\"Mobile number\"]", "value": "07700 900123" },
+    { "action": "click", "target": "role=button[name=\"Confirm booking\"]" },
+    { "action": "expect", "text": "Booking confirmed" }
+  ]
+}

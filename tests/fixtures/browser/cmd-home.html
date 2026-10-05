@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depot desk</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 1rem/1.5 "Iowan Old Style", Palatino, serif; color: #1f2328; background: #fff; }
+  header { border-bottom: 1px solid #d0d7de; padding: 0 16px; }
+  header nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+  header nav a { display: block; padding: 12px 8px; color: #1f2328; }
+  main { max-width: 40rem; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 16px; }
+  p { margin: 0 0 16px; }
+  /* The seeded defect the commands test fixes between two runs: text contrast 2.3:1. */
+  .faint { color: #aaaaaa; }
+  label { display: block; font-weight: 700; margin: 0 0 4px; }
+  input { font: inherit; padding: 8px 12px; border: 1px solid #6e7781; border-radius: 4px; }
+  button { font: inherit; padding: 12px 16px; border: 1px solid #0a6e57; border-radius: 4px; background: #0a6e57; color: #fff; }
+  :focus-visible { outline: 2px solid #0a6e57; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<header><nav aria-label="Main"><ul><li><a href="/cmd-home.html" aria-current="page">Desk</a></li><li><a href="/cmd-about.html">About the depot</a></li></ul></nav></header>
+<main>
+  <h1>Assign a carrier</h1>
+  <p class="faint">Carriers collect from bay 3 between 10:00 and 16:00.</p>
+  <form id="assign">
+    <p><label for="shipment">Shipment number</label><input id="shipment" name="shipment" autocomplete="off"></p>
+    <p><button type="submit">Assign carrier</button></p>
+  </form>
+  <p role="status" id="result"></p>
+</main>
+<script>
+  document.getElementById('assign').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = document.getElementById('shipment').value.trim();
+    document.getElementById('result').textContent = v ? `Carrier assigned to ${v}` : 'Enter a shipment number, for example SH-1042.';
+  });
+</script>
+</body>
+</html>

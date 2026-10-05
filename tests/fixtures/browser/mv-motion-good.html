@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restrained motion</title>
+<style>
+  :root { --dur-feedback: 120ms; --dur-state: 200ms; --dur-overlay: 240ms; --ease-out: cubic-bezier(0.2, 0, 0, 1); }
+  body { margin: 0; font: 16px/1.5 Georgia, serif; color: #1d1d1f; background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px; }
+  button { font: inherit; padding: 12px 16px; border: 1px solid #555; background: #f4f4f4; color: #111;
+    transition: background-color var(--dur-feedback) var(--ease-out), box-shadow var(--dur-feedback) var(--ease-out); }
+  button:hover { background: #e8e8e8; }
+  .panel { opacity: 1; transform: none; transition: opacity var(--dur-state) var(--ease-out), transform var(--dur-state) var(--ease-out); }
+  .panel[hidden] { display: none; }
+  .menu { position: absolute; margin-top: 4px; padding: 8px; background: #fff; border: 1px solid #999; opacity: 0; transform: translateY(-4px);
+    transition: opacity var(--dur-overlay) var(--ease-out), transform var(--dur-overlay) var(--ease-out); visibility: hidden; }
+  .menu.open { opacity: 1; transform: none; visibility: visible; }
+  .busy { display: inline-block; width: 16px; height: 16px; border: 2px solid #555; border-right-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  .link { color: #0b57d0; text-decoration: underline; transition: color var(--dur-feedback) linear; }
+  @media (prefers-reduced-motion: reduce) {
+    .busy { animation: pulse 2s ease-in-out infinite; border-right-color: #555; }
+    .panel, .menu { transition-duration: 1ms; transform: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Shipment SH-1042</h1>
+  <p>Carrier: Northline Freight. <a class="link" href="#history">See the delivery history</a>.</p>
+  <p>
+    <button type="button" id="toggle" aria-expanded="false" aria-controls="details">Show details</button>
+    <span role="progressbar" aria-label="Refreshing" aria-busy="true"><span class="busy"></span></span>
+  </p>
+  <div class="panel" id="details" hidden><p>Pallets: 4. Weight: 1,240 kg.</p></div>
+  <div style="position: relative">
+    <button type="button" id="menu-btn" aria-haspopup="menu" aria-expanded="false">Actions</button>
+    <div class="menu" role="menu" id="menu"><div role="menuitem" tabindex="-1">Print label</div></div>
+  </div>
+  <h2 id="history">History</h2>
+  <p>Picked up on 12 March at 08:40 and delivered on 13 March at 16:05.</p>
+</main>
+<script>
+  const t = document.getElementById('toggle');
+  t.addEventListener('click', () => {
+    const p = document.getElementById('details');
+    const open = t.getAttribute('aria-expanded') === 'true';
+    t.setAttribute('aria-expanded', String(!open));
+    p.hidden = open;
+  });
+  const mb = document.getElementById('menu-btn');
+  mb.addEventListener('click', () => {
+    const m = document.getElementById('menu');
+    const open = mb.getAttribute('aria-expanded') === 'true';
+    mb.setAttribute('aria-expanded', String(!open));
+    m.classList.toggle('open', !open);
+  });
+</script>
+</body>
+</html>

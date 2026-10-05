@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion defects</title>
+<style>
+  body { margin: 0; font: 16px/1.5 Georgia, serif; color: #1d1d1f; background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px; }
+  button { font: inherit; padding: 12px 16px; border: 1px solid #555; background: #f4f4f4; color: #111; }
+  /* MOT-01: transition: all, and a layout property */
+  .btn-all { transition: all .3s ease; }
+  .grow { transition: width .2s ease; width: 160px; }
+  /* MOT-02: a 900 ms colour change on a control */
+  .slow { transition: background-color 900ms ease; }
+  /* MOT-03: overshoot */
+  .bouncy { transition: transform .25s cubic-bezier(.68,-.55,.27,1.55); }
+  /* MOT-04: an infinite marquee without a reduced-motion path */
+  .track { overflow: hidden; height: 48px; border: 1px solid #ccc; }
+  .marquee { display: flex; gap: 48px; white-space: nowrap; animation: slide 6s linear infinite; }
+  @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-600px); } }
+  /* MOT-05: a reveal that never fires */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+  /* MOT-06: scale-from-zero entrance */
+  .pop { animation: pop .3s ease-out both; display: inline-block; padding: 8px; background: #eef; }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  /* MOT-07: load choreography on an operate surface */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { padding: 16px; border: 1px solid #ccc; animation: rise .4s ease-out both; }
+  .card:nth-child(2) { animation-delay: .1s; }
+  .card:nth-child(3) { animation-delay: .2s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Shipments</h1>
+  <div class="cards">
+    <div class="card"><h2>Open</h2><p>12 shipments are waiting for a carrier.</p></div>
+    <div class="card"><h2>In transit</h2><p>48 shipments are on the road today.</p></div>
+    <div class="card"><h2>Delivered</h2><p>230 shipments arrived this week.</p></div>
+  </div>
+  <p>
+    <button class="btn-all" type="button">Refresh list</button>
+    <button class="grow" type="button">Expand</button>
+    <button class="slow" type="button">Archive view</button>
+    <button class="bouncy" type="button">Open filters</button>
+  </p>
+  <span class="pop">New</span>
+  <div class="track" aria-label="Carrier updates"><div class="marquee"><span>Carrier A: on time</span><span>Carrier B: delayed</span><span>Carrier C: on time</span></div></div>
+  <section class="reveal"><h2>Delivery performance</h2><p>Average delivery time fell from 3.4 to 2.9 days this quarter.</p></section>
+</main>
+</body>
+</html>

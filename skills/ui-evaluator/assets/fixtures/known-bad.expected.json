@@ -1,0 +1,40 @@
+{
+  "_comment": "Smoke-test expectations for `uie doctor` (EVD-02). `scope` is the audit scope the doctor serves from this folder on a temporary 127.0.0.1 server; `expected` lists, per audit check, the primary criterion IDs the check must report on known-bad.html. A check may report more; it must not report fewer. `fields` are numeric minimums read from the check's checks.json entry. Entries owned by `interaction-checks` belong to the keyboard, dialogs, forms, live-regions and states checks; while such a check is not implemented (skipped), the doctor reports its expectations as pending and does not pass.",
+  "schema": "uie-smoke-expectations",
+  "version": 1,
+  "fixture": "known-bad.html",
+  "scope": {
+    "routes": [
+      { "path": "/known-bad.html", "surface": "dashboard", "mode": "operate", "states": [{ "name": "default", "actions": [] }] },
+      { "path": "/known-bad.html?variant=b", "surface": "overview", "mode": "operate", "states": [{ "name": "default", "actions": [] }] },
+      { "path": "/server-error", "surface": "broken", "mode": "operate", "states": [{ "name": "default", "actions": [] }] }
+    ],
+    "matrix": { "widths": [320, 1280], "height": 800, "device_scale_factor": 1, "themes": ["light"], "preferences": ["default", "reduced-motion"], "g2_preferences": ["forced-colors"] },
+    "locales": { "list": ["en"], "default": "en" },
+    "server_routes": { "/server-error": { "status": 500, "body": "Internal error (fixture)", "type": "text/plain; charset=utf-8" } }
+  },
+  "expected": {
+    "routes": { "criteria": ["FUN-01"], "_seeded": "/server-error answers HTTP 500" },
+    "console": { "criteria": ["FUN-02"], "_seeded": "console.error and an uncaught exception during load" },
+    "media": { "criteria": ["FUN-04"], "_seeded": "a 404 image; a link to a missing #archive target; links to missing pages" },
+    "axe": { "criteria": ["A11Y-01"], "_seeded": "an unlabelled input, an image without alt, low-contrast text" },
+    "keyboard": { "criteria": ["A11Y-03", "A11Y-04"], "owner": "interaction-checks", "_seeded": "a clickable div that is not focusable; a button with outline:none and no replacement" },
+    "dialogs": { "criteria": ["A11Y-06"], "owner": "interaction-checks", "_seeded": "a role=dialog aria-modal=true that takes no focus, has no Esc, no trap and no focus return" },
+    "layout": { "criteria": ["FUN-05", "FUN-06", "A11Y-07", "A11Y-08", "A11Y-09"], "_seeded": "a 900 px block; text in a 22 px box with hidden overflow; a one-line box that clips under text spacing and 200% text" },
+    "palette": { "criteria": ["COL-03"], "_seeded": "a saturated blue hero over about half of the first viewport on an Operate surface (Restrained by default)" },
+    "targets": { "criteria": ["A11Y-10", "CMP-06"], "_seeded": "14 px buttons 2 px apart; a 14 px submit button on touch widths" },
+    "contrast": { "criteria": ["A11Y-11", "A11Y-12"], "_seeded": "#b0b0b0 text on white; input borders #e3e3e3 on white" },
+    "forms": { "criteria": ["A11Y-13", "A11Y-14", "CPY-04"], "owner": "interaction-checks", "_seeded": "an unlabelled input and placeholder-only fields; paste blocked on a password field; the generic error \"Invalid\" not tied to a field" },
+    "live-regions": { "criteria": ["A11Y-15"], "owner": "interaction-checks", "_seeded": "\"Draft saved\" written 200 ms after a click into a plain div" },
+    "lang": { "criteria": ["A11Y-16"], "_seeded": "no lang attribute on <html>" },
+    "cross-page": { "criteria": ["A11Y-18"], "_seeded": "?variant=b reorders the main navigation and renames \"Orders\"" },
+    "cvd": { "criteria": [], "fields": { "valid": 5 }, "_seeded": "evidence only (A11Y-19 is judged by the accessibility auditor): four colour-vision captures and one forced-colours capture of colour-only status dots" },
+    "census": { "criteria": ["TYP-01", "TYP-03", "TYP-07"], "_seeded": "10 px text; line height 1.05 on three lines; weight 200 at 14 px" },
+    "states": { "criteria": ["CMP-01", "CMP-03"], "owner": "interaction-checks", "_seeded": "flat buttons without hover or active styles; a disabled button shown only by opacity 0.25" },
+    "motion": { "criteria": ["MOT-01", "MOT-02", "MOT-03", "MOT-04", "MOT-05", "MOT-06", "MOT-07"], "_seeded": "transition: all; a 900 ms state transition; an overshooting curve; an infinite marquee under reduced motion; a reveal that never fires; scale(0) entrance; load choreography on an Operate surface" },
+    "tells": { "criteria": ["SLP-01", "SLP-03", "SLP-04"], "_seeded": "gradient text; emoji used as icons; a decorative side stripe" },
+    "copy": { "criteria": ["CPY-01", "CPY-02", "SLP-13"], "_seeded": "lorem ipsum; \"click here\"; Jane Doe and jane@example.com" },
+    "i18n": { "criteria": ["I18N-01"], "_seeded": "Chinese text set in system-ui with no CJK family" },
+    "vitals": { "criteria": ["FUN-07", "FUN-08"], "_seeded": "a 240 px banner inserted above the content after load; a click handler that blocks for 350 ms" }
+  }
+}

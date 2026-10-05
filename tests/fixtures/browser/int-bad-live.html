@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status message defects</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; padding: 16px; color: #1a1a1a; background: #fff; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  button { font: inherit; padding: 8px 14px; border: 2px solid #0b4f9c; background: #fff; color: #0b4f9c; border-radius: 6px; }
+  section { margin: 24px 0; }
+  .toast { position: fixed; right: 16px; bottom: 16px; background: #1a1a1a; color: #fff; padding: 12px 16px; border-radius: 6px; }
+  label { display: block; }
+</style>
+</head>
+<body>
+  <!-- Defects seeded for the live-regions check (A11Y-15):
+       #add-cart   writes "Added to cart" into a plain paragraph after a delay
+       #copy-link  inserts a role=status element together with its text
+       #newsletter shows "Thanks for subscribing!" in a plain paragraph after submit
+       #save-settings shows a toast without a live region
+       Non-defects: #refresh writes into a role=status region present at load; #delete-list is destructive and must
+       never be clicked by the probe. -->
+  <main>
+    <h1>Seed shop</h1>
+    <section>
+      <h2>Tomato seeds</h2>
+      <button type="button" id="add-cart">Add to cart</button>
+      <p id="cart-msg"></p>
+    </section>
+    <section>
+      <button type="button" id="copy-link">Copy link</button>
+      <div id="copy-zone"></div>
+    </section>
+    <section>
+      <form id="newsletter">
+        <label for="nl-email">Email address</label>
+        <input type="email" id="nl-email" name="email" autocomplete="email" required>
+        <button type="submit">Subscribe</button>
+        <p id="nl-msg"></p>
+      </form>
+    </section>
+    <section>
+      <button type="button" id="refresh">Refresh prices</button>
+      <p role="status" id="price-status"></p>
+    </section>
+    <section>
+      <button type="button" id="save-settings">Save settings</button>
+    </section>
+    <section>
+      <button type="button" id="delete-list">Delete list</button>
+      <p id="delete-msg"></p>
+    </section>
+  </main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  $('add-cart').addEventListener('click', () => setTimeout(() => { $('cart-msg').textContent = 'Added to cart'; }, 250));
+  $('copy-link').addEventListener('click', () => {
+    const d = document.createElement('div');
+    d.setAttribute('role', 'status');
+    d.textContent = 'Link copied';
+    $('copy-zone').appendChild(d);
+  });
+  $('newsletter').addEventListener('submit', (e) => {
+    e.preventDefault();
+    setTimeout(() => { $('nl-msg').textContent = 'Thanks for subscribing!'; }, 200);
+  });
+  $('refresh').addEventListener('click', () => setTimeout(() => { $('price-status').textContent = 'Prices updated'; }, 200));
+  $('save-settings').addEventListener('click', () => {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = 'Settings saved';
+    document.body.appendChild(t);
+  });
+  $('delete-list').addEventListener('click', () => { $('delete-msg').textContent = 'List deleted'; });
+</script>
+</body>
+</html>

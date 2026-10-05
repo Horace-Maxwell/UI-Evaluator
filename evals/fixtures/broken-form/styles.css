@@ -1,0 +1,383 @@
+/* Margins textbook exchange: seller sign-up and listing flow. Seeded fixture: see ground-truth.json. */
+
+:root {
+  color-scheme: light;
+
+  --paper: #ffffff;
+  --ink: #1f1d1a;
+  --ink-muted: #57524b;
+  --edge: #77716a;
+  --edge-faint: #dddddd;
+  --hint-faint: #9ca3af;
+  --highlight: #f2d64b;
+  --highlight-hover: #e8c72c;
+  --highlight-active: #d9b81f;
+  --hover-tint: #f6f4ef;
+  --notice: #fdf6d8;
+  --disabled-fill: #ece8df;
+  --disabled-ink: #6f6a61;
+  --disabled-edge: #8a857c;
+  --error: #a4161a;
+  --icon: #54504a;
+  --focus: #1f1d1a;
+
+  --font: "Optima", Candara, "Noto Sans", sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius: 6px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+p,
+fieldset,
+legend {
+  margin: 0;
+  padding: 0;
+}
+
+fieldset {
+  border: 0;
+  min-width: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--ink-muted);
+}
+
+a:active {
+  color: var(--error);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--edge-faint);
+}
+
+.masthead__inner {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration-line: none;
+}
+
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.step {
+  margin-bottom: var(--space-2);
+  color: var(--ink-muted);
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--space-3);
+}
+
+h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: var(--space-2);
+}
+
+.intro {
+  max-width: 36em;
+  margin-bottom: var(--space-6);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 28rem;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+label,
+legend {
+  font-weight: 700;
+}
+
+.hint {
+  color: var(--ink-muted);
+}
+
+.hint--faint {
+  color: var(--hint-faint);
+}
+
+.error-message {
+  color: var(--error);
+  font-weight: 700;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="tel"]:hover,
+input[type="password"]:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--ink);
+}
+
+input[type="text"]:active,
+input[type="email"]:active,
+input[type="tel"]:active,
+input[type="password"]:active,
+select:active,
+textarea:active {
+  border-color: var(--ink-muted);
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+/* Account step: smaller inputs, and the default focus outline switched off for the whole form. */
+#account-form input {
+  font-size: 0.875rem;
+}
+
+#account-form input:focus,
+#account-form button:focus {
+  outline: none;
+}
+
+/* Listing step: pale field edges. */
+#listing-form input {
+  border-color: var(--edge-faint);
+}
+
+#listing-form input:hover {
+  border-color: var(--ink);
+}
+
+#listing-form input:active {
+  border-color: var(--ink-muted);
+}
+
+.control {
+  position: relative;
+}
+
+.control input {
+  padding-right: 36px;
+}
+
+.icon-btn {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--icon);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--hover-tint);
+}
+
+.icon-btn:active {
+  background: var(--disabled-fill);
+}
+
+.field-help a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: var(--hover-tint);
+}
+
+.choice input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  margin: 0;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--highlight);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--highlight-hover);
+}
+
+.button:active {
+  background: var(--highlight-active);
+}
+
+.button--secondary {
+  background: var(--paper);
+}
+
+.button--secondary:hover {
+  background: var(--hover-tint);
+}
+
+.button--secondary:active {
+  background: var(--disabled-fill);
+}
+
+.button:disabled {
+  background: var(--disabled-fill);
+  border-style: dashed;
+  border-color: var(--disabled-edge);
+  color: var(--disabled-ink);
+  cursor: not-allowed;
+}
+
+.notice {
+  max-width: 28rem;
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius);
+  background: var(--notice);
+}
+
+.notice p + p {
+  margin-top: var(--space-2);
+}
+
+.aside {
+  max-width: 36em;
+  margin-top: var(--space-7);
+}
+
+.save-note {
+  color: var(--ink-muted);
+}
+
+.footer {
+  border-top: 1px solid var(--edge-faint);
+}
+
+.footer__inner {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+  color: var(--ink-muted);
+}

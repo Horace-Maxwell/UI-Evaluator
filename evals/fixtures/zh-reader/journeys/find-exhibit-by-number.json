@@ -1,0 +1,41 @@
+{
+  "_comment": "Critical journey for the zh-reader fixture: a visitor standing at a display case looks up the exhibit by the number on its label. The persona types with a pinyin input method, which is where the seeded Enter handler without an IME guard bites; scripted replay presses Enter outside composition.",
+  "schema_version": 1,
+  "id": "find-exhibit-by-number",
+  "title": "按展柜编号打开展品讲解",
+  "criticality": "critical",
+  "frequency": "frequent",
+  "persona": {
+    "group": "Chinese-speaking visitors in the galleries, using their own phones",
+    "knows": [
+      "the number printed on the display-case label",
+      "how to type with a pinyin input method"
+    ],
+    "does_not_know": [
+      "how the guide is organised",
+      "whether the number must be typed with or without a prefix"
+    ],
+    "context": "Standing in front of a display case with one hand holding the phone; the gallery is dim and quiet"
+  },
+  "goal": "Read about the vase in front of them without walking back to the entrance",
+  "scenario": "你正站在一个展柜前，标签上写着这件梅瓶的编号是 12。请在手机上找到这件展品的讲解。",
+  "avoided_hints": ["展品编号", "查找"],
+  "start_state": {
+    "url": "/",
+    "data": "only exhibit 12 has a published text",
+    "locale": "zh-CN",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "/exhibit-12\\.html$" },
+      { "target": "role=heading[level=1]", "text": "青白瓷梅瓶" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "fill", "target": "role=textbox[name=\"展品编号\"]", "value": "12" },
+    { "action": "press", "target": "role=textbox[name=\"展品编号\"]", "key": "Enter" },
+    { "action": "expect", "url": "/exhibit-12\\.html$" }
+  ]
+}

@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<!-- UI-Evaluator smoke-test fixture (uie doctor; EVD-02). Every defect below is deliberate and canonical, and
+     known-bad.expected.json lists what each audit check must report. Never "fix" this page. No external URLs.
+     The missing lang attribute on <html> is itself a seeded defect (lang: A11Y-16). -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Known-bad fixture</title>
+<style>
+  body { margin: 0; font: 0.9375rem/1.5 Georgia, serif; color: #222; background: #fff; }
+  header { display: flex; gap: 16px; align-items: center; padding: 8px 16px; border-bottom: 1px solid #ccc; }
+  header nav a { margin-right: 12px; color: #1a4fd6; }
+  main { padding: 16px; }
+  footer { padding: 16px; border-top: 1px solid #ccc; }
+  /* tells SLP-01: gradient text */
+  .gradient { background: linear-gradient(90deg, #7c3aed, #db2777); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  /* palette COL-03: a saturated accent block far above 10% of the viewport on an Operate surface */
+  .hero { background: #1d4ed8; color: #fff; padding: 32px 16px; min-height: 420px; }
+  .hero a { color: #fff; }
+  /* tells SLP-04: decorative side stripe */
+  .callout { border-left: 6px solid #e11d48; background: #fff5f7; padding: 12px; }
+  /* layout FUN-05 and A11Y-07: a fixed 900 px block */
+  .wide { width: 900px; background: #eee; }
+  /* layout FUN-06: two lines of text in a 22 px box with hidden overflow */
+  .clipped { height: 22px; overflow: hidden; width: 220px; }
+  /* layout A11Y-08 / A11Y-09: one line at rest (rem text, px box), clipped once spacing or size grows */
+  .tight { height: 24px; line-height: 24px; overflow: hidden; width: 210px; }
+  /* contrast A11Y-11 (about 2.1:1) and A11Y-12 (input boundary about 1.3:1) */
+  .faint { color: #b0b0b0; }
+  .field { border: 1px solid #e3e3e3; padding: 8px; }
+  /* targets A11Y-10 and CMP-06: 14 px controls 2 px apart */
+  .tiny { width: 14px; height: 14px; padding: 0; margin: 0 1px; font-size: 10px; line-height: 1; }
+  /* keyboard A11Y-04: focus indicator removed without a replacement */
+  .no-ring:focus, .no-ring:focus-visible { outline: none; }
+  /* census TYP-01, TYP-07, TYP-03 */
+  .micro { font-size: 10px; }
+  .thin { font-weight: 200; font-size: 14px; font-family: "Helvetica Neue", Arial, sans-serif; }
+  .cramped { line-height: 1.05; max-width: 320px; }
+  /* i18n I18N-01: CJK text with only a system stack */
+  .cjk { font-family: system-ui, sans-serif; }
+  /* states CMP-01 (no hover or active change) and CMP-03 (one faint cue on a disabled control) */
+  .flat { appearance: none; -webkit-appearance: none; background: #e9e9e9; border: 0; padding: 12px 16px; color: #222; font: inherit; }
+  .ghost:disabled { opacity: 0.25; }
+  /* motion MOT-01 (transition: all), MOT-02 (900 ms state change), MOT-03 (overshoot) */
+  .all { transition: all .3s ease; }
+  .slow { transition: background-color 900ms ease; }
+  .bouncy { transition: transform .3s cubic-bezier(.68,-.55,.27,1.55); }
+  /* motion MOT-04: an infinite marquee with no reduced-motion path */
+  .ticker { overflow: hidden; border: 1px solid #ccc; }
+  .ticker-track { display: inline-block; white-space: nowrap; animation: ticker 8s linear infinite; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-640px); } }
+  /* motion MOT-05: a reveal whose trigger never runs */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity .6s ease, transform .6s ease; }
+  /* motion MOT-06: entrance from scale(0) */
+  .pop { display: inline-block; animation: pop .3s ease-out both; }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  /* motion MOT-07: load choreography on an Operate surface */
+  .rise { animation: rise .4s ease-out both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  /* cvd (A11Y-19, auditor): status shown by colour alone */
+  .chip { display: inline-block; width: 12px; height: 12px; border-radius: 6px; vertical-align: middle; }
+  .chip.ok { background: #2e7d32; }
+  .chip.bad { background: #c62828; }
+  /* vitals FUN-07: a banner injected above the content after load */
+  .promo { height: 240px; background: #fdf3d8; padding: 16px; }
+  [role=dialog] { position: fixed; top: 20%; left: 10%; right: 10%; background: #fff; border: 2px solid #333; padding: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/known-bad.html" class="brand">Fleetdesk</a>
+  <nav aria-label="Main">
+    <a href="/orders.html">Orders</a>
+    <a href="/fleet.html">Fleet</a>
+    <a href="/help.html">Help</a>
+  </nav>
+</header>
+<main id="main">
+  <div class="hero rise">
+    <h1 class="gradient">Supercharge your fleet</h1>
+    <ul class="perks"><li>🚚 Same-day dispatch</li><li>📦 Parcel tracking</li><li>🧾 Monthly invoices</li></ul>
+    <p><a href="#">Get started</a> · <a href="#">Learn more</a></p>
+  </div>
+  <section id="orders">
+    <h2>Orders</h2>
+    <p class="faint">Updated five minutes ago by the dispatch team.</p>
+    <p class="micro">Prices exclude VAT and may change without notice.</p>
+    <p class="thin">Thin secondary text that is hard to read at small sizes.</p>
+    <p class="cramped">This paragraph wraps onto at least three lines with a line height of 1.05, so the lines nearly touch and reading it becomes hard work for everyone who tries.</p>
+    <p>This sentence runs on and on without any width limit so that at a wide viewport each rendered line holds far more than eighty characters of Latin text, which makes the eye lose its place when it returns to the start of the next line, and it keeps going for long enough to wrap at least twice on a desktop screen.</p>
+    <p>Lorem ipsum dolor sit amet, placeholder copy left in the build.</p>
+    <p>Contact Jane Doe at jane@example.com for access to the archive.</p>
+    <p><a href="#archive">Click here</a></p>
+    <p><img src="/images/missing-van.png" alt="Delivery van" width="120" height="80"></p>
+    <p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="40" height="40"></p>
+    <div class="callout">Invoices are generated every night.</div>
+    <div class="wide">This 900 px block forces horizontal scrolling on small screens.</div>
+    <div class="clipped">This text is cut off by a fixed-height box with hidden overflow at every width.</div>
+    <div class="tight">Fits on one line at rest only.</div>
+    <p class="cjk">配送状态已更新</p>
+    <p>Status: <span class="chip ok"></span> On route · <span class="chip bad"></span> Stopped</p>
+  </section>
+  <section id="actions">
+    <h2>Actions</h2>
+    <form id="search" action="#" novalidate>
+      <input type="text" class="field" id="q">
+      <input type="email" placeholder="Email" name="email" class="field">
+      <input type="password" placeholder="Password" name="password" class="field" onpaste="return false">
+      <button type="submit" class="tiny" aria-label="Search">⌕</button>
+      <div id="form-error"></div>
+    </form>
+    <p><button type="button" class="tiny" aria-label="Previous page">‹</button><button type="button" class="tiny" aria-label="Next page">›</button></p>
+    <p>
+      <button type="button" class="no-ring flat">Export CSV</button>
+      <button type="button" class="all flat">Refresh</button>
+      <button type="button" class="bouncy flat">Filter</button>
+      <button type="button" class="slow flat">Archive</button>
+      <button type="button" class="flat ghost" disabled>Send reminder</button>
+    </p>
+    <div class="clickable" onclick="this.textContent = 'Report opened'" style="cursor: pointer">Open report</div>
+    <p><button type="button" id="more" aria-expanded="false" aria-controls="more-panel">Show filters</button></p>
+    <div id="more-panel" hidden><p>Filter by carrier or date.</p></div>
+    <p><button type="button" id="open-dialog" aria-haspopup="dialog" aria-controls="dlg">Open settings</button></p>
+    <div role="dialog" aria-modal="true" aria-labelledby="dlg-title" id="dlg" hidden>
+      <h2 id="dlg-title">Settings</h2>
+      <p><label>Display name <input type="text" class="field" name="display"></label></p>
+      <button type="button" id="dlg-close">Close</button>
+    </div>
+    <p><button type="button" id="save">Save draft</button></p>
+    <div id="save-status"></div>
+    <span class="pop">New</span>
+    <div class="ticker"><div class="ticker-track">Carrier A on time · Carrier B delayed · Carrier C on time · Carrier D on time</div></div>
+  </section>
+  <section class="reveal"><h2>Performance</h2><p>Average delivery time fell to 2.9 days this quarter.</p></section>
+</main>
+<footer><a href="/help.html#contact">Contact support</a></footer>
+<script>
+  // console FUN-02: a console error and an uncaught exception during load.
+  console.error('Failed to load user preferences (fixture defect)');
+  setTimeout(() => { throw new Error('Unhandled fixture exception'); }, 0);
+  // vitals FUN-07: content inserted above the fold after load, without reserved space.
+  setTimeout(() => {
+    const promo = document.createElement('div');
+    promo.className = 'promo';
+    promo.textContent = 'Free delivery on orders over 50 euros this week.';
+    document.body.insertBefore(promo, document.body.firstChild);
+  }, 300);
+  // vitals FUN-08: a disclosure whose click handler blocks the main thread for 350 ms.
+  document.getElementById('more').addEventListener('click', (e) => {
+    const end = performance.now() + 350;
+    while (performance.now() < end) { /* busy */ }
+    const b = e.currentTarget;
+    const open = b.getAttribute('aria-expanded') === 'true';
+    b.setAttribute('aria-expanded', String(!open));
+    document.getElementById('more-panel').hidden = open;
+  });
+  // dialogs A11Y-06: opens without moving focus, no Esc, no focus trap, no focus return.
+  document.getElementById('open-dialog').addEventListener('click', () => { document.getElementById('dlg').hidden = false; });
+  document.getElementById('dlg-close').addEventListener('click', () => { document.getElementById('dlg').hidden = true; });
+  // live-regions A11Y-15: an async status written into a plain div.
+  document.getElementById('save').addEventListener('click', () => {
+    setTimeout(() => { document.getElementById('save-status').textContent = 'Draft saved'; }, 200);
+  });
+  // forms A11Y-13 / CPY-04: a generic error, not associated with any field, and no focus move.
+  document.getElementById('search').addEventListener('submit', (e) => {
+    e.preventDefault();
+    document.getElementById('form-error').textContent = 'Invalid';
+  });
+  // cross-page A11Y-18: the second route reorders the navigation and renames a link.
+  if (new URLSearchParams(location.search).get('variant') === 'b') {
+    const nav = document.querySelector('header nav');
+    const links = [...nav.querySelectorAll('a')];
+    links[0].textContent = 'Your orders';
+    nav.prepend(links[2]);
+    document.getElementById('main').innerHTML = '<h1>Fleet overview</h1><p>The second page of the smoke test.</p>';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "_comment": "Critical journey for the dashboard fixture: a grower takes the nutrient pumps off automatic before changing the reservoir.",
+  "schema_version": 1,
+  "id": "switch-dosing-to-manual",
+  "title": "Take nutrient dosing off automatic",
+  "criticality": "critical",
+  "frequency": "regular",
+  "persona": {
+    "group": "Volunteer growers on the evening shift at a community hydroponics farm",
+    "knows": [
+      "that the reservoir is about to be drained and refilled",
+      "that the pumps must not dose into an empty tank"
+    ],
+    "does_not_know": [
+      "where the monitor keeps pump controls",
+      "whether the change takes effect at once"
+    ],
+    "context": "Standing in the growing bay with wet gloves, using the shared tablet on the wall"
+  },
+  "goal": "Make sure the pumps will not add nutrients while the tank is empty",
+  "scenario": "You are about to drain and refill the Bay 4 reservoir. Before you start, stop the system from adding nutrient solution on its own, and check that it has stopped.",
+  "avoided_hints": ["Automatic nutrient dosing", "Dosing"],
+  "start_state": {
+    "url": "/",
+    "data": "readings as shipped with the page; dosing on automatic",
+    "locale": "en-GB",
+    "viewport_width": 768
+  },
+  "success_condition": {
+    "all": [
+      { "target": "role=status", "text": "Nutrient dosing is now manual" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "click", "target": "role=switch[name=\"Automatic nutrient dosing\"]" },
+    { "action": "expect", "target": "role=status", "text": "Nutrient dosing is now manual" }
+  ]
+}

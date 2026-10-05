@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ground-truth.schema.json",
+  "title": "Seeded-defect ground truth for one evaluation fixture (EVALUATION-PLAN §3, §4.1)",
+  "description": "One file per fixture at evals/fixtures/<name>/ground-truth.json. A detection matches a defect when it carries the defect's criterion (or one of its also_criteria) on the defect's route, and, when the scorer compares locations, the defect's selector. Route \"*\" means every route in the fixture's fixture.json. Keys starting with _ are notes for people.",
+  "type": "object",
+  "required": ["fixture", "clean", "defects"],
+  "properties": {
+    "fixture": {
+      "description": "The fixture folder name.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "clean": {
+      "description": "true only for a control fixture with no seeded defect; every detection on it is a false positive.",
+      "type": "boolean"
+    },
+    "provenance": {
+      "description": "How the ground truth was set: who seeded it, and the status of the two-labeller review that EVALUATION-PLAN §3 requires for analytical defects.",
+      "type": "string",
+      "minLength": 10
+    },
+    "defects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/defect" }
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "clean": { "const": true } }, "required": ["clean"] },
+      "then": { "properties": { "defects": { "maxItems": 0 } } },
+      "else": { "properties": { "defects": { "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "criterionId": {
+      "description": "A QUALITY-BAR or knowledge-file rule ID (TYP-06, A11Y-13, I18N-14, CMP-05), a tell (SLP-07), a Nielsen heuristic (H1-H10), a cognitive-walkthrough question (CW-Q1-CW-Q4) or a WCAG 2.2 success criterion (1.4.3).",
+      "type": "string",
+      "pattern": "^(?:[A-Z][A-Z0-9]*-\\d{2}|H(?:[1-9]|10)|CW-Q[1-4]|[1-4]\\.\\d{1,2}\\.\\d{1,2})$"
+    },
+    "checkName": {
+      "description": "A `uie audit` check name (ARCHITECTURE §7.2), or lint for `uie lint`.",
+      "enum": ["routes", "console", "media", "axe", "keyboard", "dialogs", "layout", "palette", "targets", "contrast", "forms", "live-regions", "lang", "cross-page", "cvd", "census", "states", "motion", "tells", "copy", "i18n", "vitals", "lint"]
+    },
+    "defect": {
+      "type": "object",
+      "required": ["id", "criterion", "kind", "route", "state", "selector", "description", "expected_severity_band", "expected_check"],
+      "properties": {
+        "id": {
+          "description": "<fixture>-D<NN>, unique within the fixture.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*-D\\d{2}$"
+        },
+        "criterion": { "$ref": "#/$defs/criterionId" },
+        "also_criteria": {
+          "description": "Other IDs a correct detection of the same defect may carry (for example the rule ID behind a WCAG criterion).",
+          "type": "array",
+          "items": { "$ref": "#/$defs/criterionId" },
+          "uniqueItems": true
+        },
+        "kind": {
+          "description": "deterministic: a script should detect it (uie audit, uie lint or uie journey); judged: it needs an isolated evaluator, critic or auditor.",
+          "enum": ["deterministic", "judged"]
+        },
+        "route": {
+          "description": "The URL path served from the fixture folder, without the query string; * for every route.",
+          "type": "string",
+          "pattern": "^(?:\\*|/[^\\s?#]*)$"
+        },
+        "state": {
+          "description": "A state name from fixture.json for that route, or * for every state.",
+          "type": "string",
+          "minLength": 1
+        },
+        "selector": {
+          "description": "A CSS selector for the main element, or null for a page-level or missing-element defect.",
+          "type": ["string", "null"]
+        },
+        "file": {
+          "description": "The source file, relative to the fixture folder, where the defect is authored (used to match uie lint hits).",
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 20
+        },
+        "expected_severity_band": {
+          "description": "[lowest, highest] mean severity a sound rating should land in, on the 0-4 scale.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer", "minimum": 0, "maximum": 4 }
+        },
+        "expected_check": {
+          "description": "The primary check that should detect a deterministic defect; null for a judged one.",
+          "anyOf": [
+            { "$ref": "#/$defs/checkName" },
+            { "type": "null" }
+          ]
+        },
+        "also_detected_by": {
+          "description": "Further checks expected to report the same defect.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/checkName" },
+          "uniqueItems": true
+        },
+        "seeded_from": {
+          "description": "evaluation-plan when the defect is one of the examples listed for this fixture in EVALUATION-PLAN §3; added for the extra defects of the same family.",
+          "enum": ["evaluation-plan", "added"]
+        },
+        "cw": {
+          "description": "For walkthrough defects: where the cognitive walkthrough of a journey should record the failure.",
+          "type": "object",
+          "required": ["journey", "step", "question"],
+          "properties": {
+            "journey": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+            "step": { "type": "integer", "minimum": 1 },
+            "question": { "enum": ["CW-Q1", "CW-Q2", "CW-Q3", "CW-Q4"] },
+            "failure_story": { "type": "string", "minLength": 20 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "judged" } }, "required": ["kind"] },
+          "then": { "properties": { "expected_check": { "type": "null" } } },
+          "else": { "properties": { "expected_check": { "$ref": "#/$defs/checkName" } } }
+        }
+      ]
+    }
+  }
+}

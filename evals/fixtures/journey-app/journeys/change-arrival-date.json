@@ -1,0 +1,44 @@
+{
+  "_comment": "Core journey: change the arrival date after reaching the berth list. Its first step is the seeded CW-Q2 failure (the only way back to the dates is inside the More options menu).",
+  "schema_version": 1,
+  "id": "change-arrival-date",
+  "title": "Change the arrival date while choosing a berth",
+  "criticality": "core",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Skippers of visiting cruising yachts who have not used this harbour before",
+    "knows": [
+      "the new day they now plan to arrive, one day later than first entered",
+      "that they are part way through booking"
+    ],
+    "does_not_know": [
+      "where the booking keeps the dates once they are past the first page",
+      "that a menu button holds more actions"
+    ],
+    "context": "Weather has changed the plan; they are on the list of berths and want to move the arrival by a day"
+  },
+  "goal": "See which berths are free for the new arrival day without starting again",
+  "scenario": "You were about to book a place for Saturday 17 October 2026, but the forecast means you will now arrive on Sunday 18 October instead, still around three in the afternoon. Make the booking use the new day.",
+  "avoided_hints": ["Change dates", "More options"],
+  "start_state": {
+    "url": "/berths.html?date=2026-10-17&nights=2&arrive=15:00",
+    "data": "all four visitor berths are free on 17, 18 and 19 October 2026",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/berths\\.html\\?date=2026-10-18" },
+      { "target": "#stay-date", "text": "Sunday 18 October 2026" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/berths.html?date=2026-10-17&nights=2&arrive=15:00" },
+    { "action": "click", "target": "role=button[name=\"More options\"]" },
+    { "action": "click", "target": "role=link[name=\"Change dates\"]" },
+    { "action": "expect", "url": "^/(index\\.html)?\\?date=2026-10-17" },
+    { "action": "fill", "target": "label=Arrival date", "value": "2026-10-18" },
+    { "action": "click", "target": "role=button[name=\"Check berths\"]" },
+    { "action": "expect", "target": "#stay-date", "text": "Sunday 18 October 2026" }
+  ]
+}

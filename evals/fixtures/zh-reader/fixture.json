@@ -1,0 +1,34 @@
+{
+  "name": "zh-reader",
+  "product": "Linchuan ceramics museum audio guide",
+  "description": "A Read surface in Simplified Chinese: the text version of a museum audio guide, with an exhibit index and one exhibit page, seeded with CJK typography, language-tagging and input-method defects (EVALUATION-PLAN §3, claims C1, C2).",
+  "routes": [
+    {
+      "path": "/",
+      "surface": "guide-index",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "not-found",
+          "actions": [
+            { "action": "fill", "target": "role=textbox[name=\"展品编号\"]", "value": "99" },
+            { "action": "click", "target": "role=button[name=\"查找\"]" },
+            { "action": "expect", "target": "role=status", "text": "没有找到" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/exhibit-12.html",
+      "surface": "exhibit",
+      "mode": "read",
+      "states": [
+        { "name": "default", "actions": [] }
+      ]
+    }
+  ],
+  "journeys": ["find-exhibit-by-number"],
+  "themes": ["light"],
+  "locales": { "list": ["zh-CN"], "default": "zh-CN" }
+}

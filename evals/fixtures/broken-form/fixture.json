@@ -1,0 +1,63 @@
+{
+  "name": "broken-form",
+  "product": "Margins textbook exchange",
+  "description": "A three-step seller flow for a student-run used-textbook exchange (account, listing, handover point), with the form defects of EVALUATION-PLAN §3 spread so that each route carries at most one defect per criterion (claims C1, C2, C6).",
+  "routes": [
+    {
+      "path": "/",
+      "surface": "account",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] }
+      ]
+    },
+    {
+      "path": "/listing.html",
+      "surface": "listing",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Continue\"]" },
+            { "action": "expect", "text": "Invalid" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/handover.html",
+      "surface": "handover",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Publish listing\"]" },
+            { "action": "expect", "text": "Choose where you will meet the buyer" }
+          ]
+        },
+        {
+          "name": "draft-saved",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Save draft\"]" },
+            { "action": "expect", "text": "Draft saved" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/done.html",
+      "surface": "listing-live",
+      "mode": "read",
+      "states": [
+        { "name": "default", "actions": [] }
+      ]
+    }
+  ],
+  "journeys": ["list-a-textbook"],
+  "themes": ["light"],
+  "locales": { "list": ["en-GB"], "default": "en-GB" }
+}

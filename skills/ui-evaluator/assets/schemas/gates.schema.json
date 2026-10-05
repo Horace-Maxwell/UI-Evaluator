@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gates.schema.json",
+  "title": "Gate computation result (QUALITY-BAR §2–§4)",
+  "type": "object",
+  "required": [
+    "run",
+    "target",
+    "achieved",
+    "criteria",
+    "gates"
+  ],
+  "properties": {
+    "schema": {
+      "const": "gates"
+    },
+    "run": {
+      "type": "string"
+    },
+    "computed_at": {
+      "type": "string"
+    },
+    "target": {
+      "enum": [
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ]
+    },
+    "achieved": {
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ]
+    },
+    "achieved_label": {
+      "type": "string"
+    },
+    "criteria": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "state",
+          "detail"
+        ],
+        "properties": {
+          "state": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_run",
+              "not_applicable",
+              "degraded",
+              "waived"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "gate": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "advisory": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_run",
+              "not_applicable",
+              "degraded",
+              "waived"
+            ]
+          },
+          "failing": {
+            "type": "array"
+          },
+          "degraded": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "blocking": {
+      "type": "array"
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  }
+}

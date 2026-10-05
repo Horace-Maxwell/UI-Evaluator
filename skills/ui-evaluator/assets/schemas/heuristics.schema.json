@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "heuristics.schema.json",
+  "title": "Inspection vocabulary IDs (assets/data/heuristics.json): Nielsen H1–H10, ISO 9241-110 ISO-1…7, CW-Q1…Q4, HAX-G1…G18",
+  "type": "object",
+  "required": ["schema", "version", "as_of", "source", "nielsen", "iso_9241_110", "cw_questions", "hax"],
+  "properties": {
+    "schema": { "const": "heuristics" },
+    "version": { "type": "integer", "minimum": 1 },
+    "as_of": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+    "source": { "type": "string", "minLength": 1 },
+    "nielsen": {
+      "type": "array", "minItems": 10, "maxItems": 10,
+      "items": { "type": "object", "required": ["id", "name"], "properties": { "id": { "type": "string", "pattern": "^H(10|[1-9])$" }, "name": { "type": "string", "minLength": 3 }, "means": { "type": "string" } }, "additionalProperties": false }
+    },
+    "iso_9241_110": {
+      "type": "array", "minItems": 7, "maxItems": 7,
+      "items": { "type": "object", "required": ["id", "name"], "properties": { "id": { "type": "string", "pattern": "^ISO-[1-7]$" }, "name": { "type": "string", "minLength": 3 }, "nielsen": { "type": "array", "items": { "type": "string", "pattern": "^H(10|[1-9])$" } }, "note": { "type": "string" } }, "additionalProperties": false }
+    },
+    "cw_questions": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": { "type": "object", "required": ["id", "question"], "properties": { "id": { "type": "string", "pattern": "^CW-Q[1-4]$" }, "question": { "type": "string", "minLength": 3 } }, "additionalProperties": false }
+    },
+    "hax": {
+      "type": "array", "minItems": 18, "maxItems": 18,
+      "items": { "type": "object", "required": ["id", "guideline", "phase"], "properties": { "id": { "type": "string", "pattern": "^HAX-G(1[0-8]|[1-9])$" }, "guideline": { "type": "string", "minLength": 3 }, "phase": { "enum": ["initially", "during interaction", "when wrong", "over time"] }, "also_cite": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": false }
+    }
+  },
+  "patternProperties": { "^_": {} },
+  "additionalProperties": false
+}

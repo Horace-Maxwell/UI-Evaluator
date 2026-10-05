@@ -1,0 +1,51 @@
+{
+  "_comment": "Critical journey for the clean-control fixture. Test values only: the card number is the fixture's own test number and the email uses a reserved domain.",
+  "schema_version": 1,
+  "id": "request-seed-packets",
+  "title": "Request seed packets to collect",
+  "criticality": "critical",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Library members who grow vegetables in a small garden or on a balcony",
+    "knows": [
+      "their library card number",
+      "which vegetables they want to grow this spring",
+      "which library branch is nearest"
+    ],
+    "does_not_know": [
+      "how many packets one person may borrow",
+      "whether seed must be returned"
+    ],
+    "context": "At home on a phone in early spring, planning what to sow next weekend"
+  },
+  "goal": "Have a few packets of seed waiting at the library this weekend",
+  "scenario": "You want to grow radishes and lettuce on your balcony this spring. Your library card number is 20004817. Ask the library to keep seed for both at the branch on Hollin Lane, and make sure the request has gone through.",
+  "avoided_hints": [
+    "Request packets",
+    "Varieties",
+    "Collect from"
+  ],
+  "start_state": {
+    "url": "/borrow.html",
+    "data": "the catalogue ships with the page; no earlier requests",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "/borrow\\.html$" },
+      { "target": "role=status", "text": "Request sent" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/borrow.html" },
+    { "action": "fill", "target": "role=textbox[name=\"Library card number\"]", "value": "20004817" },
+    { "action": "fill", "target": "role=textbox[name=\"Full name\"]", "value": "Test Member" },
+    { "action": "fill", "target": "role=textbox[name=\"Email address\"]", "value": "member@example.org" },
+    { "action": "check", "target": "role=checkbox[name=\"Cherry Belle radish\"]" },
+    { "action": "check", "target": "role=checkbox[name=\"Lollo Rosso lettuce\"]" },
+    { "action": "select", "target": "role=combobox[name=\"Collect from\"]", "value": "hollin-lane" },
+    { "action": "click", "target": "role=button[name=\"Request packets\"]" },
+    { "action": "expect", "target": "role=status", "text": "Request sent" }
+  ]
+}

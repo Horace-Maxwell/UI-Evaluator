@@ -1,0 +1,89 @@
+{
+  "name": "journey-app",
+  "product": "Saltmarsh Quay visitor berths",
+  "description": "A tidal harbour's visitor-berth booking: a four-step flow plus a confirmation page, with seeded learnability problems and an analytical cognitive-walkthrough ground truth (EVALUATION-PLAN §3, claims C2 and C3). Stay details travel in the query string, so each route below carries a complete example stay.",
+  "routes": [
+    {
+      "path": "/",
+      "surface": "plan-visit",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Check berths\"]" },
+            { "action": "expect", "target": "role=alert", "state": "focused" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/berths.html?date=2026-10-17&nights=2&arrive=15:00",
+      "surface": "choose-berth",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "menu-open",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"More options\"]" },
+            { "action": "expect", "target": "role=link[name=\"Change dates\"]", "state": "visible" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14",
+      "surface": "boat-details",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Continue\"]" },
+            { "action": "expect", "target": "role=alert", "state": "focused" }
+          ]
+        },
+        {
+          "name": "length-over-limit",
+          "actions": [
+            { "action": "fill", "target": "role=textbox[name=\"Boat name\"]", "value": "Curlew" },
+            { "action": "fill", "target": "role=textbox[name=\"Length\"]", "value": "10.4" },
+            { "action": "fill", "target": "role=textbox[name=\"Draught in metres\"]", "value": "1.5" },
+            { "action": "fill", "target": "role=textbox[name=\"MMSI\"]", "value": "123456789" },
+            { "action": "click", "target": "role=button[name=\"Continue\"]" },
+            { "action": "expect", "text": "Booking stopped" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/review.html?date=2026-10-17&nights=2&arrive=15:00&berth=C3&boat=Curlew&loa=10.4&draught=1.5&mmsi=123456789",
+      "surface": "review",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        {
+          "name": "errors",
+          "actions": [
+            { "action": "click", "target": "role=button[name=\"Confirm booking\"]" },
+            { "action": "expect", "target": "role=alert", "state": "focused" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/confirmed.html?date=2026-10-17&nights=2&berth=C3",
+      "surface": "confirmation",
+      "mode": "read",
+      "states": [
+        { "name": "default", "actions": [] }
+      ]
+    }
+  ],
+  "journeys": ["book-visitor-berth", "change-arrival-date"],
+  "themes": ["light"],
+  "locales": { "list": ["en-GB"], "default": "en-GB" }
+}

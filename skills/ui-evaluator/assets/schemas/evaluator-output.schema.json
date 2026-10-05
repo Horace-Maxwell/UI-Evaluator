@@ -1,0 +1,588 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evaluator-output.schema.json",
+  "title": "Output of an isolated evaluator role (ARCHITECTURE §6.3)",
+  "type": "object",
+  "required": [
+    "role",
+    "agent",
+    "candidates"
+  ],
+  "properties": {
+    "schema": {
+      "const": "evaluator-output"
+    },
+    "role": {
+      "enum": [
+        "heuristic-evaluator",
+        "walkthrough-evaluator",
+        "design-critic",
+        "accessibility-auditor",
+        "code-reviewer"
+      ]
+    },
+    "agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lens": {
+      "type": "string"
+    },
+    "phase": {
+      "enum": [
+        "review",
+        "locate"
+      ]
+    },
+    "model": {
+      "type": "string"
+    },
+    "isolation": {
+      "enum": [
+        "subagent",
+        "process",
+        "single-context"
+      ]
+    },
+    "run": {
+      "type": "string"
+    },
+    "packet_hash": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "passes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "pass"
+        ],
+        "properties": {
+          "pass": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "summary": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "elements_inspected": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "routes": {
+          "type": "array"
+        },
+        "states": {
+          "type": "array"
+        },
+        "controls_exercised": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "controls_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "out_of_scope": {
+          "type": "array"
+        }
+      }
+    },
+    "task_suitability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "task",
+          "completable"
+        ],
+        "properties": {
+          "task": {
+            "type": "string"
+          },
+          "completable": {
+            "type": "boolean"
+          },
+          "evidence": {}
+        }
+      }
+    },
+    "cross_screen_pass": {
+      "type": "boolean"
+    },
+    "hax_audit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "guideline",
+          "status"
+        ],
+        "properties": {
+          "guideline": {
+            "type": "string",
+            "pattern": "^HAX-G([1-9]|1[0-8])$"
+          },
+          "status": {
+            "enum": [
+              "applied",
+              "violated",
+              "not_applicable"
+            ]
+          },
+          "evidence": {}
+        }
+      }
+    },
+    "not_assessable": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "evidence": {}
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/candidate"
+      }
+    },
+    "resolved_incompletes": {
+      "type": "array"
+    },
+    "needs_human": {
+      "type": "array"
+    },
+    "coverage_labels": {
+      "type": "object"
+    },
+    "source_locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "file"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "col": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "method": {
+            "type": "string"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      }
+    },
+    "ease_estimates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "ease"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string"
+          },
+          "ease": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "layer": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "heuristic",
+            "cw",
+            "wcag",
+            "rule",
+            "iso",
+            "hax",
+            "design",
+            "principle"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primary": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "route": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          }
+        },
+        "theme": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "bbox": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "crop": {
+          "type": "string"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "journey": {
+          "type": "string"
+        },
+        "step": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "col": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "method": {
+              "type": "string"
+            },
+            "confidence": {
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ]
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "measurement",
+            "screenshot",
+            "probe",
+            "trace",
+            "aria",
+            "console",
+            "network",
+            "quote",
+            "metric",
+            "tool",
+            "annotation",
+            "video",
+            "absence",
+            "code"
+          ]
+        },
+        "ref": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "value": {}
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "foundBy": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "HE",
+            "CW",
+            "critic",
+            "a11y",
+            "code",
+            "tool",
+            "feedback",
+            "study",
+            "verifier",
+            "human",
+            "pure",
+            "klm"
+          ]
+        },
+        "pass": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "check": {
+          "type": "string"
+        },
+        "engine": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "factorNotes": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "type": "string"
+        },
+        "impact": {
+          "type": "string"
+        },
+        "persistence": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "problem_type",
+        "criteria"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "problem_type": {
+          "enum": [
+            "single_location",
+            "multiple_locations",
+            "overall_structure",
+            "missing_element"
+          ]
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/criterion"
+          }
+        },
+        "impact": {
+          "type": "string"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/location"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "found_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/foundBy"
+          }
+        },
+        "factor_notes": {
+          "$ref": "#/$defs/factorNotes"
+        },
+        "evidence_level": {
+          "enum": [
+            "E0",
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ]
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "post_unseal": {
+          "type": "boolean"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "if": {
+        "properties": {
+          "problem_type": {
+            "const": "missing_element"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "evidence"
+        ]
+      },
+      "else": {
+        "required": [
+          "locations"
+        ]
+      }
+    }
+  }
+}

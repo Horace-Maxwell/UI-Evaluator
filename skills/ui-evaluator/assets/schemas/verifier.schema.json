@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verifier.schema.json",
+  "title": "Finding verifier verdicts (METHODS §5 step 2)",
+  "type": "object",
+  "required": [
+    "verdicts"
+  ],
+  "properties": {
+    "schema": {
+      "const": "verifier"
+    },
+    "run": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "iteration": {
+      "type": "integer"
+    },
+    "verdicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "verdict",
+          "reason"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "confirmed",
+              "rejected",
+              "needs_human",
+              "split_required"
+            ]
+          },
+          "step": {
+            "enum": [
+              "evidence_resolution",
+              "harness_filter",
+              "scope_filter",
+              "reproduction",
+              "absence",
+              "dismissal_ledger",
+              "confidence_ceiling",
+              "none"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "ceiling_flag": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          },
+          "split_into": {
+            "type": "array"
+          },
+          "suggested_criterion": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "isolation": {
+      "enum": [
+        "subagent",
+        "process",
+        "single-context"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^_": {}
+  }
+}

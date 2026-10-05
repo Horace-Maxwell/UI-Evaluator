@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tells.schema.json",
+  "title": "Tell catalogue data (assets/data/tells.json), the machine twin of references/knowledge/anti-slop.md (AUTHORING §11)",
+  "type": "object",
+  "required": ["schema", "version", "as_of", "source", "tells"],
+  "properties": {
+    "schema": { "const": "tells" },
+    "version": { "type": "integer", "minimum": 1 },
+    "as_of": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+    "source": { "type": "string", "minLength": 1 },
+    "note": { "type": "string" },
+    "count": { "type": "integer", "minimum": 0 },
+    "tells": {
+      "type": "object",
+      "patternProperties": { "^SLP-\\d{2}$": { "$ref": "#/$defs/tell" } },
+      "additionalProperties": false
+    }
+  },
+  "patternProperties": { "^_": {} },
+  "additionalProperties": false,
+  "$defs": {
+    "layer": { "enum": ["src", "dom", "pix", "copy", "jdg"] },
+    "tell": {
+      "type": "object",
+      "required": ["id", "title", "class", "gate", "statement", "detect", "default_severity", "modes", "reliability", "audience", "precision", "status", "first_seen", "acceptable_via_brief", "sources"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^SLP-\\d{2}$" },
+        "title": { "type": "string", "minLength": 3 },
+        "class": { "enum": ["hard", "soft", "experimental"] },
+        "gate": { "const": "G4" },
+        "statement": { "type": "string", "minLength": 3 },
+        "looks_like": { "type": "string" },
+        "detect": {
+          "type": "object",
+          "required": ["layer", "layers", "params"],
+          "properties": {
+            "layer": { "anyOf": [{ "$ref": "#/$defs/layer" }, { "type": "null" }] },
+            "layers": { "type": "array", "items": { "$ref": "#/$defs/layer" }, "uniqueItems": true },
+            "params": { "type": "object" },
+            "summary": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "default_severity": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "modes": { "type": "array", "minItems": 1, "items": { "enum": ["persuade", "operate", "read", "experience"] } },
+        "reliability": { "enum": ["S", "M", "W", null] },
+        "reliability_note": { "type": "string" },
+        "audience": { "enum": ["P0", "P1", "P2", null] },
+        "audience_note": { "type": "string" },
+        "precision": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "status": { "enum": ["active", "rising", "migrating", "obsolete", "calibrating"] },
+        "status_note": { "type": "string" },
+        "first_seen": { "type": ["string", "null"] },
+        "acceptable_via_brief": { "type": "boolean" },
+        "allowed_when": { "type": "string" },
+        "fix": { "type": "string" },
+        "from": { "type": ["string", "null"] },
+        "counts_toward_g4": { "type": ["boolean", "string"] },
+        "sources": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "id": { "enum": ["SLP-12", "SLP-13"] } } }, "then": { "properties": { "acceptable_via_brief": { "const": false } } } },
+        { "if": { "properties": { "class": { "const": "experimental" } } }, "then": { "properties": { "counts_toward_g4": { "const": false } } } }
+      ]
+    }
+  }
+}

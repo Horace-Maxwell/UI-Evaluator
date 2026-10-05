@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vitals defects</title>
+<style>
+  body { margin: 0; font: 16px/1.5 Georgia, serif; color: #1d1d1f; background: #fff; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px; }
+  .promo { height: 260px; background: #f1e7d0; display: flex; align-items: center; padding: 0 24px; }
+  button { font: inherit; padding: 12px 16px; border: 1px solid #555; background: #f4f4f4; color: #111; }
+</style>
+</head>
+<body>
+<main id="main">
+  <h1>Order history</h1>
+  <p>Your last 20 orders, newest first. Select an order to see its delivery timeline and invoice.</p>
+  <p><button type="button" id="more" aria-expanded="false" aria-controls="extra">Show older orders</button></p>
+  <div id="extra" hidden><p>Orders from last year are archived.</p></div>
+  <ol><li>Order 1042: delivered</li><li>Order 1041: delivered</li><li>Order 1040: returned</li></ol>
+</main>
+<script>
+  // CLS: a promotion inserted above the content after load, without reserved space (FUN-07).
+  setTimeout(() => {
+    const p = document.createElement('div');
+    p.className = 'promo';
+    p.textContent = 'Free delivery on orders over 50 euros this week';
+    const main = document.getElementById('main');
+    main.insertBefore(p, main.firstChild);
+  }, 300);
+  // INP: a click handler that blocks the main thread for 350 ms (FUN-08).
+  document.getElementById('more').addEventListener('click', (e) => {
+    const end = performance.now() + 350;
+    while (performance.now() < end) { /* busy */ }
+    const b = e.currentTarget;
+    const open = b.getAttribute('aria-expanded') === 'true';
+    b.setAttribute('aria-expanded', String(!open));
+    document.getElementById('extra').hidden = open;
+  });
+</script>
+</body>
+</html>

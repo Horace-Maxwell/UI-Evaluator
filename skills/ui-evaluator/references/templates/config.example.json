@@ -1,0 +1,114 @@
+{
+  "_comment": "Example .ui-evaluator/config.json (ARCHITECTURE §8.2, config.schema.json) for a fictional logistics dashboard. `uie init` writes the real file and every uie command validates it on load. Keys starting with _ are notes for people. Never put secrets here; reference environment variables instead.",
+  "schema_version": 1,
+  "_schema_version": "The version of config.schema.json this file follows.",
+  "app": {
+    "_comment": "How uie starts and reaches the app. start runs in cwd; uie waits until ready_url answers 2xx or timeout_ms passes. Only local hosts are opened unless the owner passes --allow-remote (ARCHITECTURE §7.1). env holds non-secret switches only.",
+    "start": "npm run dev",
+    "cwd": ".",
+    "base_url": "http://localhost:5173",
+    "ready_url": "http://localhost:5173/",
+    "timeout_ms": 60000,
+    "env": { "VITE_FIXTURES": "on" }
+  },
+  "routes": [
+    {
+      "_comment": "One entry per route in scope. surface and mode repeat PRODUCT.md (Surfaces), which owns them; change them there first. states are recipes that put the page into each state worth auditing (menus, dialogs, tabs, empty, error), as uie probe actions run after the route loads. two_d_regions may scroll sideways on purpose (FUN-05). mask hides regions that change between captures (ARCHITECTURE §9).",
+      "path": "/shipments",
+      "surface": "shipment-list",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        { "name": "filters-open", "actions": [
+          { "action": "click", "target": "role=button[name=\"Filter shipments\"]" },
+          { "action": "expect", "target": "role=dialog[name=\"Filter shipments\"]", "state": "visible" }
+        ] },
+        { "name": "empty", "actions": [ { "action": "goto", "url": "/shipments?fixture=none" } ] },
+        { "name": "error", "actions": [ { "action": "goto", "url": "/shipments?fixture=server-error" } ] }
+      ],
+      "two_d_regions": ["[data-region=\"shipment-table\"]"],
+      "mask": ["[data-region=\"last-updated\"]"]
+    },
+    {
+      "path": "/",
+      "surface": "overview",
+      "mode": "operate",
+      "states": [ { "name": "default", "actions": [] } ],
+      "mask": ["[data-region=\"live-map\"]"]
+    },
+    {
+      "path": "/shipments/SH-1042",
+      "surface": "shipment-detail",
+      "mode": "operate",
+      "states": [
+        { "name": "default", "actions": [] },
+        { "name": "exception-dialog", "actions": [
+          { "action": "click", "target": "role=button[name=\"Report a delivery problem\"]" },
+          { "action": "expect", "target": "role=dialog", "state": "visible" }
+        ] },
+        { "name": "exception-dialog-closed", "actions": [
+          { "action": "click", "target": "role=button[name=\"Report a delivery problem\"]" },
+          { "action": "press", "key": "Escape" },
+          { "action": "expect", "target": "role=button[name=\"Report a delivery problem\"]", "state": "focused" }
+        ] }
+      ]
+    },
+    {
+      "path": "/help/delivery-problems",
+      "surface": "help",
+      "mode": "read",
+      "states": [ { "name": "default", "actions": [] } ]
+    }
+  ],
+  "matrix": {
+    "_comment": "Defaults from QUALITY-BAR §2.4. widths in CSS px; height and device_scale_factor fix the capture viewport (ARCHITECTURE §9). themes lists only the themes that ship. preferences run for every criterion; g2_preferences add evidence for accessibility. Narrowing the matrix makes the affected criteria degraded.",
+    "widths": [320, 375, 768, 1024, 1280, 1440],
+    "height": 900,
+    "device_scale_factor": 1,
+    "themes": ["light", "dark"],
+    "preferences": ["default", "reduced-motion"],
+    "g2_preferences": ["forced-colors", "more-contrast"]
+  },
+  "locales": {
+    "_comment": "Every locale that ships. CJK locales switch on the I18N and CJK typography checks. switch says how uie selects a locale: query parameter, path prefix or accept-language header.",
+    "list": ["en-GB", "zh-CN"],
+    "default": "en-GB",
+    "switch": { "method": "query", "param": "lang" }
+  },
+  "platform_profile": "web",
+  "_platform_profile": "web | apple | material | fluent | enterprise-zh (FRAMEWORK §12.3). Profiles change defaults, never the WCAG floor.",
+  "depth": "standard",
+  "_depth": "quick | standard | rigorous (FRAMEWORK §7); the skill states the expected cost of a depth before running it.",
+  "target_level": "L3",
+  "_target_level": "Mirrors PRODUCT.md (Target assurance level), which holds the reason. Change it there first.",
+  "evaluator_models": {
+    "_comment": "inherit uses the lead's model. Rigorous depth needs at least two model configurations for heuristic evaluators and critics (HCI-027). External CLIs run only when the owner opts in. Every provider and model is recorded in the run manifest (EVD-07).",
+    "default": "inherit",
+    "heuristic-evaluator": ["inherit", "<second model configuration>"],
+    "design-critic": ["inherit", "<second model configuration>"],
+    "external_cli": { "enabled": false, "command": null }
+  },
+  "fix_policy": {
+    "_comment": "FRAMEWORK §10. mode: direct (the owner approves the plan) or auto. record: commit (one commit per finding on branch) or patch (one patch file per finding). Caps may be lowered, never raised.",
+    "mode": "direct",
+    "record": "commit",
+    "branch": "ui-evaluator/fixes",
+    "max_attempts_per_finding": 3,
+    "max_fixes_per_run": 30,
+    "max_judgment_rounds": 2,
+    "risk_pause_threshold": 0.2
+  },
+  "threshold_overrides": [
+    {
+      "_comment": "Each override needs a reason, who decided and a review date, and is listed in every report. WCAG thresholds cannot be overridden (QUALITY-BAR §2.3). parameter names come from assets/data/rules.json.",
+      "criterion": "COL-01",
+      "parameter": "min_token_share",
+      "default": 0.9,
+      "value": 0.8,
+      "scope": "/",
+      "reason": "The live map widget sets its own colours; its replacement is planned for the next quarter",
+      "decided_by": "Owner (head of operations product)",
+      "review_by": "2027-01-31"
+    }
+  ]
+}

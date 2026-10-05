@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "saturated-faces.schema.json",
+  "title": "Dated list of saturated faces for SLP-20 (assets/data/saturated-faces.json)",
+  "type": "object",
+  "required": ["schema", "version", "as_of", "source", "framing", "faces"],
+  "properties": {
+    "schema": { "const": "saturated-faces" },
+    "version": { "type": "integer", "minimum": 1 },
+    "as_of": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+    "source": { "type": "string", "minLength": 1 },
+    "framing": { "type": "string", "pattern": "not a ban list" },
+    "requires": { "type": "string" },
+    "exempt": { "type": "array", "items": { "type": "string" } },
+    "match_note": { "type": "string" },
+    "groups": { "type": "object", "additionalProperties": { "type": "object", "required": ["description"] } },
+    "faces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "group", "note", "match"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "group": { "enum": ["first-order", "second-order", "house-style"] },
+          "note": { "type": "string", "minLength": 1 },
+          "match": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9 -]+$" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^_": {} },
+  "additionalProperties": false
+}

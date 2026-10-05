@@ -1,0 +1,388 @@
+{
+  "schema": "words-zh",
+  "version": 1,
+  "as_of": "2026-10",
+  "source": "skills/ui-evaluator/references/knowledge/cjk.md: zh strings for CPY-02 and CPY-04, I18N-16, I18N-17 (canonical terms) and I18N-18 (jargon review list); QUALITY-BAR CPY-02 and CPY-04 name the gate strings.",
+  "note": "Patterns are JavaScript regular-expression sources matched with the u flag. Strings beyond the ones QUALITY-BAR names are UI-Evaluator renderings of the English lists and carry `heuristic: true` ([heuristic] in cjk.md). 请 and 抱歉 are idiomatic and never CPY-04 hits; 抱歉 for a user's own mistake is advisory (CPY-09, I18N-16). No openly licensed Chinese words-to-avoid list exists, so I18N-18 is a review prompt, never evidence for SLP-14.",
+  "lists": {
+    "error_generic": {
+      "rule": "CPY-04",
+      "level": "gate",
+      "static_level": "advisory",
+      "description": "Fail when shown without a cause and a fix (generic), or when a code stands alone. Patterns match whole messages.",
+      "entries": [
+        {
+          "text": "发生错误",
+          "category": "generic",
+          "pattern": "^发生(?:了)?错误[。！!]?$"
+        },
+        {
+          "text": "出错了",
+          "category": "generic",
+          "pattern": "^出错了[。！!]?$"
+        },
+        {
+          "text": "操作失败",
+          "category": "generic",
+          "pattern": "^操作失败[。！!]?$",
+          "note": "fails without a reason or fix"
+        },
+        {
+          "text": "出现错误",
+          "category": "generic",
+          "pattern": "^出现(?:了)?错误[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "请求失败",
+          "category": "generic",
+          "pattern": "^请求失败[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "出了点问题",
+          "category": "generic",
+          "pattern": "^出了点问题[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "系统异常",
+          "category": "generic",
+          "pattern": "^系统异常[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "无效",
+          "category": "invalid",
+          "pattern": "^无效[。！!]?$"
+        },
+        {
+          "text": "非法",
+          "category": "invalid",
+          "pattern": "^非法[。！!]?$"
+        },
+        {
+          "text": "输入无效",
+          "category": "invalid",
+          "pattern": "^输入无效[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "格式错误",
+          "category": "invalid",
+          "pattern": "^格式错误[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "非法输入",
+          "category": "invalid",
+          "pattern": "^非法输入[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "非法操作",
+          "category": "invalid",
+          "pattern": "^非法操作[。！!]?$",
+          "heuristic": true
+        },
+        {
+          "text": "禁止访问",
+          "category": "forbidden",
+          "pattern": "^禁止访问[。！!]?$",
+          "heuristic": true,
+          "note": "fails with no next step"
+        },
+        {
+          "text": "无权访问",
+          "category": "forbidden",
+          "pattern": "^无权访问[。！!]?$",
+          "heuristic": true,
+          "note": "fails with no next step"
+        },
+        {
+          "text": "哎呀",
+          "category": "oops",
+          "pattern": "^哎呀"
+        },
+        {
+          "text": "糟糕",
+          "category": "oops",
+          "pattern": "^糟糕"
+        },
+        {
+          "text": "错误 500",
+          "category": "code_only",
+          "pattern": "^错误\\s*[：:]?\\s*\\d{3,5}$"
+        }
+      ]
+    },
+    "error_blame": {
+      "rule": "CPY-04",
+      "level": "gate",
+      "static_level": "advisory",
+      "entries": [
+        {
+          "text": "您忘记了…",
+          "pattern": "您忘记了"
+        },
+        {
+          "text": "你忘了…",
+          "pattern": "你忘了",
+          "heuristic": true
+        },
+        {
+          "text": "你没有填写…",
+          "pattern": "你没有填写",
+          "heuristic": true
+        }
+      ]
+    },
+    "link_text_vague": {
+      "rule": "CPY-02",
+      "level": "gate",
+      "description": "Fail when the link's whole accessible name is one of these and its programmatic context (sentence, list item, table cell or aria-describedby) does not say where it leads. Implements WCAG 2.4.4, so it cannot be waived.",
+      "entries": [
+        {
+          "text": "点击这里",
+          "pattern": "^点击这里$"
+        },
+        {
+          "text": "点此",
+          "pattern": "^点此$"
+        },
+        {
+          "text": "这里",
+          "pattern": "^这里$"
+        },
+        {
+          "text": "更多",
+          "pattern": "^更多$"
+        },
+        {
+          "text": "了解更多",
+          "pattern": "^了解更多$"
+        }
+      ],
+      "review_heuristic": [
+        {
+          "text": "查看更多",
+          "pattern": "^查看更多$"
+        },
+        {
+          "text": "查看详情",
+          "pattern": "^查看详情$"
+        },
+        {
+          "text": "详情",
+          "pattern": "^详情$"
+        },
+        {
+          "text": "点我",
+          "pattern": "^点我$"
+        }
+      ]
+    },
+    "placeholder_text": {
+      "rule": "CPY-01",
+      "level": "gate",
+      "heuristic": true,
+      "description": "zh placeholder copy left in shipped UI. cjk.md names no zh list for CPY-01; these are UI-Evaluator renderings of the English list. CPY-01 reports a heuristic entry only when it is most of the string (a UI label that is the placeholder), not when prose mentions it.",
+      "entries": [
+        {
+          "text": "待定",
+          "pattern": "^待定[。！!]?$|（待定）|\\(待定\\)"
+        },
+        {
+          "text": "待补充",
+          "pattern": "待补充"
+        },
+        {
+          "text": "文案待定",
+          "pattern": "文案待(?:定|补充|确认)"
+        },
+        {
+          "text": "占位文本",
+          "pattern": "占位(?:文本|文字|符)",
+          "heuristic": true
+        },
+        {
+          "text": "此处输入文字",
+          "pattern": "(?:此处|这里)(?:输入|填写|放置)(?:文字|文案|内容)"
+        },
+        {
+          "text": "示例文本",
+          "pattern": "示例(?:文本|文字|文案)",
+          "heuristic": true
+        }
+      ]
+    },
+    "placeholder_identities": {
+      "rule": "SLP-13",
+      "level": "gate",
+      "heuristic": true,
+      "description": "Stock zh placeholder people and companies (UI-Evaluator rendering of the English lexicon; SLP-13 says 'and similar'). Person names match only standalone, after a label (负责人：) or before a particle or title (的, 先生), because Chinese text has no spaces between words.",
+      "entries": [
+        {
+          "text": "张三",
+          "kind": "person",
+          "pattern": "(?:(?<!\\p{Script=Han})|(?<=(?:姓名|名字|用户|用户名|联系人|负责人|作者|客户|员工|学生|老师|收件人|发件人|业主|顾客|会员|讲师|医生|患者|经办人|申请人)[：:]?))张三(?!丰)(?=$|[^\\p{Script=Han}]|的|等|先生|女士|同学|老师|和|与|、)",
+          "note": "张三丰 is a historical figure; matches only as a standalone name (not inside a longer word such as 主张三段式)"
+        },
+        {
+          "text": "李四",
+          "kind": "person",
+          "pattern": "(?:(?<!\\p{Script=Han})|(?<=(?:姓名|名字|用户|用户名|联系人|负责人|作者|客户|员工|学生|老师|收件人|发件人|业主|顾客|会员|讲师|医生|患者|经办人|申请人)[：:]?))李四(?!光)(?=$|[^\\p{Script=Han}]|的|等|先生|女士|同学|老师|和|与|、)",
+          "note": "李四光 is a geologist; matches only as a standalone name (not inside a longer word such as 主张三段式)"
+        },
+        {
+          "text": "王五",
+          "kind": "person",
+          "pattern": "(?:(?<!\\p{Script=Han})|(?<=(?:姓名|名字|用户|用户名|联系人|负责人|作者|客户|员工|学生|老师|收件人|发件人|业主|顾客|会员|讲师|医生|患者|经办人|申请人)[：:]?))王五(?=$|[^\\p{Script=Han}]|的|等|先生|女士|同学|老师|和|与|、)",
+          "note": "matches only as a standalone name (not inside a longer word such as 主张三段式)"
+        },
+        {
+          "text": "赵六",
+          "kind": "person",
+          "pattern": "(?:(?<!\\p{Script=Han})|(?<=(?:姓名|名字|用户|用户名|联系人|负责人|作者|客户|员工|学生|老师|收件人|发件人|业主|顾客|会员|讲师|医生|患者|经办人|申请人)[：:]?))赵六(?=$|[^\\p{Script=Han}]|的|等|先生|女士|同学|老师|和|与|、)",
+          "note": "matches only as a standalone name (not inside a longer word such as 主张三段式)"
+        },
+        {
+          "text": "某某公司",
+          "kind": "company",
+          "pattern": "某某(?:公司|科技|集团)|XX(?:公司|科技|集团)|xx(?:公司|科技|集团)"
+        },
+        {
+          "text": "示例公司",
+          "kind": "company",
+          "pattern": "示例(?:公司|企业)"
+        }
+      ]
+    },
+    "jargon_review": {
+      "rule": "I18N-18",
+      "level": "advisory",
+      "heuristic": true,
+      "never_evidence_for": "SLP-14",
+      "description": "Workplace jargon to flag in user-facing copy and rewrite around what the product does. Each hit is judged by sense; technical meanings pass (链路 in network tracing, 矩阵 in mathematics), as does quoted user language.",
+      "sources": [
+        "光明日报 (汉卿), 2022-01-09",
+        "半月谈评论员 张曦, via 中国网, 2024-02-05",
+        "Ant Design copywriting",
+        "Arco style guide"
+      ],
+      "entries": [
+        {
+          "text": "赋能",
+          "pattern": "赋能"
+        },
+        {
+          "text": "闭环",
+          "pattern": "闭环"
+        },
+        {
+          "text": "链路",
+          "pattern": "链路"
+        },
+        {
+          "text": "颗粒度",
+          "pattern": "颗粒度"
+        },
+        {
+          "text": "底层逻辑",
+          "pattern": "底层逻辑"
+        },
+        {
+          "text": "拉通",
+          "pattern": "拉通"
+        },
+        {
+          "text": "组合拳",
+          "pattern": "组合拳"
+        },
+        {
+          "text": "矩阵 (as in 触达矩阵)",
+          "pattern": "矩阵"
+        },
+        {
+          "text": "心智 (as in 击穿心智)",
+          "pattern": "心智"
+        },
+        {
+          "text": "引爆点",
+          "pattern": "引爆点"
+        },
+        {
+          "text": "全场景",
+          "pattern": "全场景"
+        },
+        {
+          "text": "无缝流转",
+          "pattern": "无缝流转"
+        }
+      ]
+    },
+    "canonical_terms": {
+      "rule": "I18N-17",
+      "level": "advisory",
+      "description": "One term per concept across the zh-CN catalogue; record the choice in the DESIGN.md glossary.",
+      "entries": [
+        {
+          "use": "登录",
+          "not": [
+            "登陆"
+          ],
+          "pattern": "登陆"
+        },
+        {
+          "use": "账号",
+          "not": [
+            "帐号"
+          ],
+          "pattern": "帐号"
+        },
+        {
+          "use": "其他",
+          "not": [
+            "其它"
+          ],
+          "pattern": "其它"
+        },
+        {
+          "use": "抱歉",
+          "not": [
+            "对不起"
+          ],
+          "pattern": "对不起"
+        },
+        {
+          "use": "添加",
+          "not": [
+            "添加 and 新增 for the same action"
+          ],
+          "note": "Semi's choice; any one term, used consistently"
+        },
+        {
+          "use": "禁用名单",
+          "not": [
+            "黑名单"
+          ],
+          "pattern": "黑名单",
+          "note": "Semi, inclusive wording"
+        }
+      ]
+    },
+    "not_hits": {
+      "description": "Idiomatic in Chinese; never CPY-04 hits.",
+      "entries": [
+        {
+          "text": "请",
+          "note": "polite imperative"
+        },
+        {
+          "text": "抱歉",
+          "note": "only for faults the system caused; for the user's own mistake it is advisory (CPY-09, I18N-16)"
+        }
+      ]
+    }
+  }
+}

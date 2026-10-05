@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form defects</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; padding: 16px; color: #1a1a1a; background: #fff; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  label { display: block; }
+  input { font: inherit; padding: 6px 8px; border: 2px solid #6b6b6b; border-radius: 4px; }
+  button { font: inherit; padding: 8px 14px; border: 2px solid #0b4f9c; background: #0b4f9c; color: #fff; border-radius: 6px; }
+  .req { color: #c00000; }
+  .field-error { color: #c00000; margin: 4px 0 0; }
+  input.bad { border-color: #c00000; }
+  form { margin-bottom: 40px; }
+</style>
+</head>
+<body>
+  <!-- Defects seeded for the forms check:
+       #join   required "Full name" marked by colour only; email labelled by placeholder only; phone with aria-label only;
+               no autocomplete on name, email, phone; errors shown as unassociated text without aria-invalid; focus stays
+               on the submit button; generic messages ("Invalid", "Oops, something went wrong"); phone error shown only
+               by a red border
+       #login  password and one-time-code fields without the right autocomplete tokens and with paste blocked; the
+               member-number field (the username) has no autocomplete; a blaming message ("You forgot …")
+       #promo  an input group without a form: placeholder-only label, a code-only message ("Error 4031") -->
+  <main>
+    <h1>Join the allotment society</h1>
+    <form id="join" novalidate>
+      <p><label for="j-name" class="req">Full name</label><input id="j-name" name="name" required></p>
+      <p><input id="j-email" name="email" type="email" placeholder="Email address" required></p>
+      <p><input id="j-phone" name="phone" type="tel" aria-label="Phone"></p>
+      <p><label for="j-plot">Plot number</label><input id="j-plot" name="plot"></p>
+      <button type="submit" id="join-submit">Join</button>
+    </form>
+
+    <form id="login" novalidate>
+      <h2>Member sign in</h2>
+      <p><label for="m-user">Member number</label><input id="m-user" name="member"></p>
+      <p><label for="m-pass">Password</label><input id="m-pass" name="password" type="password" onpaste="return false"></p>
+      <p><label for="m-otp">Verification code</label><input id="m-otp" name="otp" inputmode="numeric" autocomplete="off"></p>
+      <button type="submit" id="login-submit">Sign in</button>
+    </form>
+
+    <div id="promo">
+      <input id="promo-code" name="promo" placeholder="Promo code">
+      <button type="button" id="promo-apply">Apply</button>
+      <p id="promo-msg"></p>
+    </div>
+  </main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  function say(after, text) {
+    let p = after.nextElementSibling;
+    if (!p || !p.classList.contains('field-error')) {
+      p = document.createElement('span');
+      p.className = 'field-error';
+      after.insertAdjacentElement('afterend', p);
+    }
+    p.textContent = text;
+  }
+  $('join').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!$('j-name').value.trim()) say($('j-name'), 'Invalid');
+    const email = $('j-email').value.trim();
+    if (!email) say($('j-email'), 'Invalid');
+    else if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) say($('j-email'), 'Oops, something went wrong');
+    const phone = $('j-phone').value.trim();
+    $('j-phone').classList.toggle('bad', !!phone && !/^[0-9 +()-]+$/.test(phone));
+  });
+  $('m-otp').addEventListener('paste', (e) => e.preventDefault());
+  $('promo-apply').addEventListener('click', () => {
+    if (!$('promo-code').value.trim()) $('promo-msg').textContent = 'Error 4031';
+  });
+  $('login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!$('m-pass').value) say($('m-pass'), 'You forgot your password');
+  });
+</script>
+</body>
+</html>

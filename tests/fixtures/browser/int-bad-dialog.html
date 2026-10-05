@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dialog defects</title>
+<link rel="icon" href="data:,">
+<style>
+  body { font: 16px/1.5 sans-serif; margin: 0; padding: 16px; color: #1a1a1a; background: #fff; }
+  :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+  button, [role=button] { font: inherit; padding: 8px 14px; border: 2px solid #0b4f9c; background: #fff; color: #0b4f9c; border-radius: 6px; display: inline-block; }
+  .overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.5); display: none; align-items: center; justify-content: center; }
+  .overlay.open { display: flex; }
+  .box { background: #fff; padding: 24px; border-radius: 8px; max-width: 360px; }
+  label { display: block; }
+</style>
+</head>
+<body>
+  <!-- Defects seeded for the dialogs check (A11Y-06):
+       #bad-dialog   a backdrop but no aria-modal, no accessible name, background not inert, focus not moved in, Tab
+                     reaches the page behind, Escape ignored, Cancel does not return focus to #open-bad
+       #share-dialog its trigger (#open-share, a span with role=button) opens only on click; otherwise correct except
+                     that the page behind is not inert -->
+  <main>
+    <h1>Dialog defects</h1>
+    <p><button type="button" id="open-bad" aria-haspopup="dialog">Edit address</button></p>
+    <p><a href="#help" id="help-link">Help</a></p>
+    <p><span role="button" tabindex="0" id="open-share" aria-haspopup="dialog">Share</span></p>
+  </main>
+  <div class="overlay" id="bad-overlay">
+    <div class="box" role="dialog" id="bad-dialog">
+      <p>Change your delivery address.</p>
+      <label for="addr">Street address</label>
+      <input id="addr" autocomplete="street-address">
+      <button type="button" id="bad-cancel">Cancel</button>
+    </div>
+  </div>
+  <div class="overlay" id="share-overlay">
+    <div class="box" role="dialog" aria-modal="true" aria-labelledby="share-title" id="share-dialog">
+      <h2 id="share-title">Share this list</h2>
+      <button type="button" id="share-close">Close</button>
+    </div>
+  </div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  $('open-bad').addEventListener('click', () => $('bad-overlay').classList.add('open'));
+  $('bad-cancel').addEventListener('click', () => $('bad-overlay').classList.remove('open'));
+  let shareOpener = null;
+  $('open-share').addEventListener('click', () => {
+    shareOpener = $('open-share');
+    $('share-overlay').classList.add('open');
+    $('share-close').focus();
+  });
+  function closeShare() {
+    $('share-overlay').classList.remove('open');
+    if (shareOpener) shareOpener.focus();
+  }
+  $('share-close').addEventListener('click', closeShare);
+  $('share-dialog').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeShare();
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      $('share-close').focus();
+    }
+  });
+</script>
+</body>
+</html>

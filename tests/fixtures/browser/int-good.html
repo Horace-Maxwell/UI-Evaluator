@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a garden plot</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --ink: #1b1b1b; --accent: #0b5cad; --accent-dark: #083f78; --accent-press: #052a50; --muted: #4a4a4a; --danger: #a8231b; --line: #6b6b6b; }
+  html { scroll-padding-top: 96px; scroll-padding-bottom: 24px; }
+  body { margin: 0; font: 16px/1.5 sans-serif; color: var(--ink); background: #fff; }
+  .skip { position: absolute; left: 16px; top: -64px; z-index: 10; background: #fff; color: var(--accent); padding: 8px 12px; }
+  .skip:focus { top: 8px; }
+  header { position: sticky; top: 0; z-index: 2; height: 72px; background: #fff; border-bottom: 1px solid #8a8a8a; display: flex; align-items: center; gap: 24px; padding: 0 16px; }
+  header nav { display: flex; gap: 12px; }
+  header nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 4px; }
+  main { max-width: 40rem; padding: 16px 16px 64px; }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: var(--accent-dark); text-decoration-thickness: 3px; }
+  a:active { color: var(--accent-press); background: #e3edf8; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .btn { font: inherit; padding: 10px 18px; border-radius: 6px; border: 2px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-height: 44px; }
+  .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn:active { background: var(--accent-press); border-color: var(--accent-press); }
+  .btn.secondary { background: #fff; color: var(--accent); }
+  .btn.secondary:hover { background: #e7f0fa; }
+  .btn.secondary:active { background: #c9dcf1; }
+  .btn:disabled { background: #efefef; border-color: #8f8f8f; color: #595959; cursor: not-allowed; }
+  .field { margin: 0 0 20px; }
+  label { display: block; font-weight: 600; margin-bottom: 4px; }
+  input[type=text], input[type=email], input[type=tel], input[type=password], textarea { font: inherit; width: 100%; max-width: 24rem; box-sizing: border-box; padding: 8px 10px; border: 2px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); }
+  input[type=text]:hover, input[type=email]:hover, input[type=tel]:hover, input[type=password]:hover, textarea:hover { border-color: var(--ink); }
+  input[aria-invalid=true], textarea[aria-invalid=true] { border-color: var(--danger); }
+  .hint { color: var(--muted); margin: 4px 0 0; }
+  .error { color: var(--danger); font-weight: 600; margin: 4px 0 0; }
+  .summary { border: 3px solid var(--danger); padding: 12px 16px; margin-bottom: 24px; }
+  .summary h2 { margin: 0 0 8px; font-size: 1.25rem; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; margin-right: 8px; vertical-align: -2px; animation: spin 0.8s linear infinite; }
+  .spinner[hidden] { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  dialog { max-width: 28rem; border: 2px solid var(--line); border-radius: 8px; padding: 20px 24px; }
+  dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  section { margin-top: 40px; }
+  .cards { list-style: none; padding: 0; margin: 16px 0; }
+  .card { position: relative; border: 2px solid #8a8a8a; border-radius: 8px; padding: 12px 16px; max-width: 20rem; }
+  .card h3 { margin: 0 0 4px; font-size: 1.125rem; }
+  .card .stretched::after { content: ""; position: absolute; inset: 0; }
+  .card .stretched:focus-visible { outline: none; }
+  .card:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <nav aria-label="Main"><a href="#plots">Plots</a> <a href="#booking-section">Booking</a> <a href="#signin-section">Sign in</a></nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <h1>Book a garden plot</h1>
+    <p>Choose a plot, then book it with the form below. <a href="#rules-info">Plot rules</a> apply to every booking.</p>
+
+    <section id="plots" aria-labelledby="plots-title">
+      <h2 id="plots-title">Your drafts</h2>
+      <ul class="cards">
+        <li class="card"><h3><a class="stretched" href="#booking-section">Plot 12, north bed</a></h3><p class="hint">4 × 3 m, full sun</p></li>
+      </ul>
+      <div class="actions">
+        <button type="button" class="btn secondary" id="save-draft"><span class="spinner" hidden></span><span class="label">Save draft</span></button>
+        <button type="button" class="btn secondary" id="export"><span class="spinner" hidden></span><span class="label">Export plot list</span></button>
+        <button type="button" class="btn secondary" id="open-rules" aria-haspopup="dialog">Read the plot rules</button>
+      </div>
+      <p id="another-hint" class="hint">You can book a second plot after your first booking is confirmed.</p>
+      <p><button type="button" class="btn secondary" id="book-another" disabled aria-describedby="another-hint">Book another plot</button></p>
+      <p role="status" id="status" class="hint"></p>
+    </section>
+
+    <section id="booking-section" aria-labelledby="booking-title">
+      <h2 id="booking-title">Booking</h2>
+      <form id="booking" novalidate>
+        <div id="booking-summary" class="summary" tabindex="-1" hidden>
+          <h2 id="booking-summary-title">There is a problem</h2>
+          <ul id="booking-summary-list"></ul>
+        </div>
+        <p class="hint">Fields marked (required) must be filled in.</p>
+        <div class="field">
+          <label for="full-name">Full name (required)</label>
+          <input type="text" id="full-name" name="name" autocomplete="name" required aria-describedby="full-name-error">
+          <p id="full-name-error" class="error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="email">Email address (required)</label>
+          <input type="email" id="email" name="email" autocomplete="email" required aria-describedby="email-hint email-error">
+          <p id="email-hint" class="hint">We send the booking confirmation here.</p>
+          <p id="email-error" class="error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="phone">Phone (optional)</label>
+          <input type="tel" id="phone" name="phone" autocomplete="tel" aria-describedby="phone-error">
+          <p id="phone-error" class="error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="notes">Notes for the warden (optional)</label>
+          <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn" id="book">Book the plot</button>
+      </form>
+    </section>
+
+    <section id="signin-section" aria-labelledby="signin-title">
+      <h2 id="signin-title">Sign in</h2>
+      <form id="signin" novalidate>
+        <div class="field">
+          <label for="username">Email or username</label>
+          <input type="text" id="username" name="username" autocomplete="username" required aria-describedby="username-error">
+          <p id="username-error" class="error" hidden></p>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required aria-describedby="password-error">
+          <p id="password-error" class="error" hidden></p>
+        </div>
+        <button type="submit" class="btn" id="signin-submit">Sign in</button>
+      </form>
+    </section>
+
+    <section id="news-section" aria-labelledby="news-title">
+      <h2 id="news-title">Plot news</h2>
+      <form id="news">
+        <div class="field">
+          <label for="news-email">Email for the monthly plot newsletter</label>
+          <input type="email" id="news-email" name="email" autocomplete="email" required>
+        </div>
+        <button type="submit" class="btn secondary" id="news-submit">Subscribe</button>
+      </form>
+    </section>
+
+    <section id="rules-info" aria-labelledby="rules-info-title">
+      <h2 id="rules-info-title">Plot rules</h2>
+      <p>Keep paths clear and compost green waste on site.</p>
+    </section>
+  </main>
+
+  <dialog id="rules" aria-labelledby="rules-title">
+    <h2 id="rules-title">Plot rules</h2>
+    <p>Keep paths clear, compost green waste on site, and water before 9 am in summer.</p>
+    <div class="actions"><button type="button" class="btn" id="close-rules">Close</button></div>
+  </dialog>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const status = $('status');
+  function busy(btn, on, text) {
+    btn.querySelector('.spinner').hidden = !on;
+    btn.querySelector('.label').textContent = text;
+    btn.setAttribute('aria-busy', on ? 'true' : 'false');
+  }
+  $('save-draft').addEventListener('click', () => {
+    const b = $('save-draft');
+    busy(b, true, 'Saving…');
+    setTimeout(() => { busy(b, false, 'Save draft'); status.textContent = 'Draft saved.'; }, 400);
+  });
+  $('export').addEventListener('click', () => {
+    const b = $('export');
+    busy(b, true, 'Exporting…');
+    setTimeout(() => { busy(b, false, 'Export plot list'); status.textContent = 'Export ready: 12 plots.'; }, 1500);
+  });
+  $('open-rules').addEventListener('click', () => $('rules').showModal());
+  $('close-rules').addEventListener('click', () => $('rules').close());
+
+  function validate(form, rules, summary) {
+    const problems = [];
+    for (const [id, check] of rules) {
+      const input = $(id);
+      const msg = check(input.value.trim());
+      const err = $(`${id}-error`);
+      if (msg) {
+        input.setAttribute('aria-invalid', 'true');
+        err.textContent = msg;
+        err.hidden = false;
+        problems.push([id, msg]);
+      } else {
+        input.removeAttribute('aria-invalid');
+        err.hidden = true;
+        err.textContent = '';
+      }
+    }
+    if (summary) {
+      const list = $(`${summary}-list`);
+      list.innerHTML = '';
+      for (const [id, msg] of problems) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${id}`;
+        a.textContent = msg;
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+      $(summary).hidden = problems.length === 0;
+      if (problems.length) $(summary).focus();
+    } else if (problems.length) $(problems[0][0]).focus();
+    return problems.length === 0;
+  }
+  const email = (v) => (!v ? 'Enter your email address' : /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) ? '' : 'Enter an email address in the correct format, like name@example.com');
+  $('booking').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const ok = validate(e.target, [
+      ['full-name', (v) => (v ? '' : 'Enter your full name')],
+      ['email', email],
+      ['phone', (v) => (!v || /^[+0-9 ()-]{6,}$/.test(v) ? '' : 'Enter a phone number using digits, like 01632 960 001')],
+    ], 'booking-summary');
+    if (ok) {
+      const b = $('book');
+      b.disabled = true;
+      setTimeout(() => { b.disabled = false; status.textContent = 'Booking saved. We sent a confirmation email.'; }, 300);
+    }
+  });
+  $('signin').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const ok = validate(e.target, [
+      ['username', (v) => (v ? '' : 'Enter your email address or username')],
+      ['password', (v) => (v ? '' : 'Enter your password')],
+    ], null);
+    if (ok) setTimeout(() => { status.textContent = 'Signed in.'; }, 200);
+  });
+  $('news').addEventListener('submit', (e) => {
+    e.preventDefault();
+    status.textContent = 'Subscribed to the plot newsletter.';
+  });
+</script>
+</body>
+</html>

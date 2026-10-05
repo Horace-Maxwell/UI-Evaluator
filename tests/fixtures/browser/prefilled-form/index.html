@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Low-stock level</title>
+<style>body{font:18px/1.5 Georgia,serif;margin:24px;color:#222;background:#fff} label,input,button{display:block;font:inherit;margin:8px 0} input{padding:8px;border:2px solid #555;min-height:44px} button{min-height:44px;padding:8px 16px} .error{color:#a00}</style></head>
+<body><main>
+<h1>Low-stock level</h1>
+<form id="level" novalidate>
+  <label for="qty">Warn me when fewer than</label>
+  <p id="qty-hint">Number of items</p>
+  <input id="qty" name="qty" type="number" min="1" value="10" required aria-describedby="qty-hint">
+  <p id="qty-error" class="error" hidden>Enter how many items, for example 10</p>
+  <button type="submit">Save level</button>
+  <p class="feedback" role="status" id="saved"></p>
+</form>
+<script>
+const form = document.getElementById('level');
+const qty = document.getElementById('qty');
+const err = document.getElementById('qty-error');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (!qty.value) {
+    err.hidden = false;
+    qty.setAttribute('aria-invalid', 'true');
+    qty.setAttribute('aria-describedby', 'qty-hint qty-error');
+    qty.focus();
+    document.getElementById('saved').textContent = '';
+    return;
+  }
+  err.hidden = true;
+  qty.removeAttribute('aria-invalid');
+  document.getElementById('saved').textContent = 'Saved: we will warn you below ' + qty.value + ' items.';
+});
+</script>
+</main></body></html>
