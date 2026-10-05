@@ -1,0 +1,32 @@
+# The checks every push and pull request must pass: core and lint tests, and the packaging and traceability checks.
+# The browser suite needs a browser and runs in browser.yml, by hand.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # The pinned runtime packages, without a browser: the colour tests compare against colorjs.io when it is present.
+      - name: Install the runtime packages
+        run: npm install --prefix skills/ui-evaluator/scripts --no-audit --no-fund
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: npm test
+      - run: npm run test:lint
+      - run: npm run validate

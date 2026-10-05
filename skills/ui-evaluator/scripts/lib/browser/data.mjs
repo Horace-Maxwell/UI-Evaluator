@@ -82,6 +82,19 @@ export function matchEntries(list, text) {
   return out;
 }
 
+/**
+ * The matched strings themselves, as written in the text and in order: a match inside a longer one is dropped, so
+ * "repaircafe@example.org" is reported once and not again as "example.org".
+ */
+export function matchedTexts(list, text) {
+  const kept = [];
+  for (const m of matchEntries(list, text).sort((a, b) => a.index - b.index || b.match.length - a.match.length)) {
+    if (!m.match || kept.some((k) => m.index >= k.index && m.index + m.match.length <= k.index + k.match.length)) continue;
+    kept.push(m);
+  }
+  return [...new Set(kept.map((m) => m.match))];
+}
+
 export function matchList(list, text) {
   const hits = [];
   for (const e of list) {

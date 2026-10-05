@@ -13,6 +13,9 @@
 | see how the skill itself is tested | [framework/EVALUATION-PLAN.md](framework/EVALUATION-PLAN.md) |
 | see what has been measured so far, with the data | [../evals/README.md](../evals/README.md#results) |
 | run a build benchmark of your own | [../tools/bench/README.md](../tools/bench/README.md) |
+| see which release thresholds are met | [../evals/README.md](../evals/README.md#status-against-the-release-thresholds) |
+| report a wrong finding, a bug or a security problem | the [issue forms](https://github.com/Horace-Maxwell/UI-Evaluator/issues/new/choose); [../SECURITY.md](../SECURITY.md) for security |
+| contribute a change | [../CONTRIBUTING.md](../CONTRIBUTING.md) |
 | find the run behind an image in the README | [assets/README.md](assets/README.md) |
 | trace a rule to its evidence, or a lecture concept to its implementation | [framework/TRACEABILITY.md](framework/TRACEABILITY.md) |
 | look up a term (English / 中文) | [framework/GLOSSARY.md](framework/GLOSSARY.md) |

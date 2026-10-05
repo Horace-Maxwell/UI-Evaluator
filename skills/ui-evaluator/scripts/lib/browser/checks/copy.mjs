@@ -3,7 +3,7 @@
 // SLP-12 (fabricated-proof candidates vs PRODUCT.md facts), SLP-13 (placeholder identities), SLP-14 (buzzwords,
 // theatre and generic hero phrases, aphorisms, em-dash density) and SLP-15 (generic CTA set). Word lists come from
 // assets/data/words-*.json (gate entries only; heuristic entries are recorded for review, never as hits).
-import { wordList, matchList, matchEntries } from '../data.mjs';
+import { wordList, matchList, matchEntries, matchedTexts } from '../data.mjs';
 import { classifyCase, round } from '../thresholds.mjs';
 import { loadData } from '../../gates/rules.mjs';
 
@@ -192,7 +192,8 @@ export async function run(ctx) {
     if (allowed('SLP-13')) {
       for (const t of data.texts) {
         if (t.demo || t.code) continue;
-        const found = matchList(lists.identities, t.text);
+        // Name what the page shows ("repaircafe@example.org"), not the list entry that matched it.
+        const found = matchedTexts(lists.identities, t.text);
         if (found.length) hits.push(ctx.hit({ rule: 'SLP-13', title: `Placeholder identity: ${found[0]}`, description: `"${t.text.slice(0, 120)}" contains a stock placeholder identity (${found.join(', ')}) outside labelled demo data.`, location: where(t), evidence: [{ type: 'quote', value: t.text.slice(0, 200), detail: found.join(', ') }] }));
       }
     }

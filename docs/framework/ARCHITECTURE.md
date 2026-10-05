@@ -63,7 +63,8 @@ UI-Evaluator/
 ├── tests/                       # node:test unit and integration tests
 ├── tools/                       # repo maintenance: sync-agents, validate-skill, check-traceability, build-rules, score-fixtures;
 │                                #   bench/ runs the build benchmark, readme-media/ draws the README images
-├── README.md · README.zh-CN.md · LICENSE (Apache-2.0) · NOTICE.md · CHANGELOG.md · CONTRIBUTING.md
+├── .github/                     # CI (checks.yml; browser.yml by hand), issue forms, pull request checklist
+├── README.md · README.zh-CN.md · LICENSE (Apache-2.0) · NOTICE.md · CHANGELOG.md · CONTRIBUTING.md · SECURITY.md
 └── package.json                 # dev scripts only (test, validate, sync)
 ```
 
@@ -517,6 +518,6 @@ All other colour maths (parsing every CSS colour syntax, sRGB ↔ OKLab and OKLC
 | Detector calibration | per-rule precision and recall on the seeded fixtures; false positives on `clean-control`; the deterministic release thresholds of EVALUATION-PLAN §6 | `tools/score-fixtures.mjs`, `evals/fixtures/`, `evals/labels/` |
 | Skill behaviour | with-skill vs without-skill runs on eval prompts; trace assertions (files read, commands run, gates computed) across ≥ 2 model families [IMP-058] | `evals/` (skill-creator loop; `claude plugin eval` where available) |
 | Build benchmark | the same build prompt with and without the skill, graded by one script on the shipped files (output assertions compared, process assertions kept apart), judged blind in pairs by model comparators and a person | `tools/bench/` (helpers tested in `tests/core/bench-tools.test.mjs`), `evals/results/` |
-| Packaging | `skills-ref validate skills/ui-evaluator`; `claude plugin validate .` and `claude plugin validate .claude-plugin/plugin.json`; `tools/validate-skill.mjs` (frontmatter, line budgets, TOCs, links, CLI commands, flags and check names named in guidance, agents in sync, `rules.json` ⊇ QUALITY-BAR IDs, fixture names kept out of the skill); `tools/check-traceability.mjs` (every research adopt ID has a disposition) | `npm run validate`, CI |
+| Packaging | `skills-ref validate skills/ui-evaluator`; `claude plugin validate .` and `claude plugin validate .claude-plugin/plugin.json`; `tools/validate-skill.mjs` (frontmatter, line budgets, TOCs, links, CLI commands, flags and check names named in guidance, agents in sync, `rules.json` ⊇ QUALITY-BAR IDs, fixture names kept out of the skill); `tools/check-traceability.mjs` (every research adopt ID has a disposition) | `npm run validate` and the core and lint suites in CI on every push (`.github/workflows/checks.yml`); the browser suite locally or in the manual browser workflow; `skills-ref` and the plugin validators by hand before a release |
 
-Release checklist: all of the above green; CHANGELOG entry; version bump in `plugin.json`, `SKILL.md` metadata and `scripts/package.json`; tell catalogue statuses reviewed.
+Release checklist: all of the above green, including `skills-ref validate` and both `claude plugin validate` runs; CHANGELOG entry; version bump in `plugin.json`, `marketplace.json`, `SKILL.md` metadata, `scripts/package.json` and the root `package.json`; tell catalogue statuses reviewed; the status against EVALUATION-PLAN §6 updated in `evals/README.md`, with any bar the release does not meet named in its README.

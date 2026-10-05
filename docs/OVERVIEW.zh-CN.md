@@ -176,13 +176,15 @@ tools/                      维护脚本；tools/bench 运行构建基准测试�
 
 ## 11. 怎么用
 
-- **Claude Code（推荐，可以真正隔离评估员）**：添加插件市场 `Horace-Maxwell/UI-Evaluator` 后安装 `ui-evaluator` 插件。之后可以直接说"帮我审查这个页面"，或使用 `/ui-evaluator:audit` 等命令。
+- **Claude Code（推荐，可以真正隔离评估员）**：添加插件市场 `Horace-Maxwell/UI-Evaluator` 后安装 `ui-evaluator` 插件，两条命令见 [README 的快速上手](../README.zh-CN.md#快速上手)。之后可以直接说"帮我审查这个页面"，或使用 `/ui-evaluator:audit` 等命令。
 - **其他助手（Codex、Cursor、Gemini CLI 等）**：`npx skills add Horace-Maxwell/UI-Evaluator`。没有子代理的环境会顺序执行各个角色，并标注 `DEGRADED`。
 - 常见说法示例：
   - "给我们的宠物医院预约页做一个新设计。" → setup → direct → build → audit → fix → verify → report
   - "这个后台页面哪里有问题？" → audit（标准深度）→ report
   - "这是 5 场可用性测试的记录，帮我整理并修复。" → ingest → fix
   - "帮我设计一轮可用性测试。" → study
+  - "这个能上线了吗？" → verify → report
+- 检测器判错了、程序出错或缺少规则，请用 GitHub 上的 issue 表单提交；安全问题按 [SECURITY.md](../SECURITY.md) 私下报告。
 
 ## 12. 局限
 
@@ -192,3 +194,4 @@ tools/                      维护脚本；tools/bench 运行构建基准测试�
 - 目前只覆盖网页；原生 iOS、Android 和桌面应用不在范围内。
 - 数据可视化和高密度企业界面方面的调研相对少，相关规则会如实说明。
 - **实测结果。** 四轮基准测试里，技能稳定提升了能验证的质量：零硬性 AI 痕迹，守住无障碍底线，不编造内容，页面与回复的检查满足 83–100%（不用技能为 0–70%；评分脚本另有几条检查技能自己文件的断言，不用技能的版本不可能通过，所以不计入比较）。但在真人盲评中，它还不能稳定做出更美的页面：最近一轮 8 组里，不用技能的版本有 6 组被判为更美。代价约为 2.7 倍 token 和 2.3 倍时间。只有一位评委、样本量小，详见 [README 的实测结果](../README.zh-CN.md#实测结果) 和 [evals/README.md](../evals/README.md#results)。
+- **发布门槛。** 对照[评估计划](framework/EVALUATION-PLAN.md) §6，2.0.0 达到了测试、检测器和脚本化无障碍检查的门槛；没有达到“构建结果”门槛（要求真人盲评中至少 70% 偏好技能版，实际 12 组中只有 3 组）；标准深度审计、多样性、修复循环、诚实与行为这四项还没有测量。逐项情况见[门槛对照表](../evals/README.md#status-against-the-release-thresholds)。

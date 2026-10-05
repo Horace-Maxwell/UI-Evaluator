@@ -3,11 +3,12 @@
 </p>
 
 <p align="center">
-  <b>English</b> · <a href="README.zh-CN.md">中文</a> · <a href="#install">Install</a> · <a href="#measured-results">Measured results</a> · <a href="docs/README.md">Documentation</a>
+  <b>English</b> · <a href="README.zh-CN.md">中文</a> · <a href="#quick-start">Quick start</a> · <a href="#how-it-works">How it works</a> · <a href="#measured-results">Measured results</a> · <a href="#questions">Questions</a> · <a href="docs/README.md">Documentation</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Horace-Maxwell/UI-Evaluator/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Horace-Maxwell/UI-Evaluator?style=flat-square&label=release&color=191714"></a>
+  <a href="https://github.com/Horace-Maxwell/UI-Evaluator/actions/workflows/checks.yml"><img alt="Checks on the main branch" src="https://img.shields.io/github/actions/workflow/status/Horace-Maxwell/UI-Evaluator/checks.yml?branch=main&style=flat-square&label=checks"></a>
   <a href="LICENSE"><img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-191714?style=flat-square"></a>
   <img alt="Node.js 20 or newer" src="https://img.shields.io/badge/node-%E2%89%A5%2020-191714?style=flat-square">
   <img alt="Checks WCAG 2.2 AA" src="https://img.shields.io/badge/checks-WCAG%202.2%20AA-C2341B?style=flat-square">
@@ -16,6 +17,17 @@
 Ask a coding agent for a web page and you get one in minutes. Too often it is the same page: a tracked-caps label over the headline, half the headline in the accent colour, a row of icon cards, and an address nobody checked.
 
 **UI-Evaluator** is an Agent Skill and Claude Code plugin that gives the agent a method instead of taste alone. It starts from the product, not from defaults. It checks the rendered page in a real browser. Critics who never saw the builder's reasoning judge the design. It fixes one verified problem at a time, and its report claims no more than the evidence shows.
+
+## Quick start
+
+In a Claude Code session:
+
+```
+/plugin marketplace add Horace-Maxwell/UI-Evaluator
+/plugin install ui-evaluator@ui-evaluator
+```
+
+Then ask as you normally would: "Review this checkout page for usability and accessibility before we ship", or "Build a sign-up page for our evening classes; here is what it needs to do". The first time it needs a browser, the skill asks before it downloads Playwright's Chromium (about 110 MB). For other agents, see [Install](#install).
 
 ## Before and after
 
@@ -77,12 +89,7 @@ Every criterion has an ID, a threshold, a way to verify it and a source in [QUAL
 
 ## Install
 
-**Claude Code (plugin, recommended).** Adds the skill, nine slash commands, nine isolated subagents and an optional lint hook. In a Claude Code session:
-
-```
-/plugin marketplace add Horace-Maxwell/UI-Evaluator
-/plugin install ui-evaluator@ui-evaluator
-```
+**Claude Code (plugin, recommended).** The two commands in [Quick start](#quick-start) add the skill, nine slash commands, nine isolated subagents and an optional lint hook.
 
 **Any Agent Skills client** (Claude Code, Codex, Cursor, Gemini CLI and others): copy or link `skills/ui-evaluator/` into the client's skills folder, or use the skills installer:
 
@@ -90,19 +97,22 @@ Every criterion has an ID, a threshold, a way to verify it and a source in [QUAL
 npx skills add Horace-Maxwell/UI-Evaluator
 ```
 
-**Requirements.** Node.js 20 or newer. The core CLI has no dependencies. Browser checks use Playwright with Chromium; the skill asks before installing them and runs `uie doctor --install` only with your agreement. Without a browser it still works from source code and screenshots, and says which checks it could not run.
+**Requirements.** Node.js 20 or newer. The core CLI has no dependencies. Browser checks use Playwright with Chromium, about 110 MB, installed into a cache outside your project; the skill asks first and runs `uie doctor --install` only with your agreement. Without a browser it still works from source code and screenshots, and says which checks it could not run.
 
 ## Use
 
-Talk to your agent normally. The skill triggers on requests such as:
+Talk to your agent as usual. The skill picks the workflows from what you ask:
 
-- "Build a booking page for our clinic. Here's what it needs to do…"
-- "Review this dashboard for usability and accessibility before we ship."
-- "这个页面看起来很像 AI 做的，帮我改得有设计感一点。"
-- "Here are the notes from five usability sessions. What should we fix first?"
-- "Is this ready to ship?"
+| You ask to… | It runs |
+|---|---|
+| build, design or redesign a page or screen | setup → direct → build → audit → fix → verify → report (setup and direct only when context or a direction is missing) |
+| review, audit or critique one | audit → report, then offers to fix |
+| act on feedback, test notes, survey data or tickets | ingest, then offers to fix |
+| plan a usability test, survey or A/B test | study |
+| fix specific problems | fix → verify |
+| know whether it is ready to ship | verify → report |
 
-In Claude Code you can also call a workflow directly:
+Audits come at three depths: quick (reaches at most L1), standard (the default, L2) and rigorous (L3). The skill states the depth and its cost before it starts. In Claude Code you can also call a workflow directly:
 
 | Command | Workflow |
 |---|---|
@@ -170,7 +180,65 @@ The grader also checks the skill's own files (PRODUCT.md, DESIGN.md, the directi
 - **The skill reliably lifts what it can verify.** It costs about 2.7 times the tokens and 2.3 times the time of an unaided build, mostly in audits, gates and records.
 - **It does not yet reliably win on looks.** Runs vary widely: the same calligraphy prompt won all three questions in one run and lost all three in the other two. Model judges agreed with the person on beauty in 7 of 8 pairs, but credited the skill's concepts as less generic more often than the person did.
 
-These are one judge, small samples and one model family. Thresholds marked **[calibrating]** in the quality bar are initial values that the [evaluation plan](docs/framework/EVALUATION-PLAN.md) measures and revises by decision record, and the [decision records](docs/framework/DECISIONS.md) from ADR-035 on say what changed after each measurement.
+Against the release thresholds in the [evaluation plan](docs/framework/EVALUATION-PLAN.md), version 2.0.0 meets the bars for tests, detectors and scripted accessibility checks. It misses the build-outcome bar, which asks for a blind preference for the skill of at least 70%, and four bars are not measured yet. The [status table](evals/README.md#status-against-the-release-thresholds) has each one. All of this comes from one judge, small samples and one model family; the [decision records](docs/framework/DECISIONS.md) from ADR-035 on say what changed after each measurement.
+
+## Questions
+
+<details>
+<summary><b>Will it make my page beautiful?</b></summary>
+
+It makes the page meet a floor you can check: accessible, well crafted, free of AI tells and honest about its content. Isolated critics judge appeal, and a plain page fails their verdict. But in blind judgements so far, a person found the page built without the skill more beautiful more often. Beauty is the open problem, and the [measured results](#measured-results) say how open.
+
+</details>
+
+<details>
+<summary><b>What does it cost?</b></summary>
+
+In the benchmark, a full build with the skill took about 2.7 times the tokens and 2.3 times the time of an unaided build: medians of about 860k tokens and 94 minutes against 315k and 41. Most of it goes to audits, gates and records. An audit costs what its depth asks for, and the skill states the depth and its cost before it starts.
+
+</details>
+
+<details>
+<summary><b>Does it send my code or my pages anywhere?</b></summary>
+
+The CLI has no telemetry. It opens local URLs only, unless you pass `--allow-remote`, and it downloads the browser runtime only after you agree. Screenshots, packets and raw feedback stay in `.ui-evaluator/` and are git-ignored by default. Your agent sends what it reads to its model provider, as it does for any other work. See [SECURITY.md](SECURITY.md).
+
+</details>
+
+<details>
+<summary><b>Which agents and models does it work with?</b></summary>
+
+Any client that reads Agent Skills can run it. Isolated evaluators need subagents, which Claude Code has; elsewhere the roles run one after another in one context, and the results are marked `DEGRADED`. The benchmark has used Claude models only.
+
+</details>
+
+<details>
+<summary><b>I only have a URL, or only screenshots.</b></summary>
+
+With a live URL it audits the rendered page, opens remote URLs only with your agreement, and turns fixes into recommendations. With screenshots only it gives a static critique, labels runtime claims as unverified and reaches no level.
+
+</details>
+
+<details>
+<summary><b>Can it certify WCAG conformance?</b></summary>
+
+No. It runs the automatable WCAG 2.2 AA checks and lists the rest for a person. Its reports never claim conformance, and L3 needs a person to complete the checks only a person can do.
+
+</details>
+
+<details>
+<summary><b>It flagged something that is fine.</b></summary>
+
+A soft tell can be accepted in `DESIGN.md` with a reason, and any finding can be disputed; invented proof and placeholder identities (SLP-12, SLP-13) can never be accepted. If a detector is simply wrong, please open an issue with the "A finding is wrong" form: these reports calibrate the detectors.
+
+</details>
+
+<details>
+<summary><b>Does it work for native apps?</b></summary>
+
+Not yet. It covers web front ends; native iOS, Android and desktop apps are out of scope for now.
+
+</details>
 
 ## Repository layout
 
@@ -187,9 +255,10 @@ docs/assets/              the images in this README and where each one comes fro
 evals/                    fixtures, prompts and assertions; evals/results/ holds every benchmark round
 tests/                    unit and integration tests
 tools/                    maintenance scripts; bench/ runs the build benchmark, readme-media/ draws these images
+.github/                  CI, issue forms and the pull request checklist
 ```
 
-## Develop
+## Contributing
 
 ```bash
 npm test
@@ -199,7 +268,9 @@ npm test
 npm run validate
 ```
 
-`npm test` runs the core tests (no dependencies). `npm run validate` checks packaging, links, agents and rules against the specification, and research traceability. [tools/bench/](tools/bench/README.md) runs the build benchmark, and `node tools/readme-media/build.mjs` redraws the images in this README from its stored results. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`npm test` runs the core tests, which need nothing but Node.js. `npm run test:lint` and `npm run test:browser` run the lint and browser suites, the second with the browser runtime installed. `npm run validate` checks packaging, links, agents and rules against the specification, and research traceability. CI runs the core and lint tests and the validation on every push. [tools/bench/](tools/bench/README.md) runs the build benchmark, and `node tools/readme-media/build.mjs` redraws the images in this README from its stored results.
+
+Found a wrong finding, a bug or a missing rule? Use the [issue forms](https://github.com/Horace-Maxwell/UI-Evaluator/issues/new/choose). Report security problems privately, as [SECURITY.md](SECURITY.md) describes. [CONTRIBUTING.md](CONTRIBUTING.md) has the rules for changes.
 
 ## Licence and acknowledgements
 

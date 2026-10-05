@@ -32,8 +32,11 @@ npm run validate
 ```
 
 - `npm test` runs the core unit and end-to-end tests. They need nothing but Node.js 20 or newer.
-- `npm run test:browser` runs the browser-layer tests. They need the runtime from `node skills/ui-evaluator/scripts/uie.mjs doctor --install`, which downloads Playwright's Chromium.
-- `npm run validate` checks the skill's front matter and budgets, every relative link, CLI commands named in guidance, versions, generated files (agents and rules) and research traceability. CI also runs `skills-ref validate skills/ui-evaluator` and Claude Code's own validators, `claude plugin validate .` (marketplace) and `claude plugin validate .claude-plugin/plugin.json` (manifest, commands, agents and hooks).
+- `npm run test:lint` runs the lint-layer tests, with no other dependency.
+- `npm run test:browser` runs the browser-layer tests. They need the runtime from `node skills/ui-evaluator/scripts/uie.mjs doctor --install`, which downloads Playwright's Chromium (about 110 MB).
+- `npm run validate` checks the skill's front matter and budgets, every relative link, CLI commands named in guidance, versions, generated files (agents and rules) and research traceability.
+
+CI ([.github/workflows/checks.yml](.github/workflows/checks.yml)) runs the core and lint tests and the validation on Node.js 20 and 22 for every push and pull request. The browser suite runs locally, or on Linux from the manual [browser workflow](.github/workflows/browser.yml). Claude Code's validators, `claude plugin validate .` (marketplace) and `claude plugin validate .claude-plugin/plugin.json` (manifest, commands, agents and hooks), and `skills-ref validate skills/ui-evaluator` are run by hand before a release.
 
 ## Code style
 
@@ -58,6 +61,16 @@ A change meant to make builds better is measured with paired builds. The scripts
 ### README images
 
 The images in `docs/assets/` are evidence too. `node tools/readme-media/build.mjs` draws them from the stored runs and stops when a caption no longer matches the stored judgement, and [docs/assets/README.md](docs/assets/README.md) names the run behind each image and how a pair was chosen. A picked pair must say that it was picked. When a new round changes the picture, update the images and their captions, or remove them.
+
+## Reports
+
+- **A finding is wrong.** Use the "A finding is wrong" issue form, with the rule ID, a minimal page or snippet and why the result is wrong. A confirmed report becomes a test case or a calibration label (see [evals/labels/README.md](evals/labels/README.md)), and a rule whose precision falls changes only by decision record.
+- **Something does not work.** Use the bug form, with the version and the output of `uie doctor`.
+- **A security problem.** Report it privately, as [SECURITY.md](SECURITY.md) describes.
+
+## Releases
+
+A release follows the checklist in [ARCHITECTURE.md §14](docs/framework/ARCHITECTURE.md#14-testing-and-release): every suite and validator green, the version bumped everywhere `npm run validate` checks it, a CHANGELOG entry, the tell catalogue reviewed, and the [threshold status](evals/README.md#status-against-the-release-thresholds) brought up to date, including the bars a release does not meet.
 
 ## Licence
 

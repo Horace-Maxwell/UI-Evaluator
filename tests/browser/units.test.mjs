@@ -20,6 +20,7 @@ const { diffImages, changedRegions, cropImage } = await lib('browser/png.mjs');
 const D = await lib('commands/diff.mjs');
 const { compareSmoke } = await lib('browser/smoke.mjs');
 const { setStatus } = await lib('findings/core.mjs');
+const { wordList, matchedTexts } = await lib('browser/data.mjs');
 
 test('locators: role, label, text, chains and CSS fallback', () => {
   const [r] = parseTarget('role=button[name="Save draft"]');
@@ -398,4 +399,11 @@ test('forms: an empty submission clears prefilled values, and a success note is 
   const r = byCheck('forms');
   const a13 = r.hits.filter((h) => h.criteria[0].id === 'A11Y-13').map((h) => h.title);
   assert.deepEqual(a13, [], `no focus or error-text hit on a form that handles both: ${a13.join(' | ')}`);
+});
+
+test('placeholder identities are named as the page writes them (SLP-13)', () => {
+  const list = [...wordList('en', 'placeholder_identities'), ...wordList('zh', 'placeholder_identities')];
+  assert.deepEqual(matchedTexts(list, 'Not sure? Email a photo to repaircafe@example.org and we will reply.'), ['repaircafe@example.org']);
+  assert.deepEqual(matchedTexts(list, 'Write to info@example.net or visit www.example.com'), ['info@example.net', 'www.example.com']);
+  assert.deepEqual(matchedTexts(list, 'Our volunteers fix toasters for free.'), []);
 });

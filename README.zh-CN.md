@@ -3,11 +3,12 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <b>中文</b> · <a href="#安装">安装</a> · <a href="#实测结果">实测结果</a> · <a href="docs/OVERVIEW.zh-CN.md">中文总览</a>
+  <a href="README.md">English</a> · <b>中文</b> · <a href="#快速上手">快速上手</a> · <a href="#工作方式">工作方式</a> · <a href="#实测结果">实测结果</a> · <a href="#常见问题">常见问题</a> · <a href="docs/OVERVIEW.zh-CN.md">中文总览</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Horace-Maxwell/UI-Evaluator/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/Horace-Maxwell/UI-Evaluator?style=flat-square&label=release&color=191714"></a>
+  <a href="https://github.com/Horace-Maxwell/UI-Evaluator/actions/workflows/checks.yml"><img alt="主分支的自动检查" src="https://img.shields.io/github/actions/workflow/status/Horace-Maxwell/UI-Evaluator/checks.yml?branch=main&style=flat-square&label=checks"></a>
   <a href="LICENSE"><img alt="许可：Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-191714?style=flat-square"></a>
   <img alt="需要 Node.js 20 或更高版本" src="https://img.shields.io/badge/node-%E2%89%A5%2020-191714?style=flat-square">
   <img alt="检查 WCAG 2.2 AA" src="https://img.shields.io/badge/checks-WCAG%202.2%20AA-C2341B?style=flat-square">
@@ -16,6 +17,17 @@
 让编程智能体做一个网页，几分钟就能拿到。可惜做出来的常常是同一个页面：标题上方一行字距拉开的大写小标签，标题后半句换成强调色，一排图标卡片，再加一个没人核对过的地址。
 
 **UI-Evaluator** 是一个 Agent Skill，也是一个 Claude Code 插件。它给智能体的是一套方法，而不只是“审美”：从产品本身出发，而不是从默认值出发；在真实浏览器里检查渲染出来的页面；由从没看过构建者思路的评审来判断设计；一次只修一个经过验证的问题；报告里的每句话都不超过证据能支持的范围。
+
+## 快速上手
+
+在 Claude Code 会话中输入：
+
+```
+/plugin marketplace add Horace-Maxwell/UI-Evaluator
+/plugin install ui-evaluator@ui-evaluator
+```
+
+然后像平常一样提需求，比如“上线前帮我从可用性和无障碍角度审一下这个结算页”，或者“帮我们的夜校做一个报名页，需求如下……”。第一次需要浏览器时，技能会先征求你的同意，再下载 Playwright 的 Chromium（约 110 MB）。其他智能体的安装方法见[安装](#安装)。
 
 ## 用之前和用之后
 
@@ -77,12 +89,7 @@
 
 ## 安装
 
-**Claude Code（插件，推荐）**：包含技能本体、9 个斜杠命令、9 个隔离子智能体和一个可选的代码检查钩子。在 Claude Code 会话中输入：
-
-```
-/plugin marketplace add Horace-Maxwell/UI-Evaluator
-/plugin install ui-evaluator@ui-evaluator
-```
+**Claude Code（插件，推荐）**：[快速上手](#快速上手)里的两条命令会装好技能本体、9 个斜杠命令、9 个隔离子智能体和一个可选的代码检查钩子。
 
 **任何支持 Agent Skills 的客户端**（Claude Code、Codex、Cursor、Gemini CLI 等）：把 `skills/ui-evaluator/` 复制或链接到客户端的 skills 目录，或者使用安装器：
 
@@ -90,19 +97,22 @@
 npx skills add Horace-Maxwell/UI-Evaluator
 ```
 
-**环境要求**：Node.js 20 或更高版本。核心命令行工具零依赖。浏览器检查使用 Playwright 和 Chromium；技能会先征求你的同意，才会运行 `uie doctor --install` 安装它们。没有浏览器时，它仍能基于源代码和截图工作，并明确列出哪些检查没能运行。
+**环境要求**：Node.js 20 或更高版本。核心命令行工具零依赖。浏览器检查使用 Playwright 和 Chromium，约 110 MB，装在项目之外的缓存目录里；技能会先征求你的同意，才会运行 `uie doctor --install`。没有浏览器时，它仍能基于源代码和截图工作，并明确列出哪些检查没能运行。
 
 ## 使用
 
-像平常一样和智能体对话即可，例如：
+像平常一样和智能体对话即可，技能会根据你的需求选择工作流：
 
-- “帮我们诊所做一个预约页面，需求如下……”
-- “上线前帮我从可用性和无障碍角度审一下这个后台。”
-- “这个页面看起来很像 AI 做的，帮我改得有设计感一点。”
-- “这是五场可用性测试的记录，先修哪个？”
-- “这个能上线了吗？”
+| 你想要…… | 它会运行 |
+|---|---|
+| 新建、设计或改版一个页面 | 准备 → 定方向 → 构建 → 审计 → 修复 → 验证 → 报告（缺少产品语境或设计方向时才做前两步） |
+| 评审、审计或点评一个页面 | 审计 → 报告，然后询问是否修复 |
+| 处理用户反馈、测试记录、问卷数据或工单 | 导入，然后询问是否修复 |
+| 规划可用性测试、问卷或 A/B 测试 | 研究计划 |
+| 修复指定的问题 | 修复 → 验证 |
+| 判断能不能上线 | 验证 → 报告 |
 
-在 Claude Code 里也可以直接调用工作流：
+审计分三种深度：快速（最高 L1）、标准（默认，最高 L2）和严格（最高 L3）。开始之前，技能会说明深度和代价。在 Claude Code 里也可以直接调用工作流：
 
 | 命令 | 工作流 |
 |---|---|
@@ -170,7 +180,65 @@ npx skills add Horace-Maxwell/UI-Evaluator
 - **技能稳定提升了能验证的质量。** 代价是 token 约为不用技能时的 2.7 倍、时间约 2.3 倍，主要花在审计、门禁和记录上。
 - **但在“好看”上还不能稳定取胜。** 波动很大：同一个书法班需求，有一次技能版三项全胜，另两次三项全负。Claude 评委在“美”上和真人 8 组中有 7 组一致，但比真人更常把技能版的“概念”判为不像模板。
 
-以上只有一位评委、样本量小，而且都是同一家族的模型。质量标准中标为 **[calibrating]（校准中）** 的阈值是初始值，会按照[评估计划](docs/framework/EVALUATION-PLAN.md)实测后通过决策记录修订；每次测量之后改了什么，见[决策记录](docs/framework/DECISIONS.md)（ADR-035 起）。
+对照[评估计划](docs/framework/EVALUATION-PLAN.md)里的发布门槛，2.0.0 版达到了测试、检测器和脚本化无障碍检查这几项；没有达到“构建结果”一项（它要求真人盲评中至少 70% 偏好技能版）；另有四项还没有测量。每一项的情况见[门槛对照表](evals/README.md#status-against-the-release-thresholds)。以上只有一位评委、样本量小，而且都是同一家族的模型；每次测量之后改了什么，见[决策记录](docs/framework/DECISIONS.md)（ADR-035 起）。
+
+## 常见问题
+
+<details>
+<summary><b>它能让我的页面变好看吗？</b></summary>
+
+它能让页面达到一条可以核验的底线：无障碍、做工到位、没有 AI 痕迹、内容不编造。隔离的评审会判断吸引力，寡淡的页面过不了这一关。但到目前为止的盲评中，真人更常觉得不用技能的页面更美。“好看”仍是没有解决的问题，[实测结果](#实测结果)里有具体数字。
+
+</details>
+
+<details>
+<summary><b>要花多少成本？</b></summary>
+
+在基准测试中，用技能完整构建一个页面，token 约为不用技能时的 2.7 倍、时间约 2.3 倍：中位数约 86 万 token、94 分钟，对比 31.5 万 token、41 分钟。大部分花在审计、门禁和记录上。审计的花费取决于深度，技能会在开始前说明深度和代价。
+
+</details>
+
+<details>
+<summary><b>它会把我的代码或页面发到别处吗？</b></summary>
+
+命令行工具没有任何遥测；除非你加 `--allow-remote`，它只打开本地地址；只有在你同意后才会下载浏览器运行环境。截图、输入包和原始反馈都留在 `.ui-evaluator/` 里，默认不进入 git。智能体读到的内容会发给它所用的模型服务商，这和它做其他工作时一样。详见 [SECURITY.md](SECURITY.md)。
+
+</details>
+
+<details>
+<summary><b>支持哪些智能体和模型？</b></summary>
+
+任何支持 Agent Skills 的客户端都能运行。隔离的评估者需要子智能体，Claude Code 支持；在其他环境中各角色会在同一个上下文里依次执行，结果标注 `DEGRADED`。基准测试目前只用过 Claude 模型。
+
+</details>
+
+<details>
+<summary><b>我只有网址，或者只有截图。</b></summary>
+
+只有网址时，它审计渲染出来的页面，只有在你同意后才打开远程地址，修复会变成建议。只有截图时，它只做静态点评，运行时的判断都标为“未验证”，也达不到任何等级。
+
+</details>
+
+<details>
+<summary><b>它能证明页面符合 WCAG 吗？</b></summary>
+
+不能。它运行可自动检查的 WCAG 2.2 AA 项，把其余项列出来交给人判断。报告从不声称“符合”；要达到 L3，必须由真人完成那些只有人能做的检查。
+
+</details>
+
+<details>
+<summary><b>它标出的问题其实没问题。</b></summary>
+
+软性痕迹可以在 `DESIGN.md` 里写明理由后接受，任何问题记录都可以提出异议；但编造的证明和占位身份（SLP-12、SLP-13）永远不能被接受。如果是检测器本身判错了，请用“A finding is wrong”表单提交 issue，这些反馈会用来校准检测器。
+
+</details>
+
+<details>
+<summary><b>能用于原生应用吗？</b></summary>
+
+暂时不能。它只覆盖网页前端，原生 iOS、Android 和桌面应用目前不在范围内。
+
+</details>
 
 ## 仓库结构
 
@@ -186,9 +254,10 @@ docs/assets/              README 里的图片，以及每张图的来源说明
 evals/                    样例站点、提示和断言；evals/results/ 保存每一轮基准测试的数据
 tests/                    单元与集成测试
 tools/                    维护脚本；bench/ 运行构建基准测试，readme-media/ 生成这些图片
+.github/                  自动检查、issue 表单和合并请求清单
 ```
 
-## 开发
+## 参与贡献
 
 ```bash
 npm test
@@ -198,7 +267,9 @@ npm test
 npm run validate
 ```
 
-`npm test` 运行核心测试（零依赖）；`npm run validate` 检查打包、链接、子智能体与规则是否与规范同步，以及研究可追溯性。[tools/bench/](tools/bench/README.md) 用来运行构建基准测试，`node tools/readme-media/build.mjs` 会根据仓库里保存的结果重新生成本页的图片。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+`npm test` 运行核心测试，只需要 Node.js；`npm run test:lint` 和 `npm run test:browser` 分别运行静态检查和浏览器测试，后者需要先装好浏览器运行环境；`npm run validate` 检查打包、链接、子智能体与规则是否与规范同步，以及研究可追溯性。每次推送都会自动运行核心测试、静态检查测试和校验。[tools/bench/](tools/bench/README.md) 用来运行构建基准测试，`node tools/readme-media/build.mjs` 会根据仓库里保存的结果重新生成本页的图片。
+
+发现判错的问题、程序错误或缺少的规则，请用 [issue 表单](https://github.com/Horace-Maxwell/UI-Evaluator/issues/new/choose)提交；安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。修改规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可与致谢
 

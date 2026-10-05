@@ -4,8 +4,12 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## Unreleased
 
-Documentation and repository tools only; the skill, the CLI and the plugin are unchanged.
+Documentation, repository tools and one detector message. No gate, threshold or file format changes.
 
+- **SLP-13 names what the page shows.** The audit's placeholder-identity finding now quotes the text it matched, such as `repaircafe@example.org`, instead of the list entry behind it ("example.com addresses"). Finding identity does not depend on the title, so earlier runs still match. The lint layer already quoted the match.
+- **Release thresholds.** `evals/README.md` now tracks the measured status of every bar in EVALUATION-PLAN §6. Version 2.0.0 misses the build-outcome bar, a blind preference for the skill of at least 70%, and four bars are not measured yet. The READMEs, the overview and the plan say so.
+- **CI and community files.** `.github/workflows/checks.yml` runs the core and lint tests and `npm run validate` on Node.js 20 and 22 for every push and pull request, and `browser.yml` runs the browser suite on Linux by hand. Issue forms (a wrong finding, a bug, an idea), a pull request checklist and `SECURITY.md` are new. CONTRIBUTING no longer describes a CI that did not exist.
+- **README, second pass.** A quick start at the top, the workflows each kind of request runs, the audit depths, eight questions with plain answers, and a contributing section with the test suites and the issue forms.
 - **README.** Both READMEs are rewritten around pictures: a title banner with the gates and levels, two before-and-after pairs from the build benchmark with the `uie` audit numbers under each page, the repair café audit with the detectors' own boxes, and a workflow diagram. A note under the pairs says they were picked because the owner preferred the skill's page, and that they are not typical. The measured results are now a table, and the gate list and CLI reference fold away.
 - **Images.** `docs/assets/` holds the images in English and Chinese, a social preview for the repository, and a README naming the run behind every image and how its numbers were read.
 - **Benchmark tools.** `tools/bench/` holds the build benchmark that was run by hand before: prepare a round (a frozen skill and one prompt per run), grade a run, pair the runs, write the comparator prompts, make a blind judging page whose result line carries no key, and record the round with its tallies. The grader marks each assertion as output (the page or the reply) or process (the skill's own files). `tests/core/bench-tools.test.mjs` tests the helpers.

@@ -159,6 +159,24 @@ Each round's files are under [results/](results/). The before-and-after images i
 
 In the build benchmarks below, "assertions met" counts every assertion. For the repair-cafe and calligraphy prompts, that includes checks on the skill's own files (PRODUCT.md, DESIGN.md, the direction roll, the ledger, the self-check run), which a build without the skill cannot pass. Counting only the output assertions, on the page and the reply, the runs with the skill met 83–100% and the runs without it 0–70% over the four rounds.
 
+### Status against the release thresholds
+
+EVALUATION-PLAN §6 sets the bars a release should meet. Measured on 2026-10-04, for version 2.0.0 and the changes since:
+
+| Area | Bar | Measured | Status |
+|---|---|---|---|
+| Unit, integration, packaging | 100% passing | core 68, lint 119 and browser 62 tests pass; `npm run validate` and both `claude plugin validate` checks pass; `skills-ref validate` was not run | met, except `skills-ref` |
+| Hard-tell detectors | each rule precision ≥ 0.9, recall ≥ 0.8 on fixtures | 1.00 and 1.00 for the 13 hard tells with a seeded defect | met for 13 of 15; 2 have no seeded case |
+| Scripted accessibility checks | recall ≥ 0.9 of seeded WCAG defects; 0 false positives on `clean-control` | recall 1.00 (11 of 11); 0 false positives | met |
+| Standard audit | recall ≥ 0.6 of seeded analytical defects, precision ≥ 0.8 after verification | — | not measured |
+| Build outcomes | 0 hard tells and no G3 failure in ≥ 80% of runs with the skill; blind preference for the skill ≥ 70%, with the 95% CI excluding 50% | 0 hard tells in 14 of 14 runs, but 0 hard tells and no G3 failure in only 5 of 14 (36%); the person judged the skill's page more beautiful in 3 of 12 pairs (2 of 8 in the latest round) | **not met** |
+| Variety | lower cross-brief similarity with the skill, CI of the difference excluding 0 | — | not measured |
+| Fix loop | ≥ 90% of seeded P0 and P1 defects verified fixed; 0 regressions left unflagged | — | not measured |
+| Feedback ingestion | theme-to-problem link accuracy ≥ 0.8; scrubbing recall ≥ 0.95 on planted items | scrubbing 62 of 62; link accuracy not measured | half measured; that half met |
+| Honesty and behaviour | 0 language-lint violations in final reports; 0 runs claiming a level above the computed one; trace assertions in ≥ 90% of runs | — | not measured |
+
+Of the 9 runs with the skill that failed a G3 criterion, 7 failed COL-03: all six cafe runs and one calligraphy run. Motion criteria (MOT-02, MOT-07) and TYP-05 make up the rest. The grader measures COL-03 without the run's `DESIGN.md`, which declares the colour strategy, so part of that miss may be the instrument. The blind-preference bar is missed by a wide margin, and it is the open problem.
+
 ### Detector calibration, 2026-10-01
 
 `node tools/score-fixtures.mjs --widths 320,768,1280 --parallel 2` after the fixes listed under calibration notes; the full output is in [results/detectors-2026-10-01.json](results/detectors-2026-10-01.json).
