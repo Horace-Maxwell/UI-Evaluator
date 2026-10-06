@@ -4,7 +4,7 @@ description: Builds, audits and fixes web front-end UIs to a verifiable bar — 
 license: Apache-2.0
 compatibility: Node.js 20 or newer. Browser-based checks use Playwright with Chromium, installed into a cache on request.
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Horace-Maxwell"
   repository: "https://github.com/Horace-Maxwell/UI-Evaluator"
 ---

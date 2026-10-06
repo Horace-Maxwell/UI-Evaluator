@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
-## Unreleased
+## 2.0.1 — 2026-10-06
 
 Documentation, repository tools and one detector message. No gate, threshold or file format changes.
 
