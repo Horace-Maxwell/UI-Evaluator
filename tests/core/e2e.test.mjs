@@ -194,6 +194,98 @@ test('an empty fix queue says why when the audit was never merged or promoted', 
   assert.match(uie('findings', 'queue').out, /merged finding\(s\) that were never promoted/);
 });
 
+// A rated P0 in a fresh project, for the lifecycle tests below.
+function ratedProject(t, value = 4) {
+  const { root, uie } = project();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.copyFileSync(path.join(FIX, 'PRODUCT.md'), path.join(root, 'PRODUCT.md'));
+  assert.equal(uie('init', '--quiet').code, 0);
+  const run = uie('run', 'new', '--label', 'audit', '--json').json().run;
+  const runDir = path.join(root, '.ui-evaluator', 'runs', run);
+  const dosing = candidate('c1', 'Manual dosing reverts to automatic after a reload', 'H1', '/', '#dosing', 'After a reload the switch shows automatic again.');
+  for (const agent of ['he-1', 'he-2', 'he-3']) write(path.join(runDir, `evaluators/${agent}.json`), { schema: 'evaluator-output', role: 'heuristic-evaluator', agent, model: 'test-model', isolation: 'subagent', passes: [{ pass: 1 }, { pass: 2 }], strengths: [], candidates: [dosing] });
+  assert.equal(uie('findings', 'merge').code, 0);
+  const id = JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8')).findings.find((f) => /dosing/.test(f.title)).id;
+  return { root, uie, run, runDir, id };
+}
+
+test('a finding can wait on a named person\'s decision, and still counts as open (ADR-036)', (t) => {
+  const { root, uie, runDir, id } = ratedProject(t);
+  write(path.join(runDir, 'verifier.json'), { schema: 'verifier', agent: 'verifier', model: 'test-model', isolation: 'subagent', iteration: 1, verdicts: [{ candidate_id: id, verdict: 'confirmed', step: 'reproduction', reason: 'Reproduced.' }] });
+  assert.equal(uie('findings', 'apply-verdicts').code, 0);
+  assert.equal(uie('packet', '--role', 'severity-rater', '--n', '3').code, 0);
+  const map = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/.blind-map-raters.json'), 'utf8'));
+  const blind = Object.keys(map).find((b) => map[b] === id);
+  for (const i of [1, 2, 3]) write(path.join(runDir, `ratings/rater-${i}.json`), { schema: 'rating', rater: `rater-${i}`, model: 'test-model', isolation: 'subagent', ratings: [{ finding_id: blind, frequency: 2, impact: 3, persistence: 2, value: 4, validity: 'problem', note: 'blocks dosing' }] });
+  assert.equal(uie('findings', 'rate').code, 0);
+  assert.equal(uie('findings', 'promote').code, 0);
+
+  const refused = uie('findings', 'set', id, '--status', 'blocked');
+  assert.notEqual(refused.code, 0);
+  assert.match(refused.err + refused.out, /--on <who must decide> and --question/);
+  const question = 'Which system owns the dosing mode, and how should the page read it back?';
+  assert.equal(uie('findings', 'set', id, '--status', 'blocked', '--on', 'growing lead', '--question', question).code, 0);
+  const reg = () => JSON.parse(fs.readFileSync(path.join(root, '.ui-evaluator/findings.json'), 'utf8')).findings.find((f) => f.id === id);
+  assert.equal(reg().status, 'blocked');
+  assert.equal(reg().blocked.on, 'growing lead');
+  assert.match(uie('findings', 'queue').out, new RegExp(`wait ${id} P0 waiting on growing lead: Which system owns`));
+
+  const g = uie('gates', '--json').json();
+  assert.equal(g.criteria['USE-05'].state, 'fail', 'a blocked P0 is still open');
+  assert.ok(g.criteria['USE-05'].findings?.includes?.(id) || JSON.stringify(g.criteria['USE-05']).includes(id));
+  assert.equal(uie('report').code, 0);
+  const md = fs.readFileSync(path.join(runDir, 'report.md'), 'utf8');
+  assert.match(md, /\*\*Waiting on a decision\.\*\*/);
+  assert.match(md, /growing lead to decide\. Which system owns the dosing mode/);
+  assert.match(md, new RegExp(`Answer the question holding ${id} \\(growing lead\\)`));
+  assert.match(md, /Status blocked, waiting on growing lead/);
+
+  const noAnswer = uie('findings', 'set', id, '--status', 'open');
+  assert.notEqual(noAnswer.code, 0);
+  assert.match(noAnswer.err + noAnswer.out, /record the answer with --answer/);
+  assert.equal(uie('findings', 'set', id, '--status', 'open', '--answer', 'The pump controller owns it; read it from /api/dosing').code, 0);
+  assert.equal(reg().status, 'open');
+  assert.equal(reg().blocked.answer, 'The pump controller owns it; read it from /api/dosing');
+  assert.doesNotMatch(uie('findings', 'queue').out, /^wait /m);
+});
+
+test('a bundled candidate is split by command, and the split survives a re-merge (ADR-037)', (t) => {
+  const { root, uie, runDir, id } = ratedProject(t);
+  write(path.join(runDir, 'verifier.json'), { schema: 'verifier', agent: 'verifier', model: 'test-model', isolation: 'subagent', iteration: 1, verdicts: [{ candidate_id: id, verdict: 'split_required', step: 'none', reason: 'Two problems: the reload and the missing confirmation.' }] });
+  assert.equal(uie('findings', 'apply-verdicts').code, 0);
+  write(path.join(root, 'parts.json'), [
+    { title: 'Manual dosing reverts after a reload', description: 'The switch shows automatic again after a reload.' },
+    { title: 'Turning automatic dosing back on asks for no confirmation', description: 'One tap restarts the pumps.', criteria: [{ kind: 'heuristic', id: 'H5', primary: true }] },
+  ]);
+  assert.notEqual(uie('findings', 'split', id).code, 0, 'needs --into');
+  const res = uie('findings', 'split', id, '--into', 'parts.json', '--json');
+  assert.equal(res.code, 0, res.err);
+  const parts = res.json().parts;
+  assert.equal(parts.length, 2);
+  const merged = () => JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8')).findings;
+  const orig = merged().find((f) => f.id === id);
+  assert.equal(orig.status, 'split');
+  assert.deepEqual(orig.split_into, parts);
+  const [a, b] = parts.map((p) => merged().find((f) => f.id === p));
+  assert.equal(a.status, 'candidate');
+  assert.equal(a.split_from, id);
+  assert.deepEqual(a.found_by.map((x) => x.agent).sort(), ['he-1', 'he-2', 'he-3'], 'the parts keep the original\'s sources');
+  assert.equal(b.criteria[0].id, 'H5');
+  assert.equal(a.criteria[0].id, 'H1', 'criteria default to the original\'s');
+  assert.ok(fs.existsSync(path.join(runDir, 'splits.json')));
+
+  assert.equal(uie('packet', '--role', 'finding-verifier').code, 0);
+  const cands = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/finding-verifier-1/candidates.json'), 'utf8')).map((c) => c.candidate_id);
+  assert.deepEqual(cands.sort(), [...parts].sort(), 'the parts are verified; the original is not');
+
+  assert.equal(uie('findings', 'merge').code, 0);
+  assert.equal(merged().find((f) => f.id === id).status, 'split', 'a re-merge does not bring the original back');
+  assert.deepEqual(merged().filter((f) => f.split_from === id).map((f) => f.id).sort(), [...parts].sort(), 'the parts keep their IDs');
+  const again = uie('findings', 'split', id, '--into', 'parts.json');
+  assert.notEqual(again.code, 0);
+  assert.match(again.err + again.out, /only a candidate or a confirmed, unrated finding can be split/);
+});
+
 test('feedback, stakeholder sheets and study results flow into the register and results.json', (t) => {
   const { root, uie } = project();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

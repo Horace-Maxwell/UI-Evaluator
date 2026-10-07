@@ -20,7 +20,7 @@ export const COMMANDS = {
   packet: { file: 'packet', summary: 'build the input packet for an isolated role' },
   probe: { file: 'probe', summary: 'perform an interaction recipe and record evidence', browser: true },
   journey: { file: 'journey', summary: 'replay a journey and check its success condition', browser: true },
-  findings: { file: 'findings', summary: 'validate|merge|apply-verdicts|rate|queue|set|dismiss|link|list|show|agreement|promote' },
+  findings: { file: 'findings', summary: 'validate|merge|split|apply-verdicts|rate|queue|set|dismiss|link|list|show|agreement|promote' },
   diff: { file: 'diff', summary: 'identity-based set difference between runs (+ --visual, --aria)' },
   gates: { file: 'gates', summary: 'compute criterion and gate states and the assurance level' },
   report: { file: 'report', summary: 'render report.md / report.html / agree-disagree.csv and lint its language' },

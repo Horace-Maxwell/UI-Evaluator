@@ -280,7 +280,7 @@ Add a row to `.ui-evaluator/debt.md` for every deferred finding [LOOP-058; USE-0
 
 - Raise its priority when it has been open for 3 or more iterations, when several entries cluster on one screen or persona, when users raise it independently, or when two entries compound.
 - Accepting accessibility debt needs the owner's explicit acknowledgement. A G2 failure may be deferred only with a remediation plan, and then the level that needs G2 is not reached (QUALITY-BAR §2.3).
-- Never defer a P0 finding as debt: it stays open and keeps blocking USE-05 [LOOP-058].
+- Never defer a P0 finding as debt: it stays open and keeps blocking USE-05 [LOOP-058]. When its fix needs a decision only the owner, or someone the owner names, can make, do not guess: set it `blocked` with the person and the question (`uie findings set <id> --status blocked --on <who> --question <text>`). It still blocks USE-05, the queue and the report put the question first, and it leaves with the answer (`--answer <text>`) (ADR-036).
 - Never delete resolved rows.
 
 ### 3.16 What never to do

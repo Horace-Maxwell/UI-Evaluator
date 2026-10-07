@@ -338,7 +338,8 @@ async function eval11() {
   const queueAt = calls.findIndex((c) => c.name === 'Bash' && /uie(\.mjs)?["']?\s+findings\s+queue/.test(c.input.command || ''));
   checks['The fix queue was built from the register'] = () => ({ passed: queueAt >= 0 && (firstEdit < 0 || queueAt < firstEdit), evidence: `findings queue at call ${queueAt}, first site edit at call ${firstEdit}` });
   const pp = register.findings.filter((f) => ['P0', 'P1'].includes(f.priority));
-  const outcome = pp.filter((f) => ['fixed', 'verified', 'deferred', 'wont_fix', 'disputed'].includes(f.status) && (!['fixed', 'verified'].includes(f.status) || f.verification));
+  // A finding waiting on a named person's decision, with the question recorded, has an outcome too (ADR-036).
+  const outcome = pp.filter((f) => (['fixed', 'verified', 'deferred', 'wont_fix', 'disputed'].includes(f.status) && (!['fixed', 'verified'].includes(f.status) || f.verification)) || (f.status === 'blocked' && f.blocked?.on && f.blocked?.question));
   metrics.p0p1 = pp.map((f) => ({ id: f.id, priority: f.priority, status: f.status, criterion: f.criteria?.[0]?.id }));
   metrics.fix_resolution = pp.length ? pp.filter((f) => f.status === 'verified').length / pp.length : null;
   checks['Every P0/P1 has an outcome'] = () => ({ passed: pp.length > 0 && outcome.length === pp.length, evidence: `${outcome.length} of ${pp.length} P0/P1 with an outcome: ${pp.map((f) => `${f.id} ${f.status}`).join(', ')}` });

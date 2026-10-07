@@ -40,6 +40,9 @@ function findSection(map, ...names) {
 /**
  * @returns {{ markdown: string, csvRows: string[][], proseForLint: {where:string,text:string}[] }}
  */
+/** A finding's status as the report prints it: who a blocked finding is waiting on. */
+const statusText = (f) => (f.status === 'blocked' ? `blocked, waiting on ${f.blocked?.on || 'a decision'}` : f.status);
+
 export function renderReport({ I, gates, coverage, runId, agreement, diff, fixReview, register }) {
   const m = I.manifest || {};
   const deb = debriefSections(I.runDir);
@@ -90,6 +93,13 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
   const blockNext = gates.blocking.filter((b) => b.level === nextLevel(gates.achieved)).slice(0, 6);
   push('## 2. Verdict', '');
   push(`**Target level:** ${gates.target} · **Achieved:** ${gates.achieved_label}${blockNext.length ? ` · **Blocking ${nextLevel(gates.achieved)}:** ${blockNext.map((b) => `${b.criterion} (${b.reason})`).join('; ')}` : ''}`, '');
+  // Findings waiting on a named person's decision come first, so the question reaches whoever can answer it (ADR-036).
+  const waiting = [...I.runFindings, ...(I.carried || [])].filter((f) => f.status === 'blocked');
+  if (waiting.length) {
+    push('**Waiting on a decision.** These findings cannot move until the person named answers. They still count as open for the gates.', '');
+    for (const f of waiting) push(`- ${f.id}${f.priority ? ` (${f.priority})` : ''}, ${esc(truncate(f.title, 80))}: ${esc(f.blocked?.on || 'the owner')} to decide. ${esc(f.blocked?.question || '')}`);
+    push('');
+  }
   push('| Gate | State | Failing, degraded or waived criteria |', '|---|---|---|');
   for (const g of GATES) {
     const gs = gates.gates[g];
@@ -154,19 +164,19 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
         const evRefs = [...new Set([...locs.map((l) => l.crop).filter(Boolean), ...(f.evidence || []).map((e) => e.ref).filter(Boolean)])].slice(0, 4);
         push(`**Evidence.** ${where.length ? `Where: ${where.join('; ')}${locs.length > 3 ? ` and ${locs.length - 3} more` : ''}. ` : ''}${evid(f)}${evRefs.length ? ` · ${evRefs.join(', ')}` : ''}${f.detection?.n ? ` · found by ${f.detection.k} of ${f.detection.n} evaluator(s)` : ''}. Ratings: ${sev(f)}.`, '');
         push(`**Recommendation.** ${f.recommendation ? `${esc(f.recommendation)} (advisory: the fix workflow chooses the narrowest correct change)` : 'none given by the evaluators.'}`, '');
-        push(`Problem type: ${String(f.problem_type || 'single_location').replace(/_/g, ' ')} · Priority ${f.priority} · Status ${f.status}${others.length ? ` · Also: ${others.join('; ')}` : ''}`, '');
+        push(`Problem type: ${String(f.problem_type || 'single_location').replace(/_/g, ' ')} · Priority ${f.priority} · Status ${statusText(f)}${others.length ? ` · Also: ${others.join('; ')}` : ''}`, '');
       }
     } else {
       push('| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic | Evidence | Status |', '|---|---|---|---|---|---|---|---|');
       for (const f of items) {
         const lb = label(f);
-        push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${sevCell(f)} | ${easeCell(f)} | ${lb.number} | ${esc(lb.name)} | ${f.evidence_level || 'E0'} | ${f.status} |`);
+        push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${sevCell(f)} | ${easeCell(f)} | ${lb.number} | ${esc(lb.name)} | ${f.evidence_level || 'E0'} | ${statusText(f)} |`);
       }
       push('');
     }
   }
   // Verified judged findings that no rater has scored yet (quick depth has no raters): listed, never silently dropped.
-  const unrated = I.runFindings.filter((f) => !['rejected', 'candidate', 'dismissed', 'stale'].includes(f.status) && !f.held && !f.priority && f.severity?.source !== 'rule');
+  const unrated = I.runFindings.filter((f) => !['rejected', 'candidate', 'dismissed', 'stale', 'split'].includes(f.status) && !f.held && !f.priority && f.severity?.source !== 'rule');
   if (unrated.length) {
     push('### Not yet rated', '', 'Confirmed judged findings without a severity rating. They need blind raters (`uie packet --role severity-rater`, then `uie findings rate`) before they can be prioritised.', '');
     push('| ID | Title | Criterion | Evidence | Found by | Status |', '|---|---|---|---|---|---|');
@@ -174,7 +184,7 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
     push('');
   }
   // Judged findings from earlier runs that this run did not re-examine and that are still open in the register.
-  const carried = (I.carried || []).filter((f) => !['rejected', 'candidate', 'dismissed', 'stale'].includes(f.status));
+  const carried = (I.carried || []).filter((f) => !['rejected', 'candidate', 'dismissed', 'stale', 'split'].includes(f.status));
   if (carried.length) {
     push('### Still open from earlier runs', '', 'Judged findings this run did not re-examine. They stay open until a fix review or a person closes them, and USE-05 and USE-06 count them.', '');
     push('| ID | Title | Priority | Criterion | Status |', '|---|---|---|---|---|');
@@ -233,11 +243,13 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
   // 9. Next steps
   push('## 9. Next steps', '');
   const debNext = findSection(deb, 'next step');
+  const waitingStep = waiting.length ? `Answer the question${waiting.length > 1 ? 's' : ''} holding ${waiting.map((f) => `${f.id} (${f.blocked?.on || 'the owner'})`).join(', ')}; §2 lists ${waiting.length > 1 ? 'them' : 'it'}.` : null;
   if (debNext) {
+    if (waitingStep) push(waitingStep, '');
     push(debNext, '');
     prose.push({ where: 'debrief.next-steps', text: debNext });
   } else {
-    const steps = [];
+    const steps = waitingStep ? [waitingStep] : [];
     const queue = reported.filter((f) => ['P0', 'P1'].includes(f.priority) && ['open', 'reopened', 'confirmed'].includes(f.status));
     if (queue.length) steps.push(`Fix queue: ${queue.slice(0, 6).map((f) => f.id).join(', ')} (\`fix\` workflow, one finding per commit).`);
     for (const lvl of ['L1', 'L2', 'L3', 'L4']) {

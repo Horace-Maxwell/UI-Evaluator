@@ -64,7 +64,7 @@ Otherwise → **`confirmed`**, with your reproduction evidence attached. Confirm
 
 ## Also check, without rejecting
 
-- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts.
+- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description; the lead turns them into candidates with `uie findings split`.
 - **Principle fit:** if the cited heuristic is clearly wrong but the problem is real, confirm it and suggest the correct criterion in `note`.
 - **Wording:** flag descriptions that overstate the evidence (e.g. "users will abandon").
 

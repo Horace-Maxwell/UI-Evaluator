@@ -4,30 +4,33 @@ import { normalizeSelector, normalizeSnippet } from '../util/text.mjs';
 import { isoNow } from '../util/time.mjs';
 
 export const STATUSES = [
-  'candidate', 'rejected', 'confirmed', 'open', 'in_progress', 'fixed', 'verified', 'resolved',
-  'reopened', 'deferred', 'disputed', 'dismissed', 'wont_fix', 'stale',
+  'candidate', 'rejected', 'confirmed', 'open', 'in_progress', 'blocked', 'fixed', 'verified', 'resolved',
+  'reopened', 'deferred', 'disputed', 'dismissed', 'wont_fix', 'stale', 'split',
 ];
 
-/** Statuses that count as "still a problem" for gating. */
-export const ACTIVE = new Set(['confirmed', 'open', 'in_progress', 'fixed', 'reopened', 'disputed']);
-/** Statuses that are closed for the fix queue. */
-export const CLOSED = new Set(['verified', 'resolved', 'dismissed', 'wont_fix', 'rejected']);
+/** Statuses that count as "still a problem" for gating. A blocked finding waits on a decision and is still open (ADR-036). */
+export const ACTIVE = new Set(['confirmed', 'open', 'in_progress', 'blocked', 'fixed', 'reopened', 'disputed']);
+/** Statuses that are closed for the fix queue. A split finding lives on in its parts (ADR-037). */
+export const CLOSED = new Set(['verified', 'resolved', 'dismissed', 'wont_fix', 'rejected', 'split']);
 
 const TRANSITIONS = {
-  candidate: ['confirmed', 'rejected', 'stale', 'disputed', 'open'],
-  confirmed: ['open', 'rejected', 'stale', 'disputed', 'dismissed', 'deferred', 'wont_fix'],
-  open: ['in_progress', 'fixed', 'verified', 'deferred', 'disputed', 'dismissed', 'wont_fix', 'stale', 'open'],
-  in_progress: ['fixed', 'open', 'deferred', 'reopened', 'wont_fix'],
+  candidate: ['confirmed', 'rejected', 'stale', 'disputed', 'open', 'split'],
+  confirmed: ['open', 'rejected', 'stale', 'disputed', 'dismissed', 'deferred', 'wont_fix', 'blocked', 'split'],
+  open: ['in_progress', 'fixed', 'verified', 'deferred', 'disputed', 'dismissed', 'wont_fix', 'stale', 'open', 'blocked'],
+  in_progress: ['fixed', 'open', 'deferred', 'reopened', 'wont_fix', 'blocked'],
+  // Leaves through the named person's answer (ADR-036).
+  blocked: ['open', 'in_progress', 'deferred', 'wont_fix', 'dismissed', 'stale'],
   fixed: ['verified', 'reopened', 'stale', 'open'],
   verified: ['resolved', 'reopened', 'stale'],
-  reopened: ['in_progress', 'open', 'fixed', 'deferred', 'disputed', 'wont_fix', 'dismissed'],
+  reopened: ['in_progress', 'open', 'fixed', 'deferred', 'disputed', 'wont_fix', 'dismissed', 'blocked'],
   deferred: ['open', 'dismissed', 'wont_fix', 'stale', 'in_progress'],
   disputed: ['open', 'dismissed', 'wont_fix', 'deferred'],
   dismissed: ['open'],
   wont_fix: ['open'],
-  stale: ['candidate', 'confirmed', 'open', 'rejected', 'verified', 'fixed', 'reopened'],
+  stale: ['candidate', 'confirmed', 'open', 'rejected', 'verified', 'fixed', 'reopened', 'blocked'],
   rejected: ['candidate', 'confirmed'],
   resolved: ['reopened'],
+  split: [],
 };
 
 export function canTransition(from, to) {
@@ -178,8 +181,25 @@ function frequencyOf(f) {
   return f.detection?.k || 0;
 }
 
-/** Build the fix queue: active findings sorted by priority → layer → ease → frequency. */
+/**
+ * Build the fix queue: active findings sorted by priority → layer → ease → frequency. Blocked findings come first, as
+ * waiting on the person named with the question, and are never items to fix now (ADR-036).
+ */
 export function buildQueue(findings) {
+  const waiting = findings
+    .filter((f) => f.status === 'blocked')
+    .sort((a, b) => prioRank(a.priority) - prioRank(b.priority) || String(a.id).localeCompare(String(b.id)))
+    .map((f) => ({
+      id: f.id,
+      title: f.title,
+      priority: f.priority || null,
+      layer: LAYER_NAMES[layerOf(f)],
+      ease_of_fix: f.ease_of_fix ?? null,
+      criterion: primaryCriterion(f).id,
+      divergent: !!f.severity?.divergent,
+      fix_now: false,
+      waiting: { on: f.blocked?.on || null, question: f.blocked?.question || null, since: f.blocked?.since || null },
+    }));
   const items = findings.filter((f) => ['open', 'reopened', 'confirmed'].includes(f.status) && f.priority && f.priority !== 'none');
   items.sort(
     (a, b) =>
@@ -189,7 +209,7 @@ export function buildQueue(findings) {
       frequencyOf(b) - frequencyOf(a) ||
       String(a.id).localeCompare(String(b.id)),
   );
-  return items.map((f) => ({
+  return [...waiting, ...items.map((f) => ({
     id: f.id,
     title: f.title,
     priority: f.priority,
@@ -198,5 +218,5 @@ export function buildQueue(findings) {
     criterion: primaryCriterion(f).id,
     divergent: !!f.severity?.divergent,
     fix_now: !f.severity?.divergent && (f.priority === 'P0' || f.priority === 'P1' || (f.priority === 'P2' && f.ease_of_fix === 1)),
-  }));
+  }))];
 }

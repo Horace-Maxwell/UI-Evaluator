@@ -20,7 +20,7 @@ import { version } from '../cli.mjs';
 const STATE_RANK = { fail: 5, not_run: 4, degraded: 3, waived: 2, pass: 1, not_applicable: 0 };
 /** The design-panel rubric (QUALITY-BAR G6; ADR-035 added appeal). */
 const RUBRIC = ['specificity', 'hierarchy', 'coherence', 'restraint', 'brand_fit', 'execution', 'appeal'];
-const INACTIVE = new Set(['rejected', 'dismissed', 'verified', 'resolved', 'stale', 'candidate']);
+const INACTIVE = new Set(['rejected', 'dismissed', 'verified', 'resolved', 'stale', 'candidate', 'split']);
 const DECIDED_P1 = new Set(['verified', 'resolved', 'deferred', 'disputed', 'wont_fix', 'dismissed']);
 
 function worst(states) {
@@ -57,12 +57,12 @@ export function loadInputs(root, runDir) {
   // Findings for this run, with lifecycle decisions taken from the register (decisions are made after the audit).
   const runFindings = (merged ? merged.findings : toolHits.map((h, i) => ({ ...h, id: `T-${i + 1}`, status: 'confirmed', severity: { source: 'rule', mean: h.severity?.value ?? 2 } }))).map((f) => {
     const r = regById.get(f.id);
-    return r ? { ...f, status: r.status, deferral: r.deferral, notes: r.notes, priority: r.priority || f.priority } : f;
+    return r ? { ...f, status: r.status, deferral: r.deferral, notes: r.notes, priority: r.priority || f.priority, blocked: r.blocked } : f;
   });
   // Judged findings from earlier runs that this run did not re-examine (a verify or fix run has no evaluators). They stay
   // open in the register until a fix review or a person closes them, so USE-05 and USE-06 still count them.
   const runIds = new Set(runFindings.map((f) => f.id));
-  const carried = register.findings.filter((f) => !runIds.has(f.id) && !isDeterministic(f) && ['open', 'confirmed', 'in_progress', 'fixed', 'reopened', 'disputed', 'deferred'].includes(f.status));
+  const carried = register.findings.filter((f) => !runIds.has(f.id) && !isDeterministic(f) && ['open', 'confirmed', 'in_progress', 'blocked', 'fixed', 'reopened', 'disputed', 'deferred'].includes(f.status));
   const design = exists(p.design) ? parseDesign(readText(p.design), { work: config.project?.work || 'existing' }) : null;
   const productText = exists(p.product) ? readText(p.product) : null;
   if (design) {
@@ -421,7 +421,7 @@ const E = {
     return st('pass', 'merged on deterministic keys; agreement reported', ['merged.json', 'agreement.json']);
   },
   verification(I) {
-    const judged = I.runFindings.filter((f) => f.severity?.source !== 'rule' && !['rejected', 'candidate'].includes(f.status));
+    const judged = I.runFindings.filter((f) => f.severity?.source !== 'rule' && !['rejected', 'candidate', 'split'].includes(f.status));
     const pending = I.runFindings.filter((f) => f.status === 'candidate' && f.severity?.source !== 'rule');
     if (!I.verifier && (judged.length || pending.length)) return st('not_run', 'the verifier has not run');
     const unverified = judged.filter((f) => !f.verification_check && f.status !== 'disputed');
@@ -430,7 +430,7 @@ const E = {
   },
   ratings(I) {
     const depth = I.manifest?.depth || I.config.depth || 'standard';
-    const judged = I.runFindings.filter((f) => f.severity?.source !== 'rule' && !['rejected', 'candidate'].includes(f.status));
+    const judged = I.runFindings.filter((f) => f.severity?.source !== 'rule' && !['rejected', 'candidate', 'split'].includes(f.status));
     if (!judged.length) return st('pass', 'no judged findings to rate');
     const unrated = judged.filter((f) => !f.severity || f.severity.source !== 'raters');
     if (unrated.length) return st('not_run', `${unrated.length} confirmed finding(s) not rated`, unrated.map((f) => f.id));
@@ -439,11 +439,11 @@ const E = {
     return st('pass', `${judged.length} finding(s) rated by ≥ 3 blind raters`);
   },
   'no-open-p0'(I) {
-    const bad = [...I.runFindings, ...(I.carried || [])].filter((f) => Number(f.severity?.mean ?? f.severity?.value) >= 3.5 && ['open', 'confirmed', 'in_progress', 'fixed', 'reopened', 'disputed', 'deferred'].includes(f.status));
+    const bad = [...I.runFindings, ...(I.carried || [])].filter((f) => Number(f.severity?.mean ?? f.severity?.value) >= 3.5 && ['open', 'confirmed', 'in_progress', 'blocked', 'fixed', 'reopened', 'disputed', 'deferred'].includes(f.status));
     return bad.length ? st('fail', `${bad.length} open P0 finding(s)`, bad.map((f) => f.id)) : st('pass', 'no open P0');
   },
   'p1-decisions'(I) {
-    const p1 = [...I.runFindings, ...(I.carried || [])].filter((f) => f.priority === 'P1' && !['rejected', 'candidate'].includes(f.status));
+    const p1 = [...I.runFindings, ...(I.carried || [])].filter((f) => f.priority === 'P1' && !['rejected', 'candidate', 'split'].includes(f.status));
     const undecided = p1.filter((f) => {
       if (!DECIDED_P1.has(f.status)) return true;
       if (f.status === 'deferred') return !(f.deferral && f.deferral.reason && f.deferral.owner && f.deferral.trigger);
@@ -458,7 +458,7 @@ const E = {
     const missing = crit.filter((j) => !walked.has(j.id));
     if (missing.length) return st(I.cwRecords.length ? 'fail' : 'not_run', `not walked: ${missing.map((j) => j.id).join(', ')}`);
     const cwFindings = I.runFindings.filter((f) => (f.criteria || []).some((c) => c.kind === 'cw' || /^CW-Q/.test(c.id)));
-    const open = cwFindings.filter((f) => ['open', 'confirmed', 'in_progress', 'fixed', 'reopened'].includes(f.status) && f.criticality === 'critical');
+    const open = cwFindings.filter((f) => ['open', 'confirmed', 'in_progress', 'blocked', 'fixed', 'reopened'].includes(f.status) && f.criticality === 'critical');
     return open.length ? st('fail', `${open.length} failed step(s) on critical journeys without a decision`, open.map((f) => f.id)) : st('pass', `${crit.length} critical journey(s) walked`);
   },
   'task-suitability'(I) {
@@ -524,7 +524,7 @@ const E = {
     const severe = design.filter((f) => {
       const k = new Set((f.found_by || []).map((b) => b.agent)).size;
       const agreed = k >= 2 || f.verification_check?.verdict === 'confirmed';
-      return agreed && Number(f.severity?.mean) >= 3 && ['open', 'confirmed', 'in_progress', 'fixed', 'reopened'].includes(f.status);
+      return agreed && Number(f.severity?.mean) >= 3 && ['open', 'confirmed', 'in_progress', 'blocked', 'fixed', 'reopened'].includes(f.status);
     });
     return severe.length ? st('fail', `${severe.length} agreed severe design finding(s) open`, severe.map((f) => f.id)) : st('pass', 'no agreed severe design findings open');
   },
@@ -738,7 +738,7 @@ export function evaluateGates(I, baseRules, { target = 'L3' } = {}) {
 function humanConfirmed(I, criteria) {
   const reasons = [];
   if (criteria['A11Y-21']?.state !== 'pass') reasons.push('needs-human WCAG criteria not completed (A11Y-21)');
-  const severe = I.runFindings.filter((f) => ['P0', 'P1'].includes(f.priority) && !['rejected', 'candidate'].includes(f.status));
+  const severe = I.runFindings.filter((f) => ['P0', 'P1'].includes(f.priority) && !['rejected', 'candidate', 'split'].includes(f.status));
   const unconfirmed = severe.filter((f) => !I.human.confirmations?.[f.id]);
   if (unconfirmed.length) reasons.push(`${unconfirmed.length} P0/P1 finding(s) not confirmed or overruled by a human`);
   if (!I.human.design_verdict) reasons.push('the design verdict has not been confirmed by a human');

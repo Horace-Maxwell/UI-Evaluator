@@ -105,7 +105,7 @@ Take each candidate through the seven steps in order (METHODS §5 step 2) [HCI-0
 **Verdicts** (verifier schema): `confirmed`, with your reproduction evidence (the finding becomes E1, "reproduced"); `rejected`, with the deciding step and reason; `needs_human`, with the question for the owner.
 
 Also check, without changing the verdict:
-- **one problem per record**: a candidate that bundles several problems is not confirmed as one. List the parts in your note; the lead splits it into separate candidates, which then go through the chain one by one;
+- **one problem per record**: a candidate that bundles several problems is not confirmed as one. List the parts in your note; the lead splits it with `uie findings split <id> --into <parts.json>` (ADR-037), and the parts, which keep the candidate's sources, go through the chain one by one;
 - **criterion fit**: if the problem is real but the cited heuristic is wrong, confirm it and suggest the right criterion;
 - **wording**: flag descriptions that claim more than the evidence level allows (`finding-records.md` §3.6).
 

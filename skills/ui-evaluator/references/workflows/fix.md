@@ -59,6 +59,7 @@ Read `../methods/fix-loop.md` for the full procedure. This file is the operation
 2. **Triage each item** before touching code [HCI-037]:
    - obvious cause, quick fix → fix now;
    - obvious cause, slow fix → fix now if it is P0 or P1, otherwise propose deferral;
+   - the fix needs a decision only the owner can make (which system owns a setting, what a message should tell staff) → don't guess: `uie findings set <id> --status blocked --on <who> --question <text>` and move on; the reply asks the question first (ADR-036);
    - unknown cause → gather evidence first (`uie probe`, the code reviewer);
    - possible artefact of the evaluation method → send it back to the verifier, don't fix it.
 

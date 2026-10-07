@@ -45,7 +45,7 @@ Gate criteria owned by this file (QUALITY-BAR G5, verbatim):
 | ID | Criterion | Threshold | Verify | Src |
 |---|---|---|---|---|
 | USE-04 | Blind severity | ≥ 3 independent raters per confirmed finding; validity votes, the mean of problem and trade-off values, spread and factors stored; spread ≥ 2, or a `not_a_problem` vote against a mean ≥ 2.5, marked divergent | A | HCI-009/010, EVAL C2 |
-| USE-05 | No open P0 | 0 findings with mean severity ≥ 3.5 in status open, in_progress, fixed, reopened, disputed or deferred. A P0 cannot be deferred to pass this criterion | S | HCI-012, LOOP-058 |
+| USE-05 | No open P0 | 0 findings with mean severity ≥ 3.5 in status open, in_progress, blocked, fixed, reopened, disputed or deferred. A P0 cannot be deferred to pass this criterion, and waiting on a decision (blocked, ADR-036) does not pass it either | S | HCI-012, LOOP-058 |
 | USE-06 | Every P1 has a decision | each P1 is verified-fixed, deferred (reason, owner, revisit trigger), disputed with a study planned, or won't-fix as a justified trade-off | S | HCI-012/013 |
 
 ## 2. Inputs
@@ -160,8 +160,8 @@ Worked examples: ratings 3, 3, 2 give mean 2.67 and spread 1, so P1; if every jo
 
 ### 3.8 What priorities gate
 
-- **USE-05.** No finding with mean ≥ 3.5 may be `open`, `in_progress`, `fixed`, `reopened`, `disputed` or `deferred`. A P0 leaves those states only by being verified, or by an owner decision (won't fix as a justified trade-off, or dismissed) that the report lists. Deferring a P0 does not pass USE-05 [LOOP-058].
-- **USE-06.** Each P1 is verified-fixed, deferred with reason, owner and revisit trigger, disputed with a study planned, or won't-fix as a justified trade-off.
+- **USE-05.** No finding with mean ≥ 3.5 may be `open`, `in_progress`, `blocked`, `fixed`, `reopened`, `disputed` or `deferred`. A P0 leaves those states only by being verified, or by an owner decision (won't fix as a justified trade-off, or dismissed) that the report lists. Deferring a P0 does not pass USE-05 [LOOP-058], and neither does waiting on a decision: a `blocked` P0 records the question, not the answer (ADR-036).
+- **USE-06.** Each P1 is verified-fixed, deferred with reason, owner and revisit trigger, disputed with a study planned, or won't-fix as a justified trade-off. A `blocked` P1 is still undecided.
 - Deferring a P0 or P1, or declaring it won't-fix, is the owner's decision. The lead proposes; the owner decides and the decision is recorded, because in effect it waives part of G5.
 - **Fix-now queue** (`uie findings queue`): P0, P1 and quick P2 wins (ease of fix 1). Other P2 and P3 findings go to the debt register. Long lists are dominated by minor problems (59 major vs 152 minor across six studies, Nielsen 1995) and would starve the important fixes [HCI-077].
 

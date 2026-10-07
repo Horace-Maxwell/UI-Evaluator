@@ -5,11 +5,12 @@ import { list, intOpt, UsageError } from '../util/args.mjs';
 import { validate, loadSchema, guessSchema } from '../schema.mjs';
 import { paths, resolveRun, readRegister, writeRegister, readDismissals, appendIndex, updateManifest } from '../project.mjs';
 import { mergeRun, acceptProposals, readJudgedOutputs } from '../findings/merge.mjs';
-import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal } from '../findings/register.mjs';
+import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits } from '../findings/register.mjs';
 import { setStatus, buildQueue, primaryCriterion, STATUSES, applyPriorityPolicy } from '../findings/core.mjs';
 import { anyTwoAgreement, discoveryEstimate } from '../study/stats.mjs';
 import { loadRules } from '../gates/rules.mjs';
 import { truncate } from '../util/text.mjs';
+import { isoNow } from '../util/time.mjs';
 
 export const argSpec = {
   boolean: ['json', 'quiet', 'divergent', 'fix-review', 'apply-locate', 'all', 'held', 'force'],
@@ -22,6 +23,8 @@ export const help = `uie findings <subcommand> [options]
   merge [--run <id>]                      merge tool findings and judged candidates → runs/<id>/merged.json
         [--accept P1,P3]                  apply merge proposals (true duplicates only)
         [--apply-locate]                  attach code-reviewer source locations and ease-of-fix estimates
+  split <id> --into <parts.json> [--run <id>]   replace a candidate or confirmed finding with ≥ 2 parts, which go
+                                          back through verification (ADR-037); recorded in runs/<id>/splits.json
   apply-verdicts [--run <id>]             apply runs/<id>/verifier.json to merged findings
         [--fix-review]                    apply runs/<id>/fix-review.json to the register instead
   rate [--run <id>] [--iteration <n>]     aggregate blind ratings from runs/<id>/ratings/*.json
@@ -31,6 +34,8 @@ export const help = `uie findings <subcommand> [options]
   list [--status a,b] [--priority P0,P1] [--divergent] [--held] [--q text] [--run <id>]
   show <id> [--run <id>]
   set <id> [--status s] [--ease 1-4] [--criticality c] [--note text] [--by who] [--attempt] [--run <id>]
+         [--status blocked --on who --question text]   wait on a named person's decision (ADR-036); leave it
+         [--answer text]                                 with the answer, recorded in the finding's blocked record
          [--add-criterion kind:id] [--drop-criterion id]   correct a mis-cited criterion (kept in criteria_history;
                                                              dropping a WCAG criterion needs --by human:<name>)
   dismiss <id> --reason <text> --by human:<name>
@@ -135,9 +140,19 @@ export async function run(args, ctx) {
       const doc = { schema: 'merged', run: r.id, created_at: new Date().toISOString(), inputs: res.inputs, findings: res.findings, proposals: res.proposals };
       applyLocate(r.dir, doc, { quiet: true });
       for (const f of doc.findings) delete f._tmp;
+      // Splits made with `uie findings split` survive a re-merge: the original is found by fingerprint (ADR-037).
+      const splitsPath = path.join(r.dir, 'splits.json');
+      const splitLog = readJson(splitsPath, null);
+      let splitNext = 0;
+      if (splitLog?.splits?.length) {
+        const re = reapplySplits(doc, splitLog.splits);
+        if (re.renumbered) writeJson(splitsPath, splitLog);
+        if (re.applied) ctx.info(`re-applied ${re.applied} recorded split(s) from splits.json`);
+        splitNext = re.next;
+      }
       saveMerged(r.dir, doc);
       // Reserve IDs in the register counter so later runs never reuse them.
-      reg.next_id = Math.max(reg.next_id || 1, res.next_id);
+      reg.next_id = Math.max(reg.next_id || 1, res.next_id, splitNext);
       writeRegister(ctx.root, reg);
       // Record what each judged role reported about its own model and isolation (EVD-07).
       const outs = readJudgedOutputs(r.dir);
@@ -274,6 +289,10 @@ export async function run(args, ctx) {
       ctx.result(q);
       if (!q.length) ctx.print(`the fix queue is empty. ${emptyQueueReason(ctx.root, reg)}`);
       for (const item of q) {
+        if (item.waiting) {
+          ctx.print(`wait ${item.id} ${item.priority || '--'} waiting on ${item.waiting.on}: ${truncate(item.waiting.question || '', 100)}`);
+          continue;
+        }
         ctx.print(`${item.fix_now ? 'now ' : 'debt'} ${item.id} ${item.priority} ${item.layer.padEnd(10)} ease ${item.ease_of_fix ?? '?'}  ${item.criterion}  ${truncate(item.title, 80)}`);
       }
       return 0;
@@ -345,16 +364,67 @@ export async function run(args, ctx) {
         if (String(args.status) === 'verified' && !by.startsWith('human:')) {
           throw new UsageError('verified needs evidence the fixer did not produce (ADR-030): a fix reviewer\'s confirmed_fixed (uie findings apply-verdicts --fix-review), a clean re-run of the deterministic check (uie diff), or a human (--by human:<name>). Your own re-test moves a finding to fixed.');
         }
+        const to = String(args.status);
+        const from = f.status;
+        // A finding waits on a named person's decision with the question recorded, and leaves with the answer (ADR-036).
+        if (to === 'blocked' && from !== 'blocked' && (!args.on || !args.question || args.on === true || args.question === true)) {
+          throw new UsageError('blocked needs --on <who must decide> and --question <what they must decide> (ADR-036)');
+        }
+        if (from === 'blocked' && to !== 'blocked' && to !== 'stale' && (!args.answer || args.answer === true)) {
+          throw new UsageError(`${id} is waiting on ${f.blocked?.on || 'a decision'}: record the answer with --answer <text> (ADR-036)`);
+        }
+        const note = to === 'blocked' && from !== 'blocked' ? `waiting on ${args.on}: ${args.question}` : from === 'blocked' && args.answer ? `answer: ${args.answer}` : args.note ? String(args.note) : undefined;
         try {
-          setStatus(f, String(args.status), { by, note: args.note ? String(args.note) : undefined });
+          setStatus(f, to, { by, note });
         } catch (e) {
           throw new UsageError(e.message);
         }
+        if (to === 'blocked' && from !== 'blocked') f.blocked = { on: String(args.on), question: String(args.question), since: isoNow(), by };
+        if (from === 'blocked' && to !== 'blocked' && args.answer) f.blocked = { ...(f.blocked || {}), answer: String(args.answer), answered_at: isoNow(), answered_by: by };
       }
       if (useRun) saveMerged(resolveRun(ctx.root, args.run).dir, container);
       else writeRegister(ctx.root, container);
       ctx.result(f);
       ctx.print(fmtFinding(f));
+      return 0;
+    }
+
+    case 'split': {
+      const id = rest[0];
+      if (!id || !args.into || args.into === true) throw new UsageError('usage: uie findings split <id> --into <parts.json> [--run <id>]');
+      const r = resolveRun(ctx.root, args.run);
+      const doc = loadMerged(r.dir);
+      const file = path.resolve(ctx.root, String(args.into));
+      if (!exists(file)) throw new UsageError(`--into: ${args.into} not found`);
+      let parts = readJson(file, null);
+      if (parts && !Array.isArray(parts)) parts = parts.parts;
+      if (!Array.isArray(parts)) throw new UsageError(`${args.into}: give a JSON array of parts, or {"parts": [...]}, each with a title and a description`);
+      const by = args.by ? String(args.by) : 'lead';
+      const reg = readRegister(ctx.root);
+      const next = Math.max(reg.next_id || 1, ...doc.findings.map((x) => (Number(String(x.id).replace(/\D/g, '')) || 0) + 1));
+      let plan;
+      try {
+        plan = planSplit(doc, id, parts, { next, by });
+      } catch (e) {
+        throw new UsageError(e.message);
+      }
+      // Every part must be a valid finding before anything is written.
+      const schema = loadSchema('finding');
+      for (const part of plan.parts) {
+        const v = validate(schema, part);
+        if (!v.valid) throw new UsageError(`part "${part.title}" is not a valid finding: ${v.errors.slice(0, 3).map((e) => `${e.path}: ${e.message}`).join('; ')}`);
+      }
+      applySplit(doc, plan, { by });
+      saveMerged(r.dir, doc);
+      const splitsPath = path.join(r.dir, 'splits.json');
+      const log = readJson(splitsPath, { version: 1, splits: [] });
+      log.splits.push(plan.record);
+      writeJson(splitsPath, log);
+      reg.next_id = Math.max(reg.next_id || 1, plan.next);
+      writeRegister(ctx.root, reg);
+      const ids = plan.parts.map((x) => x.id);
+      ctx.result({ run: r.id, original: id, parts: ids });
+      ctx.print(`split ${id} into ${ids.join(', ')}; the parts are candidates. Verify them: uie packet --role finding-verifier, then uie findings apply-verdicts.`);
       return 0;
     }
 

@@ -142,8 +142,9 @@ The state machine of FRAMEWORK §8.2:
 ```
 candidate ──verifier──▶ confirmed ──raters──▶ open ──▶ in_progress ──▶ fixed ──verify──▶ verified ──human──▶ resolved
     │                                     │  │                           │
-    └──▶ rejected                         │  ├──▶ deferred (debt)         └──▶ reopened ──▶ open
-                                          │  ├──▶ disputed ──study/ingest──▶ open | dismissed
+    ├──▶ rejected                         │  ├──▶ deferred (debt)         └──▶ reopened ──▶ open
+    └──▶ split ──▶ parts (candidates)     │  ├──▶ disputed ──study/ingest──▶ open | dismissed
+                                          │  ├──▶ blocked (waiting on a named person) ──answer──▶ open | in_progress | deferred | wont_fix | dismissed
                                           │  ├──▶ wont_fix (trade-off, with rationale)
                                           │  └──▶ dismissed (human: not a problem → dismissal ledger)
 any state ──UI changed under the anchor──▶ stale ──re-check──▶ previous state | rejected
@@ -164,6 +165,9 @@ Who may make each transition:
 | verified → resolved | the owner; for feedback-sourced items, the original reporter or the owner | a human only, never an agent [EVAL C12] |
 | open → deferred | lead for P2 and P3 under the queue policy; owner for P0 and P1 | debt-register entry with reason, owner and revisit trigger |
 | open → wont_fix | owner | trade-off rationale recorded |
+| confirmed, open, in_progress or reopened → blocked | lead | the fix needs a decision only a named person can make; `uie findings set <id> --status blocked --on <who> --question <text>` records both (ADR-036). Still open for USE-05, USE-06 and the other gates |
+| blocked → open / in_progress, or deferred / wont_fix / dismissed | lead, or the owner for a decision | the answer, recorded with `--answer <text>` |
+| candidate or confirmed → split | lead | the verifier's `split_required`, or the lead's own reading: `uie findings split <id> --into <parts.json>` replaces it with candidates that keep its sources (ADR-037). A rated finding is never split |
 | open → dismissed | owner | `uie findings dismiss`, which writes the dismissal ledger |
 | any → stale | freshness check | the UI under the anchor changed |
 | stale → previous state / rejected | finding verifier | re-check against the current capture |

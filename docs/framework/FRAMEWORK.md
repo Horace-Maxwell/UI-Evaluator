@@ -306,8 +306,9 @@ The skill states the expected cost of a depth before running it and records the 
 ```
 candidate ──verifier──▶ confirmed ──raters──▶ open ──▶ in_progress ──▶ fixed ──verify──▶ verified ──human──▶ resolved
     │                                     │  │                           │
-    └──▶ rejected                         │  ├──▶ deferred (debt)         └──▶ reopened ──▶ open
-                                          │  ├──▶ disputed ──study/ingest──▶ open | dismissed
+    ├──▶ rejected                         │  ├──▶ deferred (debt)         └──▶ reopened ──▶ open
+    └──▶ split ──▶ parts (candidates)     │  ├──▶ disputed ──study/ingest──▶ open | dismissed
+                                          │  ├──▶ blocked (waiting on a named person) ──answer──▶ open | in_progress | deferred | wont_fix | dismissed
                                           │  ├──▶ wont_fix (trade-off, with rationale)
                                           │  └──▶ dismissed (human: not a problem → dismissal ledger)
 any state ──UI changed under the anchor──▶ stale ──re-check──▶ previous state | rejected
@@ -315,6 +316,7 @@ any state ──UI changed under the anchor──▶ stale ──re-check──�
 
 - A finding moves to `verified` only on evidence its fixer did not produce (ADR-030): for a judged finding, a fresh fix reviewer's `confirmed_fixed`; for a deterministic finding, a re-run of the same check on the fixed build that no longer reports it (`uie diff` lists it as cleared); or a human's confirmation. The fixer's own re-test moves a finding only to `fixed`. Only a human, or the original reporter for feedback-sourced items, moves it to `resolved` [EVAL C12; ADR-020].
 - `disputed` is entered when ratings diverge (spread ≥ 2, or a "not a problem" vote against a mean ≥ 2.5), when more than half of the raters vote "not a problem" or more than half vote "trade-off" (ADR-029), or when the owner disagrees with an E0–E1 finding. It leaves only through evidence from `study` or `ingest`.
+- `blocked` means the fix needs a decision only a named person can make; the person and the question are recorded, the finding still counts as open for every gate, and it leaves with the answer (ADR-036). `split` ends a candidate that bundled several problems; its parts, which keep its sources, are verified one by one, and a rated finding is never split (ADR-037).
 - In iteration 2 and later, the verifier flags a new LLM-only finding raised by a single pass. After rating, a flagged finding whose mean severity is below 2.5 needs reproduction in ≥ 2 independent passes or human confirmation before it is reported, because LLM precision falls over rounds [HCI-029].
 
 ### 8.3 Consolidation, agreement and debrief

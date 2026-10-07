@@ -1,11 +1,13 @@
 // Living findings register (.ui-evaluator/findings.json): promotion from runs, dismissal ledger,
 // stale detection and verdict application.
 import { isoNow } from '../util/time.mjs';
-import { normalizeSelector } from '../util/text.mjs';
-import { setStatus, applyPriorityPolicy, primaryCriterion, aggregateRatings, priorityFromMean, ACTIVE, isDeterministic } from './core.mjs';
+import { normalizeSelector, normalizeSnippet } from '../util/text.mjs';
+import { sha1 } from '../util/hash.mjs';
+import { setStatus, applyPriorityPolicy, primaryCriterion, aggregateRatings, priorityFromMean, ACTIVE, isDeterministic, fingerprint } from './core.mjs';
 
 /** Statuses that are copied into the register when a run is promoted. */
-const PROMOTABLE = new Set(['confirmed', 'open', 'in_progress', 'fixed', 'verified', 'reopened', 'deferred', 'disputed', 'wont_fix', 'dismissed', 'resolved', 'stale']);
+// A split finding is not promoted: its parts are (ADR-037).
+const PROMOTABLE = new Set(['confirmed', 'open', 'in_progress', 'blocked', 'fixed', 'verified', 'reopened', 'deferred', 'disputed', 'wont_fix', 'dismissed', 'resolved', 'stale']);
 
 /**
  * Copy a run's findings into the register. Matching fingerprints update the existing entry
@@ -286,4 +288,95 @@ export function markStale(register, unresolvedIds, runId) {
     n += 1;
   }
   return n;
+}
+
+// --- splitting a finding (ADR-037) -----------------------------------------------------------------------------------
+
+const idNum = (id) => Number(String(id).replace(/\D/g, '')) || 0;
+const fmtId = (n) => `F-${String(n).padStart(4, '0')}`;
+
+/**
+ * Plan a split without changing anything: the parts a `candidate` or `confirmed` finding becomes. Each part gives a
+ * title and a description; criteria, locations, evidence, scope, problem type, impact and recommendation default to the
+ * original's. The parts keep the original's sources and start as candidates. `next` is the first free ID number.
+ */
+export function planSplit(doc, id, parts, { next, by = 'lead' } = {}) {
+  const f = (doc.findings || []).find((x) => x.id === id);
+  if (!f) throw new Error(`finding ${id} is not in this run's merged findings`);
+  if (!['candidate', 'confirmed'].includes(f.status)) throw new Error(`only a candidate or a confirmed, unrated finding can be split (ADR-037); ${id} is ${f.status}`);
+  if (!Array.isArray(parts) || parts.length < 2) throw new Error('a split needs at least two parts');
+  const at = isoNow();
+  let n = next;
+  const built = parts.map((p, i) => {
+    if (!p || typeof p !== 'object' || !p.title || !p.description) throw new Error(`part ${i + 1} needs a title and a description`);
+    const part = {
+      problem_type: f.problem_type,
+      criteria: f.criteria,
+      scope: f.scope,
+      locations: f.locations,
+      evidence: f.evidence,
+      impact: f.impact,
+      recommendation: f.recommendation,
+      tags: f.tags,
+      ...p,
+      id: fmtId(n),
+      status: 'candidate',
+      evidence_level: p.evidence_level || 'E0',
+      found_by: f.found_by,
+      merged_from: f.merged_from,
+      detection: f.detection,
+      split_from: f.id,
+      created_at: at,
+      updated_at: at,
+      status_history: [{ status: 'candidate', at, by, note: `split from ${f.id}` }],
+    };
+    n += 1;
+    for (const k of Object.keys(part)) if (part[k] === undefined) delete part[k];
+    // A part that keeps the original's criterion and location would share its fingerprint (criterion + location +
+    // snippet), so a part's identity is the original's plus the part's own title.
+    part.fingerprint = `sha1:${sha1(['split', f.fingerprint || fingerprint(f), normalizeSnippet(part.title)].join('##'))}`;
+    return part;
+  });
+  return { original: f, parts: built, next: n, record: { original: f.id, fingerprint: f.fingerprint, at, by, parts: built.map((x) => JSON.parse(JSON.stringify(x))) } };
+}
+
+/** Apply a planned split: the original becomes `split` and its parts follow it in the list. */
+export function applySplit(doc, plan, { by = 'lead' } = {}) {
+  const f = plan.original;
+  setStatus(f, 'split', { by, note: `split into ${plan.parts.map((x) => x.id).join(', ')}` });
+  f.split_into = plan.parts.map((x) => x.id);
+  delete f.split_required;
+  const i = doc.findings.indexOf(f);
+  doc.findings.splice(i + 1, 0, ...plan.parts);
+}
+
+/**
+ * Re-apply recorded splits after a re-merge rebuilt the run's findings: the original, found by fingerprint, becomes
+ * `split` again and its parts return with their IDs. A part whose ID is taken now gets the next free one.
+ */
+export function reapplySplits(doc, records, { by = 'uie findings merge' } = {}) {
+  let applied = 0;
+  let renumbered = false;
+  let next = Math.max(...doc.findings.map((x) => idNum(x.id) + 1), ...records.flatMap((r) => r.parts.map((p) => idNum(p.id) + 1)), 1);
+  for (const r of records) {
+    const f = doc.findings.find((x) => x.fingerprint === r.fingerprint) || doc.findings.find((x) => x.id === r.original);
+    if (!f || f.status === 'split') continue;
+    const taken = new Set(doc.findings.map((x) => x.id));
+    const parts = r.parts.map((p) => {
+      const copy = JSON.parse(JSON.stringify(p));
+      if (taken.has(copy.id)) {
+        copy.id = fmtId(next);
+        next += 1;
+        p.id = copy.id;
+        renumbered = true;
+      }
+      return copy;
+    });
+    setStatus(f, 'split', { by, note: `split recorded ${r.at}`, force: true });
+    f.split_into = parts.map((x) => x.id);
+    delete f.split_required;
+    doc.findings.splice(doc.findings.indexOf(f) + 1, 0, ...parts);
+    applied += 1;
+  }
+  return { applied, renumbered, next: Math.max(next, ...doc.findings.map((x) => idNum(x.id) + 1)) };
 }

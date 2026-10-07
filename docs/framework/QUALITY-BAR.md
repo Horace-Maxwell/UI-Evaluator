@@ -281,7 +281,7 @@ G4 implements P2, P4 and P12. A **hard tell** is detected deterministically with
 | USE-02 | Consolidation | deterministic-key merge done; any-two agreement and detection counts reported | S | HCI-014/015, EVAL C5 |
 | USE-03 | Verification | every reported finding passed the verification chain: evidence resolves, behaviour exercised, harness artefact excluded, in scope, absence claims backed by positive evidence | A/I | HCI-006/007/026, EVAL noodisD |
 | USE-04 | Blind severity | ≥ 3 independent raters per confirmed finding; validity votes, the mean of problem and trade-off values, spread and factors stored; spread ≥ 2, or a `not_a_problem` vote against a mean ≥ 2.5, marked divergent | A | HCI-009/010, EVAL C2 |
-| USE-05 | No open P0 | 0 findings with mean severity ≥ 3.5 in status open, in_progress, fixed, reopened, disputed or deferred. A P0 cannot be deferred to pass this criterion | S | HCI-012, LOOP-058 |
+| USE-05 | No open P0 | 0 findings with mean severity ≥ 3.5 in status open, in_progress, blocked, fixed, reopened, disputed or deferred. A P0 cannot be deferred to pass this criterion, and waiting on a decision (blocked, ADR-036) does not pass it either | S | HCI-012, LOOP-058 |
 | USE-06 | Every P1 has a decision | each P1 is `verified`, `deferred` (reason, owner, revisit trigger), `disputed` with a study planned, or `wont_fix` as a justified trade-off | S | HCI-012/013 |
 | USE-07 | Cognitive walkthrough of critical journeys | each critical journey walked with persona, task and correct action sequence fixed first; four questions per step; no failed step left without a decision | A | HCI-019/020/022 |
 | USE-08 | Task suitability | every declared top task can be completed with what the UI offers | A/I | HCI-076 |

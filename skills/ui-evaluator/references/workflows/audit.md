@@ -104,7 +104,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
    6. dismissal ledger;
    7. confidence-ceiling flag (iteration ≥ 2, single pass); the flag does not change the verdict, and the ceiling is applied after rating (step 10).
 
-   Rejected candidates are kept for statistics, never reported as findings. Read `../methods/verification.md`.
+   Rejected candidates are kept for statistics, never reported as findings. A candidate marked `split_required` bundles several problems: write its parts (title and description each) to a file, run `uie findings split <id> --into <file>`, and send only the parts to a fresh verifier; don't re-merge, which resets every verdict (ADR-037). Read `../methods/verification.md`.
 
 9. **Locate and estimate ease of fix.** Confirmed findings from black-box roles still lack source locations and ease-of-fix estimates.
    - Run `uie packet --role code-reviewer --phase locate`, and spawn the code reviewer again for a short second pass. It attaches file:line to the confirmed element-level findings and estimates ease of fix (1–4) for every confirmed finding.
