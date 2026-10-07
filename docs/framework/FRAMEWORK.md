@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.1.0 (2026-10-06) |
+| Version | 2.2.0 (2026-10-06) |
 | Status | Normative. The skill, its scripts and its agent prompts implement this document. Where they disagree, this document wins and the disagreement is a bug. |
 | Companion documents | [QUALITY-BAR](QUALITY-BAR.md) (gates and thresholds) · [METHODS](METHODS.md) (evaluation and research methods) · [ARCHITECTURE](ARCHITECTURE.md) (packaging, data model, CLI) · [DECISIONS](DECISIONS.md) (decision records and conflict rulings) · [AUTHORING](AUTHORING.md) (how guidance is written) · [EVALUATION-PLAN](EVALUATION-PLAN.md) (how the skill itself is tested) · [TRACEABILITY](TRACEABILITY.md) · [GLOSSARY](GLOSSARY.md) |
 | Evidence base | Eleven research notes in [`docs/research/`](../research/README.md) with about 600 numbered adopt items (IMP, DSL, LOOP, EVAL, PLAT, HCI, CRAFT, TOOL, PROC, PKG) |

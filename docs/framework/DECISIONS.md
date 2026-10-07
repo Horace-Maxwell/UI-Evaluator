@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.0.0 (2026-10-04) |
+| Version | 2.2.0 (2026-10-06) |
 | Status | Normative. Each record states a decision, why it was made and what it costs. Rule-level conflict rulings live in [CONFLICT-REGISTER](CONFLICT-REGISTER.md) (CR-*). A ruling changes only through a new or superseding ADR. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 

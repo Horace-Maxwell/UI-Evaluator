@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.0.0 (2026-10-04) |
+| Version | 2.2.0 (2026-10-06) |
 | Status | Normative for terminology: the name, meaning and Chinese rendering of every framework term. The linked sections stay normative for the rules themselves. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 

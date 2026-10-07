@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
+## 2.2.0 — 2026-10-06
+
+The two problems the 2026-10-06 round left open, decided in ADR-036 and ADR-037. File formats change only by addition: findings gain the `blocked` and `split` statuses and their records, and runs gain `splits.json`. USE-05 now also counts a `blocked` P0, which no earlier register contains.
+
+- **A finding can wait on a named person's decision (ADR-036).** `uie findings set <id> --status blocked --on <who> --question <text>` records that a fix needs a decision only that person can make, such as which system owns a setting. A blocked finding still counts as open for USE-05, USE-06, the critical-journey check and DES-03, so it passes no gate. `uie findings queue` lists it first as waiting on the person, with the question, and the report puts the question in its verdict and as the first next step. It leaves with `--answer <text>`, kept in the finding's `blocked` record. In the eval round the fix loop had to leave such a P0 `open`, indistinguishable from one nobody had looked at.
+- **Splitting a finding is a command (ADR-037).** `uie findings split <id> --into <parts.json>` replaces a candidate or confirmed finding that bundles several problems with two or more candidates. The parts keep the original's sources and detection count, take its criteria, locations and evidence unless they give their own, and get an identity of their own; the original becomes `split`. The split is recorded in `runs/<id>/splits.json`, and `uie findings merge` re-applies it, so a re-merge never brings the original back. A rated finding is not split. The verifier lists the parts in `split_into`, and the audit workflow, verification method and finding records say how to use it.
+- **Eval 11 accepts a blocked P0 or P1 with its question as an outcome.** The 2026-10-06 round was graded before this change and keeps its grades.
+
 ## 2.1.0 — 2026-10-06
 
 Reports in the CMU lecture's heuristic-evaluation format, an agent-level eval harness with a control arm, the first measurement of four release bars, and fixes for ten problems that round found in the skill. Formats change only by addition: evaluator outputs accept a `feedback` role, probe actions add `back`, `forward` and `reload`, and an earlier batch of rating files moves to `ratings/batch-<n>/`. No gate or threshold changes.

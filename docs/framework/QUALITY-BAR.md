@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.0.0 (2026-10-04) |
+| Version | 2.2.0 (2026-10-06) |
 | Status | Normative. Defines what "done" means. Gate criteria IDs defined here are the canonical IDs. Knowledge files elaborate them, and `assets/data/rules.json` implements them. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 
