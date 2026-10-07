@@ -349,7 +349,7 @@ async function openAndProbe(ctx, pg, triggerId, triggerDesc, how, stats) {
   await page.waitForTimeout(150);
   const d0 = await page.evaluate(dialogState, opened.dialog);
   if (method === 'click') {
-    clauseHit(ctx, ps, d0, 'does not open with the keyboard', ['2.1.1'], `Pressing Enter on ${triggerDesc} does not open the dialog; only a mouse click does, so keyboard users cannot reach it.`, { value: { trigger: triggerDesc, method: 'click' }, detail: 'Enter on the focused trigger opened nothing; a click did' }, 'Use a <button> as the trigger (or handle Enter and Space on the custom control).');
+    clauseHit(ctx, ps, d0, 'does not open with the keyboard', ['2.1.1'], `Pressing Enter on ${triggerDesc} does not open the dialog; only a mouse click does, so the dialog cannot be opened from the keyboard.`, { value: { trigger: triggerDesc, method: 'click' }, detail: 'Enter on the focused trigger opened nothing; a click did' }, 'Use a <button> as the trigger (or handle Enter and Space on the custom control).');
   }
   const sel = await contract(ctx, pg, opened.dialog, d0, { triggerId, triggerDesc }, stats);
   return sel;

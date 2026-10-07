@@ -207,10 +207,19 @@ export async function run(args, ctx) {
       const docs = listDir(dir)
         .filter((n) => n.endsWith('.json'))
         .map((n) => readJson(path.join(dir, n)));
-      if (!docs.length) throw new UsageError(`no rating files in ${dir}`);
-      const blindMap = readJson(path.join(r.dir, 'packets', '.blind-map-raters.json'), {});
+      // Each batch of raters has its own blind map. Earlier batches sit in ratings/batch-<n>/ with theirs (`uie packet`
+      // moves them there before a new batch); a finding takes its ratings from the latest batch that rated it.
+      const batches = listDir(dir)
+        .filter((n) => /^batch-\d+$/.test(n) && isDir(path.join(dir, n)))
+        .sort((a, b) => Number(a.slice(6)) - Number(b.slice(6)))
+        .map((n) => ({ map: readJson(path.join(dir, n, 'blind-map.json'), {}), docs: listDir(path.join(dir, n)).filter((f) => f.endsWith('.json') && f !== 'blind-map.json').map((f) => readJson(path.join(dir, n, f))) }));
+      batches.push({ map: readJson(path.join(r.dir, 'packets', '.blind-map-raters.json'), {}), docs });
+      if (!batches.some((b) => b.docs.length)) throw new UsageError(`no rating files in ${dir}`);
+      const latest = new Map();
+      batches.forEach((b, i) => b.docs.forEach((d) => (d.ratings || []).forEach((x) => latest.set(b.map[x.finding_id] || x.finding_id, i))));
+      const decoded = batches.flatMap((b, i) => b.docs.map((d) => ({ ...d, ratings: (d.ratings || []).map((x) => ({ ...x, finding_id: b.map[x.finding_id] || x.finding_id })).filter((x) => latest.get(x.finding_id) === i) })));
       const iteration = args.iteration ? intOpt(args.iteration, 'iteration', { min: 1 }) : inferIteration(ctx.root);
-      const { rated } = applyRatings(doc.findings, docs, { blindMap, iteration });
+      const { rated } = applyRatings(doc.findings, decoded, { iteration });
       for (const d of docs) recordSelfReport(r.dir, { role: 'severity-rater', agent: d.rater, model: d.model, isolation: d.isolation });
       // Deterministic findings keep rule severity; make sure their priority policy is applied.
       for (const f of doc.findings) if (f.severity?.source === 'rule') applyPriorityPolicy(f);
@@ -263,7 +272,7 @@ export async function run(args, ctx) {
       const reg = readRegister(ctx.root);
       const q = buildQueue(reg.findings);
       ctx.result(q);
-      if (!q.length) ctx.print('the fix queue is empty.');
+      if (!q.length) ctx.print(`the fix queue is empty. ${emptyQueueReason(ctx.root, reg)}`);
       for (const item of q) {
         ctx.print(`${item.fix_now ? 'now ' : 'debt'} ${item.id} ${item.priority} ${item.layer.padEnd(10)} ease ${item.ease_of_fix ?? '?'}  ${item.criterion}  ${truncate(item.title, 80)}`);
       }
@@ -453,4 +462,25 @@ function inferIteration(root) {
   // Count completed audit runs (with merged.json) as iterations.
   const dir = paths(root).runs;
   return listDir(dir).filter((n) => exists(path.join(dir, n, 'merged.json'))).length || 1;
+}
+
+/** Why the fix queue is empty, so it is never read as "nothing to fix" when an audit was simply left unfinished. */
+function emptyQueueReason(root, reg) {
+  if (reg.findings.length) {
+    const by = {};
+    for (const f of reg.findings) by[f.status] = (by[f.status] || 0) + 1;
+    const unrated = reg.findings.filter((f) => ['open', 'reopened', 'confirmed'].includes(f.status) && (!f.priority || f.priority === 'none')).length;
+    return `The register holds ${reg.findings.length} finding(s) (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')}); none is open with a priority${unrated ? `, and ${unrated} open finding(s) have no priority yet: rate them with \`uie findings rate\`` : ''}.`;
+  }
+  let latest;
+  try {
+    latest = resolveRun(root);
+  } catch {
+    return 'No audit has run yet: start with `uie audit`.';
+  }
+  const merged = readJson(path.join(latest.dir, 'merged.json'), null);
+  if (merged?.findings?.length) return `The register is empty, but run ${latest.id} has ${merged.findings.length} merged finding(s) that were never promoted: finish the audit (verify and rate the judged ones), then run \`uie findings promote\`.`;
+  const hits = exists(path.join(latest.dir, 'tool-findings.jsonl')) ? readJsonl(path.join(latest.dir, 'tool-findings.jsonl')).length : 0;
+  if (hits) return `The register is empty, but run ${latest.id} has ${hits} tool hit(s) that were never merged: run \`uie findings merge\`, finish the audit, then \`uie findings promote\`.`;
+  return `The register is empty and run ${latest.id} has no findings yet.`;
 }

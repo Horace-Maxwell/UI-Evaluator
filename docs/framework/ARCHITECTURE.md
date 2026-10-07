@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.0.0 (2026-10-04) |
+| Version | 2.1.0 (2026-10-06) |
 | Status | Normative for structure, file formats and the CLI contract. Implementation details may change as long as these contracts hold. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 
@@ -396,7 +396,7 @@ The canonical shapes are the templates `references/templates/config.example.json
   - `success_condition {all[] | any[]}`, with predicates `{url}`, `{text, target?}` or `{target, state}`;
   - `correct_actions[]`.
 - **Probe actions** (used by state recipes, journeys and `uie probe`). Each one is an object with an `action` and its parameters:
-  - `goto {url}`;
+  - `goto {url}`; `back`, `forward` and `reload`, the browser's own history and reload (they test the H3 exits and whether a page keeps what was typed);
   - `click {target}`, `dblclick {target}`, `hover {target}`, `focus {target}`;
   - `fill {target, value}`, `select {target, value}`, `check {target}`, `uncheck {target}`;
   - `press {key, target?}`, `tab {count?, shift?}`;

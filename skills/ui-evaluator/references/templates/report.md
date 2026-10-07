@@ -71,29 +71,50 @@ E4 "x% (95% CI a–b)" · E5 causal verbs ("caused", "reduced"). -->
 
 Agreement: any-two agreement [0.xx] (mean Jaccard over passes); detection counts per finding below; an estimated [n] problems remain undiscovered (discovery-rate estimate, METHODS §9.6; optimistic with few passes).
 
+<!-- Each P0 and P1 finding is written as one entry of the CMU lecture's heuristic-evaluation report: a header row
+(# · Problem · Severity · Ease of fixing · Heuristic number · Broad heuristic), then Problem (what is happening and why
+it is an issue), Evidence (show where) and Recommendation (how to fix). Severity: 0 not a usability problem · 1 cosmetic
+· 2 minor · 3 major · 4 catastrophe. Heuristics print as H2-1…H2-10 (Nielsen's ten, version 2); walkthrough findings
+print the question in the lecture's words. `uie report` writes this from the run's files. -->
+
 ### P0
 
 #### F-0004 · Choosing a time on a phone clears the selected pet
-- Problem type: single location · Criteria: H3 (primary), H5 · Journey: book-appointment (critical) · Scope: /book/time, 320–414 px, light
-- What happens: at widths below 415 px, tapping a time slot reloads the step and the pet field returns to empty; an owner with more than one pet must choose again, and the summary can show the wrong pet. Reproduced by the verifier at 320 and 375 px (E1).
-- Evidence: probes/7/ (before and after screenshots), crop evidence/crops/F-0004-1.png, detection 3 of 3 passes
-- Severity 3.7 (raters 4, 4, 3; spread 1) · Priority P0 · Ease of fix 2 (one component)
-- Recommendation (advisory): keep the pet selection in the step's state when the time changes.
-- Status: open
+
+| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic |
+|---|---|---|---|---|---|
+| F-0004 | Choosing a time on a phone clears the selected pet | 3.7 · catastrophe | 2 · one component or file | H2-3 | User control and freedom |
+
+**Problem.** At widths below 415 px, tapping a time slot reloads the step and the pet field returns to empty. An owner with more than one pet must choose again, and the summary can show the wrong pet.
+
+**Evidence.** Where: /book/time at 320 and 375 px. E1, reproduced by the verifier · probes/7/ (before and after), crop evidence/crops/F-0004-1.png · found by 3 of 3 evaluators. Ratings: 3.7 (spread 1; 4, 4, 3).
+
+**Recommendation.** Keep the pet selection in the step's state when the time changes. (advisory)
+
+Problem type: single location · Priority P0 · Status open · Also: H2-5 Error prevention
 
 ### P1
 
-| ID | Title | Criterion | Evidence | Severity (spread) | Ease of fix | Status |
-|---|---|---|---|---|---|---|
-| F-0002 | Text-message reminders are switched on by default at booking | H3, honesty (FRAMEWORK §15) | E1, reproduced | 3.0 (0) | 1 | open |
-| F-0006 | Time-slot buttons have no accessible name that includes the time | A11Y-01 (WCAG 4.1.2) | E1, measured by axe | rule: 3 | 2 | fixed |
+#### F-0006 · Time-slot buttons have no accessible name that includes the time
+
+| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic |
+|---|---|---|---|---|---|
+| F-0006 | Time-slot buttons have no accessible name that includes the time | 3 · major (rule) | 2 · one component or file | A11Y-01 | axe violations (WCAG 4.1.2) |
+
+**Problem.** Each time slot is a button whose accessible name is only "Select". A screen-reader user hears twelve identical buttons and cannot tell which time each one books.
+
+**Evidence.** Where: /book/time, every width. E1, measured by axe (button-name) and confirmed in the ARIA snapshot · evidence/aria/book-time.txt.
+
+**Recommendation.** Put the time in the button's text, or in its accessible name with the date. (advisory)
+
+Problem type: multiple locations · Priority P1 · Status fixed
 
 ### P2 and P3
 
-| ID | Title | Priority | Evidence | Severity (spread) | Ease of fix | Status |
-|---|---|---|---|---|---|---|
-| F-0011 | Clinic phone number on the confirmation page is not a link | P2 | E1 | 2.0 (1) | 1 | fixed |
-| F-0013 | Vet profiles open in a new page and the chosen date is lost on return | P2 | E1 | 2.3 (1) | 3 | deferred |
+| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic | Evidence | Status |
+|---|---|---|---|---|---|---|---|
+| F-0011 | Clinic phone number on the confirmation page is not a link | 2.0 · minor | 1 · one value or token | H2-7 | Flexibility and efficiency of use | E1 | fixed |
+| F-0013 | Vet profiles open in a new page and the chosen date is lost on return | 2.3 · minor | 3 · several components or one flow | H2-6 | Recognition rather than recall | E1 | deferred |
 
 ## 5. Divergent and disputed findings: questions for user research
 

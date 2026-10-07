@@ -22,12 +22,13 @@ export const help = `uie probe --url <url|route> --actions <json|file> [--width 
 
 Opens the URL (a route is resolved against config.app.base_url, and the app is started with config.app.start
 when it does not answer), performs the actions in order and stops at the
-first failing one. Actions (ARCHITECTURE §8.5): goto {url}; click|dblclick|hover|focus {target}; fill|select
+first failing one. Actions (ARCHITECTURE §8.5): goto {url}; back; forward; reload; click|dblclick|hover|focus {target}; fill|select
 {target, value}; check|uncheck {target}; press {key, target?}; tab {count?, shift?}; scroll {target? | y};
 wait {ms | target, state?}; expect {text, target?} | {url} | {target, state}; screenshot {name, full_page?};
 viewport {width, height?}; emulate {colorScheme?, reducedMotion?, forcedColors?}. Targets: role=button[name="Save"],
 label=…, text=…, placeholder=…, testid=…, alt=…, or CSS. --actions takes JSON text or a JSON file (an array, or an
-object with "actions" or "correct_actions").
+object with "actions" or "correct_actions"). Write each step as {"action": "goto", "url": "/"}; {"goto": {"url": "/"}}
+is read the same way.
 
 Writes runs/<id>/probes/<n>/ (default; --out overrides): probe.json (steps, console, network, timing),
 step-NN.png after each step, final.png, aria.yml, and prints the paths.

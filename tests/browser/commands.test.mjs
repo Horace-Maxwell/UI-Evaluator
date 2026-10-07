@@ -150,6 +150,12 @@ test('commands: capture, audit, journey, probe, diff and gates through the CLI',
     assert.match(out.dir, /probes\/1$/);
     const failing = p.uie('probe', '--url', '/cmd-home.html', '--actions', '[{"action":"expect","text":"No such text"}]', '--timeout', '1500');
     assert.equal(failing.code, 2);
+    // The browser's history: Back and Forward move between pages; with nothing to go to, the step fails.
+    const history = JSON.stringify([{ action: 'goto', url: '/cmd-about.html' }, { action: 'back' }, { action: 'expect', url: 'cmd-home\\.html$' }, { action: 'forward' }, { action: 'expect', url: 'cmd-about\\.html$' }, { action: 'reload' }]);
+    const hist = p.uie('probe', '--url', '/cmd-home.html', '--actions', history, '--json');
+    assert.equal(hist.code, 0, hist.err || hist.out);
+    assert.equal(p.uie('probe', '--url', '/cmd-home.html', '--actions', '[{"action":"back"}]', '--timeout', '1500').code, 2, 'nothing before the start page');
+    assert.equal(p.uie('probe', '--url', '/cmd-home.html', '--actions', '[{"action":"forward"}]', '--timeout', '1500').code, 2, 'nothing after it');
     const remote = p.uie('probe', '--url', 'https://example.com/', '--actions', '[]');
     assert.equal(remote.code, 1);
     assert.match(remote.err, /only localhost/);

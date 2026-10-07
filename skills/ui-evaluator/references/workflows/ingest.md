@@ -66,7 +66,7 @@ Use this workflow:
    - raises its evidence level to E3 (observed, k of n);
    - attaches the extracts as evidence.
 
-   Map unmatched problem themes to the heuristic, CW question or journey step they concern, and add them as candidates. Candidates go through verification like any other: reproduce them with `uie probe` against the current build before they become findings.
+   Map unmatched problem themes to the heuristic, CW question or journey step they concern, and add them as candidates: write them to `runs/<id>/evaluators/feedback.json` as an evaluator output with `"role": "feedback"` and `"agent": "feedback"`, each candidate citing its items as quote evidence (`"ref": "feedback:FB-0012"`), then run `uie findings merge`. Feedback candidates are never counted as an inspector in detection k of N. Candidates go through verification like any other: reproduce them with `uie probe` against the current build before they become findings.
 
 5. **Resolve disputes with evidence.** Findings in `disputed` status leave it here:
    - users experienced the problem → back to `open` with E3 evidence;

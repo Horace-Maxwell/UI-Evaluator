@@ -52,7 +52,12 @@ test('the audit pipeline runs end to end and every artefact validates', (t) => {
 
   const run = uie('run', 'new', '--label', 'audit', '--json').json().run;
   const runDir = path.join(root, '.ui-evaluator', 'runs', run);
+  write(path.join(root, '.ui-evaluator/journeys/book.json'), { id: 'book', title: 'Book a collection', criticality: 'important', goal: 'Book a bulky-waste collection', scenario: 'A sofa needs to go.', correct_actions: [{ action: 'click', target: 'role=button[name="More"]' }], avoided_hints: ['More'], success_condition: { all: [{ url: 'done' }] } });
   assert.equal(uie('packet', '--role', 'heuristic-evaluator', '--n', '3').code, 0);
+  // Heuristic evaluators get journeys for orientation, never the walkthrough's answer key.
+  const heJourneys = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/heuristic-evaluator-1/journeys.json'), 'utf8'));
+  assert.equal(heJourneys[0].goal, 'Book a bulky-waste collection');
+  assert.ok(heJourneys.every((j) => !('correct_actions' in j) && !('avoided_hints' in j) && !('success_condition' in j)), 'no answer key in the HE packet');
   const fee = candidate('c1', 'Fee is not shown until the payment step', 'H1', '/book/items', 'main .item-summary', 'On the items step the page lists the chosen items but not the fee.');
   const plural = candidate('c2', 'Plural item names return no results', 'H9', '/what-goes-where', '#search-results', "Searching 'mattresses' returns no results while 'mattress' works.");
   const out = (agent, cands) => ({ schema: 'evaluator-output', role: 'heuristic-evaluator', agent, model: 'test-model', isolation: 'subagent', passes: [{ pass: 1 }, { pass: 2 }], strengths: [{ title: 'The start page names both tasks plainly.' }], candidates: cands });
@@ -81,7 +86,12 @@ test('the audit pipeline runs end to end and every artefact validates', (t) => {
   });
   assert.equal(uie('findings', 'apply-verdicts').code, 0);
 
+  write(path.join(runDir, 'evidence/step.png'), 'png');
   assert.equal(uie('packet', '--role', 'severity-rater', '--n', '3').code, 0);
+  // Raters get evidence paths they can open as written, and the schema their output must follow.
+  const toRate = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/severity-rater-1/findings-to-rate.json'), 'utf8'));
+  assert.ok(toRate.every((f) => f.evidence.every((e) => path.isAbsolute(e.ref) && fs.existsSync(e.ref) && e.ref.endsWith(path.join('evidence', 'step.png')))), 'evidence refs are absolute');
+  assert.match(fs.readFileSync(path.join(runDir, 'packets/severity-rater-1/README.md'), 'utf8'), /Output schema: .*assets[\\/]schemas[\\/]rating\.schema\.json/);
   const blind = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/.blind-map-raters.json'), 'utf8'));
   const blindOf = Object.fromEntries(Object.entries(blind).map(([b, id]) => [id, b]));
   const rating = (finding, value, validity = 'problem') => ({ finding_id: blindOf[finding], frequency: 2, impact: 3, persistence: 1, value, validity, note: 'rated from the packet' });
@@ -107,6 +117,10 @@ test('the audit pipeline runs end to end and every artefact validates', (t) => {
   const md = fs.readFileSync(path.join(runDir, 'report.md'), 'utf8');
   assert.match(md, /Fee is not shown until the payment step/);
   assert.match(md, /not a conformance claim/);
+  // Findings read like the lecture's heuristic-evaluation report entries (header row, then Problem, Evidence, Recommendation).
+  assert.match(md, /\| # \| Problem \| Severity \| Ease of fixing \| Heuristic \| Broad heuristic \|/);
+  assert.match(md, /\| H2-1 \| Visibility of system status \|/);
+  assert.match(md, /\*\*Problem\.\*\*[\s\S]*\*\*Evidence\.\*\*[\s\S]*\*\*Recommendation\.\*\*/);
   const html = fs.readFileSync(path.join(runDir, 'report.html'), 'utf8');
   assert.match(html, /<html lang="en">/);
   const manifest = JSON.parse(fs.readFileSync(path.join(runDir, 'manifest.json'), 'utf8'));
@@ -125,6 +139,59 @@ test('the audit pipeline runs end to end and every artefact validates', (t) => {
   assert.equal(reg.findings.find((f) => f.id === pluralId).status, 'reopened');
   assert.equal(uie('findings', 'set', feeF.id, '--status', 'resolved').code, 1, 'only humans resolve');
   assert.equal(uie('findings', 'set', feeF.id, '--status', 'resolved', '--by', 'human:owner').code, 0);
+});
+
+test('a second batch of raters gets its own blind map; the first batch still decodes with the old one', (t) => {
+  const { root, uie } = project();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.copyFileSync(path.join(FIX, 'PRODUCT.md'), path.join(root, 'PRODUCT.md'));
+  assert.equal(uie('init', '--quiet').code, 0);
+  const run = uie('run', 'new', '--label', 'audit', '--json').json().run;
+  const runDir = path.join(root, '.ui-evaluator', 'runs', run);
+  const fee = candidate('c1', 'Fee is not shown until the payment step', 'H1', '/book/items', 'main .item-summary', 'On the items step the page lists the chosen items but not the fee.');
+  const plural = candidate('c2', 'Plural item names return no results', 'H9', '/what-goes-where', '#search-results', "Searching 'mattresses' returns no results while 'mattress' works.");
+  for (const agent of ['he-1', 'he-2', 'he-3']) write(path.join(runDir, `evaluators/${agent}.json`), { schema: 'evaluator-output', role: 'heuristic-evaluator', agent, model: 'test-model', isolation: 'subagent', passes: [{ pass: 1 }, { pass: 2 }], strengths: [], candidates: [fee, plural] });
+  assert.equal(uie('findings', 'merge').code, 0);
+  const merged = () => JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8'));
+  const [feeId, pluralId] = ['Fee', 'Plural'].map((w) => merged().findings.find((f) => f.title.startsWith(w)).id);
+  write(path.join(runDir, 'verifier.json'), { schema: 'verifier', agent: 'verifier', model: 'test-model', isolation: 'subagent', iteration: 1, verdicts: [feeId, pluralId].map((id) => ({ candidate_id: id, verdict: 'confirmed', step: 'reproduction', reason: 'Reproduced.' })) });
+  assert.equal(uie('findings', 'apply-verdicts').code, 0);
+
+  const rateBatch = (values) => {
+    const map = JSON.parse(fs.readFileSync(path.join(runDir, 'packets/.blind-map-raters.json'), 'utf8'));
+    const blindOf = Object.fromEntries(Object.entries(map).map(([b, id]) => [id, b]));
+    for (const i of [1, 2, 3]) write(path.join(runDir, `ratings/rater-${i}.json`), { schema: 'rating', rater: `rater-${i}`, model: 'test-model', isolation: 'subagent', ratings: Object.entries(values).map(([id, v]) => ({ finding_id: blindOf[id], frequency: 2, impact: 2, persistence: 1, value: v, validity: 'problem', note: 'rated' })) });
+  };
+  assert.equal(uie('packet', '--role', 'severity-rater', '--n', '3').code, 0);
+  rateBatch({ [feeId]: 4, [pluralId]: 1 });
+  assert.equal(uie('findings', 'rate').code, 0);
+  assert.equal(uie('findings', 'promote').code, 0);
+
+  // The plural finding changed and needs a new rating: a second batch rates it alone.
+  const regPath = path.join(root, '.ui-evaluator/findings.json');
+  const reg = JSON.parse(fs.readFileSync(regPath, 'utf8'));
+  reg.findings.find((f) => f.id === pluralId).needs_rerating = true;
+  fs.writeFileSync(regPath, JSON.stringify(reg, null, 2));
+  assert.equal(uie('packet', '--role', 'severity-rater', '--n', '3', '--only-changed').code, 0);
+  assert.deepEqual(fs.readdirSync(path.join(runDir, 'ratings/batch-1')).sort(), ['blind-map.json', 'rater-1.json', 'rater-2.json', 'rater-3.json']);
+  rateBatch({ [pluralId]: 3 });
+  assert.equal(uie('findings', 'rate').code, 0);
+  const sev = Object.fromEntries(merged().findings.map((f) => [f.id, f.severity?.mean]));
+  assert.equal(sev[feeId], 4, 'the first batch still decodes with its own map');
+  assert.equal(sev[pluralId], 3, 'the re-rated finding takes the latest batch');
+});
+
+test('an empty fix queue says why when the audit was never merged or promoted', (t) => {
+  const { root, uie } = project();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  assert.equal(uie('init', '--quiet').code, 0);
+  assert.match(uie('findings', 'queue').out, /No audit has run yet/);
+  const run = uie('run', 'new', '--label', 'audit', '--json').json().run;
+  const hit = { title: 'Text contrast below 4.5:1', description: 'Measured 2.9:1.', problem_type: 'single_location', criteria: [{ kind: 'rule', id: 'A11Y-11', primary: true }], locations: [{ route: '/', state: 'default', selector: 'p.note' }], found_by: [{ role: 'tool', method: 'tool', check: 'contrast' }], evidence: [], severity: { source: 'rule', value: 3 }, status: 'confirmed' };
+  write(path.join(root, '.ui-evaluator/runs', run, 'tool-findings.jsonl'), `${JSON.stringify(hit)}\n`);
+  assert.match(uie('findings', 'queue').out, /1 tool hit\(s\) that were never merged/);
+  assert.equal(uie('findings', 'merge').code, 0);
+  assert.match(uie('findings', 'queue').out, /merged finding\(s\) that were never promoted/);
 });
 
 test('feedback, stakeholder sheets and study results flow into the register and results.json', (t) => {

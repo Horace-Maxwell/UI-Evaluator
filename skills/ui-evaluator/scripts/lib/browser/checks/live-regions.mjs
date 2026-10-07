@@ -187,7 +187,7 @@ function judge(ctx, ps, res, a) {
     const hit = ctx.hit({
       rule: 'A11Y-15',
       title: `Status message not announced: "${c.text.slice(0, 50)}"`,
-      description: `After ${a.label}, the message "${c.text.slice(0, 120)}" appeared without moving focus, but ${why}. Screen-reader users do not learn the outcome.`,
+      description: `After ${a.label}, the message "${c.text.slice(0, 120)}" appeared without moving focus, but ${why}. Screen readers do not announce the outcome.`,
       location: ctx.loc(ps, { selector: c.selector, bbox: c.bbox, snippet: c.snippet, source: c.source }),
       evidence: [{ type: 'probe', value: { action: a.label, live: c.liveVia || 'none', appeared_ms: res.lastVisible }, detail: `${a.label} → "${c.text.slice(0, 80)}" (${c.liveVia ? `live region ${c.liveVia}` : 'no live region'})` }],
       recommendation: 'Render one persistent, initially empty role="status" region (role="alert" for errors) with the page, and write the message text into it.',

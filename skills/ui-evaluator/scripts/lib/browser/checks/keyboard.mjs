@@ -298,7 +298,7 @@ async function trapHit(ctx, pg, res, tracker, hits, stats, dir = 'Tab') {
       rule: 'A11Y-03',
       wcag: ['2.1.2'],
       title: `Keyboard trap: focus stops moving at ${label(s)}`,
-      description: `Pressing ${dir} repeatedly leaves focus on ${label(s)}, and Escape does not release it; keyboard users cannot move past this point.`,
+      description: `Pressing ${dir} repeatedly leaves focus on ${label(s)}, and Escape does not release it; focus cannot move past this point by keyboard.`,
       location: ctx.loc(ps, { selector: s.selector, bbox: s.doc, snippet: s.snippet, source: s.source }),
       evidence: [{ type: 'measurement', value: { presses: 3, escape: 'no release' }, detail: `focus unchanged after 3 × ${dir} and Escape + ${dir}` }],
       recommendation: 'Do not intercept Tab; if a widget must use Tab (an editor), document an exit key and honour Escape.',
@@ -334,7 +334,7 @@ function obscured(ctx, ps, s, dir, hits, stats) {
   hits.push(ctx.hit({
     rule: 'A11Y-05',
     title: `Focused element hidden behind ${by ? by.selector.slice(0, 50) : 'other content'}: ${label(s)}`,
-    description: `When ${label(s)} receives focus (${dir}), none of nine sample points on its box reaches it: ${s.sample.obscurers.map((o) => `${o.selector} (${o.position})`).join(', ')} paints over it, so keyboard users cannot see where they are.`,
+    description: `When ${label(s)} receives focus (${dir}), none of nine sample points on its box reaches it: ${s.sample.obscurers.map((o) => `${o.selector} (${o.position})`).join(', ')} paints over it, so the focused element is not visible.`,
     location: ctx.loc(ps, { selector: s.selector, bbox: s.doc, snippet: s.snippet, source: s.source }),
     evidence: [{ type: 'measurement', value: { points_in_view: s.sample.inView, points_on_element: s.sample.self, direction: dir }, detail: `${dir}: 0 of ${s.sample.inView} in-view sample points on the element; obscured by ${by ? by.selector : '?'}` }],
     recommendation: 'Add scroll-padding-top / scroll-padding-bottom equal to the sticky bar height (technique C43), or keep floating layers out of the focus path.',
@@ -408,7 +408,7 @@ async function focusVisibility(ctx, pg, s, hits, stats, getCdp, evidenceBase, n)
     hits.push(ctx.hit({
       rule: 'A11Y-04',
       title: `No visible focus indicator: ${label(s)}`,
-      description: `Tab focus on ${label(s)} changes 0 pixels within its box + 4 px (focused vs blurred crop${s.visible ? '' : ', widened to its label and parent because the control itself is visually hidden'}), so keyboard users cannot see where focus is.`,
+      description: `Tab focus on ${label(s)} changes 0 pixels within its box + 4 px (focused vs blurred crop${s.visible ? '' : ', widened to its label and parent because the control itself is visually hidden'}), so no focus position is visible.`,
       location: where({ crop: fRel }),
       evidence: [
         { type: 'measurement', value: { changed_px: 0, crop: [clip.width, clip.height] }, detail: `focused vs blurred: 0 px changed within box + 4 px (${m.changed} px in the whole crop)` },
@@ -617,7 +617,7 @@ async function otherThemes(ctx, stats, signatures) {
             const hit = ctx.hit({
               rule: 'A11Y-04',
               title: `No visible focus indicator: ${label(x.f)}`,
-              description: `In the ${theme} theme, forcing :focus-visible on ${label(x.f)} changes 0 pixels within its box + 4 px, so keyboard users cannot see where focus is.`,
+              description: `In the ${theme} theme, forcing :focus-visible on ${label(x.f)} changes 0 pixels within its box + 4 px, so no focus position is visible.`,
               location: ctx.loc(ps, { selector: x.f.selector, bbox: x.f.doc, snippet: x.f.snippet, source: x.f.source }),
               evidence: [{ type: 'measurement', value: { changed_px: 0, method: 'forced :focus-visible (CDP)' }, detail: `${theme} theme: 0 px changed with :focus-visible forced` }],
               recommendation: 'Define the focus indicator colour per theme from the focus tokens so it stays visible on dark surfaces too.',

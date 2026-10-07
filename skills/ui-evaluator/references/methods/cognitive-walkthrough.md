@@ -96,6 +96,8 @@ At each step, look at the screen as the persona sees it at that moment: the capt
 | CW-Q3 | Will the user associate the correct action with the effect they want? | the visible label and accessible name against the persona's own words for the goal; similar controls nearby | internal jargon; two controls that read as the same thing; an unlabelled icon |
 | CW-Q4 | If the correct action is performed, will the user see that progress is being made? | a probe of the action: what changed, how fast, where focus went, the URL, and for data changes the state after reload | nothing visible changes, or the message is ambiguous or out of view |
 
+The CMU lecture asks the same four questions in shorter words, and reports print them that way: CW-Q1 *Does the effect of the action match the user's goal (their conceptual model)?* · CW-Q2 *Is the action visible?* · CW-Q3 *Will the user recognize the action as the correct one?* · CW-Q4 *Will the user understand the feedback?* As in the lecture, write the action sequence for the task first, then ask all four questions at every step.
+
 Answering:
 
 - Answer **yes** only with a credible success story grounded in evidence ("the button's label is the persona's own word for the goal"; "a confirmation appears at once and the list updates"). Answer **no** when a credible failure story exists for this persona, even if other users would succeed. Agent walkers tend to see too few failures (§3.8), so a plausible failure story counts.

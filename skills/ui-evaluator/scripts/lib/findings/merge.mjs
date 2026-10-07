@@ -94,13 +94,24 @@ function judgedKey(f) {
   return [loc.route || '', loc.state || 'default', sel, c.id].join('|');
 }
 
-/** Distinct evaluator agents behind a finding; tool sources are not inspectors and never count toward k of N. */
+/** Distinct evaluator agents behind a finding; tool and feedback sources are not inspectors and never count toward k of N. */
 function evaluatorAgents(f) {
-  return new Set((f.found_by || []).filter((b) => b.role !== 'tool').map((b) => b.agent));
+  return new Set((f.found_by || []).filter((b) => b.role !== 'tool' && b.role !== 'feedback').map((b) => b.agent));
 }
 
 function titleTokens(f) {
   return new Set(words(`${f.title || ''} ${f.description || ''}`.toLowerCase()).filter((w) => w.length > 3));
+}
+
+/** The page a route names, without its query or hash ("/index.html" is "/"): states reached by URL are one page. */
+function pagePath(route) {
+  if (!route) return '';
+  const p = String(route).replace(/[?#].*$/, '') || '/';
+  return p === '/index.html' ? '/' : p;
+}
+
+function pagesOf(f) {
+  return new Set((f.locations || []).map((l) => pagePath(l.route)));
 }
 
 function jaccard(a, b) {
@@ -159,7 +170,9 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
         problem_type: item.problem_type || 'single_location',
         _tmp: `C-${out.agent}-${n}`,
       };
-      f.found_by = (f.found_by && f.found_by.length ? f.found_by : [{ role: out.role, agent: out.agent, method: out.role === 'design-critic' ? 'critic' : 'HE' }]).map(
+      // Candidates from user feedback (ingest) are verified like any judged candidate but are not an inspector's output.
+      const feedback = out.role === 'feedback';
+      f.found_by = (f.found_by && f.found_by.length && !feedback ? f.found_by : [{ role: out.role, agent: out.agent, method: out.role === 'design-critic' ? 'critic' : feedback ? 'feedback' : 'HE' }]).map(
         (b) => ({ ...b, agent: b.agent || out.agent, model: b.model || out.model || undefined }),
       );
       delete f.severity; // severity is never taken from the finder (EVAL C2)
@@ -205,8 +218,8 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
   }
   const merged = [...byKey.values(), ...unkeyed.map((f) => ({ ...f, merged_from: [f._tmp] }))];
 
-  // 4. Detection counts (k of N independent judged outputs).
-  const N = outputs.length;
+  // 4. Detection counts (k of N independent judged outputs; feedback outputs are not inspectors).
+  const N = outputs.filter((o) => o.role !== 'feedback').length;
   for (const f of merged) {
     f.detection = { k: evaluatorAgents(f).size, n: N };
   }
@@ -235,26 +248,32 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
       applyPriorityPolicy(f);
     }
   }
-  // 7. Proposals: same element with different criteria, or similar wording on the same route.
-  //    Tool–judged pairs are proposed too (they show agreement between detectors and inspectors).
+  // 7. Proposals: the same element with different criteria, similar wording on the same page, or a shared criterion
+  //    with related wording on the same page. Pages ignore query strings, so evaluators who reached a state by
+  //    different URLs, or wrote no selector, still meet. Tool–judged pairs are proposed too (they show agreement
+  //    between detectors and inspectors). The lead accepts or rejects each one.
   const proposals = [];
   for (let i = 0; i < all.length; i += 1) {
     for (let j = i + 1; j < all.length; j += 1) {
       const a = all[i];
       const b = all[j];
       if (a.status === 'confirmed' && b.status === 'confirmed' && a.severity?.source === 'rule' && b.severity?.source === 'rule') continue;
+      const pa = pagesOf(a);
+      const pb = pagesOf(b);
+      if (!(pa.size === 0 && pb.size === 0) && ![...pb].some((x) => pa.has(x))) continue;
       const la = (a.locations || [])[0] || {};
       const lb = (b.locations || [])[0] || {};
-      if ((la.route || '') !== (lb.route || '')) continue;
       const selsA = new Set((a.locations || []).map((l) => normalizeSelector(l.selector || '')).filter(Boolean));
       const selsB = (b.locations || []).map((l) => normalizeSelector(l.selector || '')).filter(Boolean);
-      const sameEl = selsB.some((x) => selsA.has(x));
+      const sameEl = (la.route || '') === (lb.route || '') && selsB.some((x) => selsA.has(x));
       const sim = jaccard(titleTokens(a), titleTokens(b));
-      if (sameEl || sim >= 0.5) {
+      const critA = new Set((a.criteria || []).map((c) => c.id));
+      const shared = (b.criteria || []).some((c) => critA.has(c.id));
+      if (sameEl || sim >= 0.5 || (shared && sim >= 0.2)) {
         proposals.push({
           id: `P${proposals.length + 1}`,
           members: [a.id, b.id],
-          reason: sameEl ? 'same element, different criteria or sources' : `similar wording (Jaccard ${sim.toFixed(2)})`,
+          reason: sameEl ? 'same element, different criteria or sources' : sim >= 0.5 ? `similar wording (Jaccard ${sim.toFixed(2)})` : `same page, a shared criterion and related wording (Jaccard ${sim.toFixed(2)})`,
           kind: a.severity?.source === 'rule' || b.severity?.source === 'rule' ? 'tool+judged' : 'judged',
         });
       }
@@ -266,7 +285,7 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
     findings: all,
     proposals,
     next_id: next,
-    inputs: { tool_hits: toolHits.length, judged_outputs: N, judged_candidates: judged.length - toolCandidates, tool_candidates: toolCandidates, merged_judged: merged.length, tool_findings: toolGroups.size },
+    inputs: { tool_hits: toolHits.length, judged_outputs: N, judged_candidates: judged.length - toolCandidates, tool_candidates: toolCandidates, feedback_outputs: outputs.length - N, merged_judged: merged.length, tool_findings: toolGroups.size },
   };
 }
 

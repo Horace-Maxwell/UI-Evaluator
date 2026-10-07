@@ -188,3 +188,47 @@ test('judged candidates that both carry factor notes merge, with the notes combi
     fs.rmSync(runDir, { recursive: true, force: true });
   }
 });
+
+test('duplicate proposals meet across query strings: same page, a shared criterion and related wording', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-dup-'));
+  try {
+    const cand = (title, description, route, ids) => ({ title, description, problem_type: 'single_location', criteria: ids.map((id, i) => ({ kind: 'heuristic', id, primary: i === 0 })), locations: [{ route, state: 'default', viewport: { width: 375, height: 812 } }], evidence: [] });
+    fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'evaluators/he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', candidates: [cand("'Booking stopped' gives no reason and no way to fix the booking", 'The form is replaced by Booking stopped with a bare reference.', '/boat.html?date=2026-10-17&berth=B14', ['H9', 'H3'])] }));
+    fs.writeFileSync(path.join(runDir, 'evaluators/code.json'), JSON.stringify({ role: 'code-reviewer', agent: 'code', candidates: [
+      cand("Over-length boat leads to a 'Booking stopped' screen that gives no reason", 'The page shows Booking stopped and a reference, with no way back to the form.', '/boat.html', ['H9']),
+      cand('Draught is collected but never used', 'No sill depth is shown for the draught given.', '/boat.html', ['H9']),
+    ] }));
+    const out = mergeRun(runDir, {});
+    const byTitle = (re) => out.findings.find((f) => re.test(f.title)).id;
+    const pairs = out.proposals.map((p) => [...p.members].sort().join('+'));
+    assert.ok(pairs.includes([byTitle(/^'Booking stopped'/), byTitle(/^Over-length/)].sort().join('+')), 'the same dead end from two roles is proposed');
+    assert.ok(!pairs.some((p) => p.includes(byTitle(/^Draught/))), 'a shared criterion alone is not enough');
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
+test('candidates from user feedback merge and get verified, but never count as an inspector', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-fb-'));
+  try {
+    const loc = { route: '/boat.html', state: 'default', selector: '#mmsi', viewport: { width: 375, height: 812 } };
+    fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'evaluators/he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', candidates: [{ title: 'MMSI is required but not explained', description: 'No hint.', criteria: [{ kind: 'heuristic', id: 'H10', primary: true }], locations: [loc], evidence: [] }] }));
+    fs.writeFileSync(path.join(runDir, 'evaluators/feedback.json'), JSON.stringify({ schema: 'evaluator-output', role: 'feedback', agent: 'feedback', candidates: [
+      { title: 'Skippers without DSC cannot finish the booking', description: 'Seven skippers wrote that the MMSI field stopped them.', criteria: [{ kind: 'heuristic', id: 'H10', primary: true }], locations: [loc], evidence: [{ type: 'quote', ref: 'feedback:FB-0012' }] },
+      { title: 'The total appears only at the end', description: 'Four reviews.', criteria: [{ kind: 'heuristic', id: 'H6', primary: true }], locations: [{ route: '/berths.html', state: 'default', viewport: { width: 375, height: 812 } }], evidence: [{ type: 'quote', ref: 'feedback:FB-0040' }] },
+    ] }));
+    const out = mergeRun(runDir, {});
+    assert.equal(out.inputs.judged_outputs, 1, 'only he-1 is an inspector');
+    assert.equal(out.inputs.feedback_outputs, 1);
+    const mmsi = out.findings.find((f) => f.locations.some((l) => l.selector === '#mmsi'));
+    assert.deepEqual(mmsi.detection, { k: 1, n: 1 }, 'the feedback source does not raise k');
+    const total = out.findings.find((f) => /total/.test(f.title));
+    assert.equal(total.status, 'candidate');
+    assert.deepEqual(total.detection, { k: 0, n: 1 });
+    assert.ok(total.found_by.every((b) => b.role === 'feedback' && b.method === 'feedback'));
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});

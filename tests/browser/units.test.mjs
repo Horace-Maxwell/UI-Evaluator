@@ -56,6 +56,9 @@ test('actions: validation names the step and the problem; JSON and files are acc
   assert.ok(msgs.some((m) => m.startsWith('7:expect state')));
   assert.deepEqual(validateActions({}), [{ step: 0, message: 'actions must be an array' }]);
   assert.equal(parseActionsArg('[{"action":"tab"}]', () => '').length, 1);
+  // The shorthand agents often write is accepted; an object with no action says what is expected.
+  assert.deepEqual(parseActionsArg('[{"goto":{"url":"/x"}},{"click":{"target":"#go"}},{"back":{}},{"wait":{"ms":400}},{"goto":"/y"}]', () => ''), [{ action: 'goto', url: '/x' }, { action: 'click', target: '#go' }, { action: 'back' }, { action: 'wait', ms: 400 }, { action: 'goto', url: '/y' }]);
+  assert.match(validateActions([{ url: '/x' }])[0].message, /no "action" key/);
   assert.equal(parseActionsArg('{"correct_actions":[{"action":"tab"},{"action":"tab"}]}', () => '').length, 2);
   const tmp = path.join(os.tmpdir(), `uie-actions-${process.pid}.json`);
   fs.writeFileSync(tmp, JSON.stringify({ actions: [{ action: 'press', key: 'Escape' }] }));

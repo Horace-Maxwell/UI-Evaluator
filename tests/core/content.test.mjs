@@ -87,6 +87,20 @@ test('report lint: wording may not exceed the evidence', () => {
   assert.equal(findings.violations[0].where, 'F-1.title');
 });
 
+test('report lint: the browser checks never write wording their own evidence cannot carry', () => {
+  // Tool findings are E1 or E2, so a generated sentence about what users cannot do fails the lint in every report.
+  const dir = path.join(SKILL, 'scripts/lib/browser/checks');
+  const flagged = [];
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.mjs'))) {
+    read(path.join(dir, file)).split('\n').forEach((line, i) => {
+      if (/^\s*(\/\/|\*)/.test(line)) return;
+      const text = line.replace(/\$\{[^}]*\}/g, 'X');
+      for (const v of lintReport({ texts: [{ text, evidence: 'E1', where: `${file}:${i + 1}` }] }).violations) if (v.rule === 'user-claim-below-E3') flagged.push(`${v.where}: ${v.text.slice(0, 80)}`);
+    });
+  }
+  assert.deepEqual(flagged, []);
+});
+
 test('scrubber: personal data out, dates, times, versions and prices kept', () => {
   const scrub = makeScrubber({ roster: [{ name: 'Jane Doe', code: 'P03', aliases: ['Jane'] }, { name: '王小明', code: 'P07' }] });
   const t = (s) => scrub(s).text;

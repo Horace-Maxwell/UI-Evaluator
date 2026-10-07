@@ -72,10 +72,22 @@ export function markdownToHtml(md) {
         rows.push(splitRow(lines[i]));
         i += 1;
       }
-      out.push('<div class="table-wrap" tabindex="0" role="region" aria-label="table"><table>');
+      // A heuristic-evaluation entry (the lecture's report table): tint the severity and ease-of-fixing cells by their
+      // number, as the lecture's example does; the number and its word stay in the cell, so colour is never the only cue.
+      const sevCol = header.findIndex((c) => /^severity/i.test(c.trim()));
+      const easeCol = header.findIndex((c) => /^ease of fixing/i.test(c.trim()));
+      const he = sevCol >= 0 && easeCol >= 0;
+      const tint = (c, col) => {
+        const n = Number.parseFloat(c);
+        if (!Number.isFinite(n)) return '';
+        if (col === sevCol) return ` class="sev sev-${Math.max(0, Math.min(4, Math.round(n)))}"`;
+        if (col === easeCol) return ` class="ease ease-${Math.max(1, Math.min(4, Math.round(n)))}"`;
+        return '';
+      };
+      out.push(`<div class="table-wrap" tabindex="0" role="region" aria-label="table"><table${he ? ' class="he"' : ''}>`);
       out.push(`<thead><tr>${header.map((c) => `<th scope="col">${inline(c)}</th>`).join('')}</tr></thead>`);
       const cell = (c) => (/^(pass|fail|not_run|not_applicable|degraded|waived)$/.test(c.trim()) ? `<span class="state state-${c.trim()}">${c.trim()}</span>` : inline(c));
-      out.push(`<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${cell(c)}</td>`).join('')}</tr>`).join('')}</tbody>`);
+      out.push(`<tbody>${rows.map((r) => `<tr>${r.map((c, col) => `<td${he ? tint(c, col) : ''}>${cell(c)}</td>`).join('')}</tr>`).join('')}</tbody>`);
       out.push('</table></div>');
       continue;
     }
@@ -110,11 +122,15 @@ const CSS = `
   color-scheme: light dark;
   --ink: #1b1d21; --ink-2: #4a4f57; --rule: #d5d8dd; --surface: #ffffff; --surface-2: #f3f4f6;
   --link: #1d4f91; --focus: #1d4f91; --pass: #1f6b3a; --fail: #a32020; --warn: #7a5200;
+  --he-head: #dfe6f5; --sev-0: #eceef1; --sev-1: #f8efc2; --sev-2: #fbd49a; --sev-3: #f6b083; --sev-4: #f19a95;
+  --ease-1: #cfeccf; --ease-2: #e4efc2; --ease-3: #f8e1b2; --ease-4: #f4c3b8;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px;
 }
 @media (prefers-color-scheme: dark) {
   :root { --ink: #e8eaed; --ink-2: #b7bcc4; --rule: #3a3f46; --surface: #16181b; --surface-2: #202328;
-    --link: #8db8f2; --focus: #8db8f2; --pass: #7ccf98; --fail: #ff9a9a; --warn: #f0c060; }
+    --link: #8db8f2; --focus: #8db8f2; --pass: #7ccf98; --fail: #ff9a9a; --warn: #f0c060;
+    --he-head: #24304a; --sev-0: #2a2d33; --sev-1: #46401f; --sev-2: #573c15; --sev-3: #642f17; --sev-4: #6a2323;
+    --ease-1: #1f4a2b; --ease-2: #39461d; --ease-3: #54421b; --ease-4: #5b2c24; }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -138,6 +154,12 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; line-height: 1.45; }
 th, td { text-align: left; vertical-align: top; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--rule); }
 th { font-weight: 600; background: var(--surface-2); }
+table.he th { background: var(--he-head); }
+td.sev, td.ease { font-weight: 600; }
+td.sev { white-space: nowrap; }
+td.sev-0 { background: var(--sev-0); } td.sev-1 { background: var(--sev-1); } td.sev-2 { background: var(--sev-2); }
+td.sev-3 { background: var(--sev-3); } td.sev-4 { background: var(--sev-4); }
+td.ease-1 { background: var(--ease-1); } td.ease-2 { background: var(--ease-2); } td.ease-3 { background: var(--ease-3); } td.ease-4 { background: var(--ease-4); }
 .state { font-weight: 600; white-space: nowrap; }
 .state-pass { color: var(--pass); }
 .state-fail { color: var(--fail); }

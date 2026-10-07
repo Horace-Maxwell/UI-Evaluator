@@ -391,7 +391,7 @@ async function disabledStates(ctx, pg, stats) {
       ctx.add(ctx.hit({
         rule: 'CMP-03',
         title: `Disabled control is barely perceivable: ${d.name ? `"${d.name.slice(0, 40)}"` : d.selector.slice(0, 50)}`,
-        description: `Neither the label (${labelRatio === null ? 'none' : `${labelRatio}:1`} against the control's fill) nor the outline (${outlineRatio === null ? 'none' : `${outlineRatio}:1`}) of this disabled control reaches 2:1 against the adjacent background in the ${ps.theme} theme, so people cannot tell it exists. [calibrating]`,
+        description: `Neither the label (${labelRatio === null ? 'none' : `${labelRatio}:1`} against the control's fill) nor the outline (${outlineRatio === null ? 'none' : `${outlineRatio}:1`}) of this disabled control reaches 2:1 against the adjacent background in the ${ps.theme} theme, so the control is barely perceivable. [calibrating]`,
         location: where,
         evidence: [{ type: 'measurement', value: { label_ratio: labelRatio, outline_ratio: outlineRatio, fill_ratio: round(fillRatio, 2) }, detail: `best ${round(best, 2)}:1 < 2:1` }],
         recommendation: 'Raise the disabled text and border roles to ≥ 2:1 (e.g. near-black at 38 % opacity on white, not 25 %).',
@@ -499,7 +499,7 @@ async function feedback(ctx, pg, stats, activeOk) {
       ctx.add(ctx.hit({
         rule: 'CMP-04',
         title: `No acknowledgement within 0.1 s: "${label.slice(0, 40)}"`,
-        description: `Activating "${label}" starts work${requests ? ` (${requests} request(s))` : ''}, but the first visible change comes ${ack === null ? 'never within the 4 s window' : `after ${ack} ms`} and the control has no pressed state, so people cannot tell the action registered.`,
+        description: `Activating "${label}" starts work${requests ? ` (${requests} request(s))` : ''}, but the first visible change comes ${ack === null ? 'never within the 4 s window' : `after ${ack} ms`} and the control has no pressed state, so nothing on screen shows that the action registered.`,
         location: where,
         evidence: [{ type: 'probe', value: { ack_ms: ack, pressed_state: false, duration_ms: duration }, detail: `first visible change ${ack === null ? 'none' : `${ack} ms`} after pointerdown (limit ${ACK_MS} ms)` }],
         recommendation: 'Give the control a pressed state and change it immediately (a label like "Saving…" or an in-control spinner).',

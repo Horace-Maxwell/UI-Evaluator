@@ -5,8 +5,9 @@ import path from 'node:path';
 import { readJson, readText, exists } from '../util/fs.mjs';
 import { sections, stripComments } from '../util/markdown.mjs';
 import { primaryCriterion, PRIORITY_ORDER } from '../findings/core.mjs';
-import { GATES, GATE_NAMES } from '../gates/rules.mjs';
+import { GATES, GATE_NAMES, loadRules } from '../gates/rules.mjs';
 import { truncate } from '../util/text.mjs';
+import { criterionLabel, severityWord, EASE_WORDS } from './labels.mjs';
 
 const esc = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n+/g, ' ');
 const sev = (f) => {
@@ -117,8 +118,20 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
   if (uniq.length) push(...uniq.map((s) => `- ${s}`), '');
   if (!debStrengths && !uniq.length) push('- None recorded. Evaluators list strengths with evidence; the debrief adds the ones to keep.', '');
 
-  // 4. Findings
+  // 4. Findings, in the lecture's heuristic-evaluation report form: a header row (problem, severity, ease of fixing,
+  // heuristic number and broad heuristic), then the problem, the evidence and the recommendation.
+  const names = { rules: safeRules(), wcag: coverage?.criteria || {} };
+  const label = (f) => criterionLabel(primaryCriterion(f), names);
+  const sevCell = (f) => {
+    const s = f.severity;
+    if (!s) return '—';
+    const v = s.source === 'rule' ? s.value ?? s.mean : s.mean;
+    const word = severityWord(v);
+    return `${v ?? '—'}${word ? ` · ${word}` : ''}${s.source === 'rule' ? ' (rule)' : ''}`;
+  };
+  const easeCell = (f) => (f.ease_of_fix ? `${f.ease_of_fix} · ${EASE_WORDS[f.ease_of_fix] || ''}` : '—');
   push('## 4. Findings', '');
+  push('Each finding is one problem, listed separately, in the form of a heuristic-evaluation report: severity 0 not a usability problem · 1 cosmetic · 2 minor · 3 major · 4 catastrophe, the mean of at least three independent raters (deterministic findings carry their rule\'s severity); ease of fixing 1 one value or token · 2 one component or file · 3 several components or one flow · 4 information architecture, rated by the code reviewer; heuristics are Nielsen\'s ten, version 2, numbered H2-1 to H2-10; walkthrough questions are the four asked at every step.', '');
   const reported = I.runFindings.filter((f) => !['rejected', 'candidate', 'dismissed'].includes(f.status) && !f.held && f.priority && f.priority !== 'none');
   const agreeLine = agreement
     ? `Agreement: any-two agreement ${Number.isFinite(agreement.any_two_agreement?.mean) ? agreement.any_two_agreement.mean.toFixed(2) : 'n/a'} (mean Jaccard over ${agreement.heuristic_passes} passes); ${Number.isFinite(agreement.discovery?.estimated_total) ? `an estimated ${Math.max(0, agreement.discovery.estimated_total - agreement.discovery.found).toFixed(1)} more problem(s) undiscovered (discovery-rate estimate, optimistic with few passes)` : 'too few passes for a discovery estimate'}.`
@@ -130,21 +143,25 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
     push(`### ${pr}`, '');
     if (pr === 'P0' || pr === 'P1') {
       for (const f of items) {
-        const c = primaryCriterion(f);
-        const loc = (f.locations || [])[0] || {};
-        push(`#### ${f.id} · ${esc(f.title)}`);
-        push(`- Problem type: ${String(f.problem_type || '').replace('_', ' ')} · Criteria: ${(f.criteria || []).map((x) => `${x.id}${x.primary ? ' (primary)' : ''}`).join(', ') || c.id}${loc.route ? ` · Where: ${loc.route}${loc.state && loc.state !== 'default' ? ` [${loc.state}]` : ''}${(f.locations || []).length > 1 ? ` and ${(f.locations || []).length - 1} more location(s)` : ''}` : ''}`);
-        push(`- What happens: ${esc(f.description)}`);
-        if (f.impact) push(`- Impact: ${esc(f.impact)}`);
-        const evRefs = [...new Set([...(f.locations || []).map((l) => l.crop).filter(Boolean), ...(f.evidence || []).map((e) => e.ref).filter(Boolean)])].slice(0, 4);
-        push(`- Evidence: ${evid(f)}${evRefs.length ? ` · ${evRefs.join(', ')}` : ''}${f.detection?.n ? ` · detected by ${f.detection.k} of ${f.detection.n} pass(es)` : ''}`);
-        push(`- Severity ${sev(f)} · Priority ${f.priority}${f.ease_of_fix ? ` · Ease of fix ${f.ease_of_fix}` : ''}`);
-        if (f.recommendation) push(`- Recommendation (advisory): ${esc(f.recommendation)}`);
-        push(`- Status: ${f.status}`, '');
+        const lb = label(f);
+        const locs = f.locations || [];
+        const where = locs.slice(0, 3).map((l) => `${l.route || '—'}${l.state && l.state !== 'default' ? ` [${l.state}]` : ''}${l.selector ? ` \`${truncate(l.selector, 60)}\`` : ''}${l.viewport?.width ? ` at ${l.viewport.width} px` : ''}`);
+        const others = (f.criteria || []).filter((x) => x.id !== primaryCriterion(f).id).map((x) => { const o = criterionLabel(x, names); return `${o.number} ${o.name}`; });
+        push(`#### ${f.id} · ${esc(f.title)}`, '');
+        push('| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic |', '|---|---|---|---|---|---|');
+        push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${sevCell(f)} | ${easeCell(f)} | ${lb.number} | ${esc(lb.name)} |`, '');
+        push(`**Problem.** ${esc(f.description)}${f.impact ? ` ${esc(f.impact)}` : ''}`, '');
+        const evRefs = [...new Set([...locs.map((l) => l.crop).filter(Boolean), ...(f.evidence || []).map((e) => e.ref).filter(Boolean)])].slice(0, 4);
+        push(`**Evidence.** ${where.length ? `Where: ${where.join('; ')}${locs.length > 3 ? ` and ${locs.length - 3} more` : ''}. ` : ''}${evid(f)}${evRefs.length ? ` · ${evRefs.join(', ')}` : ''}${f.detection?.n ? ` · found by ${f.detection.k} of ${f.detection.n} evaluator(s)` : ''}. Ratings: ${sev(f)}.`, '');
+        push(`**Recommendation.** ${f.recommendation ? `${esc(f.recommendation)} (advisory: the fix workflow chooses the narrowest correct change)` : 'none given by the evaluators.'}`, '');
+        push(`Problem type: ${String(f.problem_type || 'single_location').replace(/_/g, ' ')} · Priority ${f.priority} · Status ${f.status}${others.length ? ` · Also: ${others.join('; ')}` : ''}`, '');
       }
     } else {
-      push('| ID | Title | Criterion | Evidence | Severity | Ease of fix | Status |', '|---|---|---|---|---|---|---|');
-      for (const f of items) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${primaryCriterion(f).id} | ${f.evidence_level || 'E0'} | ${sev(f)} | ${f.ease_of_fix ?? '—'} | ${f.status} |`);
+      push('| # | Problem | Severity | Ease of fixing | Heuristic | Broad heuristic | Evidence | Status |', '|---|---|---|---|---|---|---|---|');
+      for (const f of items) {
+        const lb = label(f);
+        push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${sevCell(f)} | ${easeCell(f)} | ${lb.number} | ${esc(lb.name)} | ${f.evidence_level || 'E0'} | ${f.status} |`);
+      }
       push('');
     }
   }
@@ -246,6 +263,14 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
   if (specific && specific.state !== 'not_run') csvRows.push(['DES-02', `Design panel verdict: ${specific.detail}`, '', '', '', '', '', '']);
 
   return { markdown: `${lines.join('\n').replace(/\n{3,}/g, '\n\n')}\n`, csvRows, proseForLint: prose };
+}
+
+function safeRules() {
+  try {
+    return loadRules();
+  } catch {
+    return {};
+  }
 }
 
 function nextLevel(l) {

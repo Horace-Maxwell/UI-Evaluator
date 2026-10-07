@@ -1,5 +1,6 @@
 // uie packet — build the input packet for an isolated role (ARCHITECTURE §8.4; ADR-017).
 // A packet contains exactly what the role may see. Its hash is recorded so EVD-07 can prove what each role saw.
+import fs from 'node:fs';
 import path from 'node:path';
 import { readJson, writeJson, writeText, exists, listDir, readText, ensureDir, readJsonl, walkFiles } from '../util/fs.mjs';
 import { rng } from '../roll/prng.mjs';
@@ -11,7 +12,7 @@ import { isoNow } from '../util/time.mjs';
 import { productSections } from '../tokens/product.mjs';
 import { stripComments } from '../util/markdown.mjs';
 import { primaryCriterion } from '../findings/core.mjs';
-import { validate, loadSchema } from '../schema.mjs';
+import { validate, loadSchema, SCHEMA_DIR } from '../schema.mjs';
 
 export const argSpec = { boolean: ['json', 'quiet', 'unseal', 'only-changed'] };
 export const help = `uie packet --role <role> [--n <count>] [--run <id>] [options]
@@ -60,6 +61,36 @@ function evidenceIndex(runDir, kind) {
   });
 }
 
+// The schemas each role's output follows, named in its packet README so the agent need not search for them.
+const OUTPUT_SCHEMAS = {
+  'heuristic-evaluator': ['evaluator-output'],
+  'walkthrough-evaluator': ['evaluator-output', 'cw-record'],
+  'accessibility-auditor': ['evaluator-output'],
+  'code-reviewer': ['evaluator-output'],
+  'design-critic': ['panel', 'critic-verdict'],
+  'finding-verifier': ['verifier'],
+  'severity-rater': ['rating'],
+  'fix-reviewer': ['fix-review'],
+};
+
+/**
+ * An evidence reference as an absolute path when its file exists. Findings store refs relative to the run
+ * (evidence/…, probes/…) or to the project (.ui-evaluator/runs/…), sometimes followed by ": detail"; an agent
+ * reading a packet cannot tell which, so packets carry the resolved path.
+ */
+function absRef(ref, runDir, root) {
+  if (typeof ref !== 'string' || !ref || path.isAbsolute(ref) || /^[a-z][a-z0-9+.-]*:\/\//i.test(ref)) return ref;
+  const m = ref.match(/^([^\s:]+\.[A-Za-z0-9]+)(.*)$/);
+  if (!m) return ref;
+  for (const base of [runDir, root]) {
+    const full = path.join(base, m[1]);
+    if (exists(full)) return `${full}${m[2]}`;
+  }
+  return ref;
+}
+const absEvidence = (list, runDir, root) => (list || []).map((e) => ({ ...e, ...(e.ref ? { ref: absRef(e.ref, runDir, root) } : {}) }));
+const absLocations = (list, runDir, root) => (list || []).map((l) => ({ ...l, ...(l.crop ? { crop: absRef(l.crop, runDir, root) } : {}) }));
+
 function inventory(runDir) {
   const dir = path.join(runDir, 'evidence', 'dom');
   const out = {};
@@ -96,6 +127,7 @@ function readmeFor({ role, agent, runId, iteration, output, extra = '', lens, ph
 - Write your output to: ${output}
 - In your output set "agent": "${agent}", "model" (the model you run on), "isolation" ("subagent" if you run in your own context, otherwise "single-context") and "packet_hash": "{{PACKET_HASH}}".
 - Validate before returning: ${uieCommand()} findings validate "${output}"
+${(OUTPUT_SCHEMAS[role] || []).length ? `- Output schema${OUTPUT_SCHEMAS[role].length > 1 ? 's' : ''}: ${OUTPUT_SCHEMAS[role].map((n) => path.join(SCHEMA_DIR, `${n}.schema.json`)).join(', ')}\n` : ''}- Evidence paths in this packet are absolute when the file exists; screenshots are PNG files you can open directly.
 ${base ? `- App base URL for probes: ${base} (probe with: ${uieCommand()} probe --url <path> --actions '<json>' --width <px>)\n- Locator syntax: role=button[name="Save"], label=Email, text=…, placeholder=…, testid=…, or a CSS selector.\n` : ''}
 ## Independence
 
@@ -164,7 +196,9 @@ export async function run(args, ctx) {
           'screens.json': screens,
           'aria.json': aria,
           'inventory.json': inventory(r.dir),
-          'journeys.json': journeys.map(({ _file, ...j }) => j),
+          // Journeys orient the inspection; their answer key (the correct path, the labels the scenario avoids and the
+          // success test) is the walkthrough's alone, and would point a heuristic evaluator at the hidden control.
+          'journeys.json': journeys.map(({ _file, correct_actions, avoided_hints, success_condition, ...j }) => j),
         };
         const hash = writePacket(path.join(pdir, `heuristic-evaluator-${i}`), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, lens: LENSES[(i - 1) % LENSES.length], base }));
         record({ role, agent, packet: path.join(pdir, `heuristic-evaluator-${i}`), output: out, hash, model, isolation });
@@ -264,7 +298,7 @@ export async function run(args, ctx) {
       if (!merged) throw new UsageError('run `uie findings merge` before building the verifier packet');
       const cands = merged.findings
         .filter((f) => f.status === 'candidate')
-        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, locations: f.locations, evidence: f.evidence, detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
+        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
       const files = {
         'candidates.json': cands,
         'dismissals.json': readDismissals(ctx.root),
@@ -298,15 +332,26 @@ export async function run(args, ctx) {
           criteria: f.criteria,
           impact: f.impact,
           scope: f.scope || null,
-          locations: (f.locations || []).map((l) => ({ route: l.route, state: l.state, viewport: l.viewport, crop: l.crop })),
-          evidence: (f.evidence || []).map((e) => ({ type: e.type, ref: e.ref, detail: e.detail })),
+          locations: (f.locations || []).map((l) => ({ route: l.route, state: l.state, viewport: l.viewport, crop: absRef(l.crop, r.dir, ctx.root) })),
+          evidence: (f.evidence || []).map((e) => ({ type: e.type, ref: absRef(e.ref, r.dir, ctx.root), detail: e.detail })),
           factor_notes: f.factor_notes || null,
           observed_frequency: reg2?.observed_frequency || f.observed_frequency || null,
           criticality: f.criticality || null,
         };
       });
+      // A new batch gets a new blind map. Ratings from the batch before move to ratings/batch-<n>/ with the map that
+      // decodes them, so `uie findings rate` never reads an earlier B-001 as this batch's B-001.
+      const ratingsDir = ensureDir(path.join(r.dir, 'ratings'));
+      const earlier = listDir(ratingsDir).filter((f) => f.endsWith('.json'));
+      const oldMap = readJson(path.join(pdir, '.blind-map-raters.json'), null);
+      if (earlier.length && oldMap) {
+        const k = listDir(ratingsDir).filter((f) => /^batch-\d+$/.test(f)).length + 1;
+        const bdir = ensureDir(path.join(ratingsDir, `batch-${k}`));
+        for (const f of earlier) fs.renameSync(path.join(ratingsDir, f), path.join(bdir, f));
+        writeJson(path.join(bdir, 'blind-map.json'), oldMap);
+        ctx.info(`moved ${earlier.length} rating file(s) of the previous batch to ratings/batch-${k}/`);
+      }
       writeJson(path.join(pdir, '.blind-map-raters.json'), blind);
-      ensureDir(path.join(r.dir, 'ratings'));
       for (let i = 1; i <= n; i += 1) {
         const agent = `rater-${i}`;
         const out = path.join(r.dir, 'ratings', `${agent}.json`);
@@ -333,7 +378,11 @@ export async function run(args, ctx) {
       if (regressionOnly && !baseline && !diffDoc) throw new UsageError('no findings in status "fixed" to review, and nothing to compare for regressions: run `uie diff --baseline <run>` first or pass --baseline <run>');
       const reverified = reg.findings.filter((f) => (f.status_history || []).some((h) => h.by === 'uie diff' && h.status === 'verified' && String(h.note || '').includes(r.id)));
       const files = {
-        'fixes.json': fixes.map((f) => ({ finding_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criterion: primaryCriterion(f).id, original_evidence: f.evidence, locations: f.locations, first_seen_run: f.first_seen_run })),
+        'fixes.json': fixes.map((f) => {
+          // Original evidence lives in the run where the finding was first seen.
+          const firstDir = f.first_seen_run ? path.join(paths(ctx.root).runs, f.first_seen_run) : r.dir;
+          return { finding_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criterion: primaryCriterion(f).id, original_evidence: absEvidence(f.evidence, firstDir, ctx.root), locations: absLocations(f.locations, firstDir, ctx.root), first_seen_run: f.first_seen_run };
+        }),
         'current-screens.json': screens,
         ...(baseline ? { 'baseline-screens.json': evidenceIndex(baseline.dir, 'screens') } : {}),
         'diff.json': diffDoc,

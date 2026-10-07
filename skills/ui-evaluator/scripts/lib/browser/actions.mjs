@@ -8,6 +8,9 @@ import { slug } from '../util/time.mjs';
 
 export const ACTIONS = {
   goto: { required: ['url'] },
+  back: { required: [] },
+  forward: { required: [] },
+  reload: { required: [] },
   click: { required: ['target'] },
   dblclick: { required: ['target'] },
   hover: { required: ['target'] },
@@ -60,6 +63,10 @@ export function validateActions(actions) {
       problems.push({ step, message: 'each action must be an object with an "action" key' });
       return;
     }
+    if (!('action' in a)) {
+      problems.push({ step, message: `no "action" key: write each step as {"action": "goto", "url": "/"} or {"action": "click", "target": "…"} (got ${JSON.stringify(a).slice(0, 80)})` });
+      return;
+    }
     const spec = ACTIONS[a.action];
     if (!spec) {
       problems.push({ step, message: `unknown action "${a.action}" (known: ${Object.keys(ACTIONS).join(', ')})` });
@@ -87,8 +94,23 @@ export function validateActions(actions) {
 }
 
 /** Parse actions given as JSON text, a JSON file path, or an array. */
+/**
+ * `{"goto": {"url": "/x"}}` and `{"goto": "/x"}`, a common way to write an action, mean `{"action": "goto", "url": "/x"}`.
+ * Anything else is returned unchanged for validateActions to judge.
+ */
+export function normalizeAction(a) {
+  if (!a || typeof a !== 'object' || Array.isArray(a) || 'action' in a) return a;
+  const keys = Object.keys(a);
+  if (keys.length !== 1 || !ACTIONS[keys[0]]) return a;
+  const name = keys[0];
+  const v = a[name];
+  if (v && typeof v === 'object' && !Array.isArray(v)) return { action: name, ...v };
+  const field = ACTIONS[name].required[0];
+  return field && v !== undefined && v !== null && typeof v !== 'boolean' ? { action: name, [field]: v } : { action: name };
+}
+
 export function parseActionsArg(value, readFile) {
-  if (Array.isArray(value)) return value;
+  if (Array.isArray(value)) return value.map(normalizeAction);
   const s = String(value || '').trim();
   if (!s) return [];
   let text = s;
@@ -100,7 +122,7 @@ export function parseActionsArg(value, readFile) {
     throw new TargetSyntaxError(`--actions is not valid JSON: ${err.message}`);
   }
   if (!Array.isArray(parsed)) parsed = parsed.actions || parsed.correct_actions || [parsed];
-  return parsed;
+  return Array.isArray(parsed) ? parsed.map(normalizeAction) : parsed;
 }
 
 function friendly(err, a, timeout) {
@@ -166,6 +188,18 @@ export async function runAction(page, a, opts = {}) {
         assertAllowedUrl(url, opts.allowRemote);
         const resp = await page.goto(url, { waitUntil: 'load', timeout: Math.max(timeout, 30000) });
         if (resp && resp.status() >= 400) throw new Error(`${url} answered HTTP ${resp.status()}`);
+        await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
+        return { url: page.url(), status: resp ? resp.status() : null };
+      }
+      case 'back':
+      case 'forward':
+      case 'reload': {
+        // The browser's own history and reload: the "emergency exit" of H3, and whether a page keeps what was typed.
+        const before = page.url();
+        const nav = { waitUntil: 'load', timeout: Math.max(timeout, 30000) };
+        const resp = a.action === 'back' ? await page.goBack(nav) : a.action === 'forward' ? await page.goForward(nav) : await page.reload(nav);
+        if (a.action !== 'reload' && ((!resp && page.url() === before) || page.url() === 'about:blank')) throw new Error(`there is no page to go ${a.action} to in this tab's history`);
+        assertAllowedUrl(page.url(), opts.allowRemote);
         await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
         return { url: page.url(), status: resp ? resp.status() : null };
       }

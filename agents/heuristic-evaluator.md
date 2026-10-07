@@ -31,7 +31,7 @@ Your packet directory contains:
 | `routes.json` | routes, state recipes and the screenshot index |
 | `inventory.json` | interactive controls per route and state, for coverage |
 | `screens/`, `aria/` | screenshots and accessibility-tree snapshots across the viewport matrix |
-| `journeys/` | the critical journeys, for orientation only |
+| `journeys/` | the critical journeys (persona, goal, scenario, start), for orientation only; the correct path stays with the walkthrough |
 
 Read before starting:
 - `<skill-dir>/references/methods/heuristic-evaluation.md` (procedure);

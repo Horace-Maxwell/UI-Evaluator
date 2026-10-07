@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.0.0 (2026-10-04) |
+| Version | 2.1.0 (2026-10-06) |
 | Status | Normative. The skill, its scripts and its agent prompts implement this document. Where they disagree, this document wins and the disagreement is a bug. |
 | Companion documents | [QUALITY-BAR](QUALITY-BAR.md) (gates and thresholds) · [METHODS](METHODS.md) (evaluation and research methods) · [ARCHITECTURE](ARCHITECTURE.md) (packaging, data model, CLI) · [DECISIONS](DECISIONS.md) (decision records and conflict rulings) · [AUTHORING](AUTHORING.md) (how guidance is written) · [EVALUATION-PLAN](EVALUATION-PLAN.md) (how the skill itself is tested) · [TRACEABILITY](TRACEABILITY.md) · [GLOSSARY](GLOSSARY.md) |
 | Evidence base | Eleven research notes in [`docs/research/`](../research/README.md) with about 600 numbered adopt items (IMP, DSL, LOOP, EVAL, PLAT, HCI, CRAFT, TOOL, PROC, PKG) |
@@ -494,7 +494,7 @@ Source: Alexandra Ion, *Evaluation: Analytical vs Empirical*, Carnegie Mellon Un
 | Debrief | §8.3 debrief synthesis |
 | Severity 0–4 from frequency, impact and persistence | §4.5; `methods/severity-rating.md` |
 | Ease of fix rated by the dev team | §4.5 ease of fix (white-box role) |
-| Report fields: problem, heuristic, description, evidence, severity, fix, recommendation | §4.3 finding record |
+| Report fields: problem, heuristic, description, evidence, severity, fix, recommendation | §4.3 finding record; `uie report` prints each P0 and P1 finding as the lecture's report entry (header row # · Problem · Severity · Ease of fixing · Heuristic number · Broad heuristic, then Problem, Evidence, Recommendation), heuristics numbered H2-1…H2-10 |
 | Problem types: single location, multiple locations, overall structure, something missing | §4.3 `problem_type`; §8.1 rule 5 (absence evidence) |
 | HE limitations ("false problems", misses) | §8.2 verifier; §9 alternation with user tests; P9 |
 | Cognitive walkthrough with four questions per step | §6 walkthrough evaluator; `methods/cognitive-walkthrough.md` |
