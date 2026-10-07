@@ -1,0 +1,141 @@
+fix(ui): F-0029 Turning automatic dosing back on asks for confirmation first
+
+Finding: F-0029 (P1, H5 error prevention; H3).
+Baseline: apply after F-0025.patch.
+
+Contract
+  Originating: from manual, a single tap on the switch no longer turns automatic dosing on; an explicit
+  "Turn automatic on" is required. Switching to manual stays a single tap (the critical journey).
+  Regression: journey switch-dosing-to-manual; console, axe, keyboard, targets, states, live-regions,
+  contrast, layout, census, copy, motion; no introduced finding.
+  Scope: index.html dosing section; dashboard.js; styles.css .confirm/.button.
+Drift class and layer: local defect; behaviour, with the smallest markup and CSS it needs. An inline
+confirmation (not a modal) sits below the switch. Focus moves to "Turn automatic on"; "Keep manual" or Escape
+closes it and returns focus to the switch. The colours come from the existing --ink and --page tokens.
+Assumptions (inferred, please confirm):
+  - Asking only in this direction is enough. Switching to manual stops the pumps and is the safe direction.
+  - The wording "Check the reservoir is full first: pumps A and B will start topping up to EC 1.8." restates
+    the automatic status line already on the page, plus the journey's own fact that the pumps must not
+    dose into an empty tank.
+Left alone: the reload behaviour (F-0022, waiting on the owner) and the pump-start control mentioned in the
+manual message (F-0030, P2).
+No test runner exists in the project, so the behaviour is guarded by probes instead of a unit test.
+Re-test: run 20261006-155844-fix-f-0029.
+  Probe 1 (768 px, pointer), 16/16 steps: one tap goes to manual; a second tap keeps manual and shows the
+  confirmation; "Keep manual" keeps manual; Escape closes it; "Turn automatic on" sets automatic.
+  Probe 2 (375 px, keyboard), 8/8 steps: Enter goes to manual; Space opens the confirmation; Escape closes it and
+  dosing stays manual.
+  Console: 0 errors. The journey passed (3/3). No finding was introduced. The introduced instances listed in this
+  run's diff (F-0007, F-0013) belong to the F-0025 alarm chip, not to this change.
+
+--- a/index.html
++++ b/index.html
+@@ -90,6 +90,13 @@
+           <span class="switch__track"><span class="switch__knob"></span></span>
+         </button>
+       </div>
++      <div class="confirm" id="dosing-confirm" role="group" aria-labelledby="dosing-confirm-text" hidden>
++        <p id="dosing-confirm-text">Turn automatic dosing back on? Check the reservoir is full first: pumps A and B will start topping up to EC 1.8.</p>
++        <div class="confirm__actions">
++          <button class="button button--primary" type="button" id="dosing-confirm-yes">Turn automatic on</button>
++          <button class="button" type="button" id="dosing-confirm-no">Keep manual</button>
++        </div>
++      </div>
+       <p class="status-line" id="dosing-status" role="status">Nutrient dosing is automatic: pumps A and B top up to EC 1.8.</p>
+       <ul class="alerts" aria-label="Recent pump events">
+         <li>Pump A dosed 40 ml at 13:52</li>
+--- a/styles.css
++++ b/styles.css
+@@ -308,8 +308,46 @@
+ 
+ .switch:active {
+   background: #dfe7e1;
++}
++
++.confirm {
++  margin-top: 12px;
++  padding: 12px;
++  border: 2px solid var(--ink);
++  border-radius: 12px;
++}
++
++.confirm__actions {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px;
++  margin-top: 12px;
++}
++
++.button {
++  min-height: 44px;
++  padding: 0 16px;
++  border: 2px solid var(--ink);
++  border-radius: 20px;
++  background: transparent;
++  color: var(--ink);
++  font: inherit;
++  cursor: pointer;
+ }
+ 
++.button:hover {
++  background: color-mix(in srgb, var(--ink) 8%, transparent);
++}
++
++.button--primary {
++  background: var(--ink);
++  color: var(--page);
++}
++
++.button--primary:hover {
++  background: color-mix(in srgb, var(--ink) 85%, var(--page));
++}
++
+ .status-line {
+   margin-top: 9px;
+   color: #3b4a40;
+--- a/dashboard.js
++++ b/dashboard.js
+@@ -1,12 +1,41 @@
+ // Bay 4 monitor: the dosing switch. Readings ship with the page; there is no loading, empty or error view.
++// Switching to manual is one tap; switching back to automatic asks first, because the pumps start dosing.
+ (function () {
+   var sw = document.getElementById('dosing-switch');
+   var status = document.getElementById('dosing-status');
+-  sw.addEventListener('click', function () {
+-    var on = sw.getAttribute('aria-checked') !== 'true';
++  var confirm = document.getElementById('dosing-confirm');
++  var yes = document.getElementById('dosing-confirm-yes');
++  var no = document.getElementById('dosing-confirm-no');
++
++  function setDosing(on) {
+     sw.setAttribute('aria-checked', String(on));
+     status.textContent = on
+       ? 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.'
+       : 'Nutrient dosing is now manual: the pumps run only when you start them.';
++  }
++
++  function closeConfirm() {
++    confirm.hidden = true;
++    sw.focus();
++  }
++
++  sw.addEventListener('click', function () {
++    if (sw.getAttribute('aria-checked') === 'true') {
++      setDosing(false);
++      return;
++    }
++    confirm.hidden = false;
++    yes.focus();
+   });
++
++  yes.addEventListener('click', function () {
++    setDosing(true);
++    closeConfirm();
++  });
++
++  no.addEventListener('click', closeConfirm);
++
++  confirm.addEventListener('keydown', function (e) {
++    if (e.key === 'Escape') closeConfirm();
++  });
+ })();

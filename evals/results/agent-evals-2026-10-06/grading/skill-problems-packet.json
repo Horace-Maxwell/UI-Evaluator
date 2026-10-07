@@ -1,0 +1,58 @@
+{
+  "problems": [
+    {
+      "key": "lint-wording",
+      "title": "Generated finding text fails the skill’s own report lint",
+      "problem": "Eight sentences that the browser checks write into findings say what users cannot do, such as “keyboard users cannot see where focus is”. The report lint rejects that wording below E3 evidence, and tool findings are E1. Every report with such a finding failed the skill’s own lint, and the agent had to edit the finding by hand. Two parts of one tool disagree about the same words.",
+      "evidence": "Eval 14, the lead’s narration: the lint “flagged one tool-generated phrase … in F-0011. Fixing it at the source and re-running.” A scan of the checks then found eight such sentences in the dialog, keyboard, live-region and state checks."
+    },
+    {
+      "key": "evidence-paths",
+      "title": "Evidence paths in packets do not open as written",
+      "problem": "Findings store evidence relative to the run folder (evidence/…) or to the project (.ui-evaluator/runs/…), and the packets handed to raters and verifiers copied the paths unchanged. An agent cannot tell which base a path has. The raters guessed wrong, failed to open screenshots, and risked rating from the text alone.",
+      "evidence": "Eval 11: all three severity raters tried .ui-evaluator/evidence/… and evidence/… under the project, 15 failed reads between them. Eval 19 shows the same pattern."
+    },
+    {
+      "key": "schema-path",
+      "title": "Packets do not say where the output schema is",
+      "problem": "Each agent’s instructions name the schema its output must follow (“rating.schema.json”) without saying where it is. Agents looked for it in schemas/ and references/schemas/; it lives in assets/schemas/.",
+      "evidence": "Eval 11 and eval 19: raters and the verifier read schema paths that do not exist before finding the file or giving up on it."
+    },
+    {
+      "key": "back-button",
+      "title": "Probes cannot press the browser’s Back button",
+      "problem": "Probe actions covered clicks, typing and keys, but not the browser’s history. Back is the classic emergency exit of H2-3, and one seeded defect is a form that empties on Back. To confirm it, the lead located the Playwright install and wrote its own script outside the skill.",
+      "evidence": "Eval 19: “Locating the Playwright install so I can run the Back-button test”, then “I reproduced it: after Continue and then the browser’s Back button, all four boat fields come back empty.”"
+    },
+    {
+      "key": "answer-key",
+      "title": "Heuristic evaluators were shown the walkthrough’s answer key",
+      "problem": "Each heuristic evaluator’s packet carried the journeys in full, with the correct action path and the labels the scenario avoids. For the second journey that path is “More options → Change dates”, the hidden control a seeded defect is about. An evaluator who is told where it is cannot show that it would have found it, and the finding’s detection count is inflated.",
+      "evidence": "Eval 19’s reply: “the three usability reviewers’ setup files included a builder note mentioning the hidden ‘Change dates’ menu … treat that finding’s detection count as possibly inflated.” The packets’ journeys.json held correct_actions and avoided_hints."
+    },
+    {
+      "key": "duplicates",
+      "title": "The same problem reaches the report up to six times",
+      "problem": "Different roles describe the same problem with different URLs (query strings) and criteria. The merge compared exact routes and first locations only, so it never proposed these pairs. The report listed the dead end six times and four other problems two to four times, and every repeat competes with the problems listed once.",
+      "evidence": "Eval 19’s reply: “The report lists some problems several times (the dead end shows up six times) because separate reviewers found them.” 65 findings remained after the lead accepted 11 merges."
+    },
+    {
+      "key": "blind-map",
+      "title": "A second batch of severity raters overwrote the first batch’s key",
+      "problem": "Raters see findings as B-001, B-002 and so on. Building a second batch rewrote that blind map, and the rating command decoded every rating file with the newest map. A first-batch rating of B-001 would have been applied, silently, to whatever B-001 is in the second batch. The lead noticed and moved the files by hand.",
+      "evidence": "Eval 19: after re-rating F-0012 the lead searched the run for “B-001”, then ran mkdir -p ratings/round-1 && mv ratings/rater-1.json … before rating again."
+    },
+    {
+      "key": "empty-queue",
+      "title": "An empty fix queue does not say why",
+      "problem": "Asked to fix a dashboard, the agent built the fix queue and got “the fix queue is empty”. The audit had run its checks but was never merged or promoted, so nothing had a priority. The tool knew this and did not say it; an empty queue reads as “nothing to fix”.",
+      "evidence": "Eval 11: “The queue is empty, so I’m checking whether the baseline audit’s findings ever made it into the register”, then “The baseline audit ran only the automated checks and was never merged or promoted, so no finding has a priority yet.”"
+    },
+    {
+      "key": "split",
+      "title": "No command to split a finding the verifier says holds two problems",
+      "problem": "The verifier can ask for a finding to be split. The method says the lead does it, but there is no command, so the lead wrote the parts as new candidates, merged again and sent them back through verification by hand. Hand-edited JSON is where provenance gets lost.",
+      "evidence": "Eval 11: “No CLI command splits a finding; the method says the lead does it. I’ll write the split parts as new candidates, re-merge, and send only those parts back through verification.”"
+    }
+  ]
+}

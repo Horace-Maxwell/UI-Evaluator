@@ -1,0 +1,110 @@
+{
+  "schema": "fix-review",
+  "run": "20261006-160411-fix-review",
+  "baseline_run": "20261006-144207-baseline-audit",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "9b08c8736296d35c",
+  "evidence_valid": true,
+  "items": [
+    {
+      "finding_id": "F-0031",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-audit.png", "detail": "Status cells now read OK / OK / Check / OK / Fault beside the dots"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-cvd-achromatopsia.png", "detail": "all dots grey but the text labels still tell the states apart"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/manual-dosing/1280-light-forced-colors.png", "detail": "same text labels in manual-dosing state"},
+        {"type": "probe", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/final.png", "detail": "768 manual state: OK/Check/Fault text visible"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/320-light-audit.png", "detail": "at 320 px the labels are clipped by the table edge ('Che', 'Faul'); recorded as a regression"}
+      ],
+      "note": "Colour is no longer the only carrier of status at 1280, 768 and in manual-dosing; 1.4.1 passes. At 320 px the new labels are truncated by the table edge. They are still distinguishable from 'OK', so 1.4.1 holds, but the clipping is recorded as a regression."
+    },
+    {
+      "finding_id": "F-0032",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-forced-colors.png", "detail": "Status cells show a dot and the text OK/Check/Fault under forced colours"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/manual-dosing/1280-light-forced-colors.png", "detail": "same in manual-dosing"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-144207-baseline-audit/evidence/screens/root/default/1280-light-forced-colors.png", "detail": "baseline: Status cells blank"}
+      ],
+      "note": "Under forced colours the status is no longer blank. Dots are drawn (they appear to opt out of forced-colour adjustment) and system-coloured text labels are present."
+    },
+    {
+      "finding_id": "F-0020",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-forced-colors.png", "detail": "switch drawn with an outlined track and the thumb on the right (on)"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/manual-dosing/1280-light-forced-colors.png", "detail": "switch drawn with an outlined track and the thumb on the left (off)"}
+      ],
+      "note": "Under forced colours the switch track and thumb are visible in both states, and the on and off states differ by thumb position and fill."
+    },
+    {
+      "finding_id": "F-0033",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "aria", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/aria.yml", "detail": "768, manual state: row 'Reservoir float Tank Fault' -> cell 'Fault'; all five rows have status cell text"},
+        {"type": "aria", "ref": ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/aria.yml", "detail": "baseline: status cells empty"}
+      ],
+      "note": "All five status cells now expose OK/Check/Fault in the accessibility tree. Re-run at 768 in default and manual states."
+    },
+    {
+      "finding_id": "F-0025",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-audit.png", "detail": "Reservoir card: red 'Float sensor fault' chip; 'Topped up 09:30' demoted to plain text"},
+        {"type": "probe", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/final.png", "detail": "768: Reservoir card fault chip agrees with the Reservoir float 'Fault' row"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-144207-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "baseline: green 'Topped up' tag contradicted the red dot"}
+      ],
+      "note": "The card and the sensor table now agree; the card no longer reads as healthy. Minor: the card does not say whether the 142 L figure can still be trusted while the float sensor is faulty. That is a refinement, not a remaining contradiction."
+    },
+    {
+      "finding_id": "F-0026",
+      "verdict": "partially_fixed",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/1280-light-audit.png", "detail": "Targets shown for Acidity (pH 5.8 to 6.4), Conductivity (EC 1.6 to 2.0 mS/cm), Water temperature (18 to 22 °C); Dissolved oxygen card has no target"},
+        {"type": "aria", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/aria.yml", "detail": "Dissolved oxygen: label, '7.9 mg/L', 'In range' and no target paragraph"}
+      ],
+      "note": "Three of the four listed locations are fixed. The Dissolved oxygen card (listed location: text=7.9) still shows 'In range' with no range. 'Warm' now sits next to 'Target 18 to 22 °C', so 23.7 °C is visibly out of range, but the card still does not say whether any action is expected."
+    },
+    {
+      "finding_id": "F-0029",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        {"type": "probe", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/final.png", "detail": "manual -> click switch: confirmation group 'Turn automatic dosing back on? Check the reservoir is full first...' with 'Turn automatic on' / 'Keep manual'; switch stays off"},
+        {"type": "aria", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/1/aria.yml", "detail": "status still 'Nutrient dosing is now manual' after the second click"},
+        {"type": "probe", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/probes/2/probe.json", "detail": "'Keep manual' keeps manual; 'Turn automatic on' restores automatic; both expectations passed"}
+      ],
+      "note": "A single tap no longer re-enables automatic dosing. A confirmation step appears, reminds the user about the reservoir, and both its choices work."
+    }
+  ],
+  "regressions": [
+    {
+      "title": "New sensor status labels are clipped at 320 px ('Che', 'Faul')",
+      "kind": "regression",
+      "evidence": [
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/evidence/screens/root/default/320-light-audit.png", "detail": "Status column text cut off at the card edge for Check and Fault rows"},
+        {"type": "screenshot", "ref": ".ui-evaluator/runs/20261006-144207-baseline-audit/evidence/screens/root/default/320-light-audit.png", "detail": "baseline: the 'Status' header was already clipped, but the cells held only dots, which fit"}
+      ],
+      "location": {"route": "/", "state": "default", "viewport": {"width": 320, "height": 900}, "selector": "#sensors table td:nth-of-type(3)"}
+    },
+    {
+      "title": "New 'Float sensor fault' chip inherits cramped padding and a 600 ms colour transition",
+      "kind": "collateral",
+      "evidence": [
+        {"type": "diff", "ref": ".ui-evaluator/runs/20261006-160411-fix-review/packets/fix-reviewer-1/diff.json", "detail": "F-0007 (LAY-04) and F-0013 (MOT-02) each gain 2 introduced instances at div.metric:nth-of-type(5) > span.chip.chip--alarm, default and manual-dosing, 1280"}
+      ],
+      "location": {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "selector": "div.metric:nth-of-type(5) > span.chip.chip--alarm"}
+    }
+  ],
+  "disposition": "fix",
+  "scope": {
+    "fixes_reviewed": ["F-0031", "F-0032", "F-0020", "F-0033", "F-0025", "F-0026", "F-0029"],
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "viewports": [1280, 768, 320],
+    "variants": ["audit", "forced-colors", "cvd-achromatopsia"],
+    "probes": [".ui-evaluator/runs/20261006-160411-fix-review/probes/1", ".ui-evaluator/runs/20261006-160411-fix-review/probes/2"],
+    "not_reviewed": "Tool-verified items F-0003/F-0004 (verified-by-rerun.json) were not re-judged; no pixel-diff or ARIA-diff images were in the packet, so regressions were checked against the captures and the findings diff only. The nested duplicate 'Sensors' region also appears in the baseline ARIA, so it is not a regression."
+  }
+}

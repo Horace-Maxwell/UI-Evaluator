@@ -153,6 +153,17 @@ A build benchmark runs a build prompt with the skill and without it, grades both
 
 The comparators are Claude models, like the builders, and may favour Claude's own house look, so a person's judgement decides beauty. Report the caveats with every round: who judged, how many runs, how many presentation orders, and what the judge had seen before.
 
+## Running an agent-level eval round
+
+The audit, fix, verify, ingest and report evals need the skill's isolated roles to run as real subagents, and a subagent cannot start subagents of its own. Each run is therefore a top-level, non-interactive Claude Code session. Keep the round folder outside the repository.
+
+1. `node tools/bench/prepare-evals.mjs <round> --evals 9,11,12,14,19` freezes a copy of the plugin, builds one workspace per run from the eval's fixtures (the steps above), runs the eval's setup steps, records the site files' hashes and commits a baseline. `--baseline` prepares the control arm instead: the same site, documents and journey files (in `journeys/`), no `.ui-evaluator/`, and the same prompt without the plugin lines. Evals whose setup runs the skill have no control arm.
+2. `node tools/bench/run-headless.mjs <round> [--only 19] [--arm with_skill|without_skill] --claude <binary>` runs each prompt with the frozen plugin (or without it, for the control arm), saving the transcript, the stderr and `timing.json`. Web tools and MCP servers are off and the shell is limited to a list of commands. The binary must be new enough for the model.
+3. `node tools/bench/grade-eval.mjs <run-dir>` checks the script assertions and writes `grader-packet.json`, which holds only what the user received and, for the audit, the ground truth. Copy each packet under a neutral name, give it to two graders who work independently, measure their agreement with `node tools/bench/agree-graders.mjs <a> <b>`, and have a third grader settle only the splits. Pass the consensus back with `--grader <file>`: for the audit, precision and recall by meaning and their adjusted-Wald 95% intervals are computed from the mapping.
+4. `node tools/bench/record-evals.mjs <round> --date <YYYY-MM-DD>` stores both arms under `results/agent-evals-<date>/`, without screenshots or transcripts.
+
+The prompt tells the session it is being evaluated, and nothing about what is measured. Read the transcripts as well as the scores: the agents' narration shows where the skill made them guess or work around it.
+
 ## Results
 
 Each round's files are under [results/](results/). The before-and-after images in the project README come from two of these runs; [docs/assets/README.md](../docs/assets/README.md) says which, and why those two.
@@ -161,21 +172,39 @@ In the build benchmarks below, "assertions met" counts every assertion. For the 
 
 ### Status against the release thresholds
 
-EVALUATION-PLAN §6 sets the bars a release should meet. Measured on 2026-10-04, for version 2.0.0 and the changes since:
+EVALUATION-PLAN §6 sets the bars a release should meet. Measured on 2026-10-04 for version 2.0.0, and on 2026-10-06 for the four bars that were not measured then (the agent-level round below, with the plugin as it was in 2.0.1):
 
 | Area | Bar | Measured | Status |
 |---|---|---|---|
-| Unit, integration, packaging | 100% passing | core 68, lint 119 and browser 62 tests pass; `npm run validate` and both `claude plugin validate` checks pass; `skills-ref validate` was not run | met, except `skills-ref` |
+| Unit, integration, packaging | 100% passing | core 77, lint 119 and browser 62 tests pass (2026-10-06); `npm run validate` passes; `skills-ref validate` was not run | met, except `skills-ref` |
 | Hard-tell detectors | each rule precision ≥ 0.9, recall ≥ 0.8 on fixtures | 1.00 and 1.00 for the 13 hard tells with a seeded defect | met for 13 of 15; 2 have no seeded case |
 | Scripted accessibility checks | recall ≥ 0.9 of seeded WCAG defects; 0 false positives on `clean-control` | recall 1.00 (11 of 11); 0 false positives | met |
-| Standard audit | recall ≥ 0.6 of seeded analytical defects, precision ≥ 0.8 after verification | — | not measured |
+| Standard audit | recall ≥ 0.6 of seeded analytical defects, precision ≥ 0.8 after verification | recall 10 of 11 (0.91, 95% CI 0.60–1.00); precision 49 of 60 judged findings (0.82, CI 0.70–0.90). The same model without the skill: recall 10 of 11, precision 18 of 23 (0.78) | met in one run; the fixture does not separate the skill from the control |
 | Build outcomes | 0 hard tells and no G3 failure in ≥ 80% of runs with the skill; blind preference for the skill ≥ 70%, with the 95% CI excluding 50% | 0 hard tells in 14 of 14 runs, but 0 hard tells and no G3 failure in only 5 of 14 (36%); the person judged the skill's page more beautiful in 3 of 12 pairs (2 of 8 in the latest round) | **not met** |
 | Variety | lower cross-brief similarity with the skill, CI of the difference excluding 0 | — | not measured |
-| Fix loop | ≥ 90% of seeded P0 and P1 defects verified fixed; 0 regressions left unflagged | — | not measured |
-| Feedback ingestion | theme-to-problem link accuracy ≥ 0.8; scrubbing recall ≥ 0.95 on planted items | scrubbing 62 of 62; link accuracy not measured | half measured; that half met |
-| Honesty and behaviour | 0 language-lint violations in final reports; 0 runs claiming a level above the computed one; trace assertions in ≥ 90% of runs | — | not measured |
+| Fix loop | ≥ 90% of seeded P0 and P1 defects verified fixed; 0 regressions left unflagged | 2 of the 3 seeded defects whose band reaches P1 verified fixed; the third (no loading, empty or error state) was never found by the audit. 8 of 11 P0/P1 findings verified; the fix reviewer flagged one regression, which was fixed, and none was left unflagged | **not met** |
+| Feedback ingestion | theme-to-problem link accuracy ≥ 0.8; scrubbing recall ≥ 0.95 on planted items | link accuracy 96 of 97 problem items (0.99); scrubbing 62 of 62; the four items addressed to an AI flagged and not obeyed | met |
+| Honesty and behaviour | 0 language-lint violations in final reports; 0 runs claiming a level above the computed one; trace assertions in ≥ 90% of runs | 0 violations in the final reports of evals 11, 12, 14 and 19; no run claimed a level above the computed one (none in every run, against a target of L3, including when the user asked for "accessible and good to go"); every assertion passed in 4 of 5 runs; the 30 black-box subagents read no source. The other trace assertions of EVALUATION-PLAN §4.4 are not checked yet | first two met; trace assertions partly measured |
 
 Of the 9 runs with the skill that failed a G3 criterion, 7 failed COL-03: all six cafe runs and one calligraphy run. Motion criteria (MOT-02, MOT-07) and TYP-05 make up the rest. The grader measures COL-03 without the run's `DESIGN.md`, which declares the colour strategy, so part of that miss may be the instrument. The blind-preference bar is missed by a wide margin, and it is the open problem.
+
+### Agent-level evals, 2026-10-06
+
+Five tasks, each a top-level Claude Code session (claude-opus-5-5) with a frozen copy of the plugin, and the standard audit run a second time without the plugin as a control. The method is in [Running an agent-level eval round](#running-an-agent-level-eval-round); the files, the graders' work and a full report in the CMU lecture's evaluation format are in [results/agent-evals-2026-10-06/](results/agent-evals-2026-10-06/REPORT.md).
+
+| Eval | Assertions | Time | Cost |
+|---|---|---|---|
+| 19 standard audit of journey-app, with the skill | 9 of 9 | 31 min | $23.01 |
+| 19 the same request without the skill (control) | 2 of 2 | 2 min | $0.56 |
+| 11 fix the P1s on the dashboard | 5 of 7 | 44 min | $14.01 |
+| 12 verify the dashboard after a fix | 5 of 5 | 5 min | $1.32 |
+| 14 report honesty | 5 of 5 | 1.5 min | $0.66 |
+| 9 feedback ingestion | 8 of 8 | 11 min | $5.56 |
+
+- **The control matched the skill on the audit.** Two graders mapped every reported problem independently and a third settled their splits (item agreement 98% and 78%, α 0.98 and 0.73). Both arms found 10 of the 11 seeded problems, but not the same ten: the skill missed per-metre pricing, the control the missing step indicator. Precision over everything reported was 0.75 with the skill and 0.78 without. One run per arm and a fixture that a careful reading of the source almost exhausts (the literature baseline for one LLM pass is 0.35–0.45) cannot show that the skill causes better recall. It costs 41 times as much.
+- **What the skill adds is process.** Three isolated heuristic evaluators with three passes each, a walkthrough that asks the four questions at every step, three blind raters per finding (α 0.86; 9 of 10 matched defects rated within the expected band), a verifier, evidence a reader can check, and the computed level stated even when the user asked for good news.
+- **Eval 11's two failures are judgement calls kept as written.** One P0 was left open with a question to the owner, because the page cannot know the pump controller's state and the skill has no status for a finding blocked on a decision. Two findings have no patch of their own because another finding's change cleared them.
+- **The transcripts found problems in the skill.** Twelve, written up in the report; ten are fixed in this change (see CHANGELOG), and two need a decision: a status for a finding blocked on the owner, and a `findings split` command.
 
 ### Detector calibration, 2026-10-01
 

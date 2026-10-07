@@ -1,0 +1,850 @@
+{
+  "schema": "verifier",
+  "run": "20261006-152509-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "iteration": 1,
+  "packet_hash": "5d837aabd586aed1",
+  "_notes": "Dismissal ledger consulted: empty, so step 6 rejected nothing. Iteration 1, so no ceiling flags. Some candidates cite source code (app.js, styles.css); the verifier did not read source and judged them only by probe. Probe screenshots are under probes/verifier/<id>/screenshots/.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0006",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01/",
+        "probes/verifier/v01m/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0013, F-0021, F-0027, F-0069, F-0077; also linked to F-0026. Wording: 'are likely to be stranded and may abandon' goes beyond the evidence; keep to what the page shows."
+    },
+    {
+      "candidate_id": "F-0007",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: field labelled only 'Length' with no unit or hint (Draught says 'in metres' with a hint); empty-submit error 'Enter the length' has no unit; Length 34 on B14 is accepted as a number and ends on 'Booking stopped'.",
+      "evidence": [
+        "probes/verifier/v16/",
+        "probes/verifier/v02/",
+        "probes/verifier/v01m/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0029 and F-0052. 'Many UK skippers state length in feet' is domain context, not shown by the evidence."
+    },
+    {
+      "candidate_id": "F-0008",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: textbox 'MMSI' has no description or hint; empty submit lists 'Enter the MMSI' and blocks the step.",
+      "evidence": [
+        "probes/verifier/v16/",
+        "probes/verifier/v02/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0030. The claim that boats without DSC have no MMSI (need for an alternative) is domain knowledge the owner should confirm."
+    },
+    {
+      "candidate_id": "F-0009",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: table caption 'High water at the quay, times in UTC'; Arrival time options 06:00-21:00 and the berth summary 'at 15:00' carry no zone.",
+      "evidence": [
+        "probes/verifier/v11/",
+        "probes/verifier/v06/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0019 and F-0063. The BST offset arithmetic is correct for October 2026."
+    },
+    {
+      "candidate_id": "F-0010",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on berths default the only date control is a '...' button (name 'More options') at x 1028-1072 at 1280, detached from the 752px content column; 'Change dates' and 'Harbour rules' appear only after opening it; the summary sentence has no change link.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0032; visual-placement variants in F-0065, F-0073, F-0082."
+    },
+    {
+      "candidate_id": "F-0011",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: boat page main holds h1 'Your boat', the sentence about checking fit, four fields and Continue; no berth name or limit.",
+      "evidence": [
+        "probes/verifier/v16/",
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0012",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "reason": "Could not reproduce the Back-button behaviour: uie probe has no history-back action and Alt+ArrowLeft did not navigate (probe stayed on review.html). Reproduced only that boat.html does not prefill from boat/loa/draught/mmsi parameters, which no UI link sends. autocomplete=off cannot be checked without source access.",
+      "evidence": [
+        "probes/verifier/v15/",
+        "probes/verifier/v16/"
+      ],
+      "ceiling_flag": false,
+      "note": "Question for the owner: with a real browser, go to review then press Back; are the boat fields empty? Evidence is source code only, which the verifier may not read."
+    },
+    {
+      "candidate_id": "F-0013",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01/",
+        "probes/verifier/v01m/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0006 (same element, same mechanism)."
+    },
+    {
+      "candidate_id": "F-0014",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: in berths errors, activating the summary link 'Choose a pontoon space for your boat' and then pressing Space checked no radio (all four stay unchecked) and scrolled the page, so focus did not land on a radio.",
+      "evidence": [
+        "probes/verifier/v13/"
+      ],
+      "ceiling_flag": false,
+      "note": "Not tested: whether a following Tab reaches the first radio via the sequential-focus starting point. Screen-reader behaviour needs a real AT check."
+    },
+    {
+      "candidate_id": "F-0015",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on / errors the Arrival time select keeps its grey resting border while the date input turns red; on berths errors no berth card changes border (the darker card is the hover style).",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v13/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same underlying problem as the narrowed parts of F-0064, F-0075, F-0083."
+    },
+    {
+      "candidate_id": "F-0016",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: after checking Pontoon C, berth 3 and moving the pointer away, the chosen card's border, background and type are identical to the others; only the radio dot differs.",
+      "evidence": [
+        "probes/verifier/v14/"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0017",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: 2025-01-01 and 2028-06-01 (outside the stated 2026-10-01..2027-03-31 range) both go through to the berth list 'Pontoon spaces free on these dates'.",
+      "evidence": [
+        "probes/verifier/v04/",
+        "probes/verifier/v05/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0025 (past dates)."
+    },
+    {
+      "candidate_id": "F-0018",
+      "verdict": "rejected",
+      "step": "scope_filter",
+      "reason": "Reproduced, but only in undeclared states reached by editing the URL: boat.html without a berth parameter stopped a 10.4 m boat (falls back to a 10 m limit), and review.html without berth/boat let 'Confirm booking' succeed, giving 'Not chosen yet' and reference 'being prepared'. No in-scope route or UI path produces these missing-parameter states.",
+      "evidence": [
+        "probes/verifier/v17/"
+      ],
+      "ceiling_flag": false,
+      "note": "Out of scope for this run's declared states; the owner may want to widen scope to deep links and missing parameters, because the confirmation of an empty booking is a real defect if reachable."
+    },
+    {
+      "candidate_id": "F-0019",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: caption 'times in UTC'; arrival options and footer office hours '08:00 to 20:00' carry no zone.",
+      "evidence": [
+        "probes/verifier/v11/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0009."
+    },
+    {
+      "candidate_id": "F-0020",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: each card says only 'Boats up to N metres' with no mention of length overall or hull length anywhere on the page.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Whether skippers would read the limit as hull length is a domain question; existence of the ambiguity in the text is confirmed. Related to F-0029."
+    },
+    {
+      "candidate_id": "F-0021",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01/",
+        "probes/verifier/v01m/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0006."
+    },
+    {
+      "candidate_id": "F-0024",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: date 2026-10-17, time 08:00 -> berth list 'Arriving on Saturday 17 October 2026 at 08:00' with no warning; all 06:00-21:00 options offered.",
+      "evidence": [
+        "probes/verifier/v06/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0038. Wording: '12:30-16:30 local' is the UTC window; in BST the window is about 13:30-17:30 local. 08:00 is outside either."
+    },
+    {
+      "candidate_id": "F-0025",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: 2025-01-01 -> 'Arriving on Wednesday 1 January 2025' with all berths listed.",
+      "evidence": [
+        "probes/verifier/v04/"
+      ],
+      "ceiling_flag": false,
+      "note": "Subset of F-0017."
+    },
+    {
+      "candidate_id": "F-0026",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: berth list shows all four berths before any boat length is asked; B14 + 10.4 m is only refused after the full boat form is submitted, ending on 'Booking stopped'.",
+      "evidence": [
+        "probes/verifier/v12/",
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false,
+      "note": "Structural cause of F-0006 cluster."
+    },
+    {
+      "candidate_id": "F-0027",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01m/",
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0006."
+    },
+    {
+      "candidate_id": "F-0029",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: label 'Length' with no unit or description (vs 'Draught in metres' + hint); '34 ft' gives 'Enter the length as a number' with no unit.",
+      "evidence": [
+        "probes/verifier/v16/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Unit part confirmed; the LOA-versus-hull ambiguity is a domain claim (see F-0020). Overlaps F-0007."
+    },
+    {
+      "candidate_id": "F-0030",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: MMSI has no hint; empty submit shows 'Enter the MMSI' and blocks the step.",
+      "evidence": [
+        "probes/verifier/v02/",
+        "probes/verifier/v16/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0008."
+    },
+    {
+      "candidate_id": "F-0031",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: MMSI '12345' raised no error alongside length/draught errors, and after fixing those the booking reached review with mmsi=12345.",
+      "evidence": [
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0053."
+    },
+    {
+      "candidate_id": "F-0032",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on berths default the only date control is a '...' button (name 'More options') at x 1028-1072 at 1280, detached from the 752px content column; 'Change dates' and 'Harbour rules' appear only after opening it; the summary sentence has no change link.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0010."
+    },
+    {
+      "candidate_id": "F-0033",
+      "verdict": "confirmed",
+      "step": "absence",
+      "reason": "Absence confirmed by own search: review default main contains term/definition pairs Arrival, Nights, Berth, Boat, Total, two textboxes and 'Confirm booking'; no change link, back link or button for earlier answers. Baseline non-empty.",
+      "evidence": [
+        "probes/verifier/v03/",
+        "probes/verifier/v08/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0050."
+    },
+    {
+      "candidate_id": "F-0034",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: from berths.html?date=2026-10-17..., header 'Tide times' -> index.html#tides and 'Book a berth' -> index.html; plan form comes back empty (date yyyy/mm/dd, 1 night, 'Choose a time'); no route back to the berth list.",
+      "evidence": [
+        "probes/verifier/v10/",
+        "probes/verifier/v11/",
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same mechanism as F-0042 and F-0049. 'Harbour rules' menu link and 'Saltmarsh Quay' not individually clicked by the verifier; header links reproduced."
+    },
+    {
+      "candidate_id": "F-0035",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: h1s 'Book a visitor berth', 'Choose a pontoon space', 'Check your mooring booking'; group 'Pontoon spaces free on these dates' includes 'Wall berth 2'; rows labelled 'Berth'.",
+      "evidence": [
+        "probes/verifier/v11/",
+        "probes/verifier/v04/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0066; F-0085 is the wall-berth part."
+    },
+    {
+      "candidate_id": "F-0036",
+      "verdict": "rejected",
+      "step": "harness_filter",
+      "reason": "Harness artefact: the dark border on Length (boat errors) and on Draught after '1,5' is the :hover style under the pointer left where Continue was before the error summary pushed the form down. Submitting with Enter, tabbing, or moving the pointer shows every errored input red.",
+      "evidence": [
+        "probes/verifier/v02/",
+        "probes/verifier/v22/",
+        "probes/verifier/v24/",
+        "probes/verifier/v23/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Minor residual: the hover style overrides the error border while hovered; not the problem claimed."
+    },
+    {
+      "candidate_id": "F-0037",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: review shows 'Saturday 17 October 2026 at 15:00'; after Confirm booking the confirmation shows Arrival 'Saturday 17 October 2026', Berth, Nights only (no time, no boat, no total).",
+      "evidence": [
+        "probes/verifier/v09/",
+        "probes/verifier/v20/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0046, F-0054; also part of F-0067 and F-0084."
+    },
+    {
+      "candidate_id": "F-0038",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: 08:00 on 17 October accepted without notice; no later page mentions the gate.",
+      "evidence": [
+        "probes/verifier/v06/",
+        "probes/verifier/v03/",
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0024."
+    },
+    {
+      "candidate_id": "F-0042",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: from berths.html?date=2026-10-17..., header 'Tide times' -> index.html#tides and 'Book a berth' -> index.html; plan form comes back empty (date yyyy/mm/dd, 1 night, 'Choose a time'); no route back to the berth list.",
+      "evidence": [
+        "probes/verifier/v10/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0034/F-0049. Review-page origin not re-run; same header link href on every step."
+    },
+    {
+      "candidate_id": "F-0043",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: after entering 2026-11-10 the table still lists Sat 17 Oct..Fri 23 Oct, with no message.",
+      "evidence": [
+        "probes/verifier/v18/"
+      ],
+      "ceiling_flag": false,
+      "note": "Same problem as F-0057."
+    },
+    {
+      "candidate_id": "F-0045",
+      "verdict": "confirmed",
+      "step": "absence",
+      "reason": "Absence confirmed by own search: ARIA of /, berths, boat and review (verifier probes) show main starting directly with the h1; no step count, progress list or breadcrumb.",
+      "evidence": [
+        "probes/verifier/v11/",
+        "probes/verifier/v04/",
+        "probes/verifier/v16/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0058."
+    },
+    {
+      "candidate_id": "F-0046",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: review shows 'Saturday 17 October 2026 at 15:00'; after Confirm booking the confirmation shows Arrival 'Saturday 17 October 2026', Berth, Nights only (no time, no boat, no total).",
+      "evidence": [
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0037."
+    },
+    {
+      "candidate_id": "F-0047",
+      "verdict": "needs_human",
+      "step": "absence",
+      "reason": "Absence reproduced: 'Book another visit' -> plan form empty; boat form always starts empty; no saved-boat or rebook control on any in-scope page.",
+      "evidence": [
+        "probes/verifier/v19/",
+        "probes/verifier/v16/"
+      ],
+      "ceiling_flag": false,
+      "note": "Question for the owner: is repeat booking with remembered boat details an intended capability? Not remembering details in a guest flow is conventional (EVAL-040), so this reads as a feature request unless returning skippers are a declared persona."
+    },
+    {
+      "candidate_id": "F-0049",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: from berths.html?date=2026-10-17..., header 'Tide times' -> index.html#tides and 'Book a berth' -> index.html; plan form comes back empty (date yyyy/mm/dd, 1 night, 'Choose a time'); no route back to the berth list.",
+      "evidence": [
+        "probes/verifier/v10/",
+        "probes/verifier/v11/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0034."
+    },
+    {
+      "candidate_id": "F-0050",
+      "verdict": "confirmed",
+      "step": "absence",
+      "reason": "Absence confirmed: boat main holds only the four fields and Continue; review main has no change or back link (browser Back is the only route).",
+      "evidence": [
+        "probes/verifier/v16/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0033 (review part)."
+    },
+    {
+      "candidate_id": "F-0052",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: '34 ft' -> 'Enter the length as a number', no unit or example, while the draught error reads 'Enter the draught as a number of metres, for example 1.5'.",
+      "evidence": [
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0053",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: MMSI '12345' not flagged and accepted through to review.",
+      "evidence": [
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0031."
+    },
+    {
+      "candidate_id": "F-0054",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: review shows 'Saturday 17 October 2026 at 15:00'; after Confirm booking the confirmation shows Arrival 'Saturday 17 October 2026', Berth, Nights only (no time, no boat, no total).",
+      "evidence": [
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0037."
+    },
+    {
+      "candidate_id": "F-0055",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Captures show it with the web font loaded: at 375 berths h1 breaks 'Choose a pontoon / space'; at 320 review the arrival value ends '15:00' and total ends 'arrival' alone on a line.",
+      "evidence": [
+        "probes/verifier/v10/"
+      ],
+      "ceiling_flag": false,
+      "note": "Static typographic fact read from captures evidence/screens/berths.../default/375-light.png and review.../default/320-light.png."
+    },
+    {
+      "candidate_id": "F-0056",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: at 1280 'Morning' header starts x~391 while its right-aligned times end x~515; 'Afternoon' starts ~531, times end ~680; table ends at ~688 inside the content column.",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v21/"
+      ],
+      "ceiling_flag": false,
+      "note": "'Unstyled default' and 'least finished-looking' are judgements; the misalignment is the verifiable part. Duplicates F-0062, F-0074."
+    },
+    {
+      "candidate_id": "F-0057",
+      "verdict": "confirmed",
+      "step": "absence",
+      "reason": "Absence confirmed: tide content exists only in region 'Tide times' on / (rows 17-23 Oct, unchanged for 2026-11-10); berths page for 2025-01-01 and review/confirmation contain no tide or gate information.",
+      "evidence": [
+        "probes/verifier/v18/",
+        "probes/verifier/v04/",
+        "probes/verifier/v03/",
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0043."
+    },
+    {
+      "candidate_id": "F-0058",
+      "verdict": "confirmed",
+      "step": "absence",
+      "reason": "Absence confirmed (see F-0045).",
+      "evidence": [
+        "probes/verifier/v11/",
+        "probes/verifier/v04/",
+        "probes/verifier/v16/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0045."
+    },
+    {
+      "candidate_id": "F-0059",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "reason": "The visual facts are visible (anchor glyph + name in body type, one accent, native single-column form, plain table), but whether this is a problem depends on brand intent, and no DESIGN.md exists.",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v20/"
+      ],
+      "ceiling_flag": false,
+      "note": "Question for the owner: is a distinct visual identity a goal for this product? Duplicates F-0070, F-0080."
+    },
+    {
+      "candidate_id": "F-0060",
+      "verdict": "rejected",
+      "step": "scope_filter",
+      "reason": "Not a property of the UI under the declared routes and states: it concerns a missing project document in an evaluator packet.",
+      "evidence": [],
+      "ceiling_flag": false,
+      "note": "Pass to the owner as a process note (create DESIGN.md), not a UI finding."
+    },
+    {
+      "candidate_id": "F-0061",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced at 1280x900: confirmation footer ends y~476, Booking stopped ~294, boat ~801, with bare page ground below.",
+      "evidence": [
+        "probes/verifier/v20/",
+        "probes/verifier/v01/",
+        "probes/verifier/v23/"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps the second half of F-0081."
+    },
+    {
+      "candidate_id": "F-0062",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced (see F-0056 measurements).",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v21/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0056/F-0074."
+    },
+    {
+      "candidate_id": "F-0063",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: UTC caption vs zone-less local arrival times.",
+      "evidence": [
+        "probes/verifier/v11/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0009."
+    },
+    {
+      "candidate_id": "F-0064",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced with the pointer moved away: on / errors the Arrival time select keeps its grey border while Arrival date is red; on berths errors the berth cards keep their resting border. The dark borders on Length (boat errors) and Skipper's name (review errors) were NOT reproduced: they are the :hover style under the pointer left at the old Continue/Confirm position after the error summary shifts the layout; after the pointer moves, or when submitting with Enter, those fields are red like their siblings.",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v08/",
+        "probes/verifier/v02/",
+        "probes/verifier/v22/",
+        "probes/verifier/v24/"
+      ],
+      "ceiling_flag": false,
+      "note": "Narrowed to the Arrival time select (and berth cards). Same as F-0015."
+    },
+    {
+      "candidate_id": "F-0065",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on berths default the only date control is a '...' button (name 'More options') at x 1028-1072 at 1280, detached from the 752px content column; 'Change dates' and 'Harbour rules' appear only after opening it; the summary sentence has no change link.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0010 with a placement emphasis."
+    },
+    {
+      "candidate_id": "F-0066",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed (see F-0035); confirmation link reads 'Book another visit'.",
+      "evidence": [
+        "probes/verifier/v04/",
+        "probes/verifier/v03/",
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0035."
+    },
+    {
+      "candidate_id": "F-0067",
+      "verdict": "split_required",
+      "step": "reproduction",
+      "reason": "Bundles two problems: (a) arrival time missing from confirmation - reproduced; (b) reference SQ-1017-C3 shown only as bold text inside a sentence - visible, a hierarchy judgement.",
+      "evidence": [
+        "probes/verifier/v09/",
+        "probes/verifier/v20/"
+      ],
+      "ceiling_flag": false,
+      "note": "Part (a) duplicates F-0037.",
+      "split_into": [
+        "Confirmation omits the arrival time (dup F-0037)",
+        "Booking reference has little visual weight on the confirmation"
+      ]
+    },
+    {
+      "candidate_id": "F-0068",
+      "verdict": "rejected",
+      "step": "harness_filter",
+      "reason": "Emulation side effect: the native date input's empty-state pattern follows the browser locale of the headless capture; an en-GB browser shows dd/mm/yyyy, so 'yyyy/mm/dd' is not what the target users see.",
+      "evidence": [
+        "probes/verifier/v21/"
+      ],
+      "ceiling_flag": false,
+      "note": "Re-check with locale en-GB if the owner wants certainty."
+    },
+    {
+      "candidate_id": "F-0069",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0006."
+    },
+    {
+      "candidate_id": "F-0070",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "reason": "Visual facts visible; whether a missing identity layer is a defect depends on brand intent (no DESIGN.md).",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v12/",
+        "probes/verifier/v20/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0059."
+    },
+    {
+      "candidate_id": "F-0071",
+      "verdict": "rejected",
+      "step": "reproduction",
+      "reason": "Not reproduced as described: the selects and date input carry the same border, radius, height and font as the themed text inputs; only the native chevron and calendar glyph remain, which is conventional (EVAL-040). The 'yyyy/mm/dd' placeholder is locale-driven (see F-0068).",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v10/"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0073",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on berths default the only date control is a '...' button (name 'More options') at x 1028-1072 at 1280, detached from the 752px content column; 'Change dates' and 'Harbour rules' appear only after opening it; the summary sentence has no change link.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0010."
+    },
+    {
+      "candidate_id": "F-0074",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced (see F-0056), also at 1440.",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v07/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0056."
+    },
+    {
+      "candidate_id": "F-0075",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced with the pointer moved away: on / errors the Arrival time select keeps its grey border while Arrival date is red; on berths errors the berth cards keep their resting border. The dark borders on Length (boat errors) and Skipper's name (review errors) were NOT reproduced: they are the :hover style under the pointer left at the old Continue/Confirm position after the error summary shifts the layout; after the pointer moves, or when submitting with Enter, those fields are red like their siblings.",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v08/",
+        "probes/verifier/v02/",
+        "probes/verifier/v22/",
+        "probes/verifier/v24/"
+      ],
+      "ceiling_flag": false,
+      "note": "Narrowed to the Arrival time select. Same as F-0015/F-0064."
+    },
+    {
+      "candidate_id": "F-0076",
+      "verdict": "split_required",
+      "step": "reproduction",
+      "reason": "Bundles several problems: (a) no gate-window cue at the Arrival time select (see F-0024), (b) tide table below the fold at 375, (c) UTC vs local (see F-0009), (d) later steps omit the gate window (see F-0057/F-0084).",
+      "evidence": [
+        "probes/verifier/v10/",
+        "probes/verifier/v06/",
+        "probes/verifier/v09/"
+      ],
+      "ceiling_flag": false,
+      "note": "Each part reproduced in the cited probes; split and merge with the matching candidates.",
+      "split_into": [
+        "Arrival time select gives no gate-window cue (dup F-0024)",
+        "Tide table sits below the fold after Check berths at 375",
+        "Tide times in UTC vs local arrival times (dup F-0009)",
+        "Later steps omit the gate window for the chosen day (dup F-0057)"
+      ]
+    },
+    {
+      "candidate_id": "F-0077",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: B14 + Length 10.4 (1280) and B14 + Length 34 (375) -> main holds only h1 'Booking stopped' and 'This booking cannot continue. Reference BK-409.'; no cause, no limit, no alternative berth, no link back, form and values gone; footer phone is the only control besides the header.",
+      "evidence": [
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0006; the footer position is F-0061."
+    },
+    {
+      "candidate_id": "F-0078",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "reason": "Visible: at 1280/1440 content sits in a left column with the right part of the container empty. This is a conventional single-column form layout; whether it is a defect is a design judgement.",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v08/"
+      ],
+      "ceiling_flag": false,
+      "note": "Question for the owner: is the left-aligned narrow column intended? Measurements in the claim ('320px form column') approximate."
+    },
+    {
+      "candidate_id": "F-0080",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "reason": "Visual facts visible; brand intent unknown.",
+      "evidence": [
+        "probes/verifier/v21/",
+        "probes/verifier/v20/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0059."
+    },
+    {
+      "candidate_id": "F-0081",
+      "verdict": "split_required",
+      "step": "reproduction",
+      "reason": "Bundles two problems: (a) empty right band at wide widths (see F-0078, needs owner judgement), (b) footer ends mid-viewport on short pages (reproduced, see F-0061).",
+      "evidence": [
+        "probes/verifier/v20/",
+        "probes/verifier/v21/",
+        "probes/verifier/v01/"
+      ],
+      "ceiling_flag": false,
+      "split_into": [
+        "Wide layouts leave the right band of the container empty (see F-0078)",
+        "Footer ends mid-viewport on short pages (dup F-0061)"
+      ]
+    },
+    {
+      "candidate_id": "F-0082",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced: on berths default the only date control is a '...' button (name 'More options') at x 1028-1072 at 1280, detached from the 752px content column; 'Change dates' and 'Harbour rules' appear only after opening it; the summary sentence has no change link. Opening the menu pushes the list down (legend y~268 -> ~382 at 1280).",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0010. 'Second fixation' is an unverified attention claim."
+    },
+    {
+      "candidate_id": "F-0083",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Reproduced with the pointer moved away: on / errors the Arrival time select keeps its grey border while Arrival date is red; on berths errors the berth cards keep their resting border. The dark borders on Length (boat errors) and Skipper's name (review errors) were NOT reproduced: they are the :hover style under the pointer left at the old Continue/Confirm position after the error summary shifts the layout; after the pointer moves, or when submitting with Enter, those fields are red like their siblings.",
+      "evidence": [
+        "probes/verifier/v07/",
+        "probes/verifier/v02/",
+        "probes/verifier/v22/",
+        "probes/verifier/v24/"
+      ],
+      "ceiling_flag": false,
+      "note": "Narrowed: the Length part is a hover artefact; the Arrival time select part is real. Same as F-0015."
+    },
+    {
+      "candidate_id": "F-0084",
+      "verdict": "split_required",
+      "step": "reproduction",
+      "reason": "Bundles: (a) confirmation drops the arrival time - reproduced (F-0037); (b) review and confirmation show no sill-gate window for the chosen day - reproduced (F-0057).",
+      "evidence": [
+        "probes/verifier/v09/",
+        "probes/verifier/v03/"
+      ],
+      "ceiling_flag": false,
+      "split_into": [
+        "Confirmation omits the arrival time (dup F-0037)",
+        "Review and confirmation omit the sill-gate window for the chosen day (dup F-0057)"
+      ]
+    },
+    {
+      "candidate_id": "F-0085",
+      "verdict": "confirmed",
+      "step": "reproduction",
+      "reason": "Static fact confirmed: group 'Pontoon spaces free on these dates' and h1 'Choose a pontoon space' include 'Wall berth 2 ... Settles on soft mud at low water'.",
+      "evidence": [
+        "probes/verifier/v12/"
+      ],
+      "ceiling_flag": false,
+      "note": "Part of F-0035."
+    }
+  ]
+}

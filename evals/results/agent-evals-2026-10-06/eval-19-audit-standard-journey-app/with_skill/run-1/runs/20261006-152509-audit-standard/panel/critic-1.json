@@ -1,0 +1,439 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261006-152509-audit-standard",
+  "agent": "critic-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "e11035b9d12bd078",
+  "verdict_at": "2026-10-06T15:40:00Z",
+  "unsealed_at": "2026-10-06T19:33:35.773Z",
+  "inventory": [
+    {
+      "surface": "plan-visit (/)",
+      "mode": "operate",
+      "screens": ["root/default 1280, 375, 320", "root/errors 1280"],
+      "on_screen": "White header (16px line anchor glyph + 'Saltmarsh Quay' in bold body text; 'Book a berth', 'Tide times' links right at desktop, wrapped under the name at 375). Pale grey-blue page ground. H1 'Book a visitor berth', two-line intro, three bold-labelled native controls (date input showing 'yyyy/mm/dd', 'Nights' select, 'Arrival time' select), dark blue-teal 'Check berths' button. Below: H2 'Tide times', caption 'High water at the quay, times in UTC', a white 7-row table (Date / Morning / Afternoon), a grey note on the sill gate window, H2 'Harbour rules' with three bullets, white footer with the harbour office phone.",
+      "first_three_fixations": ["H1 'Book a visitor berth'", "the stack of three white inputs", "'Check berths' button (dark fill) - the tide table is below the fold at 1280x900 only partially and fully below at 375"],
+      "type_voices": "One humanist sans family throughout; headings are the same family in bold at larger size; labels bold body size; hints and captions in grey body.",
+      "colour": "Light. Pale grey-blue ground dominates, white header/footer/inputs/table, near-black navy text; one dark blue-teal accent on the primary button and links; red reserved for errors.",
+      "shape_depth": "Small radius (~4px) on inputs, buttons and cards; 1px grey borders; no shadows; header and footer separated by hairlines.",
+      "imagery": "None apart from the anchor glyph.",
+      "copy_voice": "Plain, matter-of-fact, en-GB: 'Boats come in and go out over the sill gate, so plan your arrival around high water.' 'Keep to 4 knots inside the harbour walls.' 'The sill gate is open from about two hours before high water until two hours after.'",
+      "signature": "None as a visual element. The tide table is the only product-bound element, styled as a default data table.",
+      "conventions_kept": "Standard top nav, single-column form, error summary at top with linked messages, inline error messages above fields.",
+      "suspected_problems": "Tide table headers 'Morning'/'Afternoon' left-set while figures are right-aligned; times given in UTC though product formats say local time; native date input reads yyyy/mm/dd against en-GB format; on errors, 'Arrival time' select shows a message but no red border while 'Arrival date' has one."
+    },
+    {
+      "surface": "choose-berth (/berths.html)",
+      "mode": "operate",
+      "screens": ["berths default 1280, 1440", "berths menu-open 375"],
+      "on_screen": "H1 'Choose a pontoon space', summary sentence 'Arriving on Saturday 17 October 2026 at 15:00, staying for 2 nights.', a lone square '...' icon button floating at the right edge of the container, label 'Pontoon spaces free on these dates', four white bordered radio cards (Pontoon A 6, B 14, C 3, Wall berth 2) each with limit, tide behaviour and price per metre per night, 'Continue' button. Menu-open shows a small popover with 'Change dates' and 'Harbour rules'.",
+      "first_three_fixations": ["H1", "the card stack", "the '...' button, which competes because it is isolated in empty space"],
+      "copy_voice": "'Afloat at every state of the tide.' 'Settles on soft mud at low water.' - specific and useful.",
+      "signature": "None; the card-radio list is a standard pattern.",
+      "suspected_problems": "Heading says 'pontoon space' but the list includes a wall berth; 'Change dates' (a core task) is hidden behind an unlabelled '...'; at 1280/1440 the cards occupy ~540px of an 864px container and the right side is empty except for the kebab."
+    },
+    {
+      "surface": "boat-details (/boat.html)",
+      "mode": "operate",
+      "screens": ["boat default 1280", "boat errors 1280", "boat length-over-limit 1280"],
+      "on_screen": "H1 'Your boat', one-line intro, four empty fields: 'Boat name', 'Length' (no unit), 'Draught in metres' with hint, 'MMSI' (no hint), 'Continue'. Errors state adds summary box and inline red messages. Length-over-limit shows 'Booking stopped / This booking cannot continue. Reference BK-409.' with nothing else.",
+      "first_three_fixations": ["H1", "first input", "Continue"],
+      "suspected_problems": "White footer band ends mid-viewport with grey ground continuing below; in errors state the 'Length' input keeps a dark neutral border while the other three are red; 'Booking stopped' page is a dead end with an unexplained code and no next step."
+    },
+    {
+      "surface": "review (/review.html)",
+      "mode": "operate",
+      "screens": ["review default 1280", "review errors 1280"],
+      "on_screen": "H1 'Check your mooring booking', 'You pay at the harbour office when you arrive. Nothing is charged online.', a borderless grey-key / dark-value list (Arrival, Nights, Berth, Boat, Total), H2 'Your contact details', two fields, 'Confirm booking'.",
+      "first_three_fixations": ["H1", "summary list", "Confirm booking"],
+      "suspected_problems": "No 'Change' links in the summary; in errors state 'Skipper's name' input keeps a dark border while 'Mobile number' is red; footer band stops short."
+    },
+    {
+      "surface": "confirmation (/confirmed.html)",
+      "mode": "read",
+      "screens": ["confirmed default 1280"],
+      "on_screen": "H1 'Booking confirmed', 'Your reference is SQ-1017-C3. Keep it to hand when you arrive.' (reference in bold inline), three rows (Arrival date only, Berth, Nights), 'Book another visit' link, footer; ~420px of empty grey below the footer.",
+      "first_three_fixations": ["H1", "the sentence with the reference", "summary rows"],
+      "suspected_problems": "Arrival time 15:00 and the gate window are not repeated on the page a skipper keeps; the reference is not given its own visual weight."
+    },
+    {
+      "surface": "all",
+      "not_assessable": "Motion, focus rings, hover/pressed states, menu open/close behaviour, loading and the dark theme (none captured; only light variants exist). Forced-colours, CVD and more-contrast variants were present but not used for design judgement."
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": {
+        "products": ["a GP surgery appointment booking", "a council parking-permit application"],
+        "survives_swap": ["header layout with small glyph + name in bold body text", "pale grey-blue ground with white header/footer bands", "dark blue-teal rectangular primary button", "bold-label single-column native inputs", "'There is a problem' red error summary", "grey key/value summary list on review and confirmed", "radio-card list on /berths.html"],
+        "bound_to_product": ["anchor glyph", "tide-times table and sill-gate note on /", "berth descriptions 'Afloat at every state of the tide' / 'Settles on soft mud at low water'", "copy such as 'Keep to 4 knots inside the harbour walls'"],
+        "name_hidden": "With the name hidden, the copy still tells a reader it is a harbour; the visual frame does not.",
+        "note": "Every identity-carrying visual element survives the swap; only content is bound."
+      }
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": {
+        "predicted_default": "Public-service form pattern: white/light grey ground, one muted blue accent, system or humanist sans, native controls in one column, error summary box, no imagery; for marinas specifically, navy and white with an anchor icon.",
+        "predicted_opposite": "A dark 'nautical chart' look with monospace coordinates and depth contours.",
+        "matching_elements": ["navy-teal accent and navy text", "anchor glyph as the only mark", "government-style form anatomy and error pattern", "no imagery"],
+        "note": "The design is the predicted default on every identity-carrying element; it avoids the predicted opposite."
+      }
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": {
+        "similar_brief": "Online pitch booking for a small coastal campsite: choose dates, pick a pitch, give vehicle details, confirm, pay on arrival.",
+        "predicted_choices": ["light ground, one blue or green accent", "single-column native form", "radio cards for pitches with size and price", "review summary list, confirmation with reference in a sentence", "small icon beside the name in the header"],
+        "overlap": "All predicted choices appear here; only the tide table and copy would differ. Nothing in the visual layer was driven by the tidal sill-gate mechanism that the context names as the product's difference."
+      }
+    }
+  },
+  "verdict": {
+    "value": "generic",
+    "evidence": [
+      "All three tests fail on identity-carrying elements (header mark, ground, accent, type voice, controls, summary lists).",
+      "Product-bound material (tide table, sill-gate note, berth tide behaviour) is present only as content set in a default frame; the tide table, the natural signature, has no treatment of its own (/ 1280 y 697-1036).",
+      "Identity is the name in bold body text beside a stock anchor glyph (/ 1280 x 208-362, y 18-40)."
+    ]
+  },
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "Browser-default controls on show: native date input reading 'yyyy/mm/dd' and native select chevrons on / at every width.",
+      "Identity is only the name in bold body text beside a small anchor glyph.",
+      "No focal point beyond the H1 on any surface; every screen is a heading, a paragraph and a stack of identical fields.",
+      "'Harbour rules' on / is only an H2 and three default bullets.",
+      "Footer band stops short on /boat.html, /review.html, /confirmed.html and the length-over-limit state, with grey ground continuing below it.",
+      "Half-empty layout at 1280/1440: content in a ~540px left column, right side empty except the detached '...' button on /berths.html.",
+      "Headings differ from body only in size and weight of the same family; tide table column headers left-set over right-aligned figures."
+    ],
+    "evidence": [
+      "/ 1280 and 375 default: first viewport is heading, intro, three native controls and a button on a flat pale ground.",
+      "/berths.html 1280: four plain bordered cards with radio circles; orderly but template-like.",
+      "/confirmed.html 1280: the reference sits in a sentence in bold body text; ~420px of empty ground below the footer.",
+      "Orderly and legible (consistent left edge, steady spacing, good contrast), so not unappealing."
+    ]
+  },
+  "brand_fit": {
+    "judgement": "not_assessable",
+    "attributes": [],
+    "note": "The packet's design.md reads 'DESIGN.md is missing'. No 'X, not Y' attributes, colour strategy, type roles, tokens or accepted tells are declared, so DEC-02 is not met and DES-04 cannot be judged. Inferred from context only (not scored): copy tone is matter-of-fact and respectful, which suits skippers; nothing visual expresses the tidal harbour."
+  },
+  "mode_fit": {
+    "judgement": "appropriate in structure",
+    "evidence": "All booking steps are Operate and keep conventional structure (single column, one primary button per step, standard error summary) with no hero moments or motion visible; confirmation (Read) is quiet. The issue is not excess expression but the absence of an identity floor (brand-expression §3.5: identity is not a hero moment and belongs on Operate surfaces too)."
+  },
+  "rubric": {
+    "specificity": {
+      "score": 1,
+      "label": "(judged)",
+      "anchor": "1: product content (name, real copy) sits on a frame that fails the swap test",
+      "evidence": "Swap, category-guess and similar-prompt all fail; only the tide table, sill-gate note and berth descriptions are bound to the product, and they are content in a default frame."
+    },
+    "hierarchy": {
+      "score": 3,
+      "label": "(judged)",
+      "anchor": "3: as 4 at the main widths, with one named lapse",
+      "evidence": "On /, /boat.html and /review.html the H1, the fields and the single dark primary button read in order and survive a squint. Lapse: on /berths.html at 1280/1440 the isolated '...' button competes for attention in empty space while hiding 'Change dates'; secondary lapse on /confirmed.html where the reference SQ-1017-C3 has no more weight than body text."
+    },
+    "coherence": {
+      "score": 3,
+      "label": "(judged)",
+      "anchor": "3: one system throughout, with a minor named lapse",
+      "evidence": "One family, one accent, one radius, one border weight, same header/footer on every route. Lapses: error borders applied inconsistently (Length on boat errors, Arrival time on root errors, Skipper's name on review errors keep neutral borders), and the place noun drifts ('visitor berth', 'pontoon space' over a list containing 'Wall berth 2', 'mooring booking', 'visit'). No DESIGN.md exists to compare the render against."
+    },
+    "restraint": {
+      "score": 2,
+      "label": "(judged)",
+      "anchor": "2 cap: no focal point and no signature at all",
+      "evidence": "Nothing decorative without a job and no tells of excess; but there is no signature or bold move anywhere, so Restraint is capped at 2 (restraint is not emptiness)."
+    },
+    "brand_fit": {
+      "score": 0,
+      "label": "(judged)",
+      "anchor": "n/a - scored 0 only because the schema requires an integer",
+      "evidence": "n/a: DESIGN.md is missing, so no attributes are declared and brand fit cannot be judged. Treat this 0 as 'not assessable', not as 'expresses Y'."
+    },
+    "execution": {
+      "score": 2,
+      "label": "(judged)",
+      "anchor": "2: clean at the main widths, rough at the edges",
+      "evidence": "Main 1280 default views are aligned on a consistent x=208 edge with even spacing. Rough at the edges: footer band ending mid-viewport on short pages; error-state border inconsistency; tide-table headers misaligned with figures; native date input in yyyy/mm/dd; widows at 320/375 ('space' in the /berths.html H1, 'walls.' and 'berth.' in rules, '15:00' on review per detector); bare 'Booking stopped' state."
+    },
+    "appeal": {
+      "score": 2,
+      "label": "(judged)",
+      "anchor": "2: clean but plain; identity is only the name",
+      "evidence": "Matches the 'plain' verdict: orderly and legible, but no typographic moment, imagery, drawn device or colour with a role; browser-default controls on show; footer bands stop short."
+    }
+  },
+  "detector_comparison": {
+    "hits_total": 19,
+    "note": "The detector file lists most hits twice (same criterion, route and selector); 10 distinct items.",
+    "agreements": [
+      "TYP-15 widows at narrow widths: I had listed 'single words stranded' as a sign to look for and saw 'space' alone on line 2 of the /berths.html H1 at 375; detector confirms at 320 and 375 and adds others."
+    ],
+    "detector_only": [
+      "TYP-15 widows on '/ rules' ('walls.' at 320, 'berth.' at 375), '#draught-hint' ('float' at 320), review '#s-arrival' ('15:00' at 320), '#s-total' ('arrival' at 320), review H1 ('booking' at 375), '#mobile-hint' ('change' at 375), dead-end paragraph ('409.' at 375). Visible in the 320/375 captures I checked for / (both rule items wrap with one word). Recorded as one post-unseal finding.",
+      "TYP-14 no tabular figures in the tide table."
+    ],
+    "critic_only": [
+      "No signature / sterile default frame (SLP-64) and missing identity layer",
+      "Footer band stops short on short pages",
+      "Tide-table column headers left-set over right-aligned figures",
+      "Tide times in UTC while product formats specify local time",
+      "Inconsistent error borders across three error states",
+      "Unlabelled '...' menu hiding 'Change dates' and floating detached on /berths.html",
+      "Place-noun drift across headings",
+      "Confirmation omits arrival time and does not give the reference visual weight",
+      "Native date input in yyyy/mm/dd against en-GB formats",
+      "'Booking stopped' dead end with unexplained code"
+    ],
+    "false_positives": [
+      {
+        "rule": "TYP-14",
+        "reason": "The hit targets the row-header dates ('Sat 17 Oct', tbody th), which are labels, not figures compared in a column. The real candidates are the time columns (td), which the hit does not name; in the render those times are right-aligned and line up visually at the captured sizes. Likely selector false positive; the time columns may still lack tabular-nums, which the stills cannot confirm."
+      }
+    ],
+    "post_unseal_notes": "Nothing in the detector output would change the specificity or appeal verdict; detectors measured no specificity tells, which is consistent with a frame that is clean but has nothing of its own."
+  },
+  "findings": [
+    {
+      "id": "DES-c1-01",
+      "title": "No signature or identity layer: a sterile default frame carries the product",
+      "description": "Every surface uses the same pale ground, small anchor glyph beside the name in bold body text, one navy-teal accent, single-column native form and stock summary list. Nothing visual comes from the harbour's world or its defining mechanism, the tidal sill gate; the tide table, the obvious candidate for a signature, is set as a plain data table.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        {"kind": "rule", "id": "SLP-64", "primary": true, "name": "Sterile default"},
+        {"kind": "design", "id": "DES-specificity"}
+      ],
+      "impact": "Skippers new to the harbour get no visual cue that ties the booking to this quay and its gate, and the page is likely to read as an unfinished template, which may lower trust in a booking they pay for on arrival.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 0, 1072, 576]},
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 620, 688, 1070], "snippet": "Tide times table"},
+        {"route": "/berths.html", "state": "default", "viewport": {"width": 1280}, "theme": "light"},
+        {"route": "/confirmed.html", "state": "default", "viewport": {"width": 1280}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light.png"},
+        {"type": "screenshot", "ref": "evidence/screens/confirmed-html-date-2026-10-17-nights-2-berth-c3/default/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide a direction first (DESIGN.md with attributes and a colour strategy taken from the harbour's physical world), then choose one signature drawn from the sill-gate mechanism that can recur quietly across steps (plan, choose, review, confirmation) without breaking Operate conventions."
+    },
+    {
+      "id": "DES-c1-02",
+      "title": "DESIGN.md missing: no declared attributes, colour strategy or type roles",
+      "description": "The packet's design.md is empty apart from 'DESIGN.md is missing'. Brand fit cannot be assessed and no recorded decision explains the navy-teal accent, the light theme or the type choice.",
+      "problem_type": "missing_element",
+      "criteria": [
+        {"kind": "rule", "id": "DEC-02", "primary": true},
+        {"kind": "design", "id": "DES-brandfit"}
+      ],
+      "impact": "Without declared attributes the visual layer defaults to the category, and later fixes have nothing to be judged against, so design drift is likely.",
+      "evidence": [
+        {"type": "absence", "ref": "packets/design-critic-1/design.md", "detail": "File content: '# DESIGN.md is missing'"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Write DESIGN.md with 3-5 'X, not Y' attributes anchored in the harbour and its skippers, a use-scene sentence that decides light or dark for cockpit use in bright light and at night, and type and colour roles."
+    },
+    {
+      "id": "DES-c1-03",
+      "title": "Footer band stops short on short pages, leaving bare ground below",
+      "description": "On short pages the white footer band ends mid-viewport and the grey page ground continues beneath it: /boat.html default (footer ends ~y 800 of 900), /review.html default (~y 832), /confirmed.html (~y 476) and the length-over-limit 'Booking stopped' state (~y 294).",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "design", "id": "DES-appeal"}
+      ],
+      "impact": "A band that stops for no reason is likely to make the confirmation and error pages look unfinished at exactly the moments a skipper is deciding whether the booking worked.",
+      "locations": [
+        {"route": "/boat.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 730, 1280, 900]},
+        {"route": "/review.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 760, 1280, 900]},
+        {"route": "/confirmed.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 404, 1280, 900]},
+        {"route": "/boat.html", "state": "length-over-limit", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 222, 1280, 900]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide how short pages end: either the main area fills the viewport so the footer sits at the bottom, or the footer and ground share one surface."
+    },
+    {
+      "id": "DES-c1-04",
+      "title": "Tide-table column headers misaligned with their figures",
+      "description": "On / the 'Morning' and 'Afternoon' headers are left-aligned in their columns while the times beneath are right-aligned, so at 1280 'Morning' starts at x~391 and its figures end at x~515; 'Afternoon' starts at x~530 and its figures end at x~680.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true}
+      ],
+      "impact": "Skippers scanning for the high-water time on their arrival day may misread which column a time belongs to, on the one element that carries the product's key information.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 697, 688, 780]},
+        {"route": "/", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 800, 359, 880]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Align each numeric column's header with its figures."
+    },
+    {
+      "id": "DES-c1-05",
+      "title": "Tide times shown in UTC while the arrival times are local",
+      "description": "The caption reads 'High water at the quay, times in UTC', but the product's formats specify 24-hour local times and the arrival time chosen on the same page (15:00) is presented as local. In October (BST) the table is an hour off what the skipper will choose.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H2", "primary": true, "name": "Match between system and the real world"},
+        {"kind": "design", "id": "DES-brandfit"}
+      ],
+      "impact": "A skipper planning arrival around the sill-gate window may be an hour out, which could mean arriving when the gate is shut.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 664, 480, 688], "snippet": "High water at the quay, times in UTC"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Show tide times in the same local time as the arrival-time choice, and say which."
+    },
+    {
+      "id": "DES-c1-06",
+      "title": "Error borders applied inconsistently across error states",
+      "description": "In error states some errored fields get a red border and others keep a dark neutral border: 'Length' on /boat.html errors, 'Arrival time' on / errors and 'Skipper's name' on /review.html errors, while sibling fields with the same kind of message turn red. Stills cannot show whether the dark border is a focus state.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true}
+      ],
+      "impact": "A skipper scanning a long form on a phone may skip a field that does not look errored, and the inconsistency reads as unfinished.",
+      "locations": [
+        {"route": "/boat.html", "state": "errors", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 626, 528, 670]},
+        {"route": "/", "state": "errors", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 702, 528, 746]},
+        {"route": "/review.html", "state": "errors", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 674, 528, 718]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Give every field in error the same error treatment, and if the dark border is focus, make focus and error distinguishable when they coincide."
+    },
+    {
+      "id": "DES-c1-07",
+      "title": "Unlabelled '...' button hides 'Change dates' and floats detached on the berth list",
+      "description": "On /berths.html a lone square '...' button sits at the far right of the container (1280: x 1028-1072, y 205-249), separated from the content column by ~280px of empty space. Its menu holds 'Change dates' and 'Harbour rules'.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-hierarchy", "primary": true},
+        {"kind": "heuristic", "id": "H6", "name": "Recognition rather than recall"}
+      ],
+      "impact": "Changing the arrival date is a core task; behind an unlabelled icon it is likely to be missed, while the isolated button draws the eye away from the berth list.",
+      "locations": [
+        {"route": "/berths.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [1028, 205, 1072, 249]},
+        {"route": "/berths.html", "state": "default", "viewport": {"width": 1440}, "theme": "light", "bbox": [1108, 205, 1152, 249]},
+        {"route": "/berths.html", "state": "menu-open", "viewport": {"width": 375}, "theme": "light", "bbox": [167, 320, 359, 478]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Put the change-dates action where the date summary is, in words, and decide whether the rules link needs to be on this step at all."
+    },
+    {
+      "id": "DES-c1-08",
+      "title": "The place noun drifts between headings",
+      "description": "The journey names the thing being booked four ways: 'Book a visitor berth' (/), 'Choose a pontoon space' with a list that includes 'Wall berth 2' (/berths.html), 'Check your mooring booking' (/review.html), 'Book another visit' (/confirmed.html).",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true},
+        {"kind": "heuristic", "id": "H4", "name": "Consistency and standards"}
+      ],
+      "impact": "Skippers who need a wall berth (boats over 12 m) may think the 'pontoon space' list is not for them; the drift also weakens the voice.",
+      "locations": [
+        {"route": "/berths.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 92, 560, 132], "snippet": "Choose a pontoon space"},
+        {"route": "/review.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 92, 624, 132], "snippet": "Check your mooring booking"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Choose one noun from the skippers' own words ('visitor berth') and use it in every heading."
+    },
+    {
+      "id": "DES-c1-09",
+      "title": "Confirmation omits the arrival time and gives the reference no weight",
+      "description": "/confirmed.html shows 'Arrival Saturday 17 October 2026' without the 15:00 time chosen earlier and without the sill-gate window, and the reference SQ-1017-C3 appears only as bold body text inside a sentence.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-hierarchy", "primary": true}
+      ],
+      "impact": "The confirmation is the page a skipper keeps; without the arrival time (which matters as much as the date at a tidal sill) and with a reference that does not stand out, they may need to call the office to check.",
+      "locations": [
+        {"route": "/confirmed.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 145, 660, 300]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Repeat the arrival time (and the gate window for that day) on the confirmation, and give the reference its own line and weight."
+    },
+    {
+      "id": "DES-c1-10",
+      "title": "Native date input shows yyyy/mm/dd against en-GB formats",
+      "description": "The arrival-date field on / is an unstyled native date input whose empty state reads 'yyyy/mm/dd' with the system calendar glyph, while the product's formats are 'Saturday 17 October 2026'.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "design", "id": "DES-appeal"}
+      ],
+      "impact": "The first control a visiting skipper meets looks like a browser default and uses an order unfamiliar to en-GB readers, which may cause date-entry slips.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 262, 528, 308]},
+        {"route": "/", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 365, 336, 411]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide a date-entry pattern that matches the en-GB format and the product's look; note that the captured browser's locale may influence the placeholder."
+    },
+    {
+      "id": "DES-c1-11",
+      "title": "'Booking stopped' state is a bare dead end",
+      "description": "The length-over-limit state replaces the form with 'Booking stopped' and 'This booking cannot continue. Reference BK-409.' with no reason, no alternative berth and no next step beyond the footer phone number.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H9", "primary": true, "name": "Help users recognise, diagnose and recover from errors"},
+        {"kind": "design", "id": "DES-execution"}
+      ],
+      "impact": "A skipper whose boat is too long for the chosen pontoon berth is likely to abandon or phone, although the wall berth takes boats up to 15 m.",
+      "locations": [
+        {"route": "/boat.html", "state": "length-over-limit", "viewport": {"width": 1280}, "theme": "light", "bbox": [208, 92, 600, 170]}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Explain why the booking stopped in the skipper's terms and offer the way forward (for example a berth that fits)."
+    },
+    {
+      "id": "DES-c1-12",
+      "title": "Single words stranded on the last line at narrow widths",
+      "description": "At 320 and 375 several headings, hints and summary values end with one word on the last line: /berths.html H1 'space', /review.html H1 'booking', review arrival '15:00', review total 'arrival', draught hint 'float', mobile hint 'change', rules 'walls.' and 'berth.'.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "rule", "id": "TYP-15", "primary": true},
+        {"kind": "design", "id": "DES-execution"}
+      ],
+      "impact": "On phones, the main device in the cockpit, the headings and key values look ragged, and splitting '15:00' from its date on review may slow reading the arrival.",
+      "locations": [
+        {"route": "/berths.html", "state": "default", "viewport": {"width": 375}, "theme": "light", "selector": "#main > h1"},
+        {"route": "/review.html", "state": "default", "viewport": {"width": 320}, "theme": "light", "selector": "#s-arrival"},
+        {"route": "/", "state": "default", "viewport": {"width": 320}, "theme": "light", "selector": "ul.rules > li:nth-of-type(1)"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/berths-html-date-2026-10-17-nights-2-arrive-15-00/menu-open/375-light.png"},
+        {"type": "tool", "ref": "sealed/detectors.json", "detail": "TYP-15 hits corroborate"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "post_unseal": true,
+      "recommendation": "Balance heading wraps and keep date-time values together at narrow widths."
+    }
+  ],
+  "strengths": [
+    "Plain, specific, respectful copy in the skippers' terms: 'Afloat at every state of the tide.', 'Settles on soft mud at low water.', 'The harbour office sends a text if the gate times change', 'Nothing is charged online.'",
+    "Conventional, readable Operate structure: one primary action per step, consistent left edge, error summaries linked to fields, good text contrast for bright-light use.",
+    "The tide table and sill-gate note put the product's real mechanism on the first page."
+  ],
+  "keep": "Keep the plain matter-of-fact voice and the conventional single-column step structure; build identity on top of them rather than replacing them.",
+  "pairwise": null,
+  "notes": "No baseline/ folder in the packet, so DES-05 is not_applicable. The verdict file was written immediately before the unseal command in the same tool batch; the unseal command accepted it, confirming the verdict existed first. Only light-theme captures exist; no dark theme was assessed. I did not read source code, builder notes or other critics' output."
+}

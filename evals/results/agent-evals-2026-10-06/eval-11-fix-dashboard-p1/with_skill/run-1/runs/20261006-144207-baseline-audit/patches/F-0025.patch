@@ -1,0 +1,33 @@
+fix(ui): F-0025 Reservoir card flags the float sensor fault instead of a green chip
+
+Finding: F-0025 (P1, H1 visibility of system status; H4).
+Baseline: apply after F-0026.patch.
+
+Contract
+  Originating: the Reservoir card no longer shows a healthy (green) chip while the Sensors table reports
+  the reservoir float in Fault.
+  Regression: axe, contrast, census, layout, copy, cvd; journey switch-dosing-to-manual; no introduced finding.
+  Scope: index.html reservoir card.
+Drift class and layer: local defect, markup only. The card now uses the page's existing alarm chip,
+"Float sensor fault", and "Topped up 09:30" stays on the card as plain text, so no information is lost.
+Assumption (inferred, please confirm): the reservoir float is the reservoir card's sensor, so its fault
+belongs on that card. The card does not claim that the 142 L reading is wrong, because the page does not
+say where that number comes from.
+Left alone: what a grower should do about the fault (F-0024 is waiting for the growing lead's wording).
+Re-test: run 20261006-155643-fix-f-0025. The ARIA snapshot shows "Float sensor fault". The journey passed
+(3/3). No finding was introduced. 2 instances were introduced inside the persisting F-0007 (LAY-04, chip padding,
+P3 cosmetic): the new chip inherits the shared chip's tight padding. They will clear with F-0007, which
+stays in debt as cosmetic, as the owner asked.
+
+--- a/index.html
++++ b/index.html
+@@ -50,7 +50,8 @@
+         <div class="metric">
+           <p class="metric__label">Reservoir</p>
+           <p class="metric__value">142 <span class="metric__unit">L of 200 L</span></p>
+-          <span class="chip chip--ok">Topped up 09:30</span>
++          <span class="chip chip--alarm">Float sensor fault</span>
++          <p class="metric__target">Topped up 09:30</p>
+         </div>
+       </div>
+ 

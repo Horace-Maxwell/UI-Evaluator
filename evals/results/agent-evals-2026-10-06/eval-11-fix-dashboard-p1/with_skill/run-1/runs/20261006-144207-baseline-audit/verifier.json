@@ -1,0 +1,52 @@
+{
+  "schema": "verifier",
+  "run": "20261006-144207-baseline-audit",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "27165259c1d74808",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0031",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. Live probe at 1280 px shows the Status column as five filled dots (green, green, orange, green, red) with no text, icon shape or tooltip; hovering the Reservoir float status cell shows nothing. The default capture at 320 px and the deuteranopia and achromatopsia captures agree: under deuteranopia the red and green dots render as similar olive tones, and under achromatopsia all five render as near-equal greys. Colour vision captures were used only for this colour-only claim, as verification.md allows.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/step-04.png",
+        ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/aria.yml",
+        "evidence/screens/root/default/1280-light-audit.png",
+        "evidence/screens/root/default/320-light-audit.png",
+        "evidence/screens/root/default/1280-light-cvd-deuteranopia.png",
+        "evidence/screens/root/default/1280-light-cvd-achromatopsia.png"
+      ],
+      "note": "Wording: 'near-identical' and 'the same mid grey' slightly overstate it. Under achromatopsia the Water thermometer dot is a little lighter, and under deuteranopia the float dot is a little more yellow-olive. The differences are too small to rely on, so the finding stands. F-0031, F-0032 and F-0033 share one mechanism (status shown only as a background-painted dot) but are separate failures (colour only, forced colours, no text alternative). They are kept separate, though one fix (visible status text) would likely resolve all three. The 768 px and manual-dosing locations were taken from the captures; the live probe covered 1280 px default only."
+    },
+    {
+      "candidate_id": "F-0032",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. In the live probe, after emulate forcedColors=active the Status cells are blank for all five rows (probes/10/final.png). The stored captures for default and manual-dosing show the same. Harness check: verification.md notes that Chromium's forced-colours emulation repaints author backgrounds. That is also how real forced-colours modes behave with colour drawn only as background, so this is the UI's behaviour, not a capture artefact. Forced colours is a declared g2 preference in scope.json, so the finding is in scope.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/final.png",
+        "evidence/screens/root/default/1280-light-forced-colors.png",
+        "evidence/screens/root/manual-dosing/1280-light-forced-colors.png"
+      ],
+      "note": "The same captures show the Automatic nutrient dosing toggle also disappears under forced colours. That is a separate problem and is not part of this candidate; it may need its own finding."
+    },
+    {
+      "candidate_id": "F-0033",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. In my probe's accessibility tree (probes/10/aria.yml, lines 45-64) every data row has cell name, cell channel and then an empty 'cell' with no name, for all five rows including 'Reservoir float Tank'. Absence check: the accessible name of each row ('pH probe A' and so on) also carries no status, and hovering the float status cell shows no tooltip (step-04.png).",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/aria.yml",
+        ".ui-evaluator/runs/20261006-144207-baseline-audit/probes/10/step-04.png"
+      ],
+      "note": "The probe was run in the default state at 1280 px; the candidate cites 768 px in default and manual-dosing. The accessibility tree does not depend on viewport here, and the manual-dosing captures show the same table. problem_type is 'single_location', but two locations are listed; consider 'multiple_locations'."
+    }
+  ]
+}

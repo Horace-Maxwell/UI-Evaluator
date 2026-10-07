@@ -1,0 +1,695 @@
+{
+  "role": "heuristic-evaluator",
+  "agent": "ingest-feedback",
+  "model": "inherit",
+  "isolation": "single-context",
+  "_note": "Candidates derived from user-feedback themes (feedback/themes.json). Each must be reproduced by the finding verifier before it becomes a finding. Evidence level E0 until reproduced. Role is recorded as heuristic-evaluator because the schema has no ingest role; the source is user feedback (agent ingest-feedback), not an isolated inspection.",
+  "candidates": [
+    {
+      "id": "C-FB-01",
+      "title": "Changing the arrival date on the berth list is only reachable through an unlabelled three-dot menu",
+      "description": "On the berth list the stay summary (date, time, nights) is plain text with no control next to it. The only way to change the date is the 'Change dates' link inside the 'More options' menu, shown as a three-dot icon button with no visible text.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H7",
+          "primary": true,
+          "name": "Flexibility and efficiency of use"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H6"
+        },
+        {
+          "kind": "cw",
+          "id": "CW-Q2"
+        }
+      ],
+      "impact": "Skippers who notice they picked the wrong day, or who change their mind after seeing prices, cannot see how to change the date, so they restart from the first page or phone the office.",
+      "locations": [
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": "#more-button"
+        },
+        {
+          "route": "/berths.html",
+          "state": "menu-open",
+          "selector": "#change-dates"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0095"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0097"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0001"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Reported in tickets, survey, reviews and the usability sessions; see linked feedback.",
+        "impact": "In sessions people searched 38-75 s; some never found it and restarted or said they would phone.",
+        "persistence": "Recurs every time someone needs to change dates."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-02",
+      "title": "'Booking stopped' page gives only a code, no reason and no way back",
+      "description": "On the boat page, when the entered length exceeds the chosen berth's maximum (e.g. 10.4 on B14, max 10 m), the form is replaced by 'Booking stopped. This booking cannot continue. Reference BK-409.' It does not say the boat is too long for the berth, does not offer a larger berth, and has no link or button back to the berth list or the form.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H9",
+          "primary": true,
+          "name": "Help users recognise, diagnose and recover from errors"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H3"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H2"
+        }
+      ],
+      "impact": "Skippers whose boat does not fit cannot tell what went wrong or how to continue; they abandon, restart and retype, or phone the office.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "length-over-limit",
+          "selector": "#dead-end"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0103"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0118"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0002"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Hit by anyone whose length is above the berth limit; see linked feedback.",
+        "impact": "Observed abandonment and a moderator intervention in sessions.",
+        "persistence": "Every time the length exceeds the berth limit."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-03",
+      "title": "Boat details are cleared when returning to the boat page with Back",
+      "description": "The boat form is reset whenever the page is shown, including when the browser's Back button returns to it (e.g. from the review page), so boat name, length, draught and MMSI must all be retyped.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H3",
+          "primary": true,
+          "name": "User control and freedom"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H5"
+        }
+      ],
+      "impact": "Skippers typing on a phone at sea or at anchor must re-enter all boat details to correct one value; some decline and abandon.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "#boat-form"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0104"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0007"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Anyone who goes back to correct a boat detail; see linked feedback.",
+        "impact": "All four fields lost; observed refusal to retype in a session.",
+        "persistence": "Every Back navigation."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-04",
+      "title": "Length field does not say whether it means hull length or length overall (LOA)",
+      "description": "The boat page field is labelled only 'Length', with no hint. Nothing says the berth limit applies to overall length including bowsprit or davits, so people enter hull length.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H2",
+          "primary": true,
+          "name": "Match between system and the real world"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H5"
+        }
+      ],
+      "impact": "Skippers can enter a hull length that fits the berth when the boat overall does not, and book a berth their boat will not fit.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "label[for=loa]"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0101"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0025"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Any boat with a bowsprit, davits or similar overhang; see linked feedback.",
+        "impact": "Wrong berth booked; observed wrong entry in a session.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-05",
+      "title": "Length field states no unit and accepts any positive number",
+      "description": "The 'Length' field shows no unit (the draught field says 'in metres') and accepts any positive number, so a length typed in feet (e.g. 34) is taken as metres with no unit prompt or plausibility check.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H5",
+          "primary": true,
+          "name": "Error prevention"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H4"
+        }
+      ],
+      "impact": "Skippers used to feet can enter the wrong unit and either be stopped without explanation or be given a berth that does not fit.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "#loa"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0102"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0091"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Skippers who think in feet; see linked feedback.",
+        "impact": "Wrong berth or an unexplained stop.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-06",
+      "title": "MMSI is required with no explanation and no option for boats without one",
+      "description": "The boat page has a field labelled only 'MMSI', with no hint; submitting it empty shows 'Enter the MMSI'. Nothing explains what an MMSI is, where to find it, or what to do if the boat has no DSC radio.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H2",
+          "primary": true,
+          "name": "Match between system and the real world"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H10"
+        },
+        {
+          "kind": "cw",
+          "id": "CW-Q1"
+        }
+      ],
+      "impact": "Skippers of small or chartered boats without a DSC radio, or who do not know the term, cannot complete the boat page and must phone.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "label[for=mmsi]"
+        },
+        {
+          "route": "/boat.html",
+          "state": "errors",
+          "selector": "#mmsi-error"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0105"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0005"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "See linked feedback; several session participants stopped here.",
+        "impact": "Blocks the booking for boats without an MMSI; a moderator hint was needed in one session.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-07",
+      "title": "Tide table is in UTC while arrival times are local, with no conversion",
+      "description": "The tide table on the first page gives high water in UTC (stated only in the table caption) while the arrival-time list above it is in local time. In summer time skippers must add an hour themselves, and people read the table as local time.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H2",
+          "primary": true,
+          "name": "Match between system and the real world"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H4"
+        }
+      ],
+      "impact": "Skippers who read the times as local plan the gate an hour wrong and arrive to a closed gate or wait outside.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "table.tides caption"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0107"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0003"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Anyone arriving during summer time; see linked feedback.",
+        "impact": "Physical consequence: waiting outside the gate.",
+        "persistence": "Every summer-time booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-08",
+      "title": "Arrival time can be set when the sill gate is closed, with no warning",
+      "description": "The arrival-time select offers 06:00-21:00 on every date regardless of the tide. Choosing a time outside the gate window (about two hours either side of high water) is accepted with no warning on the first page or later.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H5",
+          "primary": true,
+          "name": "Error prevention"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H1"
+        }
+      ],
+      "impact": "Skippers book an arrival they cannot make and find a shut gate.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "#arrive"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0108"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0012"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "See linked feedback.",
+        "impact": "Arrival at a closed gate.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-09",
+      "title": "Berth list shows only a per-metre-per-night rate, not the total for the stay",
+      "description": "Each berth option shows a price such as '£3.20 per metre per night'; the total appears only on the review page, after boat details are entered. Comparing berths means multiplying rate, length and nights by hand.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H6",
+          "primary": true,
+          "name": "Recognition rather than recall"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H1"
+        }
+      ],
+      "impact": "Skippers comparing berths on a phone must calculate totals themselves before choosing.",
+      "locations": [
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": ".berth-price"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0111"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0014"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Every comparison; see linked feedback.",
+        "impact": "Extra effort; a session participant used a phone calculator for about 45 s.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-10",
+      "title": "The thing being booked is called a berth, a pontoon space and a mooring on different pages",
+      "description": "The first page says 'Book a visitor berth', the berth list says 'Choose a pontoon space', the review page says 'Check your mooring booking', and the summary row says 'Berth'.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H4",
+          "primary": true,
+          "name": "Consistency and standards"
+        }
+      ],
+      "impact": "First-time visitors are unsure whether they booked the right thing or whether the terms mean different prices.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "h1"
+        },
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": "h1"
+        },
+        {
+          "route": "/review.html",
+          "state": "default",
+          "selector": "h1"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0112"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0011"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "See linked feedback.",
+        "impact": "Hesitation and re-checking; no observed failure.",
+        "persistence": "Mainly first visits."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-11",
+      "title": "No indication of the current step or how many steps remain",
+      "description": "None of the booking pages (plan, berth list, boat, review) shows a step indicator or 'step x of y'.",
+      "problem_type": "missing_element",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H1",
+          "primary": true,
+          "name": "Visibility of system status"
+        },
+        {
+          "kind": "cw",
+          "id": "CW-Q4"
+        }
+      ],
+      "impact": "Skippers on patchy mobile signal cannot judge whether to finish now or wait for coverage.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "main"
+        },
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": "main"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0109"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0083"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "See linked feedback.",
+        "impact": "Uncertainty; no observed failure.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-12",
+      "title": "Confirmation page gives no arrival instructions (VHF channel, gate times)",
+      "description": "The confirmation page shows the reference, arrival date, berth and nights and a link to book again. It does not give the VHF channel to call, the gate opening times on the arrival day, or what to do on arrival.",
+      "problem_type": "missing_element",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H10",
+          "primary": true,
+          "name": "Help and documentation"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H6"
+        }
+      ],
+      "impact": "Arriving skippers must phone the office or wait outside the harbour to find out how to enter.",
+      "locations": [
+        {
+          "route": "/confirmed.html",
+          "state": "default",
+          "selector": "main"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0113"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0006"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Every completed booking; see linked feedback.",
+        "impact": "Phone calls; one report of a 40-minute wait outside.",
+        "persistence": "Every booking."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    },
+    {
+      "id": "C-FB-13",
+      "title": "Booking pages reported as slow or timing out on weak mobile signal",
+      "description": "Reporters say the booking pages were slow, timed out on 4G, or did not load at anchor. To check: page weight and load time under throttled mobile network conditions.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        {
+          "kind": "heuristic",
+          "id": "H1",
+          "primary": true,
+          "name": "Visibility of system status"
+        }
+      ],
+      "impact": "Skippers booking from the water may be unable to load or complete the flow.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0055"
+        },
+        {
+          "type": "quote",
+          "ref": "feedback:FB-0013"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "See linked feedback.",
+        "impact": "One reporter attributes it to having no signal at all.",
+        "persistence": "Depends on signal."
+      },
+      "found_by": [
+        {
+          "role": "heuristic-evaluator",
+          "agent": "ingest-feedback",
+          "method": "feedback"
+        }
+      ],
+      "evidence_level": "E0",
+      "status": "candidate"
+    }
+  ]
+}

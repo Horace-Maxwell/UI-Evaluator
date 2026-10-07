@@ -1,0 +1,35 @@
+{
+  "schema": "fix-review",
+  "run": "20261006-161142-verify",
+  "baseline_run": "20261006-144251-baseline-audit",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "b0459bd84c9bcf32",
+  "evidence_valid": true,
+  "items": [],
+  "regressions": [],
+  "disposition": "ship",
+  "scope": {
+    "mode": "regression review only (all fixes deterministic, verified by rerun; no items scored per README)",
+    "route": "/",
+    "states": ["default", "manual-dosing"],
+    "compared_variants": ["320-light-audit", "375-light-audit", "768-light-audit", "1024-light-audit", "1280-light-audit", "1440-light-audit", "1280-light-cvd-achromatopsia", "1280-light-cvd-deuteranopia", "1280-light-cvd-protanopia", "1280-light-cvd-tritanopia", "1280-light-forced-colors", "1280-light-forced-colors-audit", "1280-light-more-contrast", "1280-light-more-contrast-audit", "1280-light-reduced-motion-audit"],
+    "method": "Pixel diff (threshold 8/255) of all 30 baseline/current pairs; visual inspection of 1280 default pair; diff.json introduced/persisting instance review. No probes run; motion changes (transition: all removed, chip transition shortened) are not visible in static captures and were verified by rerun per README."
+  },
+  "_evidence": {
+    "validity": "All 30 pairs share route/state/viewport/theme; identical image dimensions per pair (same page heights, so no layout shift); captures non-blank with fonts rendered.",
+    "pixel_diff": "Every light pair changes ~2,900-2,960 px, bbox confined to the .updated timestamp (1128,22) and the five .metric__label rows (y 151-169) at desktop, and the stacked label rows (x 19-190, y 91-704) at 320/375. That matches the cleared A11Y-01/A11Y-11 locations exactly. Forced-colors pairs: 0 px changed.",
+    "screens": [
+      ".ui-evaluator/runs/20261006-144251-baseline-audit/evidence/screens/root/default/1280-light-audit.png",
+      ".ui-evaluator/runs/20261006-161142-verify/evidence/screens/root/default/1280-light-audit.png"
+    ],
+    "diff": "diff.json: cleared 5, introduced 0; no persisting finding gained run instances (base_instances == run_instances for all 13)."
+  },
+  "_notes": [
+    "Not listed as a regression: in persisting COL-01 (token conformance), the cleared literal 'color: #9aa0a6' was replaced by another raw literal 'color: #4d5a52' (1 cleared, 1 introduced, net unchanged). Nothing got worse, but the contrast fix hard-codes a hex value instead of a muted-ink token. Worth tokenising when COL-01 is addressed.",
+    "No tell swap: the label colour change only darkens existing muted grey text; the palette and type stayed the same.",
+    "13 persisting design findings (nested cards, radius monotony, ghost-card shadows, spacing scale, overshoot easing, etc.) are outside this fix batch and were not judged.",
+    "No project source, fixer notes or other evaluators' outputs were read."
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "fix-review",
+  "run": "20261006-160813-fix-r1-320",
+  "baseline_run": "20261006-160411-fix-review",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "d5cbb80e377b9858",
+  "evidence_valid": true,
+  "items": [],
+  "regressions": [],
+  "disposition": "ship",
+  "scope": {
+    "mode": "regression review only (fixes.json is empty; fixes were deterministic and verified by re-run, per README)",
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "compared": "46 capture pairs (diff/visual.json), 12 ARIA snapshots (diff/aria.json), tool-finding diff (diff.json)",
+    "inspected_visually": [
+      "runs/20261006-160411-fix-review/evidence/screens/root/default/320-light.png",
+      "runs/20261006-160813-fix-r1-320/evidence/screens/root/default/320-light.png",
+      "runs/20261006-160411-fix-review/evidence/screens/root/default/375-light.png",
+      "runs/20261006-160813-fix-r1-320/evidence/screens/root/default/375-light.png",
+      "runs/20261006-160813-fix-r1-320/evidence/screens/root/manual-dosing/320-light.png",
+      "runs/20261006-160813-fix-r1-320/evidence/screens/root/default/320-light-forced-colors.png"
+    ],
+    "probes_run": 0
+  },
+  "_notes": [
+    "Evidence is comparable: same route, states, viewports and theme in both runs; captures are non-blank with fonts loaded.",
+    "Pixel changes appear only at 320 and 375 widths, all inside the Sensors table (y approx. 1088-1376) and the content that moves below it. Every viewport from 768 up is pixel-identical (ratio 0).",
+    "At 320 the baseline Sensors table was cut off on the right ('Che…', 'Faul…' clipped). Now the Channel and Status columns fit and 'Check' and 'Fault' show in full, in the default, manual-dosing and forced-colors captures.",
+    "At 375 the narrower table cell padding lets 'Water thermometer' and 'Reservoir float' fit on one line each, so the page is 20 px shorter (1623 to 1603). The Dosing card below moves up but is otherwise unchanged. This is expected reflow, not damage.",
+    "ARIA diff: 0 of 12 snapshots changed. Tool-finding diff: 0 introduced, 0 introduced instances in any of the 11 persisting findings (LAY-04 cramped padding stays at 6 instances, so the tighter cell padding added no new detections).",
+    "Tell-swap check: no new decorative pattern was introduced. The change only affects table layout.",
+    "Minor observation (not a regression): at 320 and 375 the status dot now sits closer to its label. It is still readable and the label is still present."
+  ]
+}

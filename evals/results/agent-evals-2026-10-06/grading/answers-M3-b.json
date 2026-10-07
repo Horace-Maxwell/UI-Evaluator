@@ -1,0 +1,406 @@
+{
+  "answers": [
+    {
+      "text": "Precision after verification is at least 0.8",
+      "passed": true,
+      "evidence": "Of the 60 judged findings (tool findings F-0001 to F-0005 left out), 29 map to seeded defects and 20 are real but unseeded; the 11 not-a-problem items are identity, widow, alignment, footer, layout, card-style and saved-boat remarks. Precision is 49/60 = 0.82 (at least 0.8), strict precision 29/60 = 0.48, and recall by meaning 10/11 = 0.91: only D06 (per-metre prices) is missed, and D11 is reached only through F-0037's 'no gate window'."
+    },
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "'What to fix first' starts with the severity-4 'Booking stopped' dead end, then the severity-3 items, then 'Smaller items', and it says to fix the first three before launch. 'Not done yet: a screen-reader pass (VoiceOver and TalkBack) and testing with real skippers' names what needs a person, and the reply adds that skipper misreadings are 'predicted, not observed'."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "F-0006",
+      "title": "Over-length boat: 'Booking stopped' with no error description or fix",
+      "maps_to": "journey-app-D04",
+      "reason": "Same dead end as D04 on /boat.html: the page shows only 'Booking stopped' and BK-409. It does not say the length exceeds B14's 10 m, suggests no berth, gives no way back, and the entered details are gone."
+    },
+    {
+      "item": "F-0007",
+      "title": "Length field states no unit",
+      "maps_to": "journey-app-D03",
+      "reason": "Narrower statement of D03 on the same field: 'Length' gives no unit (unlike 'Draught in metres'), so a skipper may enter feet. D03 names the missing unit and the feet case explicitly."
+    },
+    {
+      "item": "F-0008",
+      "title": "MMSI required but unexplained, with no format or alternative",
+      "maps_to": "journey-app-D10",
+      "reason": "Same as D10: the MMSI is required with no expansion, no 9-digit hint and no option for boats without one, and the error only says 'Enter the MMSI'."
+    },
+    {
+      "item": "F-0009",
+      "title": "Tide table in UTC while arrival times are local",
+      "maps_to": "journey-app-D05",
+      "reason": "Same as D05: high water is given in UTC, arrival times are local and October is in BST, so planning around the gate window comes out an hour wrong."
+    },
+    {
+      "item": "F-0010",
+      "title": "Change dates only behind the unlabelled 'More options' button",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01: on the berth list the only route back to the dates is 'Change dates' inside the unlabelled ⋯ menu, with no visible change link next to the summary."
+    },
+    {
+      "item": "F-0011",
+      "title": "Boat step does not restate the chosen berth or its length limit",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded: D04 is the stop page and D06 is about price totals. Here the skipper has to remember B14's 10 m limit from the previous page while typing the length, which makes the over-length stop more likely."
+    },
+    {
+      "item": "F-0012",
+      "title": "Boat form reset on every pageshow, including Back from review",
+      "maps_to": "journey-app-D07",
+      "reason": "Same cause as D07: the pageshow listener calls boatForm.reset(), so going Back from review empties the boat name, length, draught and MMSI."
+    },
+    {
+      "item": "F-0013",
+      "title": "'Booking stopped' gives no cause and no way to continue",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: an over-length entry hides the form and shows only 'Booking stopped' and BK-409. The limit is not mentioned, no larger berth is offered and there is no link back."
+    },
+    {
+      "item": "F-0014",
+      "title": "Berth error-summary link targets the fieldset, not a radio",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The link points at the fieldset, which cannot take focus, instead of the first radio. A keyboard or screen-reader skipper fixing the missing-berth error therefore does not land on a control in the group (minor)."
+    },
+    {
+      "item": "F-0015",
+      "title": "Invalid border styled only on text inputs, not on the select or berth cards",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. In the CSS the finding quotes, an arrival-time select or berth card in error keeps its normal border while text inputs in error turn red, so those errors are marked less visibly and inconsistently (minor; the inline messages remain)."
+    },
+    {
+      "item": "F-0016",
+      "title": "Chosen berth card has no selected style beyond the radio dot",
+      "maps_to": "not-a-problem",
+      "reason": "The radio dot marks the choice the same way on every card. Extra card highlighting is a polish preference, and nothing shows skippers losing track of which berth they chose."
+    },
+    {
+      "item": "F-0017",
+      "title": "Arrival dates outside the season or in the past are accepted",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded (D09 is about the arrival time and the gate). A mistyped or out-of-season date passes and the berths show as 'free on these dates', so a skipper can book a stay that cannot happen."
+    },
+    {
+      "item": "F-0019",
+      "title": "Tide table in UTC while arrival times and office hours have no zone",
+      "maps_to": "journey-app-D05",
+      "reason": "Same as D05: tide times are in UTC while the arrival options and office hours are plain local times during BST."
+    },
+    {
+      "item": "F-0020",
+      "title": "Berth limits do not say which boat length they mean",
+      "maps_to": "journey-app-D03",
+      "reason": "Same ambiguity as D03 (length overall or hull length), seen from the berth cards in the same flow. Its probe reproduces D03's outcome: a 9.6 m hull length is accepted on B14 for a boat 10.4 m overall."
+    },
+    {
+      "item": "F-0021",
+      "title": "'Booking stopped' gives no reason and no way back",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: the page does not say the boat is too long and has no link back to the berth or boat form, and the earlier entries look lost."
+    },
+    {
+      "item": "F-0024",
+      "title": "Arrival time accepts hours when the sill gate is closed",
+      "maps_to": "journey-app-D09",
+      "reason": "Same as D09: 08:00 on 17 October is accepted with no warning although the gate is shut, and every hour from 06:00 to 21:00 is offered."
+    },
+    {
+      "item": "F-0025",
+      "title": "Arrival date accepts past dates",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. 2025-01-01 is accepted with every berth shown free, so a slip in the year produces a booking for a date that has already passed."
+    },
+    {
+      "item": "F-0026",
+      "title": "Boat size asked after the berth is chosen, so fit is checked only at the end",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded: D04 is about what the stop page says and D06 about price totals. This is about the order of the steps. Skippers pick a berth and fill the whole boat form before any fit check, so a wrong pick costs a full round trip even if the error were helpful."
+    },
+    {
+      "item": "F-0027",
+      "title": "'Booking stopped' gives no reason and no way to fix the booking",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: the page does not say that 10.4 m is too long for the 10 m berth or offer another berth, and the form and its values are gone."
+    },
+    {
+      "item": "F-0029",
+      "title": "'Length' field does not say which length or which unit",
+      "maps_to": "journey-app-D03",
+      "reason": "Same as D03: the label is only 'Length', with no 'length overall' and no unit. A 9.6 m hull length is accepted for a boat 10.4 m overall on a 10 m berth."
+    },
+    {
+      "item": "F-0030",
+      "title": "MMSI required but not explained",
+      "maps_to": "journey-app-D10",
+      "reason": "Same as D10: nothing explains what an MMSI is, where to find it or why it is needed, yet 'Enter the MMSI' blocks the step."
+    },
+    {
+      "item": "F-0031",
+      "title": "MMSI accepts numbers of the wrong length",
+      "maps_to": "real-unseeded",
+      "reason": "Not D10, which is about explaining the MMSI; this is about checking it. A 5-digit MMSI passes, so a skipper's typo is not caught and the harbour office gets a wrong identifier (minor)."
+    },
+    {
+      "item": "F-0032",
+      "title": "Change dates only inside an unlabelled '…' menu",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01: the stay summary has no change link, and 'Change dates' sits in a three-dot menu named 'More options'."
+    },
+    {
+      "item": "F-0033",
+      "title": "Review page has no change links or back link",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded: D02 is about the missing progress indicator and D07 is about Back emptying the form. A skipper who spots a mistake on the review page has no way on the page to correct it and has to use browser Back, which wipes the boat details."
+    },
+    {
+      "item": "F-0034",
+      "title": "Header and menu links leave the booking and clear the entries",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. 'Tide times' and 'Harbour rules' are pages a skipper checks during a booking, yet the links load index.html with no booking details and an empty form, so the booking appears lost and must be entered again."
+    },
+    {
+      "item": "F-0035",
+      "title": "The booked place is called visitor berth, pontoon space and mooring",
+      "maps_to": "journey-app-D08",
+      "reason": "Same as D08: 'visitor berth' on the first page, 'pontoon space' on the list, 'mooring' on the review."
+    },
+    {
+      "item": "F-0037",
+      "title": "Confirmation omits the arrival time and the gate window",
+      "maps_to": "journey-app-D11",
+      "reason": "Narrower statement of D11: it notes that the confirmation shows 'no gate window' for the booked arrival, the first of the arrival instructions D11 says are missing. It does not mention the VHF channel or where the pontoon is."
+    },
+    {
+      "item": "F-0038",
+      "title": "Arrival time outside the sill-gate window accepted without warning",
+      "maps_to": "journey-app-D09",
+      "reason": "Same as D09: 08:00 on 17 October goes straight through with no notice although the gate is shut."
+    },
+    {
+      "item": "F-0042",
+      "title": "Tide times link during a booking discards the booking details",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. Checking tides is part of planning, but the nav link drops every booking detail and the plan form comes back empty, so the skipper loses their place."
+    },
+    {
+      "item": "F-0043",
+      "title": "Tide table fixed to 17-23 October whatever arrival date is chosen",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded (D05 is the time zone). A skipper arriving on any other date cannot find high water or the gate window for their day, and nothing tells them so."
+    },
+    {
+      "item": "F-0045",
+      "title": "No indication of the current step or how many remain",
+      "maps_to": "journey-app-D02",
+      "reason": "Same as D02: none of the four pages has a step count, progress indicator or step names."
+    },
+    {
+      "item": "F-0046",
+      "title": "Confirmation omits the arrival time",
+      "maps_to": "real-unseeded",
+      "reason": "Not D11, which is about arrival instructions. Here the booked time is missing from the record the skipper keeps, and at a gated harbour that time matters."
+    },
+    {
+      "item": "F-0047",
+      "title": "No way to reuse boat details when booking again",
+      "maps_to": "not-a-problem",
+      "reason": "This asks for a new feature for returning skippers (a saved boat, or the same berth again); it is not a fault in the flow. Entering four fields again a few times a season is ordinary, and the reply leaves it as a scope question for the owner."
+    },
+    {
+      "item": "F-0049",
+      "title": "Header 'Book a berth' and 'Tide times' discard the dates entered",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. Checking tides during a booking is a declared task, yet the header link returns to an empty plan form with no warning, so the date, nights and time entered are lost."
+    },
+    {
+      "item": "F-0050",
+      "title": "Boat and review pages give no way back or to change answers",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The problem is user control: the page offers no way back to change the berth or boat details. D02 is about the missing progress indicator and D07 about browser Back emptying the form."
+    },
+    {
+      "item": "F-0052",
+      "title": "Length error rejects '34 ft' without saying metres are required",
+      "maps_to": "journey-app-D03",
+      "reason": "Same field and same missing unit as D03, for skippers who think in feet. The error message repeats the omission instead of saying metres."
+    },
+    {
+      "item": "F-0053",
+      "title": "5-digit MMSI accepted without comment",
+      "maps_to": "real-unseeded",
+      "reason": "Not D10, which is about explanation. A mistyped MMSI is accepted without a word and passed to the harbour office (minor)."
+    },
+    {
+      "item": "F-0054",
+      "title": "Confirmation omits the arrival time, boat and amount payable",
+      "maps_to": "real-unseeded",
+      "reason": "Not D11, which is about arrival instructions. The confirmation the skipper is told to keep leaves out the booked time, the boat and the amount due, so their record is incomplete."
+    },
+    {
+      "item": "F-0055",
+      "title": "Single words stranded on the last line at narrow widths",
+      "maps_to": "not-a-problem",
+      "reason": "A typographic detail: a single word on the last line does not get in the way of reading the page or completing the booking."
+    },
+    {
+      "item": "F-0056",
+      "title": "Tide table unstyled, with misaligned column headers",
+      "maps_to": "not-a-problem",
+      "reason": "Visual finish only. The times use the 24-hour clock (02:08, 14:32), so none can be read as belonging to the other column, and the offset headers do not affect the task."
+    },
+    {
+      "item": "F-0057",
+      "title": "Tide times only for 17-23 October whatever date is chosen",
+      "maps_to": "real-unseeded",
+      "reason": "The same unseeded gap as F-0043: a skipper cannot check high water or the gate window for their own arrival day, and the berth list and review do not show them either."
+    },
+    {
+      "item": "F-0058",
+      "title": "No indication of steps or progress",
+      "maps_to": "journey-app-D02",
+      "reason": "Same as D02: no page says which step the skipper is on or how many remain."
+    },
+    {
+      "item": "F-0059",
+      "title": "No signature or identity layer",
+      "maps_to": "not-a-problem",
+      "reason": "A judgement about brand and looks that does not affect skippers understanding or completing the booking (a matter of taste)."
+    },
+    {
+      "item": "F-0061",
+      "title": "Footer band stops short on short pages",
+      "maps_to": "not-a-problem",
+      "reason": "Cosmetic: the empty background below the footer has no effect on the booking."
+    },
+    {
+      "item": "F-0062",
+      "title": "Tide-table headers misaligned with their figures",
+      "maps_to": "not-a-problem",
+      "reason": "Cosmetic alignment: the 24-hour times make it obvious which values are morning and which are afternoon."
+    },
+    {
+      "item": "F-0063",
+      "title": "Tide times in UTC while arrival times are local",
+      "maps_to": "journey-app-D05",
+      "reason": "Same as D05: the caption says UTC while the arrival time is local, and in October (BST) the table is an hour off."
+    },
+    {
+      "item": "F-0064",
+      "title": "Error borders applied inconsistently",
+      "maps_to": "real-unseeded",
+      "reason": "The same unseeded inconsistency as F-0015, which the CSS confirms for the arrival-time select: some fields in error stay unmarked while the fields next to them turn red, which makes errors harder to spot. The other cases may be focus styling, as the finding admits (minor)."
+    },
+    {
+      "item": "F-0065",
+      "title": "Unlabelled '…' button hides Change dates and sits apart on the berth list",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01 at its core: 'Change dates' can be reached only through the unlabelled '...' button. The remark about where the button sits is extra."
+    },
+    {
+      "item": "F-0066",
+      "title": "The name of the booked place drifts between headings",
+      "maps_to": "journey-app-D08",
+      "reason": "Same as D08: the headings call the booked place a visitor berth, a pontoon space and a mooring."
+    },
+    {
+      "item": "F-0069",
+      "title": "'Booking stopped' is a bare dead end",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: no reason, no other berth offered and no next step."
+    },
+    {
+      "item": "F-0070",
+      "title": "No visual identity of the harbour's own",
+      "maps_to": "not-a-problem",
+      "reason": "A brand and specificity judgement with no effect on skippers' ability to book (a matter of taste)."
+    },
+    {
+      "item": "F-0073",
+      "title": "Overflow '…' button stranded far right, hiding Change dates",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01: the only route to 'Change dates' is the '...' overflow button. The placement detail is extra."
+    },
+    {
+      "item": "F-0074",
+      "title": "Tide-table headings misaligned with right-aligned times",
+      "maps_to": "not-a-problem",
+      "reason": "Cosmetic. 02:08 cannot be taken for an afternoon time, so the offset headers do not mislead a skipper reading the table."
+    },
+    {
+      "item": "F-0075",
+      "title": "Invalid-field styling inconsistent across error states",
+      "maps_to": "real-unseeded",
+      "reason": "The same unseeded inconsistency as F-0015 and F-0064: one field in error keeps a dark border while the others turn red, so the error marking is uneven (minor; confirmed in the CSS for the select)."
+    },
+    {
+      "item": "F-0077",
+      "title": "'Booking stopped' is a bare dead end",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: no reason and no link back to choose another berth. The remark about the footer's position is extra."
+    },
+    {
+      "item": "F-0078",
+      "title": "Content hugs the left at wide widths",
+      "maps_to": "not-a-problem",
+      "reason": "A question of layout taste: a single left-aligned form column is a standard, readable layout, and the empty space to the right does not affect the task."
+    },
+    {
+      "item": "F-0080",
+      "title": "No identity layer; the frame is a swappable default",
+      "maps_to": "not-a-problem",
+      "reason": "A brand and specificity judgement that does not affect skippers completing or understanding the booking (a matter of taste)."
+    },
+    {
+      "item": "F-0082",
+      "title": "Change dates hidden behind an isolated kebab button",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01: 'Change dates', a core task, sits behind the lone '...' button."
+    },
+    {
+      "item": "F-0083",
+      "title": "Fields in error marked inconsistently",
+      "maps_to": "real-unseeded",
+      "reason": "The same unseeded inconsistency: the 'Arrival time' select (confirmed by the CSS in F-0015) and 'Length' keep the default border despite their error messages, so errors are marked unevenly (minor)."
+    },
+    {
+      "item": "F-0085",
+      "title": "'Pontoon spaces' heading also covers the wall berth",
+      "maps_to": "journey-app-D08",
+      "reason": "Part of D08's naming problem: the berth list's name 'pontoon space' does not fit everything listed (Wall berth 2 is not on a pontoon). Using one accurate name, such as berth, throughout fixes both."
+    },
+    {
+      "item": "F-0001",
+      "title": "No tabular figures in the tide-table date header",
+      "maps_to": "not-a-problem",
+      "reason": "A typographic detail in a fixed row header ('Sat 17 Oct') that does not affect reading the tide times."
+    },
+    {
+      "item": "F-0002",
+      "title": "Stranded word 'walls.' at 320 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic polish with no effect on reading the harbour rule or on the booking."
+    },
+    {
+      "item": "F-0003",
+      "title": "Stranded word 'space' in the berth-list heading",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic polish; the heading reads correctly."
+    },
+    {
+      "item": "F-0004",
+      "title": "Stranded word 'float' in the draught hint",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic polish; the hint is still read and understood."
+    },
+    {
+      "item": "F-0005",
+      "title": "Stranded '15:00' in the review arrival value",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic polish; the arrival time is still shown and readable."
+    }
+  ]
+}

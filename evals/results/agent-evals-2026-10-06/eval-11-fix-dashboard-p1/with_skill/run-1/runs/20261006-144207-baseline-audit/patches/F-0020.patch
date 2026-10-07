@@ -1,0 +1,51 @@
+fix(ui): F-0020 Dosing switch is drawn under forced colours in both states
+
+Finding: F-0020 (P1, A11Y-22 forced colours).
+Baseline: apply after F-0029.patch.
+
+Contract
+  Originating: under forced colours, the switch track and knob are visible, and on and off look different.
+  Regression: journey switch-dosing-to-manual; axe, keyboard, contrast, layout, states, motion; no
+  introduced finding.
+  Scope: styles.css, a forced-colors media block for the switch only.
+Drift class and layer: local defect; CSS only. The track and knob opt out of forced-colour adjustment and use
+system colours: an outlined Canvas track with a ButtonText knob when off, and a Highlight track with a
+HighlightText knob when on. The outline is inset, so the layout does not move.
+Left alone: the switch outside forced colours, and its overshooting easing (F-0014/F-0018, P2 motion).
+Re-test: run 20261006-160101-fix-f-0020.
+  Probe 1 emulated forced colours at 1280 px and captured both states; the switch is drawn in each.
+  Console: 0 errors. The journey passed (3/3). No finding was introduced. The 2 instances of F-0013 listed in the
+  diff come from the F-0025 alarm chip.
+
+--- a/styles.css
++++ b/styles.css
+@@ -359,6 +359,29 @@
+   gap: 7px;
+ }
+ 
++@media (forced-colors: active) {
++  .switch__track {
++    forced-color-adjust: none;
++    background: Canvas;
++    outline: 2px solid ButtonText;
++    outline-offset: -2px;
++  }
++
++  .switch[aria-checked="true"] .switch__track {
++    background: Highlight;
++    outline-color: Highlight;
++  }
++
++  .switch__knob {
++    forced-color-adjust: none;
++    background: ButtonText;
++  }
++
++  .switch[aria-checked="true"] .switch__knob {
++    background: HighlightText;
++  }
++}
++
+ @media (prefers-reduced-motion: reduce) {
+   *,
+   *::before,

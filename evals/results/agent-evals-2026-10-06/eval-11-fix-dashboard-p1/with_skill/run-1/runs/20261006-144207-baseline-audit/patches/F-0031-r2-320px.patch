@@ -1,0 +1,39 @@
+fix(ui): F-0031 regression — sensor status words fit at 320 px
+
+Regression named by the round-1 fix review (run 20261006-160411-fix-review): at 320 px the new
+OK/Check/Fault words sat behind the table edge ("Che", "Faul"). The Sensors table was already wider than its
+card at 320 px before any fix; the clipped "Status" header in the baseline shows this.
+Baseline: apply after F-0032.patch (round 2).
+
+Contract
+  Originating: at 320 px (both states) every status word and the Status header are fully visible without
+  horizontal scrolling.
+  Regression: full audit; journey switch-dosing-to-manual; no introduced finding; no ARIA loss; pixel change
+  limited to widths of 384 px or less.
+  Scope: styles.css, a narrow-screen rule scoped to #sensors.
+Drift class and layer: local defect; CSS only. Below 24rem the Sensors cells use 4 px horizontal padding instead
+of 7 px, and the dot-to-word gap is 4 px instead of 8 px. Nothing changes at wider widths.
+Re-test: run 20261006-160813-fix-r1-320 (full audit, compared with the round-1 run).
+  Findings: 0 introduced and 0 introduced instances. ARIA: 12 snapshots, 0 changed. Visual: only the 320 and 375 px captures
+  changed (rows got shorter because the names fit on one line). The journey passed (3/3).
+
+--- a/styles.css
++++ b/styles.css
+@@ -359,6 +359,17 @@
+   gap: 7px;
+ }
+ 
++@media (max-width: 24rem) {
++  #sensors th,
++  #sensors td {
++    padding-inline: 4px;
++  }
++
++  #sensors .status {
++    gap: 4px;
++  }
++}
++
+ @media (forced-colors: active) {
+   .switch__track {
+     forced-color-adjust: none;

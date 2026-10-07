@@ -1,0 +1,66 @@
+{
+ "defect_level": {
+  "units": 11,
+  "agreement": 1,
+  "alpha_nominal": 1,
+  "found_by_a": 10,
+  "found_by_b": 10,
+  "disagreements": []
+ },
+ "item_level": {
+  "units": 23,
+  "agreement": 0.782608695652174,
+  "alpha_nominal": 0.731,
+  "kind_agreement": 0.782608695652174,
+  "disagreements": [
+   {
+    "item": "R1",
+    "title": "Booking is never sent to the harbour office",
+    "a": "not-a-problem",
+    "a_reason": "This isn't a usability or accessibility problem in the flow. Whether this static front end is connected to a booking back end is an integration question, and the review itself makes it conditional ('Assumption: there's a backend that isn't in this folder. If not, this is the first thing to fix').",
+    "b": "real-unseeded",
+    "b_reason": "The cited code (app.js:211-228) only navigates to confirmed.html with date, nights and berth, so the name, mobile and boat details go nowhere; a skipper is told \"Booking confirmed\" while the office has no record and no number to call. Not a seeded defect, and the code it cites supports it despite the review's hedge about a backend outside the folder."
+   },
+   {
+    "item": "R2",
+    "title": "Booking reference built only from date and berth, so it can repeat",
+    "a": "not-a-problem",
+    "a_reason": "How the reference is generated is a back-end data-integrity matter for this prototype. A clash needs the same berth and date booked twice, which only a back end could prevent, and nothing the review describes in the interface misleads or blocks a skipper.",
+    "b": "real-unseeded",
+    "b_reason": "The reference is built only from date and berth (app.js:237), so two boats on the same berth and date hold the same reference and the office cannot tell them apart when a skipper quotes it. Not seeded."
+   },
+   {
+    "item": "R3",
+    "title": "No check that the chosen berth is actually free",
+    "a": "not-a-problem",
+    "a_reason": "Checking live availability is a back-end job outside this static front end. The review points to no screen that misleads skippers about which berths are free, so it isn't a usability problem in the flow.",
+    "b": "real-unseeded",
+    "b_reason": "Nothing checks availability, so two skippers can book the same berth for the same night and one arrives on the tide to find it taken. Not seeded."
+   },
+   {
+    "item": "R4",
+    "title": "Berth chosen before the boat's length is asked",
+    "a": "journey-app-D04",
+    "a_reason": "Because length is asked only after a berth is picked, a boat over the limit ends up on the 'Booking stopped' page. The review's fix (ask length overall first and show only berths that fit) would stop skippers reaching that dead end, and the review says so itself, so it counts as a broader statement of D04.",
+    "b": "real-unseeded",
+    "b_reason": "Because length is asked only on the next page, the berth list cannot hide or flag berths the boat will not fit, so skippers must match the limits unaided and can pick a berth that is too short (error prevention). D03 is the field label, D04 the dead-end page and D06 the price totals; none of them is this sequencing problem."
+   },
+   {
+    "item": "R16",
+    "title": "No check that the MMSI is 9 digits",
+    "a": "real-unseeded",
+    "a_reason": "A skipper who drops or adds a digit gets no prompt to correct it, so a wrong vessel identifier is accepted into the booking. This is an error-prevention gap, separate from D10's missing explanation.",
+    "b": "not-a-problem",
+    "b_reason": "The review names no effect on skippers, and its own advice is to make the field optional or drop it; a missing format check there does not block or mislead anyone booking."
+   }
+  ]
+ },
+ "assertions": [
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "a": true,
+   "b": true,
+   "agree": true
+  }
+ ]
+}

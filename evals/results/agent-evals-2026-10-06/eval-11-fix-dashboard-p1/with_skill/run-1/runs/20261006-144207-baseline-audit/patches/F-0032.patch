@@ -1,0 +1,31 @@
+fix(ui): F-0032 Sensor status dots are drawn under forced colours
+
+Finding: F-0032 (P1, A11Y-22 forced colours).
+Baseline: apply after F-0020.patch.
+
+Contract
+  Originating: under forced colours the status dots in the Sensors table are drawn.
+  Regression: journey switch-dosing-to-manual; axe, contrast, layout, cvd, census; no introduced finding.
+  Scope: styles.css, a .dot rule inside the forced-colors block added by F-0020.
+Drift class and layer: local defect; CSS only. The dots keep their own colour and get a CanvasText outline,
+so they show on any system background. The status word from F-0031 remains the main cue; the dot is
+secondary.
+Re-test: run 20261006-160246-fix-f-0032.
+  Probe 1 emulated forced colours at 1280 px: all five dots are drawn next to OK, Check and Fault.
+  Console: 0 errors. The journey passed (3/3). No finding was introduced. The 2 instances of F-0007 listed in the diff
+  come from the F-0025 alarm chip.
+
+--- a/styles.css
++++ b/styles.css
+@@ -380,6 +380,11 @@
+   .switch[aria-checked="true"] .switch__knob {
+     background: HighlightText;
+   }
++
++  .dot {
++    forced-color-adjust: none;
++    outline: 1px solid CanvasText;
++  }
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,39 @@
+fix(ui): F-0004 "Last reading" time and metric labels meet text contrast
+
+Finding: F-0004 (P1, A11Y-11 / WCAG 1.4.3). Also clears F-0003 (P1, axe color-contrast): the same two
+elements with the same cause, reported by a second detector.
+Baseline: apply after F-0031.patch.
+
+Contract
+  Originating: the contrast check and axe color-contrast on / at all widths and in both states:
+  .updated and .metric__label at least 4.5:1 (was 2.42:1 on the page and 2.64:1 on the cards).
+  Regression: palette, census, cvd, layout; journey switch-dosing-to-manual; no introduced finding.
+  Scope: styles.css .updated, .metric__label.
+Drift class and layer: one-off value. The light grey #9aa0a6 was replaced with the muted ink #3b4a40 the page
+already uses for secondary text (.status-line, .axis, a:hover). No new colour was introduced.
+Why this value: PRODUCT.md asks for contrast well above the minimum because of glare under the grow
+lights, and #3b4a40 sits far above 4.5:1 on both #f3f6f2 and #ffffff.
+Left alone: the staleness of "Last reading" (no stale-data state exists to evaluate), and the type sizes.
+Re-test: run 20261006-155335-fix-f-0004. Findings diff: F-0003 and F-0004 cleared, 0 introduced; the
+journey passed (3/3).
+
+--- a/styles.css
++++ b/styles.css
+@@ -103,7 +103,7 @@
+ }
+ 
+ .updated {
+-  color: #9aa0a6;
++  color: #3b4a40;
+ }
+ 
+ .layout {
+@@ -141,7 +141,7 @@
+ }
+ 
+ .metric__label {
+-  color: #9aa0a6;
++  color: #3b4a40;
+   margin-bottom: 7px;
+ }
+ 

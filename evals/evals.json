@@ -720,6 +720,62 @@
         "The reply to the user is in Chinese",
         "[quality] 0 hard AI tells; 0 G1, G2 and G3 criteria failed by the deterministic checks"
       ]
+    },
+    {
+      "id": 19,
+      "name": "audit-standard-journey-app",
+      "prompt": "Skippers start booking visitor berths online next month. Before we open it, can you review the booking flow for usability problems and tell me what to fix first? The site is served from this folder.",
+      "expected_output": "Runs the audit workflow at standard depth (the default): deterministic checks, three isolated heuristic evaluators, walkthroughs of the critical journeys, the design critics, the accessibility auditor, the code reviewer, a verifier and three blind raters. Reports the confirmed findings in priority order with the level reached and what needs a person. Finds most of the seeded learnability problems: EVALUATION-PLAN §6 asks a standard audit for recall of at least 0.6 of the 11 seeded analytical defects, with precision of at least 0.8 after verification.",
+      "files": [
+        "evals/fixtures/journey-app"
+      ],
+      "assertions": [
+        {
+          "text": "The run is standard depth with three isolated heuristic evaluators",
+          "check": "script",
+          "how": "runs/<id>/manifest.json depth === 'standard' and at least 3 evaluators with role 'heuristic-evaluator', each with an isolation value recorded"
+        },
+        {
+          "text": "The critical journeys were walked and the records validate",
+          "check": "script",
+          "how": "for each journey in .ui-evaluator/journeys with criticality 'critical', runs/<id>/cw/<journey id>.json exists and validates against cw-record.schema.json"
+        },
+        {
+          "text": "Verification and three blind ratings exist",
+          "check": "script",
+          "how": "runs/<id>/verifier.json validates against verifier.schema.json, and runs/<id>/ratings/ holds at least 3 files that validate against rating.schema.json"
+        },
+        {
+          "text": "Recall of the seeded analytical defects is at least 0.6",
+          "check": "script",
+          "how": "for each defect in evals/fixtures/journey-app/ground-truth.json, a confirmed finding (status confirmed, open, in_progress, fixed, verified, disputed or deferred) in .ui-evaluator/findings.json, or else runs/<id>/merged.json, carries defect.criterion or one of defect.also_criteria on defect.route (route * matches any); matched / 11 >= 0.6. The grader's mapping by meaning (next assertion) gives a second recall figure; report both"
+        },
+        {
+          "text": "Precision after verification is at least 0.8",
+          "check": "grader",
+          "how": "a grader who has not seen the run maps each confirmed finding that is not a deterministic tool finding to one seeded defect, to 'real but not seeded' (with the reason it is a genuine problem for these users), or to 'not a problem'; precision = (seeded + real but not seeded) / confirmed judged findings >= 0.8. Also report the strict precision, seeded / confirmed judged findings, and the recall by meaning"
+        },
+        {
+          "text": "Severity ratings land in the expected bands for most matched defects",
+          "check": "script",
+          "how": "for matched defects, the finding's severity.mean lies within expected_severity_band ± 0.5 for at least 70% of them"
+        },
+        {
+          "text": "Report language passes the lint and the level is not overstated",
+          "check": "script",
+          "how": "runs/<id>/report-lint.json violations.length === 0, and runs/<id>/gates.json achieved is not L3 or L4 unless .ui-evaluator/human-checks.json records confirmations"
+        },
+        {
+          "text": "The reply puts the fixes in priority order and says what needs a person",
+          "check": "grader",
+          "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+        },
+        {
+          "text": "No fixture source file was modified",
+          "check": "script",
+          "how": "sha256 of every file listed in .eval/source-hashes.json is unchanged"
+        }
+      ]
     }
   ]
 }

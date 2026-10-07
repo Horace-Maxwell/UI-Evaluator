@@ -1,0 +1,179 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code-locate",
+  "phase": "locate",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261006-152509-audit-standard",
+  "packet_hash": "555d909d99e93328",
+  "notes": "Static site: 5 HTML pages (no templating; header/footer duplicated in each), one stylesheet with tokens in :root (styles.css:3-40), one script app.js branching on body[data-page]. Locations were found by text search and id/class search, because there are no data-insp-path attributes. Lines are given for the fixer; they are not identity. Root cause of the inconsistent error borders (F-0064/F-0075/F-0083/F-0015): styles.css:283 styles only input[aria-invalid] (so the #arrive select and the berth radios never turn red). The hover/active rules at styles.css:269-281 (specificity 0,2,1) also outrank the invalid rule (0,1,1), so an errored input under the pointer shows the ink border. That is probably why 'Length' and 'Skipper's name' stayed dark in captures (medium confidence). Confirmation drops the arrival time because app.js:224 forwards only date, nights and berth, and confirmed.html has no time row. MMSI accepts any non-empty value (app.js:181). The date min/max (index.html:45) is ignored because the form is novalidate and app.js:114 checks only that a value is present. The boat form is reset on every pageshow (app.js:165-167) and never reads its query parameters, so any 'change' link back to the boat step would lose the entries. Fixes for F-0033, F-0034, F-0042, F-0049 and F-0050 must handle this. I did not read anything under .eval/ or any builder notes.",
+  "candidates": [],
+  "source_locations": [
+    { "finding_id": "F-0001", "selector": "tbody > tr:nth-of-type(1) > th", "file": "index.html", "line": 84, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0001", "selector": ".tides th (no tabular-nums; only td.num has it)", "file": "styles.css", "line": 334, "method": "selector search", "confidence": "high" },
+
+    { "finding_id": "F-0006", "selector": "#dead-end", "file": "boat.html", "line": 70, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0006", "selector": "over-length branch that hides the form", "file": "app.js", "line": 187, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0007", "selector": "#loa label", "file": "boat.html", "line": 49, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0007", "selector": "'Enter the length' message", "file": "app.js", "line": 177, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0008", "selector": "#mmsi label", "file": "boat.html", "line": 60, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0008", "selector": "'Enter the MMSI' required check", "file": "app.js", "line": 181, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0009", "selector": "table.tides caption", "file": "index.html", "line": 79, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0009", "selector": "#arrive", "file": "index.html", "line": 62, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0010", "selector": "#more-button", "file": "berths.html", "line": 47, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0010", "selector": "#more-menu / #change-dates", "file": "berths.html", "line": 54, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0011", "selector": "#boat-step .intro", "file": "boat.html", "line": 35, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0020", "selector": ".option__detail 'Boats up to … metres'", "file": "berths.html", "line": 67, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0021", "selector": "#dead-end", "file": "boat.html", "line": 70, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0021", "selector": "over-length branch", "file": "app.js", "line": 187, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0024", "selector": "#arrive options", "file": "index.html", "line": 62, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0024", "selector": "arrive presence-only check", "file": "app.js", "line": 115, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0025", "selector": "date presence-only check", "file": "app.js", "line": 114, "method": "code read", "confidence": "high" },
+    { "finding_id": "F-0025", "selector": "#date (min/max ignored under novalidate)", "file": "index.html", "line": 45, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0026", "selector": "fieldset#berth (berth list before boat size)", "file": "berths.html", "line": 60, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0026", "selector": "#loa", "file": "boat.html", "line": 51, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0027", "selector": "#dead-end", "file": "boat.html", "line": 70, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0027", "selector": "over-length branch", "file": "app.js", "line": 187, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0029", "selector": "#loa label", "file": "boat.html", "line": 49, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0030", "selector": "#mmsi label (no hint)", "file": "boat.html", "line": 60, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0031", "selector": "MMSI presence-only check", "file": "app.js", "line": 181, "method": "code read", "confidence": "high" },
+    { "finding_id": "F-0031", "selector": "#mmsi", "file": "boat.html", "line": 62, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0032", "selector": "#stay summary (no change link)", "file": "berths.html", "line": 34, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0032", "selector": "#more-button", "file": "berths.html", "line": 47, "method": "id search", "confidence": "high" },
+
+    { "finding_id": "F-0033", "selector": "main dl.summary", "file": "review.html", "line": 36, "method": "selector search", "confidence": "high" },
+
+    { "finding_id": "F-0034", "selector": "nav > ul > li:nth-of-type(2) > a (index.html#tides)", "file": "berths.html", "line": 26, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0034", "selector": "#more-menu > li:nth-of-type(2) > a", "file": "berths.html", "line": 56, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0034", "selector": "nav 'Tide times'", "file": "boat.html", "line": 26, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0034", "selector": "nav 'Tide times'", "file": "review.html", "line": 26, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0035", "selector": "h1 'Book a visitor berth'", "file": "index.html", "line": 33, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0035", "selector": "h1 'Choose a pontoon space' / legend", "file": "berths.html", "line": 33, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0035", "selector": "h1 'Check your mooring booking'", "file": "review.html", "line": 33, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0035", "selector": "error 'Choose a pontoon space for your boat'", "file": "app.js", "line": 157, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0037", "selector": "#c-arrival (date only)", "file": "app.js", "line": 234, "method": "code read", "confidence": "high" },
+    { "finding_id": "F-0037", "selector": "query to confirmation drops 'arrive'", "file": "app.js", "line": 224, "method": "code read", "confidence": "high" },
+    { "finding_id": "F-0037", "selector": "main dl.summary", "file": "confirmed.html", "line": 35, "method": "selector search", "confidence": "high" },
+
+    { "finding_id": "F-0038", "selector": "#arrive", "file": "index.html", "line": 62, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0038", "selector": "arrive presence-only check", "file": "app.js", "line": 115, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0042", "selector": "nav 'Tide times' (href index.html#tides, no query)", "file": "berths.html", "line": 26, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0042", "selector": "nav 'Tide times'", "file": "boat.html", "line": 26, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0042", "selector": "nav 'Tide times'", "file": "review.html", "line": 26, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0043", "selector": "table.tides tbody (hard-coded 17-23 Oct)", "file": "index.html", "line": 83, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0045", "selector": "main > h1", "file": "index.html", "line": 33, "method": "text search", "confidence": "medium" },
+    { "finding_id": "F-0045", "selector": "main > h1", "file": "berths.html", "line": 33, "method": "text search", "confidence": "medium" },
+    { "finding_id": "F-0045", "selector": "main > h1", "file": "boat.html", "line": 34, "method": "text search", "confidence": "medium" },
+    { "finding_id": "F-0045", "selector": "main > h1", "file": "review.html", "line": 33, "method": "text search", "confidence": "medium" },
+
+    { "finding_id": "F-0046", "selector": "main dl.summary", "file": "confirmed.html", "line": 35, "method": "selector search", "confidence": "high" },
+    { "finding_id": "F-0046", "selector": "query to confirmation drops 'arrive'", "file": "app.js", "line": 224, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0049", "selector": "nav 'Book a berth' / 'Tide times'", "file": "berths.html", "line": 25, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0049", "selector": "nav 'Book a berth' / 'Tide times'", "file": "boat.html", "line": 25, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0049", "selector": "nav 'Book a berth' / 'Tide times'", "file": "review.html", "line": 25, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0050", "selector": "#boat-form", "file": "boat.html", "line": 42, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0050", "selector": "main dl.summary", "file": "review.html", "line": 36, "method": "selector search", "confidence": "high" },
+    { "finding_id": "F-0050", "selector": "pageshow reset of boat form", "file": "app.js", "line": 165, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0052", "selector": "'Enter the length as a number'", "file": "app.js", "line": 178, "method": "text search", "confidence": "high" },
+
+    { "finding_id": "F-0053", "selector": "MMSI presence-only check", "file": "app.js", "line": 181, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0054", "selector": "main dl.summary", "file": "confirmed.html", "line": 35, "method": "selector search", "confidence": "high" },
+    { "finding_id": "F-0054", "selector": "query to confirmation drops 'arrive', boat and total", "file": "app.js", "line": 224, "method": "code read", "confidence": "high" },
+
+    { "finding_id": "F-0055", "selector": "#main > h1", "file": "berths.html", "line": 33, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0055", "selector": "#main > h1", "file": "review.html", "line": 33, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0055", "selector": "#s-arrival / #s-total", "file": "review.html", "line": 37, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0055", "selector": "#draught-hint", "file": "boat.html", "line": 55, "method": "id search", "confidence": "high" },
+    { "finding_id": "F-0055", "selector": "ul.rules > li", "file": "index.html", "line": 100, "method": "text search", "confidence": "high" },
+    { "finding_id": "F-0055", "selector": "h1/h2/p/li/dd (no text-wrap rule)", "file": "styles.css", "line": 193, "method": "selector search", "confidence": "medium" },
+
+    { "finding_id": "F-0056", "selector": "table.tides", "file": "index.html", "line": 78, "method": "class search", "confidence": "high" },
+    { "finding_id": "F-0056", "selector": ".tides th/td alignment rules", "file": "styles.css", "line": 334, "method": "selector search", "confidence": "high" }
+  ],
+  "ease_estimates": [
+    { "finding_id": "F-0001", "ease": 1, "layer": "styles.css .tides", "note": "Set font-variant-numeric: tabular-nums on the whole .tides table, not only td.num." },
+    { "finding_id": "F-0002", "ease": 1, "layer": "styles.css base text", "note": "text-wrap: pretty on body text (li, p, dd) in one rule fixes all stranded-word cases." },
+    { "finding_id": "F-0003", "ease": 1, "layer": "styles.css h1/h2", "note": "text-wrap: balance on headings." },
+    { "finding_id": "F-0004", "ease": 1, "layer": "styles.css base text", "note": "Same text-wrap: pretty rule as F-0002." },
+    { "finding_id": "F-0005", "ease": 1, "layer": "styles.css .summary dd", "note": "Same text-wrap rule. Optionally keep the 'at 15:00' time together with a no-break space in app.js:201." },
+    { "finding_id": "F-0006", "ease": 2, "layer": "boat step (app.js over-length branch + boat.html)", "note": "Report the length as a field error with the berth limit, and link back to the berth list with the query kept, in place of the #dead-end block." },
+    { "finding_id": "F-0007", "ease": 1, "layer": "copy in boat.html label + app.js message", "note": "Label 'Length overall in metres' and a unit in the error string." },
+    { "finding_id": "F-0008", "ease": 2, "layer": "boat step (boat.html + app.js)", "note": "Hint text is a one-line change. The 'no MMSI' alternative needs the required check at app.js:181 relaxed or a checkbox." },
+    { "finding_id": "F-0009", "ease": 2, "layer": "index.html tide table data", "note": "Convert the 14 static times to local (BST/GMT) and change the caption. Data and copy in one file." },
+    { "finding_id": "F-0010", "ease": 2, "layer": "berths page (berths.html + app.js:130)", "note": "Add a visible 'Change' link in the #stay summary that reuses the existing change-dates href." },
+    { "finding_id": "F-0011", "ease": 2, "layer": "boat page (boat.html + app.js)", "note": "Render the chosen berth name and max from the BERTHS table into the intro." },
+    { "finding_id": "F-0013", "ease": 2, "layer": "boat step", "note": "Same fix as F-0006." },
+    { "finding_id": "F-0014", "ease": 2, "layer": "app.js errorKit", "note": "For a FIELDSET, point the link at the first radio (give radios ids) or focus it on click. Change in errorKit only." },
+    { "finding_id": "F-0015", "ease": 2, "layer": "styles.css invalid-state rules", "note": "Extend the selector to select[aria-invalid] and add .option:has(input[aria-invalid]) for the cards. One file." },
+    { "finding_id": "F-0016", "ease": 2, "layer": "styles.css .option", "note": "Add .option:has(input:checked) and .option:focus-within rules." },
+    { "finding_id": "F-0017", "ease": 2, "layer": "app.js plan validation", "note": "Check date.value against date.min/date.max and today in the submit handler." },
+    { "finding_id": "F-0019", "ease": 2, "layer": "index.html tide table", "note": "Same as F-0009. Also label the office hours as local time in the duplicated footers (copy)." },
+    { "finding_id": "F-0020", "ease": 1, "layer": "copy in berths.html", "note": "Say 'Boats up to N metres overall' in the four option details." },
+    { "finding_id": "F-0021", "ease": 2, "layer": "boat step", "note": "Same fix as F-0006." },
+    { "finding_id": "F-0024", "ease": 3, "layer": "plan step + tide data", "note": "Needs a per-date tide data structure in app.js (the table is static HTML) and a gate-window check on submit." },
+    { "finding_id": "F-0025", "ease": 2, "layer": "app.js plan validation", "note": "Same fix as F-0017." },
+    { "finding_id": "F-0026", "ease": 3, "layer": "booking flow order", "note": "Ask for boat length before the berth list and filter or flag berths by max. Changes the plan, berths and boat pages and the query flow." },
+    { "finding_id": "F-0027", "ease": 2, "layer": "boat step", "note": "Same fix as F-0006." },
+    { "finding_id": "F-0029", "ease": 1, "layer": "copy in boat.html", "note": "Label 'Length overall (LOA) in metres' with a hint about bowsprits." },
+    { "finding_id": "F-0030", "ease": 1, "layer": "copy in boat.html", "note": "Add a #mmsi-hint (errorKit already wires *-hint into aria-describedby)." },
+    { "finding_id": "F-0031", "ease": 1, "layer": "app.js:181", "note": "Add a /^\\d{9}$/ check with a specific message." },
+    { "finding_id": "F-0032", "ease": 2, "layer": "berths page", "note": "Same fix as F-0010." },
+    { "finding_id": "F-0033", "ease": 3, "layer": "review page + earlier steps", "note": "Change links are simple, but the boat page resets on pageshow and never pre-fills from the query (app.js:165), so it needs pre-fill as well." },
+    { "finding_id": "F-0034", "ease": 3, "layer": "header/menu in 5 duplicated pages + plan pre-fill", "note": "Carry the stay query on nav links (in app.js) or open reference content in place. The header is duplicated in each HTML file." },
+    { "finding_id": "F-0035", "ease": 2, "layer": "copy across 4 pages + app.js:157", "note": "Copy-only edits to headings and the legend. No logic changes." },
+    { "finding_id": "F-0037", "ease": 2, "layer": "app.js:224 + confirmed.html", "note": "Forward 'arrive' to the confirmation and print it in #c-arrival." },
+    { "finding_id": "F-0038", "ease": 3, "layer": "plan step + tide data", "note": "Same as F-0024." },
+    { "finding_id": "F-0042", "ease": 3, "layer": "nav in duplicated headers", "note": "Same root cause as F-0034." },
+    { "finding_id": "F-0043", "ease": 3, "layer": "tide data source + rendering", "note": "Needs tide data for the bookable season (Oct-Mar) and rendering from app.js by the chosen date. The table is hard-coded now." },
+    { "finding_id": "F-0045", "ease": 2, "layer": "step indicator markup in 4 pages + CSS", "note": "Static 'Step n of 4' markup per page, with no templating. Repetitive but simple." },
+    { "finding_id": "F-0046", "ease": 2, "layer": "app.js:224 + confirmed.html", "note": "Same fix as F-0037." },
+    { "finding_id": "F-0049", "ease": 3, "layer": "nav in duplicated headers", "note": "Same root cause as F-0034." },
+    { "finding_id": "F-0050", "ease": 3, "layer": "boat + review pages", "note": "Back and change links, plus pre-fill of the boat form from the query instead of reset on pageshow." },
+    { "finding_id": "F-0052", "ease": 1, "layer": "app.js:178 message", "note": "Say 'Enter the length in metres, for example 10.4'." },
+    { "finding_id": "F-0053", "ease": 1, "layer": "app.js:181", "note": "Same fix as F-0031." },
+    { "finding_id": "F-0054", "ease": 2, "layer": "app.js:224 + confirmed.html", "note": "Forward arrive, boat and total to the confirmation and add the rows." },
+    { "finding_id": "F-0055", "ease": 1, "layer": "styles.css base text", "note": "text-wrap: balance on headings and pretty on p/li/dd." },
+    { "finding_id": "F-0056", "ease": 2, "layer": "styles.css .tides", "note": "Right-align the numeric column headers and give the table a styled treatment. One file." },
+    { "finding_id": "F-0057", "ease": 3, "layer": "tide data source + rendering", "note": "Same as F-0043." },
+    { "finding_id": "F-0058", "ease": 2, "layer": "step indicator in 4 pages", "note": "Same as F-0045." },
+    { "finding_id": "F-0061", "ease": 2, "layer": "styles.css body layout", "note": "Make body a min-height:100vh flex column with main flex:1. One file." },
+    { "finding_id": "F-0062", "ease": 1, "layer": "styles.css .tides thead th", "note": "text-align:right on the Morning/Afternoon headers." },
+    { "finding_id": "F-0063", "ease": 2, "layer": "index.html tide table", "note": "Same as F-0009." },
+    { "finding_id": "F-0064", "ease": 1, "layer": "styles.css:283 invalid rule", "note": "Raise specificity or order of [aria-invalid] above :hover/:active (269-281) and include select." },
+    { "finding_id": "F-0065", "ease": 2, "layer": "berths page toolbar", "note": "Replace the kebab with an inline 'Change dates' link next to #stay. Remove or relocate .toolbar." },
+    { "finding_id": "F-0066", "ease": 2, "layer": "copy across pages", "note": "Same as F-0035." },
+    { "finding_id": "F-0069", "ease": 2, "layer": "boat step", "note": "Same fix as F-0006." },
+    { "finding_id": "F-0073", "ease": 2, "layer": "berths page toolbar", "note": "Same as F-0065." },
+    { "finding_id": "F-0074", "ease": 1, "layer": "styles.css .tides thead th", "note": "Same as F-0062." },
+    { "finding_id": "F-0075", "ease": 1, "layer": "styles.css:283 invalid rule", "note": "Same as F-0064." },
+    { "finding_id": "F-0077", "ease": 2, "layer": "boat step", "note": "Same fix as F-0006. The footer gap is F-0061." },
+    { "finding_id": "F-0082", "ease": 2, "layer": "berths page toolbar", "note": "Same as F-0065." },
+    { "finding_id": "F-0083", "ease": 1, "layer": "styles.css:283 invalid rule", "note": "Same as F-0064." },
+    { "finding_id": "F-0085", "ease": 1, "layer": "copy in berths.html", "note": "Rename the h1 and legend to a neutral noun such as 'berth'." }
+  ]
+}

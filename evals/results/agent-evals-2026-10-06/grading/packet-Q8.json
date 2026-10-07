@@ -1,0 +1,37 @@
+{
+ "eval": 12,
+ "assertions": [
+  {
+   "text": "The reply reports by identity, not by count",
+   "how": "The reply names which findings cleared, which persist and whether anything was introduced; it does not rely on 'fewer findings than before'"
+  }
+ ],
+ "material": {
+  "reply": "The contrast fix works. The transition fix mostly works: one transition problem is still there. I found nothing broken.\n\nI re-ran every check on the current build and compared it with the baseline audit (`20261006-144251-baseline-audit`). The new run is `20261006-161142-verify`. The comparison matches findings by identity, not by count.\n\n**Contrast: fixed.**\n- The baseline had contrast failures on \"Last reading 14:05\" and the five metric labels (Acidity, Conductivity, Water temperature, Dissolved oxygen, Reservoir). Both contrast checks (axe and the 4.5:1 text check) now find none, at every width, in both states.\n- One small thing: you swapped one hard-coded grey (`#9aa0a6`) for another (`#4d5a52`) at `styles.css:106` and `styles.css:144` instead of using a colour token. That's not a regression, since the token-check count stayed the same, but it's worth tidying.\n\n**Transitions: two of three fixed.**\n- Fixed: `transition: all` on `#readings` and `#sensors`. The motion check (live page) and the source scan both no longer find it.\n- Fixed: the 600 ms background-colour transition on the status chips. They now take 200 ms, within the 250 ms limit.\n- **Still there:** the dosing switch knob still uses an easing curve that overshoots and bounces back, `cubic-bezier(0.68, -0.55, 0.27, 1.55)` at `styles.css:286`. Both the live check and the source scan flag it. Use a plain ease-out unless the bounce is deliberate. If it is, record the reason in a DESIGN.md.\n- With reduced motion turned on, your `prefers-reduced-motion` block still cuts transitions to almost nothing.\n\n**Did you break anything? No evidence of it.**\n- **New problems:** none.\n- **Screenshots:** in all 30 before/after pairs, the pixel changes are limited to the timestamp and the five labels, exactly where the contrast fix applied. No layout moved and the forced-colours screenshots are identical. An independent reviewer that never saw your code changes checked this and found no regressions.\n- **Dosing journey:** \"switch dosing to manual\" still works (3 of 3 steps).\n- **Gaps:** there were no saved accessibility-tree snapshots from the baseline, so I couldn't compare those. The motion fixes can't be seen in still screenshots, so they rest on the re-run checks, not on the reviewer.\n\n**Where the dashboard stands overall:** it doesn't reach L1 yet; your target is L3. What's blocking it is unrelated to these fixes and was already in the baseline:\n- the knob easing above;\n- text below 12 px on the chart times;\n- spacing off the 4 px scale and hard-coded colours instead of tokens;\n- cramped chip padding and a flat type hierarchy;\n- \"ghost card\" shadows and cards nested in cards;\n- no DESIGN.md.\n\nThe accessibility review, usability evaluation and design panel haven't been run, so those gates are \"not run\", not \"passed\".\n\nFull report: `.ui-evaluator/runs/20261006-161142-verify/report.md`. Diff: `.ui-evaluator/runs/20261006-161142-verify/diff/summary.md`.\n\nIf you want, I can fix the knob easing next and then work through the craft-floor items.\n\nYour contrast fix works and you fixed two of the three transition problems. The dosing switch knob still bounces. I found nothing broken.\n\nI re-ran all the checks on the current build and compared the results with the baseline audit.\n\n**Contrast: fixed.** The \"Last reading 14:05\" timestamp and the five metric labels used to fail contrast. They now pass at every width, both before and after switching dosing to manual. One small thing: you replaced one hard-coded grey with another (`#4d5a52`, at `styles.css:106` and `:144`) instead of using a colour token. It doesn't break anything, but it's worth tidying.\n\n**Transitions: two of three fixed.**\n- **Fixed:** `transition: all` on `#readings` and `#sensors` is gone.\n- **Fixed:** the status chips' colour change dropped from 600 ms to 200 ms, which is within the 250 ms limit.\n- **Still there:** the dosing switch knob uses an easing curve that overshoots and springs back: `cubic-bezier(0.68, -0.55, 0.27, 1.55)` at `styles.css:286`. Both the live check and the source scan still flag it. A plain ease-out would fix it, unless the bounce is deliberate.\n- Your reduced-motion block still works.\n\n**Did you break anything? No.**\n- **New problems:** none.\n- **Screenshots:** across all 30 before/after pairs, the only pixel changes are on the timestamp and the five labels, exactly where you fixed contrast. Nothing moved, and the forced-colours screenshots are identical. A separate reviewer that never saw your code checked this and found no regressions.\n- **Dosing journey:** \"switch dosing to manual\" still works (3 of 3 steps).\n- **Not checked:** the baseline had no snapshots of the accessibility tree, so I couldn't compare those. Motion doesn't show in screenshots, so the motion results come only from the re-run checks.\n\n**Overall:** the dashboard doesn't reach L1 yet; your target is L3. That's because of problems that were already in the baseline:\n- the knob easing above;\n- chart time labels below 12 px;\n- spacing that's off the 4 px scale, and hard-coded colours instead of tokens;\n- cramped chip padding and a flat type hierarchy;\n- faint \"ghost\" card shadows and cards nested in cards;\n- no DESIGN.md.\n\nThe accessibility, usability and design reviews haven't been run, so those checks count as not done, not passed.\n\nNext, I can fix the knob easing and then work through the rest of that list.\n\nFiles are in `.ui-evaluator/runs/20261006-161142-verify/`:\n- `report.md`\n- `diff/summary.md`",
+  "diff": {
+   "cleared": [
+    "A11Y-01 /",
+    "A11Y-11 /",
+    "MOT-01 /",
+    "MOT-02 /",
+    "MOT-01 "
+   ],
+   "persisting": [
+    "SLP-07 /",
+    "SLP-23 /",
+    "TYP-01 /",
+    "TYP-06 /",
+    "LAY-04 /",
+    "TYP-14 /",
+    "SHP-02 /",
+    "TYP-15 /",
+    "LAY-01 /",
+    "MOT-03 /",
+    "COL-01 ",
+    "LAY-01 ",
+    "MOT-03 "
+   ],
+   "introduced": []
+  }
+ }
+}

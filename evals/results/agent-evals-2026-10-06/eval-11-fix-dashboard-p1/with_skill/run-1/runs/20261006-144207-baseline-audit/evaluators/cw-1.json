@@ -1,0 +1,76 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261006-144207-baseline-audit",
+  "packet_hash": "1d2dd29308c02cfb",
+  "notes": "Cognitive walkthrough (full four-question variant) of the switch-dosing-to-manual journey at 768x1024, light theme. Record: runs/20261006-144207-baseline-audit/cw/switch-dosing-to-manual.json. 3 steps walked; step 3 failed on CW-Q4. Overall verdict would_with_effort. Probes used: probes/1 (correct sequence) and probes/4 (reload after switching).",
+  "coverage": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing", "manual-dosing-after-reload"]
+  },
+  "task_suitability": [
+    { "task": "switch-dosing-to-manual", "completable": true, "evidence": "probes/1: correct sequence passes; status reads 'Nutrient dosing is now manual'" }
+  ],
+  "not_assessable": [
+    "Switch target size under wet-glove use: probe returns no measured box; left to uie audit target-size checks."
+  ],
+  "strengths": [
+    {
+      "title": "Dosing switch and its plain-language status sit together, in view without scrolling at tablet width",
+      "evidence": "probes/1/step-01.png and screenshots/after.png: the status line under the switch changes at once to 'Nutrient dosing is now manual: the pumps run only when you start them.', which uses the growers' word 'pumps'"
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Manual dosing setting reverts to automatic after the page is reloaded",
+      "description": "A safety setting that the screen confirms ('now manual') should still show that state after a reload, so that what the screen says matches what the pumps will do. Currently, after the grower switches 'Automatic nutrient dosing' off, the status reads 'Nutrient dosing is now manual: the pumps run only when you start them.' After a reload of /, the switch is on again and the status reads 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.' Nothing on the page shows that the change was saved, such as a time of the switch or an entry in the recent pump events list.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Growers draining the reservoir may trust the 'now manual' message while the shown state, and possibly the pumps, return to automatic. After a refresh of the shared tablet, or when a second grower checks the page, it may show automatic with no explanation, and the pumps may dose into an empty tank.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "manual-dosing",
+          "viewport": { "width": 768, "height": 1024 },
+          "theme": "light",
+          "selector": "role=status",
+          "snippet": "Nutrient dosing is now manual: the pumps run only when you start them.",
+          "journey": "switch-dosing-to-manual",
+          "step": 3
+        },
+        {
+          "route": "/",
+          "state": "manual-dosing-after-reload",
+          "viewport": { "width": 768, "height": 1024 },
+          "theme": "light",
+          "selector": "role=switch[name=\"Automatic nutrient dosing\"]",
+          "snippet": "Automatic nutrient dosing",
+          "journey": "switch-dosing-to-manual",
+          "step": 3
+        }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "runs/20261006-144207-baseline-audit/probes/1/", "detail": "click switch -> status 'Nutrient dosing is now manual: the pumps run only when you start them.' within 300 ms" },
+        { "type": "probe", "ref": "runs/20261006-144207-baseline-audit/probes/4/", "detail": "click switch, expect 'now manual' (ok), goto / again, expect 'now manual' failed: saw 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.'" },
+        { "type": "screenshot", "ref": "runs/20261006-144207-baseline-audit/probes/4/screenshots/after-reload.png" }
+      ],
+      "factor_notes": {
+        "frequency": "Every time the switch is used and the page is later reloaded or opened on another device. The setting is changed before each reservoir change on a shared tablet.",
+        "impact": "Critical journey; the setting protects against dosing into an empty tank. The screen's confirmation and the shown state disagree after a reload.",
+        "persistence": "Recurs on every reload; growers cannot learn their way around it."
+      },
+      "found_by": [
+        { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Keep the dosing mode in a stored source of truth, read it back on load, and show when it was last changed (for example 'Manual since 14:07'). Optionally, record the switch in the recent pump events list.",
+      "tags": ["feedback", "persistence", "critical-journey", "dosing"]
+    }
+  ]
+}

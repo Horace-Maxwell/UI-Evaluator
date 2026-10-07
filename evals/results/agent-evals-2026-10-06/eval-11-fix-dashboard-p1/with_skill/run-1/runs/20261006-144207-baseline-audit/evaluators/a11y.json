@@ -1,0 +1,555 @@
+{
+  "schema": "evaluator-output",
+  "role": "accessibility-auditor",
+  "agent": "a11y",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261006-144207-baseline-audit",
+  "packet_hash": "6601bd116c4f5efd",
+  "notes": "Environment limits: Bash was denied in this session, so no `uie probe` runs and no `uie findings validate` could be executed; all judgements rest on the packet's captures, tool results and incomplete.json. The packet's aria.json is an empty array, so no accessibility-tree snapshot was available; semantics (names, roles, states, heading outline, table structure, chart alternative) are routed to needs_human rather than judged. Selectors below use text/role locators inferred from visible text and from routes.json (role=switch[name=\"Automatic nutrient dosing\"]); boxes are omitted because none were measured. No builder notes, source code or other evaluators' files were read.",
+  "passes": [
+    {
+      "pass": 1,
+      "summary": "Resolved 10 axe incompletes (all colour-contrast on status chips); compared default, CVD (deuteranopia, protanopia, tritanopia, achromatopsia) and forced-colours captures at 1280 for both states; compared 320 and 1280 layouts; scanned copy, headings and controls for judged criteria.",
+      "elements_inspected": 30
+    }
+  ],
+  "coverage": {
+    "routes": [
+      "/"
+    ],
+    "states": [
+      "default",
+      "manual-dosing"
+    ],
+    "controls_exercised": 0,
+    "controls_total": 4,
+    "out_of_scope": [
+      "keyboard pattern probes (no probe access)",
+      "ARIA snapshot review (snapshots absent from packet)"
+    ]
+  },
+  "candidates": [
+    {
+      "title": "Sensor status in the Sensors table is conveyed only by dot hue",
+      "description": "WCAG 1.4.1 requires that colour is not the only visual means of conveying information. The Status column of the Sensors table shows one small filled dot per sensor: green for pH probe, EC probe and Oxygen probe, orange for Water thermometer and red for Reservoir float. No visible text, icon shape or position differs between the states. In the deuteranopia capture the green and red dots render as near-identical olive; in the achromatopsia capture all five dots are the same mid grey. The same table appears unchanged in the manual-dosing state and at 320 px.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {
+          "kind": "wcag",
+          "id": "1.4.1",
+          "primary": true
+        },
+        {
+          "kind": "rule",
+          "id": "A11Y-19"
+        },
+        {
+          "kind": "heuristic",
+          "id": "H1"
+        }
+      ],
+      "impact": "Colour-blind volunteers, who the context says are on every rota, may be unable to tell which sensor needs attention (top task 3), and may miss that the reservoir float is in a fault state while the reservoir card shows a green 'Topped up' chip.",
+      "scope": {
+        "route": "/",
+        "state": "default",
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "theme": "light"
+      },
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "#sensors table td:nth-of-type(3)",
+          "snippet": "Sensor | Channel | Status (dots)"
+        },
+        {
+          "route": "/",
+          "state": "manual-dosing",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "#sensors table td:nth-of-type(3)",
+          "snippet": "Sensor | Channel | Status (dots)"
+        },
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": {
+            "width": 320,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "#sensors table td:nth-of-type(3)",
+          "snippet": "Sensor | Channel | Status (dots)"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/1280-light-audit.png",
+          "detail": "five dots: green, green, orange, green, red; no text in Status cells"
+        },
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/1280-light-cvd-deuteranopia.png",
+          "detail": "red (Reservoir float) and green dots both render olive; orange renders mustard"
+        },
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/1280-light-cvd-achromatopsia.png",
+          "detail": "all five dots render as the same grey"
+        },
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/manual-dosing/1280-light-cvd-deuteranopia.png",
+          "detail": "same result in manual-dosing state"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Every sensor row, every visit; the table is the only per-sensor health view.",
+        "impact": "Fault state of a sensor is not perceivable without hue discrimination.",
+        "persistence": "Static; does not change with interaction."
+      },
+      "found_by": [
+        {
+          "role": "accessibility-auditor",
+          "agent": "a11y",
+          "model": "claude-opus-5-5",
+          "method": "a11y",
+          "pass": 1
+        }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Put the status word in the cell (for example 'OK', 'Check', 'Fault'), optionally with distinct icon shapes beside it; keep colour as a secondary cue. Visible text also gives screen-reader users the state without extra ARIA.",
+      "tags": [
+        "colour",
+        "cvd",
+        "status"
+      ],
+      "lead_note": "split by lead from the auditor candidate per verifier split_required (part 1 of 2)"
+    },
+    {
+      "title": "Sensor status dots are not drawn under forced colours",
+      "description": "Under forced colours the Status column of the Sensors table is blank: the background-painted dots are dropped, so no status of any kind remains for users of high-contrast themes.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {
+          "kind": "rule",
+          "id": "A11Y-22",
+          "primary": true
+        },
+        {
+          "kind": "wcag",
+          "id": "1.4.1"
+        }
+      ],
+      "impact": "Volunteers using a high-contrast or forced-colours theme may see no sensor status at all, including the reservoir float fault.",
+      "scope": {
+        "route": "/",
+        "state": "default",
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "theme": "light"
+      },
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "#sensors table td:nth-of-type(3)",
+          "snippet": "Sensor | Channel | Status (dots)"
+        },
+        {
+          "route": "/",
+          "state": "manual-dosing",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "#sensors table td:nth-of-type(3)",
+          "snippet": "Sensor | Channel | Status (dots)"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/1280-light-forced-colors.png",
+          "detail": "Status cells empty: dots not drawn under forced colours"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "Every sensor row, every visit; the table is the only per-sensor health view.",
+        "impact": "Fault state of a sensor is not perceivable without hue discrimination.",
+        "persistence": "Static; does not change with interaction."
+      },
+      "found_by": [
+        {
+          "role": "accessibility-auditor",
+          "agent": "a11y",
+          "model": "claude-opus-5-5",
+          "method": "a11y",
+          "pass": 1
+        }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Give the indicator a forced-colours rendering (for example a border or a system-colour fill) or carry the state in visible text.",
+      "tags": [
+        "forced-colors",
+        "status"
+      ],
+      "lead_note": "split by lead (part 2 of 2)"
+    },
+    {
+      "title": "Automatic dosing switch is not drawn under forced colours",
+      "description": "Under forced-colors: active, controls and their selected state should stay visible (A11Y-22). In the forced-colours captures of both the default (on) and manual-dosing (off) states, the switch track and thumb next to 'Automatic nutrient dosing' are not rendered at all; only the label text remains, so neither the control nor its on/off state is visible.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "rule",
+          "id": "A11Y-22",
+          "primary": true
+        }
+      ],
+      "impact": "Volunteers who use a high-contrast or forced-colours mode may not find the control for the critical task (switching dosing to manual) and cannot see whether dosing is automatic from the control itself; the status sentence below remains the only cue.",
+      "scope": {
+        "route": "/",
+        "state": "default",
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "theme": "light"
+      },
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "role=switch[name=\"Automatic nutrient dosing\"]",
+          "snippet": "Automatic nutrient dosing"
+        },
+        {
+          "route": "/",
+          "state": "manual-dosing",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "role=switch[name=\"Automatic nutrient dosing\"]",
+          "snippet": "Automatic nutrient dosing"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/1280-light-forced-colors.png",
+          "detail": "no switch drawn right of the label (compare 1280-light-audit.png, where a green on-switch is drawn)"
+        },
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/manual-dosing/1280-light-forced-colors.png",
+          "detail": "no switch drawn in the off state either"
+        }
+      ],
+      "factor_notes": {
+        "frequency": "The only interactive control on the Dosing card.",
+        "impact": "Control and state invisible in forced colours.",
+        "persistence": "Every visit in forced-colours mode."
+      },
+      "found_by": [
+        {
+          "role": "accessibility-auditor",
+          "agent": "a11y",
+          "model": "claude-opus-5-5",
+          "method": "a11y",
+          "pass": 1
+        }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Prefer a native <input type=\"checkbox\" role=\"switch\"> or <button aria-pressed>, and inside @media (forced-colors: active) draw the track with a ButtonText border and the thumb/checked fill with Highlight or CanvasText.",
+      "tags": [
+        "forced-colors",
+        "advisory"
+      ]
+    },
+    {
+      "title": "Sensors table 'Status' column header is clipped at 320 px",
+      "description": "At 320 px content should reflow without loss of information (1.4.10). In the 320 px capture the Sensors table's third column header reads 'Statu', cut at the card's right edge, and the status dots sit at the clipped edge. The scripted reflow check reported no hit, so this may be clipping inside an overflow-hidden card rather than page-level horizontal scrolling.",
+      "problem_type": "single_location",
+      "criteria": [
+        {
+          "kind": "wcag",
+          "id": "1.4.10",
+          "primary": true
+        },
+        {
+          "kind": "rule",
+          "id": "A11Y-07"
+        }
+      ],
+      "impact": "Growers checking the bay on a phone may not see the full column header, which compounds the colour-only status column.",
+      "scope": {
+        "route": "/",
+        "state": "default",
+        "viewport": {
+          "width": 320,
+          "height": 900
+        },
+        "theme": "light"
+      },
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": {
+            "width": 320,
+            "height": 900
+          },
+          "theme": "light",
+          "selector": "role=columnheader[name=\"Status\"]",
+          "snippet": "Status"
+        }
+      ],
+      "evidence": [
+        {
+          "type": "screenshot",
+          "ref": "evidence/screens/root/default/320-light-audit.png",
+          "detail": "header text visibly truncated to 'Statu' at the card edge"
+        }
+      ],
+      "found_by": [
+        {
+          "role": "accessibility-auditor",
+          "agent": "a11y",
+          "model": "claude-opus-5-5",
+          "method": "a11y",
+          "pass": 1
+        }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Let the table shrink (smaller cell padding, wrapping headers) or stack rows at narrow widths; avoid overflow: hidden on the card.",
+      "tags": [
+        "reflow",
+        "320"
+      ]
+    }
+  ],
+  "resolved_incompletes": [
+    {
+      "id": "INC-1",
+      "result": "pass",
+      "reason": "Status chip 'In range' (.metric:nth-child(1) > .chip--ok): axe could not see the background because the chip's own tint layer overlaps it. uie contrast (resolver: contrast) measured composited colours on all 200 text nodes at 320 and 1280 and reported no A11Y-11 hit for any .chip; the 1280 capture shows dark green text on a pale green tint, and the achromatopsia capture keeps the text clearly darker than its tint.",
+      "evidence": "evidence/axe/incomplete.json; checks.json contrast (text_checked 200); evidence/screens/root/default/1280-light-audit.png"
+    },
+    {
+      "id": "INC-2",
+      "result": "pass",
+      "reason": "Same chip pattern ('In range', Conductivity); covered by the contrast check with no hit; dark text on pale tint in capture.",
+      "evidence": "evidence/axe/incomplete.json; checks.json contrast"
+    },
+    {
+      "id": "INC-3",
+      "result": "pass",
+      "reason": "'Warm' chip (.chip--warn): dark amber/brown text on pale yellow tint in capture; contrast check measured it with no hit.",
+      "evidence": "evidence/axe/incomplete.json; evidence/screens/root/default/1280-light-audit.png"
+    },
+    {
+      "id": "INC-4",
+      "result": "pass",
+      "reason": "'In range' chip (Dissolved oxygen); same pattern as INC-1; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json; checks.json contrast"
+    },
+    {
+      "id": "INC-5",
+      "result": "pass",
+      "reason": "'Topped up 09:30' chip (Reservoir); same .chip--ok pattern; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json; checks.json contrast"
+    },
+    {
+      "id": "INC-6",
+      "result": "pass",
+      "reason": "manual-dosing state, same chip as INC-1; chips are unchanged by the state change (compare manual-dosing/1280-light-audit.png); no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json; evidence/screens/root/manual-dosing/1280-light-audit.png"
+    },
+    {
+      "id": "INC-7",
+      "result": "pass",
+      "reason": "manual-dosing state, same chip as INC-2; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json"
+    },
+    {
+      "id": "INC-8",
+      "result": "pass",
+      "reason": "manual-dosing state, same chip as INC-3; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json"
+    },
+    {
+      "id": "INC-9",
+      "result": "pass",
+      "reason": "manual-dosing state, same chip as INC-4; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json"
+    },
+    {
+      "id": "INC-10",
+      "result": "pass",
+      "reason": "manual-dosing state, same chip as INC-5; no contrast hit.",
+      "evidence": "evidence/axe/incomplete.json"
+    }
+  ],
+  "needs_human": [
+    {
+      "sc": [
+        "4.1.2",
+        "4.1.3"
+      ],
+      "task": "VoiceOver on iPad, journey switch-dosing-to-manual: confirm the switch announces role 'switch', name 'Automatic nutrient dosing' and on/off state, that double-tap toggles it, and that 'Nutrient dosing is now manual...' is announced without moving focus."
+    },
+    {
+      "sc": [
+        "2.1.1",
+        "4.1.2"
+      ],
+      "task": "Keyboard only: focus the dosing switch, press Space (and Enter) and confirm it toggles, focus stays on it and the state text updates (APG switch pattern). Not probed in this run."
+    },
+    {
+      "sc": [
+        "1.1.1",
+        "1.3.1"
+      ],
+      "task": "Screen reader: read the Sensors table; confirm it is exposed as a table with column headers and that each Status cell exposes a text state for the coloured dot (otherwise the state is missing for non-sighted users as well)."
+    },
+    {
+      "sc": [
+        "1.1.1"
+      ],
+      "task": "Screen reader: check the 'Acidity over the last 24 hours' chart has a text alternative or data table conveying the range and trend (it has no y-axis values visually)."
+    },
+    {
+      "sc": [
+        "1.3.2"
+      ],
+      "task": "Compare screen-reader reading order with the visual order at 320 px and 1280 px (topbar, metric cards, chart, Sensors, Dosing); ARIA snapshots were not in the packet."
+    },
+    {
+      "sc": [
+        "2.2.2"
+      ],
+      "task": "Confirm whether readings and 'Last reading' update automatically while the page is open; if they do and updates are presented alongside other content, check there is a way to pause or that the update is essential."
+    },
+    {
+      "sc": [
+        "1.4.13"
+      ],
+      "task": "Hover and focus the chart line, metric cards and status dots; if any tooltip appears, confirm it is dismissible with Esc, hoverable and persistent."
+    },
+    {
+      "sc": [
+        "1.4.5"
+      ],
+      "task": "Confirm the chart's axis labels are live text, not raster (they kept their colour in forced colours, so the chart may be an image)."
+    },
+    {
+      "sc": [
+        "1.3.3"
+      ],
+      "task": "Review all instructions and help copy for references that rely on colour, shape or position only (e.g. 'the red dot')."
+    },
+    {
+      "sc": [
+        "2.4.1"
+      ],
+      "task": "Confirm the nav links 'Readings', 'Sensors', 'Dosing' move focus to their sections on activation."
+    }
+  ],
+  "coverage_labels": {
+    "1.1.1": "needs-human",
+    "1.2.1": "not-applicable",
+    "1.2.2": "not-applicable",
+    "1.2.3": "not-applicable",
+    "1.2.4": "not-applicable",
+    "1.2.5": "not-applicable",
+    "1.3.1": "needs-human",
+    "1.3.2": "needs-human",
+    "1.3.3": "needs-human",
+    "1.3.4": "agent-judged-pass",
+    "1.4.1": "agent-judged-fail",
+    "1.4.5": "needs-human",
+    "1.4.13": "needs-human",
+    "2.1.4": "agent-judged-pass",
+    "2.2.1": "agent-judged-pass",
+    "2.2.2": "needs-human",
+    "2.3.1": "not-applicable",
+    "2.4.4": "agent-judged-pass",
+    "2.4.5": "not-applicable",
+    "2.4.6": "agent-judged-pass",
+    "2.5.1": "agent-judged-pass",
+    "2.5.3": "agent-judged-pass",
+    "2.5.4": "agent-judged-pass",
+    "2.5.7": "not-applicable",
+    "3.2.2": "agent-judged-pass",
+    "3.3.2": "agent-judged-pass",
+    "3.3.3": "not-applicable",
+    "3.3.4": "not-applicable",
+    "3.3.7": "not-applicable",
+    "3.3.8": "not-applicable",
+    "4.1.2": "needs-human",
+    "_reasons": {
+      "1.2.x": "no audio or video on the page (media check: 0 media links; the one media item is the chart)",
+      "1.3.4": "layout renders portrait-like 320 px and landscape 1280/1440 px with no orientation message or lock",
+      "1.4.1": "Sensors table status dots are colour-only (candidate 1)",
+      "2.1.4": "uie lint (A11Y-17) reported no single-character shortcuts",
+      "2.2.1": "no session timeout, meta refresh or auto-advance observed",
+      "2.3.1": "motion check: no running or infinite animations; no video",
+      "2.4.4": "links 'Readings', 'Sensors', 'Dosing' describe their targets",
+      "2.4.5": "single page; criterion applies to a set of pages",
+      "2.4.6": "headings 'Nutrient film channels', 'Acidity over the last 24 hours', 'Sensors', 'Dosing' describe their sections",
+      "2.5.1": "no multipoint or path gestures observed",
+      "2.5.3": "switch's accessible name 'Automatic nutrient dosing' (routes.json locator) equals its visible label",
+      "2.5.4": "lint found no device-motion handlers",
+      "2.5.7": "no draggable controls",
+      "3.2.2": "toggling the switch updates status text in place; no navigation or focus move",
+      "3.3.2": "the only input is the switch, which has a visible label",
+      "3.3.3/3.3.7/3.3.8": "no form submission, multi-step process or authentication",
+      "3.3.4": "toggling dosing is not a legal, financial or data submission",
+      "4.1.2": "role and name confirmed by the recipe locator; state exposure needs a snapshot or screen reader"
+    }
+  },
+  "not_assessable": [
+    "Keyboard pattern behaviour of the dosing switch (no probe access: Bash denied).",
+    "Accessible names, roles, heading outline and landmarks (aria.json in packet is empty).",
+    "Validation of this file with `uie findings validate` (Bash denied); the lead should run it."
+  ],
+  "strengths": [
+    {
+      "title": "Dosing state is stated in plain words beside the switch ('Nutrient dosing is automatic...' / 'now manual: the pumps run only when you start them'), and the change lands in a role=status region, so the critical task does not depend on the switch's colour.",
+      "evidence": "routes.json manual-dosing recipe expects role=status 'now manual'; evidence/screens/root/manual-dosing/1280-light-audit.png"
+    },
+    {
+      "title": "Metric chips carry words ('In range', 'Warm', 'Topped up 09:30'), so metric status survives CVD and forced colours.",
+      "evidence": "evidence/screens/root/default/1280-light-cvd-achromatopsia.png; 1280-light-forced-colors.png"
+    }
+  ]
+}

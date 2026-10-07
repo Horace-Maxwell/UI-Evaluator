@@ -1,0 +1,456 @@
+{
+  "schema": "evaluator-output",
+  "role": "heuristic-evaluator",
+  "agent": "he-1",
+  "lens": "novice first-time user",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261006-152509-audit-standard",
+  "packet_hash": "6426e2a3a3305e77",
+  "notes": "Independence note: the packet's journeys.json contains _comment fields that refer to a ground-truth file and name one seeded failure (the Change dates link being only inside the More options menu, labelled CW-Q2). I read this by accident while reading the packet. The related candidate (Change dates hidden in the More options menu) was confirmed by my own probe (probes/24, probes/32) and stands on that evidence, but the verifier should know that I saw the hint. I did not open ground-truth.json, source, DESIGN.md, detector output or other evaluators' files. Probe numbers are not consecutive because other evaluators share the probe directory; only the probe numbers cited here are mine (2, 4, 9, 13, 18, 19, 21, 24, 32, 35). Browser Back could not be exercised: the probe has no back action and Alt+ArrowLeft did not navigate in the headless browser.",
+  "passes": [
+    { "pass": 1, "summary": "Read the context, routes and journeys; walked the book-visitor-berth and change-arrival-date journeys and the length-over-limit state with uie probe at 375 px; mapped the 5 routes and 10 states; noted trouble spots (UTC tide table, Booking stopped dead end, hidden Change dates, length ambiguity). No findings recorded." },
+    { "pass": 2, "summary": "Element-by-element pass over every route and state in the inventory against H1-H10, with adversarial probes (empty submit, past date, arrival time outside gate window, bad number formats, short MMSI, hull length vs LOA, over-length berth, menu open/Escape, global nav mid-flow, error-summary links).", "elements_inspected": 33 },
+    { "pass": 3, "summary": "Cross-screen consistency pass: terminology, error-state treatment, navigation and back/change behaviour, summary content on review vs confirmation compared across all 5 routes." }
+  ],
+  "coverage": {
+    "routes": ["/", "/berths.html", "/boat.html", "/review.html", "/confirmed.html"],
+    "states": ["root/default", "root/errors", "berths/default", "berths/menu-open", "boat/default", "boat/errors", "boat/length-over-limit", "review/default", "review/errors", "confirmed/default"],
+    "controls_exercised": 31,
+    "controls_total": 33,
+    "out_of_scope": [
+      "Footer link '01632 960418' (tel:+441632960418), present in every state: starts a phone call; href read from the ARIA snapshot, not activated.",
+      "Not reached: root/errors error-summary link 'Choose the time you plan to arrive' (its sibling 'Enter the date you plan to arrive' was exercised in probes/32 and moved to #date)."
+    ],
+    "_counting": "Counted as unique controls across the inventory (shared header links counted once): header 3, tel 1, root form 4 + 2 error links, berths 8 (More options, 4 radios, Continue, Change dates, Harbour rules), boat 5 + 4 error links, review 3 + 2 error links, confirmed 1.",
+    "_per_heuristic": "H1-H10 considered on each of the 5 routes. Nothing found: H1 on all routes (error summaries and the booking summary line give clear status); H7 on all routes (short linear flow, no accelerators expected for a few-times-a-season task); H8 on all routes (no irrelevant content competing with the task); H9 on root, berths, review (specific, linked error messages); H10 on berths, review, confirmed."
+  },
+  "task_suitability": [
+    { "task": "Book a visitor berth for a stay", "completable": true, "evidence": "probes/21: review filled and confirmed, reached 'Booking confirmed' with reference SQ-1017-C3 for Pontoon C, berth 3; earlier steps in probes/13 and probes/19." },
+    { "task": "Change the arrival date while booking", "completable": true, "evidence": "Completable only through the 'More options' (…) menu: probes/24 opened More options, followed Change dates to a prefilled form, changed the date to 2026-10-18 and returned to berths.html?date=2026-10-18. No other change route exists on the berths, boat or review pages (see candidates)." },
+    { "task": "Check tide times and the sill-gate window for an arrival day", "completable": true, "evidence": "Completable only for 17-23 October and only with a manual UTC-to-local conversion: the home page table (root/default ARIA, caption 'High water at the quay, times in UTC') lists those seven days and the note says the gate opens about two hours either side of high water. Not completable for any other arrival date (see missing-element candidate)." },
+    { "task": "Read the harbour rules", "completable": true, "evidence": "root/default ARIA region 'Harbour rules' with three rules; reachable from the berths page menu (probes/32 landed on index.html#harbour-rules)." }
+  ],
+  "cross_screen_pass": true,
+  "not_assessable": [
+    "Behaviour of the browser Back button mid-flow (whether entered values survive): the probe has no back action and Alt+ArrowLeft did not navigate (probes/13 steps 10-12 stayed on boat.html).",
+    "Whether a confirmation text or email is sent after booking: no external channel observable; the confirmation page does not mention one.",
+    "Behaviour under weak mobile data (slow or failed submit): the probe cannot throttle the network here, so loading and failure feedback on Check berths, Continue and Confirm booking were not assessed.",
+    "Whether arrival-time options are meant as local time: the Arrival time select states no time zone; the context says local times, so F1 assumes that."
+  ],
+  "strengths": [
+    {
+      "title": "Every form step has a linked error summary plus inline messages that say what to enter",
+      "evidence": "root/errors, boat/errors, review/errors captures and probes/9 (berths: 'Choose a pontoon space for your boat'); summary links move focus to the field (probes/32 → #date; probes/35). Helps first-time skippers on a phone recover without guessing. Preserve when changing form components."
+    },
+    {
+      "title": "Format errors explain the expected format with an example",
+      "evidence": "probes/18: '34ft' gives 'Enter the length as a number'; '1,5' gives 'Enter the draught as a number of metres, for example 1.5'; the typed values are kept. probes/21: 'abc' gives 'Enter a mobile number with 10 to 14 digits'."
+    },
+    {
+      "title": "Berth cards state size limit, tide behaviour and price in the skipper's own terms",
+      "evidence": "berths/default 375 capture: each radio's name includes 'Boats up to N metres', 'Afloat at every state of the tide' or 'Settles on soft mud at low water', and the per-metre price. Matches what visiting skippers need to judge fit and safety."
+    },
+    {
+      "title": "Booking summary line and review page keep the stay visible and state payment terms",
+      "evidence": "berths/default: 'Arriving on Saturday 17 October 2026 at 15:00, staying for 2 nights.'; review/default lists Arrival, Nights, Berth, Boat and 'Total £74.88, paid on arrival' with 'Nothing is charged online.' Reduces uncertainty before confirming."
+    },
+    {
+      "title": "Change dates returns to a prefilled form, and the More options menu closes on Escape with focus back on its button",
+      "evidence": "probes/24 index-prefilled.png shows 2026/10/17, 2 nights, 15:00 kept; probes/32 after-escape.png shows the menu closed and the button focused."
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Tide table is in UTC while the booking asks for local arrival times",
+      "description": "Skippers need high water and the gate window in the same time as the arrival time they choose. The home page tide table is captioned 'High water at the quay, times in UTC', while the Arrival time select offers plain 24-hour times and the booking states local times; on 17 October 2026 UK local time is UTC+1. To pick an arrival inside the gate window the skipper has to notice the caption and add an hour themselves.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true, "name": "Match between system and the real world" },
+        { "kind": "heuristic", "id": "H4", "name": "Consistency and standards" }
+      ],
+      "impact": "A first-time visitor who reads 14:32 as local time may plan the arrival an hour off and reach the sill outside the gate window.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Check tide times and the sill-gate window", "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "role=table[name=\"High water at the quay, times in UTC\"]", "snippet": "High water at the quay, times in UTC" },
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#arrive", "snippet": "Arrival time" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": "evidence/aria/root/default/375-light.yml", "detail": "table caption 'High water at the quay, times in UTC'; combobox 'Arrival time' options 06:00-21:00 with no zone" },
+        { "type": "screenshot", "ref": "evidence/screens/root/default/375-light.png" }
+      ],
+      "factor_notes": { "frequency": "Every booking during British Summer Time; every visitor who uses the table to choose a time.", "impact": "Requires a mental conversion the page does not prompt; an error is not caught later in the flow.", "persistence": "Recurs on each visit; returning skippers may learn it." },
+      "recommendation": "Show tide times in local time, or show both, labelled.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["tide", "time-zone"]
+    },
+    {
+      "title": "Arrival time accepts hours when the sill gate is closed",
+      "description": "Since boats can only enter around high water, the booking should prevent or warn about an arrival outside the gate window. Choosing 17 October at 08:00 (high water 14:32 UTC, gate open about 12:30-16:30 local) goes straight to the berth list with 'Arriving on Saturday 17 October 2026 at 08:00' and no warning; all hours 06:00-21:00 are offered for every date.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true, "name": "Error prevention" }
+      ],
+      "impact": "A new visitor may book an arrival time at which the boat cannot get over the sill, and only find out at the harbour entrance.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#arrive", "snippet": "Arrival time" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/2/", "detail": "date 2026-10-17, time 08:00, Check berths → berths.html?...arrive=08%3A00; aria.yml paragraph 'Arriving on Saturday 17 October 2026 at 08:00, staying for 2 nights.' with no warning" }
+      ],
+      "factor_notes": { "frequency": "Any skipper who does not cross-check the tide table, especially newcomers.", "impact": "Not caught at any later step (review and confirmation repeat the time without comment).", "persistence": "Once per booking." },
+      "recommendation": "Mark or limit arrival times to the gate window for the chosen date.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["tide", "validation"]
+    },
+    {
+      "title": "Arrival date accepts dates in the past",
+      "description": "A booking date should be today or later. Entering 2025-01-01 (today is 2026-10-06) and Check berths shows the berth list 'Arriving on Wednesday 1 January 2025' with all berths free.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true, "name": "Error prevention" }
+      ],
+      "impact": "A skipper who mistypes the year may complete a booking for a date that has passed and arrive with no berth held.",
+      "scope": { "persona": "visiting skipper", "task": "Book a visitor berth", "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#date", "snippet": "Arrival date" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/4/", "detail": "final_url berths.html?date=2025-01-01&nights=1&arrive=15%3A00; aria paragraph 'Arriving on Wednesday 1 January 2025 at 15:00, staying for 1 night.'" }
+      ],
+      "factor_notes": { "frequency": "Only on mistyped or stale dates.", "impact": "Not caught at review or confirmation.", "persistence": "Once per mistake." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["validation", "date"]
+    },
+    {
+      "title": "Boat size is asked only after the berth is chosen, so the fit check comes at the end",
+      "description": "Skippers do not know which berth fits; the flow should let them pick among berths that fit. The berths page lists all four berths before the boat's length is known; the length is asked on the next page, and a mismatch (10.4 m on Pontoon B, berth 14, 'up to 10 metres') is only detected after the whole boat form is filled, ending the booking.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true, "name": "Error prevention" },
+        { "kind": "iso", "id": "9241-110 suitability for the task" }
+      ],
+      "impact": "A newcomer who misjudges which berth fits may fill in the boat details and then lose the booking, with no prompt to pick a larger berth.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "journey": "book-visitor-berth", "route": "/berths.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "role=group[name=\"Pontoon spaces free on these dates\"]", "snippet": "Pontoon spaces free on these dates" },
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "length-over-limit", "viewport": { "width": 375, "height": 900 }, "selector": "role=heading[name=\"Booking stopped\"]", "snippet": "Booking stopped" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/13/", "detail": "checked Pontoon B, berth 14, Continue, filled Curlew / 10.4 / 1.5 / 123456789, Continue → 'Booking stopped' (screenshots/stopped.png)" }
+      ],
+      "factor_notes": { "frequency": "Boats near or above a berth limit; newcomers who do not compare length to each card.", "impact": "All entered boat data is lost and the booking must be restarted.", "persistence": "Once per mismatch." },
+      "recommendation": "Ask the boat's length before listing berths, or flag berths too short for it.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["flow", "berth-fit"]
+    },
+    {
+      "title": "'Booking stopped' gives no reason and no way to fix the booking",
+      "description": "An error should say what went wrong and how to recover. After a 10.4 m boat is entered for a 10 m berth, the page replaces the form with 'Booking stopped. This booking cannot continue. Reference BK-409.' It does not say the boat is too long for the berth, does not offer to choose another berth, and the form and entered values are gone; only the header links and the office phone number remain.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true, "name": "Help users recognize, diagnose, and recover from errors" },
+        { "kind": "heuristic", "id": "H3", "name": "User control and freedom" }
+      ],
+      "impact": "A first-time skipper may not understand why the booking failed and may call the office or give up, when choosing a longer berth would have worked.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/boat.html", "state": "length-over-limit", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "length-over-limit", "viewport": { "width": 375, "height": 900 }, "selector": "main", "snippet": "This booking cannot continue. Reference BK-409." }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/13/", "detail": "screenshots/stopped.png; URL stays boat.html?...berth=B14; no form or links in main" },
+        { "type": "aria", "ref": "evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/length-over-limit/375-light.yml", "detail": "main contains only heading 'Booking stopped' and paragraph 'This booking cannot continue. Reference BK-409.'" }
+      ],
+      "factor_notes": { "frequency": "Every over-length entry.", "impact": "Dead end; recovery needs a restart from the home page or a phone call during office hours.", "persistence": "Recurs each time the same choice is made, since the cause is not stated." },
+      "recommendation": "State that the boat is longer than the berth allows and link back to the berth list with longer berths.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["error-message", "dead-end"]
+    },
+    {
+      "title": "Boat details page does not show the chosen berth or its length limit",
+      "description": "The page says 'We use these details to check that your boat fits the space you chose', but does not show which berth was chosen or its maximum length. The skipper has to remember the limit from the previous page while entering the length.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true, "name": "Recognition rather than recall" },
+        { "kind": "heuristic", "id": "H1", "name": "Visibility of system status" }
+      ],
+      "impact": "Without the limit in view, a skipper may not notice a mismatch before submitting and hitting the stop page.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/boat.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "main", "snippet": "We use these details to check that your boat fits the space you chose." }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": "evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/default/375-light.yml", "detail": "main: heading 'Your boat', the paragraph, four textboxes, Continue; no berth name or limit" },
+        { "type": "probe", "ref": "probes/13/", "detail": "screenshots/boat-page.png after choosing Pontoon B, berth 14" }
+      ],
+      "factor_notes": { "frequency": "Every booking.", "impact": "Small for most; matters when the boat is near the limit.", "persistence": "Every visit to this step." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["form", "memory-load"]
+    },
+    {
+      "title": "'Length' field does not say which length or which unit",
+      "description": "Skippers know two lengths: length overall (LOA, including bowsprit) and hull length, and may think in feet. The field is labelled only 'Length', with no unit and no hint (unlike 'Draught in metres'). Entering the 9.6 m hull length for a boat 10.4 m overall on Pontoon B, berth 14 ('up to 10 metres') is accepted and reaches review as 'Curlew, 9.6 metres long', with a total of £61.44.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true, "name": "Match between system and the real world" },
+        { "kind": "heuristic", "id": "H5", "name": "Error prevention" }
+      ],
+      "impact": "A skipper may enter the hull length and book a berth that is too short for the boat overall, discovered only on arrival.",
+      "scope": { "persona": "visiting skipper with a bowsprit", "task": "Book a visitor berth", "route": "/boat.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#loa", "snippet": "Length" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/19/", "detail": "Length 9.6 on berth B14 → review.html; aria 'Berth Pontoon B, berth 14', 'Boat Curlew, 9.6 metres long'" },
+        { "type": "aria", "ref": "evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/default/375-light.yml", "detail": "textbox 'Length' with no description; 'Draught in metres' has a unit and hint" }
+      ],
+      "factor_notes": { "frequency": "Boats with bowsprits, davits or pulpits where LOA differs from hull length.", "impact": "Not detectable by the system; leads to a wrong berth.", "persistence": "Every booking by such a skipper." },
+      "recommendation": "Label it 'Length overall (LOA) in metres, including bowsprit'.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["form", "label", "terminology"]
+    },
+    {
+      "title": "MMSI is required but not explained",
+      "description": "Every other boat field is either self-evident or explained ('The depth of water your boat needs to float'). 'MMSI' has no hint about what it is, where to find it or why it is needed, yet submitting without it gives 'Enter the MMSI' and blocks the booking. The context lists what newcomers know (length, hull length, draught) and MMSI is not among them.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H10", "primary": true, "name": "Help and documentation" },
+        { "kind": "heuristic", "id": "H2", "name": "Match between system and the real world" }
+      ],
+      "impact": "A skipper unsure of the term, or whose boat has no DSC radio, may be unable to continue and has no guidance other than calling the office.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/boat.html", "state": "errors", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "errors", "viewport": { "width": 375, "height": 900 }, "selector": "#mmsi", "snippet": "MMSI" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/errors/375-light.png", "detail": "error 'Enter the MMSI' above an unexplained field" },
+        { "type": "probe", "ref": "probes/35/", "detail": "empty submit lists 'Enter the MMSI' as a required error" }
+      ],
+      "factor_notes": { "frequency": "Every booking passes this field; the problem bites those unfamiliar with the term or without an MMSI.", "impact": "Hard block for boats without one.", "persistence": "Every booking." },
+      "recommendation": "Add a hint (the 9-digit number from the DSC radio) and say what to do without one.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["form", "help"]
+    },
+    {
+      "title": "MMSI field accepts numbers of the wrong length",
+      "description": "An MMSI is a 9-digit number. Entering '12345' raises no MMSI error: after submitting, the error summary lists only the length and draught problems, so a 5-digit MMSI passes validation.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true, "name": "Error prevention" }
+      ],
+      "impact": "A typo in the MMSI reaches the harbour office uncaught, which may hamper contacting or identifying the boat on approach.",
+      "scope": { "persona": "visiting skipper", "task": "Book a visitor berth", "route": "/boat.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#mmsi", "snippet": "MMSI" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/18/", "detail": "MMSI '12345' with bad length/draught; error summary lists only 'Enter the length as a number' and 'Enter the draught as a number of metres, for example 1.5'" }
+      ],
+      "factor_notes": { "frequency": "Only on mistyped MMSIs.", "impact": "Silent; not shown on review either.", "persistence": "Once per mistake." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["validation"]
+    },
+    {
+      "title": "The only way to change dates is inside an unlabelled '…' menu",
+      "description": "On the berth list the stay summary ('Arriving on Saturday 17 October 2026 at 15:00, staying for 2 nights.') has no change link. 'Change dates' is only in a menu behind a button shown as three dots (accessible name 'More options'), alongside 'Harbour rules'. A first-time user has no visible cue that dates can be changed from here.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true, "name": "User control and freedom" },
+        { "kind": "heuristic", "id": "H6", "name": "Recognition rather than recall" }
+      ],
+      "impact": "A skipper whose plans change with the weather may not find the menu and restart from the home page, re-entering everything.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Change the arrival date while booking", "journey": "change-arrival-date", "route": "/berths.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "#more-button", "snippet": "More options" },
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "menu-open", "viewport": { "width": 375, "height": 900 }, "selector": "#change-dates", "snippet": "Change dates" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/375-light.png", "detail": "button shows only '…' to the right, below the summary sentence" },
+        { "type": "probe", "ref": "probes/24/", "detail": "More options → menu with Change dates and Harbour rules (screenshots/menu.png); Change dates → prefilled index.html" }
+      ],
+      "factor_notes": { "frequency": "Every skipper who needs to change dates mid-booking.", "impact": "Workaround is restarting from 'Book a berth', which clears the form.", "persistence": "Every time; once found, it may be remembered." },
+      "recommendation": "Put a visible 'Change' link next to the stay summary.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["navigation", "hidden-action"]
+    },
+    {
+      "title": "Review page offers no way to change any booking detail",
+      "description": "A review step should let the user correct what they review. 'Check your mooring booking' lists Arrival, Nights, Berth, Boat and Total, but none has a change link and there is no back link; the only controls in main are the two contact fields and 'Confirm booking'.",
+      "problem_type": "missing_element",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true, "name": "User control and freedom" }
+      ],
+      "impact": "A skipper who spots a wrong date, berth or length at review may have to start again from the home page, or confirm a wrong booking.",
+      "scope": { "persona": "visiting skipper", "task": "Book a visitor berth", "route": "/review.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/review.html?date=2026-10-17&nights=2&arrive=15:00&berth=C3&boat=Curlew&loa=10.4&draught=1.5&mmsi=123456789", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "main", "snippet": "Check your mooring booking" }
+      ],
+      "evidence": [
+        { "type": "absence", "ref": "evidence/aria/review-html-date-2026-10-17-nights-2-arrive-15-00-berth-c3-b/default/375-light.yml", "detail": "Searched review/default and review/errors ARIA snapshots and the inventory: controls are header links (Saltmarsh Quay, Book a berth, Tide times), textboxes Skipper's name and Mobile number, button Confirm booking, footer tel link (plus error-summary links in errors state). No 'Change' or 'Back' link; the summary list region (terms Arrival, Nights, Berth, Boat, Total) has none." },
+        { "type": "probe", "ref": "probes/21/", "detail": "review page at 375 px; screenshots/bad-mobile.png shows the summary without change links" }
+      ],
+      "factor_notes": { "frequency": "Any skipper who notices an error at review.", "impact": "Header links clear the booking; browser Back not assessable.", "persistence": "Every booking." },
+      "recommendation": "Add a change link per summary row.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["review", "edit"]
+    },
+    {
+      "title": "Header and menu links leave the booking and clear what was entered",
+      "description": "Reference links used mid-booking should not discard the booking. From the berth list, 'Tide times' goes to index.html#tides and the menu's 'Harbour rules' to index.html#harbour-rules, both without the booking's parameters; the home form comes back empty (date yyyy/mm/dd, 1 night, 'Choose a time'). 'Book a berth' and 'Saltmarsh Quay' likewise go to bare index.html on every step. There is no way back to the berth list from there.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true, "name": "User control and freedom" },
+        { "kind": "heuristic", "id": "H6", "name": "Recognition rather than recall" }
+      ],
+      "impact": "A newcomer who checks the tide or the rules mid-booking (the task the header invites) loses their place and must re-enter dates and choices.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/berths.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "nav > ul > li:nth-of-type(2) > a", "snippet": "Tide times" },
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "menu-open", "viewport": { "width": 375, "height": 900 }, "selector": "#more-menu > li:nth-of-type(2) > a", "snippet": "Harbour rules" },
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "li:nth-of-type(2) > a", "snippet": "Tide times" },
+        { "route": "/review.html?date=2026-10-17&nights=2&arrive=15:00&berth=C3&boat=Curlew&loa=10.4&draught=1.5&mmsi=123456789", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "li:nth-of-type(2) > a", "snippet": "Tide times" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/24/", "detail": "Tide times clicked on berths.html?date=2026-10-18... → index.html#tides; final.png shows empty date, 1 night, Choose a time" },
+        { "type": "probe", "ref": "probes/32/", "detail": "menu Harbour rules → index.html#harbour-rules; Saltmarsh Quay and Book a berth → index.html" },
+        { "type": "aria", "ref": "evidence/aria/review-html-date-2026-10-17-nights-2-arrive-15-00-berth-c3-b/default/375-light.yml", "detail": "header link hrefs index.html and index.html#tides on boat and review pages too" }
+      ],
+      "factor_notes": { "frequency": "Whenever a skipper checks tides or rules mid-flow; the tide is central to choosing the arrival.", "impact": "All entered data lost; recovery by re-entry.", "persistence": "Every such visit." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["navigation", "state-loss"]
+    },
+    {
+      "title": "The thing being booked is called a visitor berth, a pontoon space and a mooring",
+      "description": "One booking should use one name. The home page says 'Book a visitor berth', the list says 'Choose a pontoon space' and 'Pontoon spaces free on these dates' (yet includes 'Wall berth 2', which is not on a pontoon), the error says 'Choose a pontoon space for your boat', the review says 'Check your mooring booking', and the review and confirmation rows say 'Berth'.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true, "name": "Consistency and standards" },
+        { "kind": "heuristic", "id": "H2", "name": "Match between system and the real world" }
+      ],
+      "impact": "A newcomer may wonder whether the wall berth is a valid choice under 'pontoon spaces' or whether a 'mooring' differs from the berth they chose.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Book a visitor berth", "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "role=heading[name=\"Book a visitor berth\"]", "snippet": "Book a visitor berth" },
+        { "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "role=group[name=\"Pontoon spaces free on these dates\"]", "snippet": "Pontoon spaces free on these dates" },
+        { "route": "/review.html?date=2026-10-17&nights=2&arrive=15:00&berth=C3&boat=Curlew&loa=10.4&draught=1.5&mmsi=123456789", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "role=heading[name=\"Check your mooring booking\"]", "snippet": "Check your mooring booking" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": "evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/menu-open/375-light.yml", "detail": "group 'Pontoon spaces free on these dates' contains radio 'Wall berth 2 ... Settles on soft mud at low water'" },
+        { "type": "aria", "ref": "evidence/aria/review-html-date-2026-10-17-nights-2-arrive-15-00-berth-c3-b/default/375-light.yml", "detail": "heading 'Check your mooring booking'; term 'Berth'" }
+      ],
+      "factor_notes": { "frequency": "Every booking passes all three names.", "impact": "Mostly momentary doubt; the wall-berth grouping may make larger boats skip the only berth over 12 m.", "persistence": "Every booking." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["terminology"]
+    },
+    {
+      "title": "Some fields with an error keep the normal border",
+      "description": "Fields in error should look the same so a skipper can scan for them. In the boat errors state, Boat name, Draught and MMSI get a red border but Length keeps the normal dark border despite 'Enter the length' above it; after entering '1,5', Draught shows its error text but keeps the normal border while Length is red.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true, "name": "Consistency and standards" },
+        { "kind": "heuristic", "id": "H9", "name": "Help users recognize, diagnose, and recover from errors" }
+      ],
+      "impact": "On a small screen in bright light a skipper scanning for red fields may miss the one still in error and resubmit.",
+      "scope": { "persona": "visiting skipper on a phone", "task": "Book a visitor berth", "route": "/boat.html", "state": "errors", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "errors", "viewport": { "width": 375, "height": 900 }, "selector": "#loa", "snippet": "Length" },
+        { "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "draught-format-error (probes/18)", "viewport": { "width": 375, "height": 900 }, "selector": "#draught", "snippet": "Draught in metres" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/errors/375-light.png", "detail": "Length input border dark while the other three are red" },
+        { "type": "probe", "ref": "probes/18/", "detail": "final.png: Length '34ft' red border; Draught '1,5' error text but dark border" }
+      ],
+      "factor_notes": { "frequency": "Whenever these fields are in error.", "impact": "Error text is still present, so recovery remains possible.", "persistence": "Every error round." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["form", "error-state"]
+    },
+    {
+      "title": "Confirmation page omits the arrival time",
+      "description": "The arrival time matters as much as the date at this harbour, and the review showed 'Saturday 17 October 2026 at 15:00'. The confirmation shows 'Arrival Saturday 17 October 2026' without the time, and no gate window, so the record the skipper keeps lacks the one detail tied to the tide.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true, "name": "Recognition rather than recall" },
+        { "kind": "heuristic", "id": "H4", "name": "Consistency and standards" }
+      ],
+      "impact": "A skipper looking at the confirmation on the day may have to recall which time they booked.",
+      "scope": { "persona": "visiting skipper", "task": "Book a visitor berth", "route": "/confirmed.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/confirmed.html?date=2026-10-17&nights=2&berth=C3", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "main", "snippet": "Arrival Saturday 17 October 2026" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/21/", "detail": "after Confirm booking from a 15:00 review: final.png shows Arrival 'Saturday 17 October 2026', Berth, Nights; no time" }
+      ],
+      "factor_notes": { "frequency": "Every booking.", "impact": "Low effort to work around if remembered.", "persistence": "Every time the confirmation is consulted." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["confirmation"]
+    },
+    {
+      "title": "Tide times exist only for 17-23 October, whatever arrival date is chosen",
+      "description": "Top task 3 is to check tide times and the gate window for an arrival day. The only tide information is a fixed seven-row table for Sat 17 Oct to Fri 23 Oct. The date field accepts any date (probes/4 accepted 2025-01-01), and the berth list and review show no tide or gate information for the chosen date.",
+      "problem_type": "missing_element",
+      "criteria": [
+        { "kind": "iso", "id": "9241-110 suitability for the task", "primary": true },
+        { "kind": "heuristic", "id": "H1", "name": "Visibility of system status" }
+      ],
+      "impact": "A skipper planning any other day may have no way to check when the gate opens before choosing an arrival time.",
+      "scope": { "persona": "visiting skipper new to the harbour", "task": "Check tide times and the sill-gate window", "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "evidence": [
+        { "type": "absence", "ref": "evidence/aria/root/default/375-light.yml", "detail": "Searched all 10 states' ARIA snapshots and the inventory: the only tide content is region 'Tide times' on / with rows Sat 17 Oct-Fri 23 Oct; berths, boat, review and confirmed pages contain no tide or gate times; header 'Tide times' goes to the same table (probes/24); no date control for the table." },
+        { "type": "probe", "ref": "probes/4/", "detail": "date 2025-01-01 accepted; berth page shows no tide information" }
+      ],
+      "factor_notes": { "frequency": "Every arrival outside that week.", "impact": "Task cannot be done in the UI; skipper must use another source or call.", "persistence": "Every such booking." },
+      "recommendation": "Show high water and the gate window for the chosen arrival date.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "tags": ["tide", "task-suitability"]
+    }
+  ]
+}

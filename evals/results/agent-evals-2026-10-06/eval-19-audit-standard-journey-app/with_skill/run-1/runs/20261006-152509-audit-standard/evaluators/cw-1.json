@@ -1,0 +1,136 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261006-152509-audit-standard",
+  "packet_hash": "33d40a315c7b748d",
+  "notes": "Cognitive walkthrough (full four-question variant) of journey book-visitor-berth at 375 x 812, light. Record: runs/20261006-152509-audit-standard/cw/book-visitor-berth.json. 14 steps walked; steps 3, 5 and 8 failed on CW-Q3; journey verdict would_not. The correct sequence replays cleanly (probes/5). This is not predicted user success. Extra evidence probes of the persona's likely wrong berth choice: probes/7, probes/14. The journey file's _comment names a ground-truth file; I did not open it. No bboxes recorded, because none were measured.",
+  "coverage": {
+    "routes": ["/", "/berths.html", "/boat.html", "/review.html", "/confirmed.html"],
+    "states": ["default", "length-over-limit (reached via probe 14)"]
+  },
+  "task_suitability": [
+    {"task": "book-visitor-berth", "completable": true, "evidence": "probes/5: all 19 correct actions passed; the walkthrough still predicts a would_not failure point at step 5"}
+  ],
+  "strengths": [
+    {"title": "Each page echoes earlier choices (dates and time on the berth page; full summary with total and 'paid on arrival' on the review), so a first-time skipper can see progress and check details before confirming", "evidence": "probes/5/step-05.png, probes/5/step-15.png"},
+    {"title": "Draught and mobile-number fields explain why they are needed in the skipper's terms ('depth of water your boat needs to float'; 'sends a text if the gate times change')", "evidence": "aria boat and review pages"}
+  ],
+  "candidates": [
+    {
+      "title": "Berth size limits do not say which boat length they refer to",
+      "description": "When a skipper is asked to choose a berth by size, the limit should name the measure it applies to (length overall including bowsprit, or hull length), because boats with bowsprits or davits have two quite different lengths. Each berth card says only 'Boats up to N metres' (A6: 8, B14: 10, C3: 12, Wall 2: 15). A persona whose boat is 10.4 m overall but 9.6 m on the hull may read B14 ('up to 10 metres', and cheaper) as fitting. Probed outcome: B14 with an overall length of 10.4 ends on 'Booking stopped' (probes/14); B14 with hull length 9.6 is accepted and reaches the review as a B14 booking for a '9.6 metres long' boat (probes/7).",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "cw", "id": "CW-Q3", "primary": true},
+        {"kind": "heuristic", "id": "H5", "name": "Error prevention"},
+        {"kind": "heuristic", "id": "H2", "name": "Match between system and the real world"}
+      ],
+      "impact": "A visiting skipper may choose a berth that is too short for the boat overall. They may then hit an unexplained stop, or be booked into a space that may not take the boat on arrival in a tidal harbour.",
+      "locations": [
+        {"route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00", "state": "default", "viewport": {"width": 375, "height": 812}, "theme": "light", "selector": "role=group[name=\"Pontoon spaces free on these dates\"]", "snippet": "Boats up to 10 metres. Afloat at every state of the tide.", "journey": "book-visitor-berth", "step": 5}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/375-light.yml", "detail": "radio 'Pontoon B, berth 14 Boats up to 10 metres...'; no mention of LOA or hull length anywhere on the page"},
+        {"type": "probe", "ref": "probes/5/", "detail": "correct path; step-06.png shows the berth cards at 375 px"},
+        {"type": "probe", "ref": "probes/7/", "detail": "B14 + Length 9.6 -> review shows 'Pontoon B, berth 14', 'Curlew, 9.6 metres long', £61.44"},
+        {"type": "probe", "ref": "probes/14/", "detail": "B14 + Length 10.4 -> 'Booking stopped. This booking cannot continue. Reference BK-409.'"}
+      ],
+      "factor_notes": {
+        "frequency": "Every booking passes this choice; applies to any boat with a bowsprit, pulpit extension or davits, where overall and hull length differ.",
+        "impact": "CW step verdict would_not: the persona is unlikely to reach a suitable berth without phoning the office.",
+        "persistence": "Recurs on each booking; returning skippers may learn it."
+      },
+      "found_by": [{"role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "State the measure on each card (e.g. 'Length overall up to 10 m, including bowsprit'), and consider asking for the boat's length before the berth choice so that only berths that fit are offered.",
+      "tags": ["journey:book-visitor-berth", "labels", "error-prevention"]
+    },
+    {
+      "title": "'Booking stopped' page gives no reason and no way back to change the berth",
+      "description": "When the system refuses to go on, the message should say what went wrong and how to fix it, and offer a way back. After the boat details are submitted for a berth the boat is too long for, the page shows only the heading 'Booking stopped' and 'This booking cannot continue. Reference BK-409.' It does not say the boat is too long for the berth, has no link back to the berth choice or the boat form, and offers nothing but the footer phone number. All the earlier entries (dates, time, berth, boat) look lost.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "cw", "id": "CW-Q4", "primary": true},
+        {"kind": "heuristic", "id": "H9", "name": "Help users recognize, diagnose, and recover from errors"},
+        {"kind": "heuristic", "id": "H3", "name": "User control and freedom"}
+      ],
+      "impact": "A skipper who picked a berth that is too short may not learn why the booking failed or what to change, and may give up or have to phone the office (open 08:00-20:00), possibly from the cockpit with poor signal.",
+      "locations": [
+        {"route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "length-over-limit", "viewport": {"width": 375, "height": 812}, "theme": "light", "selector": "role=heading[name=\"Booking stopped\"]", "snippet": "This booking cannot continue.", "journey": "book-visitor-berth", "step": 11}
+      ],
+      "evidence": [
+        {"type": "probe", "ref": "probes/14/", "detail": "B14 chosen, Length 10.4, Continue -> final.png and aria.yml show only heading, one sentence with a reference code, and the footer"},
+        {"type": "aria", "ref": "probes/14/aria.yml", "detail": "main contains only heading 'Booking stopped' and paragraph 'This booking cannot continue. Reference BK-409.'; no links or buttons in main"}
+      ],
+      "factor_notes": {
+        "frequency": "Reached whenever the stated boat length exceeds the chosen berth's limit, which is the likely result of the berth-limit ambiguity at step 5.",
+        "impact": "Dead end with no recovery path inside the product.",
+        "persistence": "Each time the mismatch occurs."
+      },
+      "found_by": [{"role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Say that the boat (x m) is longer than the berth allows (y m), and link back to the berth list with the dates kept, or better, show the problem inline on the boat form.",
+      "tags": ["journey:book-visitor-berth", "error-recovery"]
+    },
+    {
+      "title": "Boat 'Length' field does not say which length or which unit",
+      "description": "A length field for a berth booking should name the measure (length overall including bowsprit) and the unit, as the neighbouring 'Draught in metres' field does. The field is labelled only 'Length', with no hint or unit. The persona knows two lengths (10.4 m overall, 9.6 m hull). Probe 7 shows a hull length of 9.6 is accepted without comment and used for the price (£61.44 on B14).",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "cw", "id": "CW-Q3", "primary": true},
+        {"kind": "heuristic", "id": "H4", "name": "Consistency and standards"},
+        {"kind": "heuristic", "id": "H5", "name": "Error prevention"}
+      ],
+      "impact": "The skipper may give the hull length, so the fit check and the per-metre price may rest on the wrong figure, with a possible dispute or refusal on arrival.",
+      "locations": [
+        {"route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14", "state": "default", "viewport": {"width": 375, "height": 812}, "theme": "light", "selector": "role=textbox[name=\"Length\"]", "snippet": "Length", "journey": "book-visitor-berth", "step": 8}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/default/375-light.yml", "detail": "text 'Length' + textbox 'Length' with no description; next field 'Draught in metres' has a hint paragraph"},
+        {"type": "probe", "ref": "probes/7/", "detail": "Length 9.6 accepted; review shows 'Curlew, 9.6 metres long', Total £61.44"},
+        {"type": "probe", "ref": "probes/5/", "detail": "step-13.png shows the form at 375 px"}
+      ],
+      "factor_notes": {
+        "frequency": "Every booking; matters for any boat whose overall and hull lengths differ.",
+        "impact": "CW step verdict would_with_effort.",
+        "persistence": "Each booking."
+      },
+      "found_by": [{"role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Label it e.g. 'Length overall (LOA) in metres' with a hint 'including bowsprit and davits'.",
+      "tags": ["journey:book-visitor-berth", "labels", "forms"]
+    },
+    {
+      "title": "Arrival times give no time zone while the tide table is in UTC",
+      "description": "A tidal harbour's booking should present arrival times and high-water and gate times in one stated clock, so a skipper can see whether the chosen arrival falls inside the sill-gate window. The 'Arrival time' list (06:00-21:00) states no zone. The tide table on the same page is captioned 'High water at the quay, times in UTC' (Sat 17 Oct afternoon 14:32), and the gate rule is relative ('about two hours before high water until two hours after'). In October the UK is on BST (UTC+1), so the persona has to convert by hand and may not know which clock the arrival list uses. At 375 px the table is also below the 'Check berths' button, out of view while the time is being chosen.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "cw", "id": "CW-Q3", "primary": true},
+        {"kind": "heuristic", "id": "H2", "name": "Match between system and the real world"},
+        {"kind": "heuristic", "id": "H4", "name": "Consistency and standards"}
+      ],
+      "impact": "The skipper may misjudge by an hour where their arrival sits in the sill-gate window and plan to arrive when the gate is closed. The site's own format standard is local 24-hour time.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 375, "height": 812}, "theme": "light", "selector": "role=combobox[name=\"Arrival time\"]", "snippet": "Choose a time", "journey": "book-visitor-berth", "step": 3},
+        {"route": "/", "state": "default", "viewport": {"width": 375, "height": 812}, "theme": "light", "selector": "role=table[name=\"High water at the quay, times in UTC\"]", "snippet": "High water at the quay, times in UTC", "journey": "book-visitor-berth", "step": 3}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/root/default/375-light.yml", "detail": "combobox 'Arrival time' options '06:00'...'21:00' with no zone; table caption 'High water at the quay, times in UTC'; row 'Sat 17 Oct 02:08 14:32'; paragraph on gate opening +-2 h of HW"},
+        {"type": "probe", "ref": "probes/5/", "detail": "step-04.png at 375 x 812: only the 'Tide times' heading and caption are in view below the button"},
+        {"type": "quote", "ref": "context.md", "detail": "Formats: '24-hour times in local time'; persona does not know 'whether the harbour publishes tide times in local time or UTC'"}
+      ],
+      "factor_notes": {
+        "frequency": "Every booking during British Summer Time (late March to late October).",
+        "impact": "CW step verdict would_with_effort; for this journey's date 15:00 falls within the window either way.",
+        "persistence": "Each booking in BST."
+      },
+      "found_by": [{"role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Show tide and gate times in local time (labelled, e.g. 'BST'), and show the gate window for the chosen date next to the arrival-time field.",
+      "tags": ["journey:book-visitor-berth", "tide", "time-zone"]
+    }
+  ]
+}

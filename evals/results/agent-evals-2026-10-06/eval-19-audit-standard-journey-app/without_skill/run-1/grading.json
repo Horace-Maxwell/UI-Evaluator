@@ -1,0 +1,238 @@
+{
+ "eval": 19,
+ "name": "audit-standard-journey-app",
+ "arm": "without_skill",
+ "graded_at": "2026-10-06T20:02:04.858Z",
+ "passed": 2,
+ "total": 2,
+ "pending": 0,
+ "expectations": [
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "check": "grader",
+   "passed": true,
+   "evidence": "The reply says 'I've ranked the problems by what they would do to a skipper arriving on the tide, worst first' and groups them under 'Fix before you open' then 'Fix soon after'. It also says someone should 'walk the flow on a phone at 375 px, at 200% zoom and with VoiceOver' and that the user's rules still need 'evidence from real skippers', which this review doesn't replace."
+  },
+  {
+   "text": "No fixture source file was modified",
+   "check": "script",
+   "passed": true,
+   "evidence": "10 file(s) unchanged"
+  }
+ ],
+ "not_applicable": [
+  "The run is standard depth with three isolated heuristic evaluators",
+  "The critical journeys were walked and the records validate",
+  "Verification and three blind ratings exist",
+  "Recall of the seeded analytical defects is at least 0.6",
+  "Precision after verification is at least 0.8",
+  "Severity ratings land in the expected bands for most matched defects",
+  "Report language passes the lint and the level is not overstated"
+ ],
+ "metrics": {
+  "documents_written": [],
+  "grader_mapping": [
+   {
+    "item": "R1",
+    "title": "Booking is never sent to the harbour office",
+    "maps_to": "not-a-problem",
+    "reason": "The review itself frames this as a back-end question, not a usability or accessibility problem in the flow: it hedges with 'Assumption: there's a backend that isn't in this folder. If not, this is the first thing to fix', later sets it apart as 'the backend question in fix 1', and asks the team to 'Confirm that bookings actually reach the office'. Whether this static front end is wired to a booking system is integration work the review cannot see, so the harm it describes ('The office has no record and nobody to call') is conditional, not shown in the flow."
+   },
+   {
+    "item": "R2",
+    "title": "Booking reference built only from date and berth, so it can repeat",
+    "maps_to": "not-a-problem",
+    "reason": "'The reference (SQ-1017-C3, app.js:237) is built only from the date and berth. Two boats booking the same berth for the same date would get the same reference.' A clash needs the same berth booked twice for one date, which only a back end could allow or prevent, and the review files it under fix 1, which it calls 'the backend question'. Nothing it describes in the interface misleads or blocks a skipper."
+   },
+   {
+    "item": "R3",
+    "title": "No check that the chosen berth is actually free",
+    "maps_to": "not-a-problem",
+    "reason": "'The flow never checks whether a berth is actually free' concerns live availability, which a static front end cannot hold. The review files it under fix 1 ('the backend question') and points to no screen that shows skippers wrong availability, so like R1 and R2 it is an integration matter, not a usability problem in the flow."
+   },
+   {
+    "item": "R4",
+    "title": "Berth chosen before the boat's length is asked",
+    "maps_to": "journey-app-D04",
+    "reason": "The review presents the dead end as a result of this ordering ('a skipper can reasonably pick Pontoon B, berth 14 (up to 10 m)... They enter 10.4: the form disappears and they get \"Booking stopped...\"') and says its fix removes it: 'Ask for length overall first and show only the berths that fit (fix 2). That also gets rid of the \"Booking stopped\" dead end.' Fixing what the review describes would fix D04, so this broader statement maps there alongside R6. Its other outcome ('They enter 9.6: the booking goes through for a berth the boat is too long for') comes from the length ambiguity already mapped to D03 through R5, so the review describes no further harm outside the seeded defects."
+   },
+   {
+    "item": "R5",
+    "title": "Length is ambiguous: LOA or hull, and no unit",
+    "maps_to": "journey-app-D03",
+    "reason": "Same as D03. The berth limits and the Length field don't say whether they mean length overall or hull length, and give no unit. A skipper can enter the 9.6 m hull length and pass the check for a berth the boat doesn't fit."
+   },
+   {
+    "item": "R6",
+    "title": "'Booking stopped' dead end with bare reference BK-409",
+    "maps_to": "journey-app-D04",
+    "reason": "Same as D04. An over-limit length replaces the form with 'Booking stopped… Reference BK-409', with no reason, no next step, no way back and no phone number."
+   },
+   {
+    "item": "R7",
+    "title": "Missing berth parameter silently falls back to B14",
+    "maps_to": "not-a-problem",
+    "reason": "This is a code-robustness edge case, not a skipper problem. The berth list won't continue until a berth is chosen ('Choose a pontoon space'), and the review shows no normal way to reach the boat page without a berth parameter."
+   },
+   {
+    "item": "R8",
+    "title": "Arrival time accepts gate-closed times; gate window only further down the page",
+    "maps_to": "journey-app-D09",
+    "reason": "Same as D09. The 06:00–21:00 list accepts any time even when the sill gate is shut, and the gate window appears only in the table and note further down the page."
+   },
+   {
+    "item": "R9",
+    "title": "Tide table in UTC while arrival times are local (BST)",
+    "maps_to": "journey-app-D05",
+    "reason": "Same as D05. The tide table gives high water in UTC while arrival times are local (BST in October), so a skipper planning from it is an hour out on the gate."
+   },
+   {
+    "item": "R10",
+    "title": "Tide table covers only 17–23 Oct, but bookings run to 31 Mar 2027",
+    "maps_to": "real-unseeded",
+    "reason": "A skipper booking any date after 23 October gets no high-water or gate times for that day on the page where they choose an arrival time. The site gives them nothing to pick a time when the sill gate is open, and this isn't among the seeded defects."
+   },
+   {
+    "item": "R11",
+    "title": "Boat form reset on pageshow wipes details after Back",
+    "maps_to": "journey-app-D07",
+    "reason": "Same as D07. The pageshow reset empties the boat form when a skipper goes Back from the review page, so correcting one value means retyping everything."
+   },
+   {
+    "item": "R12",
+    "title": "autocomplete=off blocks autofill of boat details",
+    "maps_to": "real-unseeded",
+    "reason": "Returning skippers can't accept browser suggestions for boat name, length, draught and MMSI, so they have to retype them on a phone, which adds effort and the risk of typos. The cause is separate from the D07 reset."
+   },
+   {
+    "item": "R13",
+    "title": "Change dates hidden in the '⋯ More options' menu",
+    "maps_to": "journey-app-D01",
+    "reason": "Same as D01. The only way back to the dates from the berth list is a Change dates link inside the three-dot More options menu."
+   },
+   {
+    "item": "R14",
+    "title": "Review page has no Change links",
+    "maps_to": "real-unseeded",
+    "reason": "On the check-your-booking page, a skipper who spots a wrong detail has no link to the step that holds it, only the browser Back button, which then wipes the boat form. This is a different page and problem from D01's hidden menu and D02's missing progress indicator."
+   },
+   {
+    "item": "R15",
+    "title": "MMSI required and unexplained",
+    "maps_to": "journey-app-D10",
+    "reason": "Same as D10. The MMSI is required with no hint about what it is, which shuts out boats whose radio has none. Making it optional with a hint, as the review proposes, would fix D10."
+   },
+   {
+    "item": "R16",
+    "title": "No check that the MMSI is 9 digits",
+    "maps_to": "not-a-problem",
+    "reason": "The review raises the check only in passing, inside an argument that the field should not be collected: 'MMSI is required but shouldn't be... It isn't on your \"collect only what we need\" list. There's also no hint about what it is and no check that it's 9 digits. Make it optional with a hint, or remove it.' It names no effect of the missing check and its fix adds none; by its own account the harbour's list of what it needs leaves the MMSI out, so a mistyped number costs a skipper nothing. The genuine problem here, a required and unexplained MMSI, is R15, mapped to D10."
+   },
+   {
+    "item": "R17",
+    "title": "Draught collected, but no sill depth or deep-draught warning",
+    "maps_to": "real-unseeded",
+    "reason": "The skipper of a deep-draught boat is never told the depth over the sill or warned that the boat may not clear it, which is a safety fact for entering a sill harbour. The seeded defects cover gate times and arrival instructions, not depth."
+   },
+   {
+    "item": "R18",
+    "title": "Confirmation leaves out arrival information",
+    "maps_to": "journey-app-D11",
+    "reason": "Same as D11. The confirmation lacks the gate window and what to do on arrival, such as calling on VHF. The extra missing items it lists (arrival time, boat, total, pay reminder) make it a broader statement of the same defect."
+   },
+   {
+    "item": "R19",
+    "title": "Berth, pontoon space and mooring used for the same thing",
+    "maps_to": "journey-app-D08",
+    "reason": "Same as D08. 'Berth', 'pontoon space' and 'mooring' (including the 'Check your mooring booking' title) name the same thing at different points in the flow."
+   },
+   {
+    "item": "R20",
+    "title": "Price only per metre per night; total only on review",
+    "maps_to": "journey-app-D06",
+    "reason": "Same as D06. Each berth shows only a per-metre-per-night price and the total first appears on the review page, so skippers have to work out the totals to compare berths."
+   },
+   {
+    "item": "R21",
+    "title": "Arrival times run past office hours with no guidance",
+    "maps_to": "real-unseeded",
+    "reason": "Arrival times up to 21:00 are offered although the office closes at 20:00 and payment is made there on arrival, so a skipper arriving late isn't told how to check in or pay. This is a different constraint from D09's sill gate and isn't among D11's missing items."
+   },
+   {
+    "item": "R22",
+    "title": "Dropdown in error gets no red border",
+    "maps_to": "real-unseeded",
+    "reason": "Only text inputs get the red error border, so the Arrival time dropdown looks unchanged when it has an error and is easier to overlook when a skipper corrects the form on a phone. It's a minor but real inconsistency in error cues."
+   },
+   {
+    "item": "R23",
+    "title": "Opening the More options menu doesn't move focus into it",
+    "maps_to": "real-unseeded",
+    "reason": "Keyboard and VoiceOver users who open the menu stay on the trigger and may not find its options, which include the only Change dates link. This focus-management gap is separate from D01's visual hiding, and moving focus wouldn't fix D01."
+   }
+  ],
+  "mapped_all": {
+   "items": 23,
+   "seeded": 11,
+   "real_unseeded": 7,
+   "not_a_problem": 5,
+   "precision": {
+    "x": 18,
+    "n": 23,
+    "value": 0.782608695652174,
+    "ci95": [
+     0.5766743322255128,
+     0.9076510599894225
+    ]
+   },
+   "precision_strict": {
+    "x": 11,
+    "n": 23,
+    "value": 0.4782608695652174,
+    "ci95": [
+     0.29234963557098415,
+     0.670394565027867
+    ]
+   },
+   "recall_by_meaning": {
+    "x": 10,
+    "n": 11,
+    "value": 0.9090909090909091,
+    "ci95": [
+     0.6009352582820827,
+     1
+    ]
+   },
+   "defects_found": [
+    "journey-app-D01",
+    "journey-app-D03",
+    "journey-app-D04",
+    "journey-app-D05",
+    "journey-app-D06",
+    "journey-app-D07",
+    "journey-app-D08",
+    "journey-app-D09",
+    "journey-app-D10",
+    "journey-app-D11"
+   ]
+  }
+ },
+ "timing": {
+  "total_tokens": 307972,
+  "tokens": {
+   "input_tokens": 14,
+   "output_tokens": 65,
+   "cache_read_input_tokens": 266942,
+   "cache_creation_input_tokens": 40951
+  },
+  "duration_ms": 104399,
+  "total_duration_seconds": 104.4,
+  "total_cost_usd": 0.5551524,
+  "num_turns": 16,
+  "is_error": false,
+  "subtype": "success",
+  "subagent_messages": 0,
+  "exit_code": 0,
+  "wall_ms": 105062
+ }
+}

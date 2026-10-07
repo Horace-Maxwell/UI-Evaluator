@@ -1,0 +1,149 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "It says the problems are ranked \"worst first\", puts five \"Fix before you open\" items ahead of seven \"Fix soon after\" items, and ends with a \"Where to start\" order. It names what it could not check: someone should still walk the flow \"on a phone at 375 px, at 200% zoom and with VoiceOver\", and evidence from real skippers is still needed because \"this review doesn't replace that\"."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Bookings never reach the harbour office",
+      "maps_to": "real-unseeded",
+      "reason": "The cited code (app.js:211-228) only navigates to confirmed.html with date, nights and berth, so the name, mobile and boat details go nowhere; a skipper is told \"Booking confirmed\" while the office has no record and no number to call. Not a seeded defect, and the code it cites supports it despite the review's hedge about a backend outside the folder."
+    },
+    {
+      "item": "R2",
+      "title": "Booking reference is not unique",
+      "maps_to": "real-unseeded",
+      "reason": "The reference is built only from date and berth (app.js:237), so two boats on the same berth and date hold the same reference and the office cannot tell them apart when a skipper quotes it. Not seeded."
+    },
+    {
+      "item": "R3",
+      "title": "No check that the berth is actually free",
+      "maps_to": "real-unseeded",
+      "reason": "Nothing checks availability, so two skippers can book the same berth for the same night and one arrives on the tide to find it taken. Not seeded."
+    },
+    {
+      "item": "R4",
+      "title": "Berth chosen before the boat's length is asked",
+      "maps_to": "real-unseeded",
+      "reason": "Because length is asked only on the next page, the berth list cannot hide or flag berths the boat will not fit, so skippers must match the limits unaided and can pick a berth that is too short (error prevention). D03 is the field label, D04 the dead-end page and D06 the price totals; none of them is this sequencing problem."
+    },
+    {
+      "item": "R5",
+      "title": "\"Length\" is ambiguous: LOA or hull, no unit",
+      "maps_to": "journey-app-D03",
+      "reason": "Same as D03: neither the berth limits nor the Length field say length overall or give a unit, so a skipper may enter the 9.6 m hull length and book a berth the boat is too long for."
+    },
+    {
+      "item": "R6",
+      "title": "\"Booking stopped\" dead end with reference BK-409",
+      "maps_to": "journey-app-D04",
+      "reason": "Same as D04: an over-limit length replaces the form with \"Booking stopped\" and a bare reference, with no reason, next step, way back or phone number."
+    },
+    {
+      "item": "R7",
+      "title": "Missing berth parameter falls back to B14",
+      "maps_to": "not-a-problem",
+      "reason": "A code edge case: the review shows no route through the flow by which a skipper reaches the boat page without a chosen berth, so no harm to these users is established."
+    },
+    {
+      "item": "R8",
+      "title": "Arrival time accepts closed-gate times; gate window not beside the field",
+      "maps_to": "journey-app-D09",
+      "reason": "Same as D09: the 06:00 to 21:00 list accepts times when the sill gate is shut, and the gate window appears only in the table and note further down the page."
+    },
+    {
+      "item": "R9",
+      "title": "Tide table in UTC while arrival times are local",
+      "maps_to": "journey-app-D05",
+      "reason": "Same as D05: high water is given in UTC while arrival times are local and the UK is on BST in October, so a skipper reading the table as local time is an hour out on the gate."
+    },
+    {
+      "item": "R10",
+      "title": "Tide table covers only 17 to 23 October",
+      "maps_to": "real-unseeded",
+      "reason": "Dates can be booked to 31 March 2027, so a skipper arriving after 23 October gets no high-water or gate times for their day and cannot choose an arrival that meets the sill gate. D05 and D09 are about the time zone and the time list, not the missing dates."
+    },
+    {
+      "item": "R11",
+      "title": "Boat details wiped on Back",
+      "maps_to": "journey-app-D07",
+      "reason": "Same as D07: the boat form is reset on every pageshow, so going back from the review page to fix one value empties every boat detail."
+    },
+    {
+      "item": "R12",
+      "title": "autocomplete=\"off\" blocks autofill of boat details",
+      "maps_to": "real-unseeded",
+      "reason": "Returning skippers cannot take browser suggestions and must retype their boat details on a phone. This is a separate cost from D07, which is the Back button wiping the form."
+    },
+    {
+      "item": "R13",
+      "title": "Change dates hidden in the three-dot More options menu",
+      "maps_to": "journey-app-D01",
+      "reason": "Same as D01: the only way back to the dates from the berth list is a Change dates link inside the three-dot menu."
+    },
+    {
+      "item": "R14",
+      "title": "No change links on the review page",
+      "maps_to": "real-unseeded",
+      "reason": "A skipper who spots a wrong arrival, berth or boat detail on the review page has no direct way to change it and must use Back, which also wipes the boat form. D01 is the berths-page menu and D02 is the missing step indicator, which change links would not provide."
+    },
+    {
+      "item": "R15",
+      "title": "MMSI required with no explanation",
+      "maps_to": "journey-app-D10",
+      "reason": "Same as D10: the MMSI is required with no hint about what it is, shutting out boats whose radio has none; making it optional with a hint would fix the defect."
+    },
+    {
+      "item": "R16",
+      "title": "No check that the MMSI has 9 digits",
+      "maps_to": "not-a-problem",
+      "reason": "The review names no effect on skippers, and its own advice is to make the field optional or drop it; a missing format check there does not block or mislead anyone booking."
+    },
+    {
+      "item": "R17",
+      "title": "Draught collected but never used",
+      "maps_to": "real-unseeded",
+      "reason": "The flow asks for draught but never gives the depth over the sill or warns a deep boat, so a skipper cannot tell whether they will clear the sill at their arrival time. Not seeded."
+    },
+    {
+      "item": "R18",
+      "title": "Confirmation page leaves out arrival information",
+      "maps_to": "journey-app-D11",
+      "reason": "Same as D11, stated more broadly: the confirmation lacks the gate window and what to do on arrival (such as calling on VHF), as well as the arrival time, boat, total and pay-on-arrival reminder."
+    },
+    {
+      "item": "R19",
+      "title": "Berth, pontoon space and mooring used for one thing",
+      "maps_to": "journey-app-D08",
+      "reason": "Same as D08: one thing has three names across the flow, ending in \"Check your mooring booking\" on the review page."
+    },
+    {
+      "item": "R20",
+      "title": "Price shown only per metre per night",
+      "maps_to": "journey-app-D06",
+      "reason": "Same as D06: each berth shows only a per-metre-per-night rate and the total first appears on the review page, so skippers must work out totals to compare berths."
+    },
+    {
+      "item": "R21",
+      "title": "Arrival times run past office hours",
+      "maps_to": "real-unseeded",
+      "reason": "Arrivals up to 21:00 are offered although the office closes at 20:00 and payment is on arrival, so a late skipper is not told how to check in or pay. D09 is about the sill gate, not office hours."
+    },
+    {
+      "item": "R22",
+      "title": "Dropdown in error gets no red border",
+      "maps_to": "real-unseeded",
+      "reason": "Only input[aria-invalid] is styled (styles.css:283), so the Arrival time dropdown shows no error highlight unlike the text fields, and a skipper can miss which field needs fixing. Minor and not seeded."
+    },
+    {
+      "item": "R23",
+      "title": "Focus not moved into the More options menu",
+      "maps_to": "real-unseeded",
+      "reason": "Keyboard and screen-reader users who open the menu are left on the button and must hunt for its items, including Change dates. This is a focus-management gap, separate from D01's discoverability: moving focus would not make Change dates visible."
+    }
+  ]
+}

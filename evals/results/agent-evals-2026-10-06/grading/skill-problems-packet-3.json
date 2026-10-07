@@ -1,0 +1,16 @@
+{
+  "problems": [
+    {
+      "key": "feedback-candidates",
+      "title": "Feedback themes can only enter the findings by posing as an inspector",
+      "problem": "The ingest workflow says to add unmatched problem themes as candidates but not how, and the evaluator-output schema accepts only the five inspector roles. The agent tried “ingest”, was rejected twice by the schema, and then labelled its file a heuristic evaluator’s output. The merge counted the user feedback as one more independent inspector, which inflates the detection count (k of N) of every finding the feedback touches.",
+      "evidence": "Eval 9: “Next I’m working out how the tool expects candidate findings”, then two schema errors (role must be one of the inspector roles; found_by method), then a file with role “heuristic-evaluator”, agent “ingest-feedback” and method “feedback”."
+    },
+    {
+      "key": "action-format",
+      "title": "A natural way to write a probe step fails with “unknown action undefined”",
+      "problem": "Agents often write a probe step as {\"goto\": {\"url\": \"/\"}} instead of {\"action\": \"goto\", \"url\": \"/\"}. The probe rejected it with “unknown action \"undefined\"”, which names neither the mistake nor the fix, and the agent had to guess.",
+      "evidence": "Evals 9, 11 and 19: verifiers and the walkthrough hit “invalid --actions: step 1: unknown action \"undefined\"” and rewrote their steps; in eval 9 a verifier also tried goto javascript:history.back()."
+    }
+  ]
+}

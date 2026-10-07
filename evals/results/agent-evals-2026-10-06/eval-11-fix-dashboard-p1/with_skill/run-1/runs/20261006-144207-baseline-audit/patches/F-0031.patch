@@ -1,0 +1,65 @@
+fix(ui): F-0031 Sensor status says OK, Check or Fault in words, not only by dot colour
+
+Finding: F-0031 (P0, WCAG 1.4.1 / A11Y-19). Also clears F-0033 (P0, WCAG 1.3.1: status cells
+were empty for screen readers), because the same cells now carry text.
+Baseline SHA: 00bc7cba84405938c7eb78beae9d1bb17b606c43 (apply patches in order: F-0031, F-0004, F-0026,
+F-0025, F-0029, F-0020, F-0032)
+
+Contract
+  Originating: every Status cell on / (default and manual-dosing) shows a status word that does not
+  depend on hue; the ARIA snapshot names each cell.
+  Regression: journey switch-dosing-to-manual; axe, cvd, layout, contrast, census, copy, keyboard; no
+  introduced finding.
+  Scope: index.html sensor rows; styles.css .status/.dot.
+Drift class and layer: local defect; markup (text in the cell) plus a small CSS rule keeping dot and word together.
+Assumption (inferred, please confirm): the words "OK", "Check" and "Fault" for the ok, warn and alarm
+dots. Short checklist words, matching the tone referent in PRODUCT.md.
+Left alone: dot colours, table structure, the column header.
+Re-test: run 20261006-155140-fix-f-0031-r4. The ARIA cells read "OK", "Check" and "Fault" at every
+width. The journey passed (3/3). Findings diff: 0 introduced. Visual changes are confined to the Sensors table.
+Known gap: at 320 px the table was already wider than its card, so the status words sit partly behind the
+table's horizontal scroll. That overflow predates this change (see the rejected F-0021); it is logged
+in debt.md.
+Attempts: 4. A plain space let the dot and word wrap apart; white-space:nowrap on the cell made the
+320 px clip worse and was reverted; a no-break space did not hold; an inline-flex wrapper holds.
+That is one attempt over the cap of 3, and it is recorded here.
+
+--- a/index.html
++++ b/index.html
+@@ -68,11 +68,11 @@
+             <tr><th scope="col">Sensor</th><th scope="col">Channel</th><th scope="col">Status</th></tr>
+           </thead>
+           <tbody>
+-            <tr><td>pH probe</td><td>A</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>EC probe</td><td>A</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>Water thermometer</td><td>B</td><td><span class="dot dot--warn"></span></td></tr>
+-            <tr><td>Oxygen probe</td><td>B</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>Reservoir float</td><td>Tank</td><td><span class="dot dot--alarm"></span></td></tr>
++            <tr><td>pH probe</td><td>A</td><td><span class="status"><span class="dot dot--ok"></span>OK</span></td></tr>
++            <tr><td>EC probe</td><td>A</td><td><span class="status"><span class="dot dot--ok"></span>OK</span></td></tr>
++            <tr><td>Water thermometer</td><td>B</td><td><span class="status"><span class="dot dot--warn"></span>Check</span></td></tr>
++            <tr><td>Oxygen probe</td><td>B</td><td><span class="status"><span class="dot dot--ok"></span>OK</span></td></tr>
++            <tr><td>Reservoir float</td><td>Tank</td><td><span class="status"><span class="dot dot--alarm"></span>Fault</span></td></tr>
+           </tbody>
+         </table>
+       </div>
+--- a/styles.css
++++ b/styles.css
+@@ -219,9 +219,17 @@
+ 
+ th {
+   font-weight: 600;
++}
++
++.status {
++  display: inline-flex;
++  align-items: center;
++  gap: 8px;
++  white-space: nowrap;
+ }
+ 
+ .dot {
++  flex: none;
+   display: inline-block;
+   width: 10px;
+   height: 10px;

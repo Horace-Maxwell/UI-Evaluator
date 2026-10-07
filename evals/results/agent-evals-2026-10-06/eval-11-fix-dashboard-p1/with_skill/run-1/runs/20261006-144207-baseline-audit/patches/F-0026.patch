@@ -1,0 +1,53 @@
+fix(ui): F-0026 Reading cards show the target range behind "In range" and "Warm"
+
+Finding: F-0026 (P1, H6 recognition rather than recall; H2).
+Baseline: apply after F-0004.patch.
+
+Contract
+  Originating: the pH, EC and water-temperature cards state their target range, so "Warm" at 23.7 °C
+  can be read against 18 to 22 °C without recalling the set points.
+  Regression: axe, contrast, census, layout, copy, i18n, tells; journey switch-dosing-to-manual; no
+  introduced finding.
+  Scope: index.html metric cards; styles.css .metric__target.
+Drift class and layer: local defect; markup plus one spacing rule (8 px, on the scale; ink inherited from body).
+Copy source: the Facts table in PRODUCT.md ("pH 5.8 to 6.4", "EC 1.6 to 2.0 mS/cm", "18 to 22 °C"),
+worded as allowed there.
+Left alone: dissolved oxygen and the reservoir have no target in PRODUCT.md, so no range was invented
+for them. Please supply the growing lead's DO set point if one exists.
+Re-test: run 20261006-155522-fix-f-0026. Findings diff: 0 introduced; the journey passed (3/3).
+
+--- a/index.html
++++ b/index.html
+@@ -28,16 +28,19 @@
+           <p class="metric__label">Acidity</p>
+           <p class="metric__value">pH 6.1</p>
+           <span class="chip chip--ok">In range</span>
++          <p class="metric__target">Target pH 5.8 to 6.4</p>
+         </div>
+         <div class="metric">
+           <p class="metric__label">Conductivity</p>
+           <p class="metric__value">1.84 <span class="metric__unit">mS/cm</span></p>
+           <span class="chip chip--ok">In range</span>
++          <p class="metric__target">Target EC 1.6 to 2.0 mS/cm</p>
+         </div>
+         <div class="metric">
+           <p class="metric__label">Water temperature</p>
+           <p class="metric__value">23.7 <span class="metric__unit">&deg;C</span></p>
+           <span class="chip chip--warn">Warm</span>
++          <p class="metric__target">Target 18 to 22 &deg;C</p>
+         </div>
+         <div class="metric">
+           <p class="metric__label">Dissolved oxygen</p>
+--- a/styles.css
++++ b/styles.css
+@@ -155,6 +155,10 @@
+ .metric__unit {
+   font-size: 14px;
+   font-weight: 500;
++}
++
++.metric__target {
++  margin-top: 8px;
+ }
+ 
+ .chip {

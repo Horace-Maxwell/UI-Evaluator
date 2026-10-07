@@ -101,7 +101,7 @@ Labels come from at least two labellers per item, with agreement reported. A rul
 
 ## 6. Release thresholds
 
-These are the initial bars for v1.0. They are revised by ADR as calibration data accumulates. The measured status of each bar is kept in [evals/README.md](../../evals/README.md#status-against-the-release-thresholds): version 2.0.0 shipped with the build-outcome bar unmet and four bars not yet measured, and its README says so.
+These are the initial bars for v1.0. They are revised by ADR as calibration data accumulates. The measured status of each bar is kept in [evals/README.md](../../evals/README.md#status-against-the-release-thresholds): version 2.0.0 shipped with the build-outcome bar unmet and four bars not yet measured, and its README says so. The agent-level round of 2026-10-06 measured four of them for 2.1.0; the fix-loop bar is not met.
 
 | Area | Threshold |
 |---|---|

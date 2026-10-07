@@ -1,0 +1,173 @@
+{
+  "schema": "verifier",
+  "run": "20261006-161549-feedback-ingest",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "9d72f5b056938a2e",
+  "iteration": 1,
+  "_notes": "Packet aria.json and screens.json were empty, so every anchor was resolved by live probes (probes/1-9, width 375). Dismissal ledger is empty. Iteration 1, so ceiling_flag is false throughout. The probe CLI has no history-back action and no network throttling.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0001",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. The berth list shows the stay summary as a plain paragraph with no control. #more-button is an icon-only '...' button (accessible name 'More options', no visible text). Clicking it reveals the 'Change dates' link (#change-dates), which is the only date-change control on the page.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/step-02.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/probe.json"
+      ],
+      "note": "The button has an accessible name, so 'unlabelled' means it has no visible label. The header 'Book a berth' link also leads to the first page, but it drops the entered values. Discoverability may fit H6 (recognition) better than H7 as the primary criterion."
+    },
+    {
+      "candidate_id": "F-0002",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced on B14 with length 10.4. Also reproduced on Wall berth 2 with length 34. The main content is replaced by the heading 'Booking stopped' and the text 'This booking cannot continue. Reference BK-409.' Main has no reason, no alternative berth and no back or edit control.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/3/final.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/3/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/9/aria.yml"
+      ],
+      "note": "Wording: the site header ('Book a berth' goes to the first page) and the footer office phone link are still shown. So 'no way back' is true only of the page content; there is no route back to the form or berth list that keeps the entered values."
+    },
+    {
+      "candidate_id": "F-0003",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Could not perform a real browser Back. Probe has no back action. Alt+ArrowLeft left the page on review.html (probe 4, step 10 failed). goto javascript:history.back() is refused by the probe's URL guard (probe 5). A fresh goto to boat.html shows an empty form, but that is a new navigation and does not test Back or bfcache restoration. Needs a manual check: fill the boat form, continue to review, press browser Back, and see whether the fields are empty.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/4/probe.json",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/5/probe.json"
+      ],
+      "note": "The review page (probe 4 step-07) has no 'Change' links back to the boat details, so browser Back is the only way to correct a boat value without restarting. This is relevant if the reset is confirmed."
+    },
+    {
+      "candidate_id": "F-0004",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. label[for=loa] reads only 'Length' with no hint text. The draught field does have a hint. Neither the boat page nor the berth list ('Boats up to 10 metres') says whether the limit is LOA including bowsprit or davits.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/step-01.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/aria.yml"
+      ],
+      "note": "This shares the 'Length' label with F-0005 but is a different mechanism (which length is meant, not which unit). Keep the two separate. 'People enter hull length' rests on the feedback and cannot be reproduced by a probe."
+    },
+    {
+      "candidate_id": "F-0005",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. The label 'Length' gives no unit, while 'Draught in metres' does. A length of 0.3 on C3 was accepted and went to review (probe 8). A length of 34 (a feet value) on Wall berth 2 was taken as metres and led to the unexplained 'Booking stopped' page (probe 9). There was no unit prompt or plausibility message.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/8/probe.json",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/9/aria.yml"
+      ],
+      "note": "The review page later echoes '10.4 metres long', which reveals the unit only after submission."
+    },
+    {
+      "candidate_id": "F-0006",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. label[for=mmsi] reads 'MMSI' with no hint. Submitting the form empty gives 'Enter the MMSI' (#mmsi-error and the summary link). No text explains the term or offers an option for boats without an MMSI.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/step-01.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/aria.yml"
+      ],
+      "note": "I did not test whether a non-numeric or placeholder MMSI is accepted."
+    },
+    {
+      "candidate_id": "F-0007",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. The table.tides caption reads 'High water at the quay, times in UTC'. The cells give UTC times, for example Sat 17 Oct 02:08 and 14:32. The arrival-time select offers plain clock times with no zone, and no converted local time appears anywhere. 17 Oct 2026 falls in UK summer time, so the table is an hour off from local clock time.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/6/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/6/step-01.png"
+      ],
+      "note": "Wording: the page never says that arrival times are 'local'; that is inferred. The verified fact is that the tide table is in UTC with no conversion, next to an arrival-time list that gives no zone."
+    },
+    {
+      "candidate_id": "F-0008",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. On 17 Oct, high water is 02:08 and 14:32 UTC and the gate is open about ±2 h, so 09:00 is outside every gate window in both UTC and local time. I chose 09:00 and completed the whole flow: berths, boat, review, then 'Booking confirmed'. There was no warning at any step. The select offers 06:00-21:00 whatever the tide.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/step-06.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/step-16.png",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0009",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. Each .berth-price reads '£x.xx per metre per night'. The berth list shows no total. The total (£74.88 for C3, 10.4 m, 2 nights) first appears on the review page, after the boat details are entered.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/step-16.png"
+      ],
+      "note": "The record says problem_type 'multiple_locations' but lists one location, the berth list. 'single_location' looks more accurate. The berth list cannot show a total until the length is known, which is a design constraint for whoever fixes this."
+    },
+    {
+      "candidate_id": "F-0010",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced. The h1 headings read 'Book a visitor berth' (/), 'Choose a pontoon space' (/berths.html) and 'Check your mooring booking' (/review.html). The review summary row is labelled 'Berth'. The berth options mix 'Pontoon A, berth 6' and 'Wall berth 2'.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/6/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/4/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0011",
+      "verdict": "confirmed",
+      "step": "absence",
+      "ceiling_flag": false,
+      "reason": "I confirmed the absence myself. I searched all five pages (/, berths, boat, review, confirmed) in their ARIA snapshots and screenshots. None has a step indicator, progress list or 'step x of y' text.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/6/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/1/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/2/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/4/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/aria.yml"
+      ],
+      "note": "The candidate lists only /boat.html and /berths.html as locations, but the absence applies to all four booking steps. The impact statement ('on patchy signal cannot judge whether to finish') is the reporters' reasoning and was not observed."
+    },
+    {
+      "candidate_id": "F-0012",
+      "verdict": "confirmed",
+      "step": "absence",
+      "ceiling_flag": false,
+      "reason": "I confirmed the absence myself after completing a booking. The confirmed.html main area contains only the reference SQ-1017-C3, the arrival date (no time), the berth, the nights and 'Book another visit'. There is no VHF channel, no gate times for the arrival day and no arrival instructions. The footer gives only the office phone number and hours.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/aria.yml",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/final.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0013",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "I could not reproduce weak-signal conditions because probe has no network throttling or offline emulation. Unthrottled against localhost, / loaded in 27 ms (DCL 26, FCP 28). The whole flow ran with 0 failed or 4xx/5xx requests and 0 blocked remote requests. No slowness appeared under these conditions. Needs a throttled check (for example Slow 4G in DevTools or Lighthouse mobile) to measure page weight and load time. It also needs a decision on whether 'no signal at all' is in scope.",
+      "evidence": [
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/7/probe.json",
+        ".ui-evaluator/runs/20261006-161549-feedback-ingest/probes/6/probe.json"
+      ],
+      "note": "Even if this is confirmed, H1 fits only if the problem is missing loading feedback. Slowness itself is a performance issue rather than a heuristic violation. Page weight was not measured: probe.json does not report bytes transferred."
+    }
+  ]
+}
