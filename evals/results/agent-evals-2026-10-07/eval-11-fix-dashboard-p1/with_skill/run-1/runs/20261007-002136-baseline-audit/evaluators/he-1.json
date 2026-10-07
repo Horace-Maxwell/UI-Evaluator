@@ -1,0 +1,333 @@
+{
+  "schema": "evaluator-output",
+  "role": "heuristic-evaluator",
+  "agent": "he-1",
+  "lens": "novice first-time user",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-002136-baseline-audit",
+  "packet_hash": "b3d04757f545daa7",
+  "notes": "Worked only from the packet, the live UI via uie probe, and the named method/knowledge files. The packet's aria.json was empty ([]); ARIA evidence comes from probe aria.yml snapshots instead. A first Bash call that tried to cat several packet files was denied by permissions, so files were read with the Read tool. No source code, DESIGN.md, builder notes, detector output or other evaluators' files were opened.",
+  "passes": [
+    {
+      "pass": 1,
+      "summary": "Learned the single-page flow: header with in-page nav (Readings, Sensors, Dosing) and last-reading time; five reading cards plus a 24 h acidity chart; sensor table with status dots; dosing card with an automatic/manual switch, a live status line and recent pump events."
+    },
+    {
+      "pass": 2,
+      "summary": "Inspected each card, the table, the chart, the switch and the nav links against H1-H10 at 375 and 768 px, default and manual-dosing states; probed toggle, reload, keyboard Space, hover on status dots and all three nav links.",
+      "elements_inspected": 14
+    }
+  ],
+  "coverage": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "controls_exercised": 5,
+    "controls_total": 5,
+    "out_of_scope": []
+  },
+  "cross_screen_pass": true,
+  "task_suitability": [
+    {
+      "task": "Take nutrient dosing off automatic before working on the reservoir",
+      "completable": true,
+      "evidence": "One click (or Space) on role=switch 'Automatic nutrient dosing' sets it unchecked and the status line reads 'Nutrient dosing is now manual...' (probes/1, probes/3, probes/9). However the setting does not survive a page reload (see candidate he-1-01)."
+    },
+    {
+      "task": "Check whether any reading is out of range",
+      "completable": false,
+      "evidence": "Four cards say 'In range' or 'Warm'; no target ranges are shown on any card, and 'Warm' does not say whether it is in or out of range (candidates he-1-04, he-1-05)."
+    },
+    {
+      "task": "See which sensor needs attention",
+      "completable": false,
+      "evidence": "Sensor status is an unlabelled coloured dot with empty accessible cell; red dot on Reservoir float has no explanation (candidates he-1-02, he-1-03)."
+    }
+  ],
+  "not_assessable": [
+    "Behaviour when the probe feed drops out (context says this happens): could not simulate a feed outage via uie probe, so whether the page shows a stale or offline state is a hypothesis.",
+    "Whether toggling dosing actually changes the pump controller (back end) cannot be observed from the UI; only the page state was probed.",
+    "Wet-glove touch accuracy on the switch and glare readability were not testable in the probe environment."
+  ],
+  "strengths": [
+    {
+      "title": "Dosing switch gives immediate plain-language feedback in a live status region",
+      "evidence": "probes/3/aria.yml: after Space on the switch, status: 'Nutrient dosing is now manual: the pumps run only when you start them.'; switch responded in 46 ms (probes/1/probe.json step 2)."
+    },
+    {
+      "title": "Switch is a native-feeling, keyboard-operable control that is easily reversed",
+      "evidence": "focus + Space toggles it (probes/3/screenshots/after-space.png) with a clear focus ring; toggling again restores automatic, so no confirmation dialog is needed."
+    },
+    {
+      "title": "Reading cards pair each value with a unit and a word status, not colour alone",
+      "evidence": "aria.yml: 'pH 6.1' / 'In range', '1.84 mS/cm' / 'In range', '23.7 °C' / 'Warm'."
+    },
+    {
+      "title": "Acidity chart has a meaningful text alternative summarising the range and low point",
+      "evidence": "aria.yml: img 'Acidity stayed between pH 5.9 and pH 6.3 over the last 24 hours, lowest at 04:00'."
+    },
+    {
+      "title": "In-page navigation reaches the Dosing card directly on a long mobile page",
+      "evidence": "probes/9: clicking link 'Dosing' at 375 px scrolls to the Dosing card (probes/9/screenshots/mobile-manual.png)."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "he-1-01",
+      "title": "Manual dosing silently reverts to automatic after a page reload",
+      "description": "After switching 'Automatic nutrient dosing' off, the page confirms 'now manual'. Reloading the page shows the switch checked again and the status 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.', with no message that the setting changed. A grower who has switched to manual needs the page to keep showing the true state, so they can trust that pumps will not dose into an empty tank.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "heuristic", "id": "H5", "name": "Error prevention" }
+      ],
+      "impact": "Task 1 is critical: if the shared wall tablet reloads, or another volunteer refreshes it, the screen tells everyone dosing is automatic (or it really has become automatic) while the reservoir is drained. Either the change did not persist or the display is wrong; both defeat the journey's goal of checking that dosing has stopped.",
+      "locations": [
+        { "route": "/", "state": "manual-dosing", "viewport": { "width": 768, "height": 900 }, "selector": "#dosing-switch", "journey": "switch-dosing-to-manual" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/probe.json", "detail": "click switch -> reload; all steps ok" },
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/screenshots/after-click.png", "detail": "switch off, 'now manual'" },
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/screenshots/after-reload.png", "detail": "switch on again, 'Nutrient dosing is automatic'" },
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml", "detail": "after reload: switch \"Automatic nutrient dosing\" [checked]" }
+      ],
+      "factor_notes": {
+        "frequency": "Every time the page is reloaded after switching to manual; the tablet is shared and used several times per shift.",
+        "impact": "User cannot tell from the screen that the state was lost; nothing prompts them to re-check.",
+        "persistence": "Recurs on every reload; experienced growers cannot learn around it without re-checking each time."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0",
+      "recommendation": "Persist the dosing mode and render it from the stored state on load."
+    },
+    {
+      "id": "he-1-02",
+      "title": "Sensor status is shown only as an unlabelled coloured dot",
+      "description": "The Status column of the Sensors table shows a green, orange or red dot with no text, no legend and no tooltip (hovering the red dot shows nothing). The accessibility tree exposes each Status cell as empty. Volunteers, including colour-blind ones and a screen-reader user, need to know which status each sensor has and what the colours mean.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "wcag", "id": "1.4.1", "name": "Use of Color" },
+        { "kind": "heuristic", "id": "H10", "name": "Help and documentation" }
+      ],
+      "impact": "Task 3 (see which sensor needs attention) depends on this column. Colour-blind volunteers are on every rota and the red/green/orange dots are hard to tell apart; a novice does not know what orange versus red means; screen-reader users get nothing.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "#sensors > div.table-wrap td:nth-of-type(3)" },
+        { "route": "/", "state": "default", "viewport": { "width": 375 }, "selector": "#sensors > div.table-wrap td:nth-of-type(3)" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml", "detail": "row \"Reservoir float Tank\": cell \"Reservoir float\", cell \"Tank\", cell (empty) - same for all five rows" },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/3/screenshots/hover-red-dot.png", "detail": "hover on the red dot for 1.2 s shows no tooltip" },
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-cvd-deuteranopia.png" }
+      ],
+      "factor_notes": {
+        "frequency": "Every check of the sensor table; affects all colour-blind volunteers and screen-reader users, and any novice unsure of the colour code.",
+        "impact": "No way inside the UI to learn the meaning; user must ask someone.",
+        "persistence": "Persistent; the legend never appears."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-03",
+      "title": "A sensor flagged red gives no reason or next step",
+      "description": "The Reservoir float row shows a red dot, but nowhere on the page says what is wrong with it (fault, out of range, disconnected) or what a volunteer should do. The user needs to know what the problem is and how to act on it.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true, "name": "Help users recognize, diagnose, and recover from errors" }
+      ],
+      "impact": "Task 3 ends at 'something is red' with no diagnosis; volunteers not trained in hydroponics cannot decide whether to stop work, call the growing lead, or ignore it. The same applies to the orange Water thermometer row.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "role=row[name=\"Reservoir float Tank\"]" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "Reservoir float / Tank / red dot; no other text" },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/3/probe.json", "detail": "hover on the cell reveals nothing" }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever a sensor is in a non-green state, as in the shipped data.",
+        "impact": "Novices cannot recover on their own.",
+        "persistence": "Persistent."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-04",
+      "title": "'Warm' does not say whether water temperature is in or out of range",
+      "description": "Three cards say 'In range'; the Water temperature card says 'Warm' in an amber chip. A user checking for out-of-range readings cannot tell whether 'Warm' means out of range, close to the limit, or fine.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true, "name": "Match between the system and the real world" },
+        { "kind": "heuristic", "id": "H4", "name": "Consistency and standards" }
+      ],
+      "impact": "Task 2 is a yes/no question per reading; the one reading that is not 'In range' uses a different vocabulary, so the volunteer cannot answer the question for exactly the reading that matters.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "region \"Nutrient film channels\" >> text=Water temperature", "snippet": "Water temperature 23.7 °C Warm" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml", "detail": "paragraph: Water temperature / 23.7 °C / text: Warm (others: In range)" }
+      ],
+      "factor_notes": {
+        "frequency": "Every shift check while the temperature is in this band.",
+        "impact": "Ambiguity; user must guess or ask.",
+        "persistence": "Persistent."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-05",
+      "title": "Target ranges are not shown for any reading",
+      "description": "Cards show a value and a status word but never the range the value is judged against (for example the pH or EC set points). The 24 h acidity chart has no y-axis values or target band. Novice volunteers need the range in front of them to judge how close a reading is to a limit; they do not know the set points from memory.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true, "name": "Recognition rather than recall" },
+        { "kind": "principle", "id": "Gerhardt-Powals 1", "name": "Automate unwanted workload / data fusion" }
+      ],
+      "impact": "Task 2: the user can read 'In range' but cannot see a reading drifting towards a limit, and on the chart cannot tell whether the dip near 23:00 was a problem. Only the growing lead knows the set points.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "role=region[name=\"Nutrient film channels\"]", "snippet": "reading cards" },
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "role=img[name^=\"Acidity stayed\"]", "snippet": "Acidity over the last 24 hours chart: x-axis times only" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png" },
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml", "detail": "no text containing a range or set point on any card" }
+      ],
+      "factor_notes": {
+        "frequency": "Every reading check by volunteers and school groups.",
+        "impact": "Users must recall or ask for ranges.",
+        "persistence": "Persistent."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-06",
+      "title": "Reservoir card looks healthy while its float sensor is flagged red",
+      "description": "The Reservoir card shows '142 L of 200 L' with a green 'Topped up 09:30' chip, while the Reservoir float sensor in the table shows a red dot. Nothing connects the two, so the page gives two contradictory signals about the tank.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "heuristic", "id": "H4", "name": "Consistency and standards" }
+      ],
+      "impact": "Before draining the reservoir (task 1) and when checking sensors (task 3), a novice cannot tell whether the 142 L figure is trustworthy if the float sensor that probably measures it is faulty.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "region \"Nutrient film channels\" >> text=Reservoir", "snippet": "Reservoir 142 L of 200 L Topped up 09:30" },
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "role=row[name=\"Reservoir float Tank\"]", "snippet": "Reservoir float Tank (red)" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png" }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever a sensor fault coexists with a normal-looking card.",
+        "impact": "User cannot resolve which signal is right from the UI.",
+        "persistence": "Persistent."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-07",
+      "title": "The same measurement has different names in readings, sensors and dosing",
+      "description": "Cards say 'Acidity', 'Conductivity', 'Dissolved oxygen' and 'Water temperature'; the sensor table says 'pH probe', 'EC probe', 'Oxygen probe' and 'Water thermometer'; the dosing text says 'top up to EC 1.8'. A novice has to work out that Conductivity is EC to link a card to its sensor and to the dosing target.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true, "name": "Consistency and standards" },
+        { "kind": "heuristic", "id": "H2", "name": "Match between the system and the real world" }
+      ],
+      "impact": "Tasks 2 and 3 require linking a reading to the sensor behind it; volunteers 'do not know what each probe measures in detail', so the mismatch blocks exactly the link they need.",
+      "locations": [
+        { "route": "/", "state": "default", "selector": "role=region[name=\"Nutrient film channels\"]", "snippet": "Conductivity 1.84 mS/cm" },
+        { "route": "/", "state": "default", "selector": "#sensors > div.table-wrap", "snippet": "EC probe A" },
+        { "route": "/", "state": "default", "selector": "#dosing role=status", "snippet": "pumps A and B top up to EC 1.8" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml", "detail": "'Conductivity' vs 'EC probe' vs 'EC 1.8'; 'Dissolved oxygen' vs 'Oxygen probe'" }
+      ],
+      "factor_notes": {
+        "frequency": "Every cross-reference between sections.",
+        "impact": "Learnable once explained, but no explanation on the page.",
+        "persistence": "Novices face it until they learn the mapping."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-08",
+      "title": "Manual-mode message tells users to start the pumps, but no pump control exists",
+      "description": "After switching to manual the status says 'the pumps run only when you start them.' The page has no control to start or run a pump; the only interactive elements are three nav links and the dosing switch. A user reading this needs to know where to start pumps, or that it is done elsewhere.",
+      "problem_type": "missing_element",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true, "name": "Recognition rather than recall" },
+        { "kind": "rule", "id": "USE-08", "name": "Suitability for the user's tasks" }
+      ],
+      "impact": "After refilling the reservoir a novice wants to resume feeding; the message implies an action on this screen that they cannot find.",
+      "locations": [
+        { "route": "/", "state": "manual-dosing", "viewport": { "width": 375 }, "selector": "#dosing role=status" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/3/aria.yml", "detail": "status: 'Nutrient dosing is now manual: the pumps run only when you start them.'; Dosing region contains only the switch and list 'Recent pump events'" },
+        { "type": "absence", "ref": "inventory.json", "detail": "Searched root/default and root/manual-dosing at 375 and 768 px: controls are links Readings, Sensors, Dosing, region Sensors, switch Automatic nutrient dosing. No pump start control." }
+      ],
+      "factor_notes": {
+        "frequency": "Every time dosing is set to manual.",
+        "impact": "User must find out from someone else how to run pumps.",
+        "persistence": "Persistent."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-09",
+      "title": "Freshness of readings is shown only as a small clock time with no age or stale cue",
+      "description": "The header shows 'Last reading 14:05' in small grey text. There is no age ('48 min ago'), no date, and the cards keep saying 'In range' regardless. At probe time (13:53 UTC, 14:53 BST) the reading was about 48 minutes old with no indication that it might be stale. Volunteers who 'do not know when a reading is stale' need the page to tell them.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" }
+      ],
+      "impact": "The probe feed can drop out; a volunteer may trust 'In range' values that are no longer current while doing task 2.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 900 }, "selector": "role=banner >> text=Last reading", "snippet": "Last reading 14:05" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/probe.json", "detail": "probe at 2026-10-07T13:53Z; page shows 'Last reading 14:05' and no staleness indicator" },
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png" }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever the feed lags or drops; frequency of outages not known.",
+        "impact": "Requires mental arithmetic against a clock the user may not have; easy to miss.",
+        "persistence": "Persistent. Note: the fixture time may be static; the observation is the absence of any relative age or stale state, not the specific age."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    },
+    {
+      "id": "he-1-10",
+      "title": "Hydroponics jargon is used without explanation for untrained volunteers",
+      "description": "Labels such as 'Nutrient film channels', 'mS/cm', 'EC 1.8', 'Dissolved oxygen ... mg/L' and channel codes 'A', 'B' appear with no plain explanation or inline help. The product brief says it is written for volunteers not trained in hydroponics, who say 'feed', 'the tank', 'pumps'.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true, "name": "Match between the system and the real world" },
+        { "kind": "heuristic", "id": "H10", "name": "Help and documentation" }
+      ],
+      "impact": "Novices and school groups cannot interpret what is being measured or what Channel A/B refers to, weakening tasks 2 and 3.",
+      "locations": [
+        { "route": "/", "state": "default", "selector": "role=heading[name=\"Nutrient film channels\"]", "snippet": "Nutrient film channels" },
+        { "route": "/", "state": "default", "selector": "#sensors > div.table-wrap", "snippet": "Channel A / B / Tank" },
+        { "route": "/", "state": "default", "selector": "#dosing role=status", "snippet": "top up to EC 1.8" }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/1/aria.yml" }
+      ],
+      "factor_notes": {
+        "frequency": "Every visit by new volunteers and school groups.",
+        "impact": "Comprehension barrier; trained growers unaffected.",
+        "persistence": "Until learned."
+      },
+      "found_by": [{ "role": "heuristic-evaluator", "agent": "he-1", "method": "HE", "pass": 2 }],
+      "evidence_level": "E0"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-002136-baseline-audit",
+  "packet_hash": "63f113a62398eef3",
+  "notes": "Cognitive walkthrough (full four-question variant) of switch-dosing-to-manual. Record: .ui-evaluator/runs/20261007-002136-baseline-audit/cw/switch-dosing-to-manual.json. 3 steps walked; step 3 fails CW-Q4. Packet aria.json was empty; ARIA evidence from probe snapshots (probes/2, probes/6).",
+  "coverage": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing", "manual-dosing-after-reload"],
+    "controls_exercised": 1
+  },
+  "task_suitability": [
+    {
+      "task": "switch-dosing-to-manual",
+      "completable": true,
+      "evidence": "probes/2/probe.json: journey sequence passes; probes/6/probe.json: state reverts to automatic after reload"
+    }
+  ],
+  "not_assessable": [
+    "Whether the pumps themselves received the change to manual (black-box; no network failures were recorded)"
+  ],
+  "strengths": [
+    {
+      "title": "Switching dosing off gives immediate, plain-language confirmation in place",
+      "evidence": "probes/2/step-01.png: switch turns grey and the status line changes to 'Nutrient dosing is now manual: the pumps run only when you start them.' in the same panel, which answers the grower's 'does it take effect at once?' with 'now'."
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Manual dosing reverts to automatic after the page reloads, with no cue that the change was temporary",
+      "description": "A safety-relevant setting, once confirmed, should still show its confirmed state when the grower or a colleague looks again, or the screen should say the change was not kept. After switching to manual the status reads 'Nutrient dosing is now manual: the pumps run only when you start them.' After a reload of the same page the switch is on again and the status reads 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.' Nothing on screen (no time of change, no saved or applied indication, no pump state) distinguishes a lasting change from a temporary one.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "A volunteer about to drain the reservoir may believe the pumps are off while the shared tablet, after any reload, shows and may run automatic dosing; the pumps may then dose into an empty tank, and a grower who checks again cannot tell whether dosing ever stopped.",
+      "scope": {
+        "persona": "volunteer grower on evening shift, shared wall tablet",
+        "task": "Take nutrient dosing off automatic",
+        "journey": "switch-dosing-to-manual",
+        "route": "/",
+        "state": "manual-dosing, then reload",
+        "viewport": { "width": 768, "height": 1024 },
+        "theme": "light"
+      },
+      "locations": [
+        {
+          "route": "/",
+          "state": "manual-dosing (after reload)",
+          "viewport": { "width": 768, "height": 1024 },
+          "theme": "light",
+          "selector": "role=status",
+          "snippet": "Nutrient dosing is automatic: pumps A and B top up to EC 1.8.",
+          "journey": "switch-dosing-to-manual",
+          "step": 3
+        },
+        {
+          "route": "/",
+          "state": "manual-dosing (after reload)",
+          "viewport": { "width": 768, "height": 1024 },
+          "theme": "light",
+          "selector": "role=switch[name=\"Automatic nutrient dosing\"]",
+          "journey": "switch-dosing-to-manual",
+          "step": 3
+        }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/6/", "detail": "click switch -> wait 3 s -> screenshot (manual) -> reload -> expect status 'Nutrient dosing is now manual' FAILED; saw 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.'" },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/2/", "detail": "journey sequence without reload passes; status 'Nutrient dosing is now manual' shown immediately" },
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/6/final.png", "detail": "switch back on (green) after reload" }
+      ],
+      "factor_notes": {
+        "frequency": "Every reservoir change (critical journey, regular frequency); the tablet is shared and wall-mounted, so reloads by other users or after wifi drop-outs are plausible.",
+        "impact": "Grower sees success and leaves; the reversion is invisible unless they look again, and then unexplained.",
+        "persistence": "Recurs on every reload; the grower cannot learn to avoid it because nothing signals it."
+      },
+      "found_by": [
+        { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 }
+      ],
+      "evidence_level": "E0",
+      "recommendation": "Keep the dosing mode across reloads (store it with the controller, not the page), and show when and by whom it was last changed so a grower checking later can confirm it is still manual.",
+      "tags": ["feedback", "persistence", "dosing", "safety"]
+    }
+  ]
+}

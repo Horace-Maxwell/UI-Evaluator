@@ -1,0 +1,39 @@
+{
+  "schema": "fix-review",
+  "run": "20261007-103559-verify",
+  "baseline_run": "20261007-002220-baseline-audit",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "2fed4fd01644914b",
+  "evidence_valid": true,
+  "items": [],
+  "regressions": [
+    {
+      "title": "The contrast fix added a hard-coded text colour (color: #4d5a52) instead of using a design token. The diff lists it as a new COL-01 (token conformance) instance inside a finding that was already there; it is the only newly introduced instance in the diff.",
+      "kind": "collateral",
+      "evidence": [
+        "<round>/eval-12-verify-dashboard-after-fix/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-103559-verify/packets/fix-reviewer-1/diff.json#persisting[COL-01 lint].introduced_instances[0]"
+      ],
+      "location": {
+        "route": "/",
+        "snippet": "color: #4d5a52;",
+        "severity_note": "Low. Nothing visible is wrong; the darker muted text now passes contrast. The risk is maintenance: the muted-text colour can drift from the palette and from any future theme. Fix by defining a token for it (or reusing an existing one)."
+      }
+    }
+  ],
+  "disposition": "fix",
+  "scope": {
+    "route": "/",
+    "states": ["default", "manual-dosing"],
+    "variants_compared": "All 15 baseline variants per state (320, 375, 768, 1024, 1280, 1440 light; 1280 CVD x4; forced-colors; more-contrast; reduced-motion) against the same variants in the current run",
+    "method": [
+      "Pixel diff of each baseline/current pair (threshold 8/255). Page sizes are identical in every pair. The changes are limited to the muted-label and 'Last reading' text areas (bbox around x57-1261, y26-169 at 1280; about 2.9k px). Forced-colors captures are unchanged (0 px). No layout shift, overflow or overlap.",
+      "Visual comparison of the 1280 default and 375 manual-dosing captures. The metric labels and timestamp are darker and still readable. The hierarchy and palette are unchanged, so no tell swap.",
+      "Probe: clicking the dosing switch toggles it to manual, the copy updates and a focus indicator is visible. There were no console errors (probes/1/final.png).",
+      "diff.json: 5 cleared (A11Y-01, A11Y-11, MOT-01 x2, MOT-02), 0 introduced, 13 persisting. None of the persisting findings gained instances except COL-01 (+1, covered above)."
+    ],
+    "not_reviewed": "No items were scored: the packet marks every fix as deterministic and already verified by the rerun. No ARIA diff was in the packet, so ARIA loss was checked only indirectly, through the probe's working switch. Source code was not read."
+  },
+  "_notes": "There is only one regression, and it is minor and not visible. Under the role rules any regression means the disposition is 'fix' rather than 'ship'. Once a token replaces the literal colour, this batch should be shippable."
+}

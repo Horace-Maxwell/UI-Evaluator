@@ -1,0 +1,323 @@
+{
+  "schema": "evaluator-output",
+  "role": "heuristic-evaluator",
+  "agent": "he-3",
+  "lens": "accessibility-minded (keyboard, screen reader, low vision)",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-002136-baseline-audit",
+  "packet_hash": "b3d04757f545daa7",
+  "notes": "DEGRADED INPUTS: screenshots only. The Bash tool was denied in this session, so `uie probe` could not be run and `uie findings validate` could not be executed by this evaluator; the lead must validate this file. The packet's aria.json is empty, so no ARIA snapshot was available. Every behavioural claim (keyboard operation, focus, announcements, persistence, stale-feed handling) is therefore on the not_assessable list; candidates below rest only on what is visible in the captured screenshots across the viewport, colour-vision and forced-colours matrix. No source, DESIGN.md, detector output or other evaluators' files were read.",
+  "passes": [
+    { "pass": 1, "summary": "Read context and journey; walked the single route / in default and manual-dosing states through the 320-1440 px, CVD, forced-colours and more-contrast captures. Built a map: header with three in-page links and last-reading time; readings cards; 24 h acidity chart; sensors table; dosing switch with status text and dose log. No findings recorded." },
+    { "pass": 2, "summary": "Element-by-element against H1-H10 for header/nav, reading cards, chart, sensors table, dosing panel, in both states, with emphasis on colour-only cues, forced-colours rendering and wording for novices.", "elements_inspected": 12 },
+    { "pass": 3, "summary": "Cross-screen consistency pass: one route, two states; compared terminology between cards, sensors table and dosing copy, and nav labels against section headings across states and widths." }
+  ],
+  "coverage": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "controls_exercised": 0,
+    "controls_total": 5,
+    "out_of_scope": [
+      { "control": "link Readings", "reason": "not exercised: probe tool unavailable (Bash denied); inspected visually only" },
+      { "control": "link Sensors", "reason": "not exercised: probe tool unavailable (Bash denied); inspected visually only" },
+      { "control": "link Dosing", "reason": "not exercised: probe tool unavailable (Bash denied); inspected visually only" },
+      { "control": "region Sensors (#sensors > div.table-wrap)", "reason": "not exercised: probe tool unavailable; inspected visually only" },
+      { "control": "switch Automatic nutrient dosing (#dosing-switch)", "reason": "not exercised by this evaluator: probe tool unavailable; its post-toggle state was inspected in the pipeline's manual-dosing captures" }
+    ],
+    "per_heuristic": {
+      "H1": "considered on both states; 3 candidates (status dots, switch in forced colours, reading freshness)",
+      "H2": "considered; 2 candidates (terminology, status words without ranges)",
+      "H3": "considered; switch appears reversible by toggling back (visual only); no finding",
+      "H4": "considered; 2 candidates (terminology mismatch, nav label vs heading)",
+      "H5": "considered; dosing switch has no confirmation, which is acceptable for a reversible toggle; not assessable whether accidental taps are guarded; no finding",
+      "H6": "considered; 1 candidate (chart without scale or range)",
+      "H7": "considered; single-page layout with in-page links suits frequent use; no finding",
+      "H8": "considered; content is task-relevant; no finding",
+      "H9": "considered; 1 candidate (faulty sensor gives no explanation or next step)",
+      "H10": "considered; 1 candidate (manual-mode copy refers to starting pumps with no visible control)"
+    },
+    "cross_screen_pass": "done; terminology inconsistency recorded once as multiple_locations",
+    "usE09": "not_run (no probes possible)"
+  },
+  "task_suitability": [
+    { "task": "Take nutrient dosing off automatic before working on the reservoir", "completable": true, "evidence": "From captures only: #dosing-switch is present in the Dosing panel; manual-dosing captures show the knob moved and the text 'Nutrient dosing is now manual: the pumps run only when you start them.' Not probed by this evaluator; persistence after reload not verified. In forced-colours mode the switch is not visible (see candidate)." },
+    { "task": "Check whether any reading is out of range", "completable": true, "evidence": "Each card carries a status word ('In range', 'Warm', 'Topped up 09:30'); completable by reading cards, but 'Warm' does not say whether it is out of range and no target ranges are shown (see candidate)." },
+    { "task": "See which sensor needs attention", "completable": true, "evidence": "Completable only via the colour of status dots in the Sensors table for users with typical colour vision; in deuteranopia and forced-colours captures the faulty sensor cannot be identified (see candidate). Workaround: none visible on screen." }
+  ],
+  "cross_screen_pass": true,
+  "not_assessable": [
+    "Whether #dosing-switch is operable with keyboard (Space/Enter) and shows a visible focus indicator: not probed (Bash denied).",
+    "Whether the status text change after toggling is announced to screen readers: the routes.json recipe expects a role=status containing 'now manual', but no ARIA snapshot or probe was available to confirm announcement.",
+    "Whether sensor status dots have a text alternative for screen readers: aria.json is empty and no probe was possible.",
+    "Whether the dosing mode persists after reload or across devices (shared tablet vs phones): not probed.",
+    "What the page shows when the probe feed drops out (stale-data, error or loading state): no such state in routes.json and no probe possible.",
+    "Whether the Readings / Sensors / Dosing links move focus to the target section: not probed.",
+    "Whether the acidity chart has a text alternative or data table for screen-reader users: no ARIA snapshot.",
+    "Behaviour at 200% zoom: not in the capture matrix and not probed."
+  ],
+  "strengths": [
+    {
+      "title": "Dosing status sentence states the mode and its consequence in plain words",
+      "evidence": "manual-dosing/768-light-audit.png: 'Nutrient dosing is now manual: the pumps run only when you start them.'; default state: 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.' Helps volunteer growers confirm the critical journey's goal (pumps will not dose on their own) without relying on the switch graphic; the text also survives forced-colours mode (manual-dosing/1280-light-forced-colors.png)."
+    },
+    {
+      "title": "Reading cards pair each value with its unit and a status word, not just colour",
+      "evidence": "default/768-light-audit.png and 1280-light-forced-colors.png: 'pH 6.1 In range', '1.84 mS/cm In range', '23.7 °C Warm'; the words remain legible in deuteranopia and forced-colours captures, supporting task 2 for colour-blind volunteers."
+    },
+    {
+      "title": "Layout reflows to a single column at 375 px without losing content",
+      "evidence": "default/375-light-audit.png: header, cards, chart, sensors table and dosing panel stack in order with no horizontal clipping, supporting growers who use phones."
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Sensor status is shown only by the colour of a dot",
+      "description": "Sensor health should be readable without relying on colour. In the Sensors table the Status column contains only a small coloured dot (green, amber, red) with no visible word or icon shape. In the deuteranopia capture all five dots appear the same olive tone, so the red 'Reservoir float' dot cannot be told apart from the healthy ones; in the forced-colours captures the dots disappear entirely and the Status column is blank.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "wcag", "id": "1.4.1", "name": "Use of Color" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Colour-blind volunteers, who are on every rota, and anyone using high-contrast or forced-colours settings may be unable to tell which sensor needs attention (top task 3), and may miss the faulty reservoir float before working on the tank.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 1280, "height": 960 }, "theme": "light-cvd-deuteranopia", "selector": "#sensors > div.table-wrap", "snippet": "Sensor Channel Status" },
+        { "route": "/", "state": "default", "viewport": { "width": 1280, "height": 960 }, "theme": "light-forced-colors", "selector": "#sensors > div.table-wrap" },
+        { "route": "/", "state": "manual-dosing", "viewport": { "width": 1280, "height": 960 }, "theme": "light-forced-colors", "selector": "#sensors > div.table-wrap" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "Status column: dots only; green x3, amber (Water thermometer), red (Reservoir float)" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-cvd-deuteranopia.png", "detail": "all five dots render in near-identical olive tones" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-forced-colors.png", "detail": "Status column empty; no dots rendered" }
+      ],
+      "factor_notes": {
+        "frequency": "Every check of the sensors table, several times per shift; affects colour-blind volunteers on every rota and any forced-colours user.",
+        "impact": "No on-screen workaround: the table offers no other cue to the status.",
+        "persistence": "Present in both states and at every width."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Add a visible status word (for example 'OK', 'Check', 'Fault') next to or instead of the dot.",
+      "tags": ["colour-only", "forced-colors", "sensors"]
+    },
+    {
+      "title": "Dosing switch is not visible in forced-colours mode",
+      "description": "The control for the critical task should remain visible and show its on/off state under system high-contrast settings. In both forced-colours captures the Dosing panel shows the label 'Automatic nutrient dosing' but no switch track or knob at all, so there is nothing visible to press and the current position cannot be seen; only the sentence below indicates the mode.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "wcag", "id": "1.4.11", "name": "Non-text Contrast" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Low-vision volunteers using high-contrast settings may not find the control needed to take dosing off automatic before draining the reservoir (critical journey switch-dosing-to-manual).",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 1280, "height": 960 }, "theme": "light-forced-colors", "selector": "#dosing-switch" },
+        { "route": "/", "state": "manual-dosing", "viewport": { "width": 1280, "height": 960 }, "theme": "light-forced-colors", "selector": "#dosing-switch" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-forced-colors.png", "detail": "label 'Automatic nutrient dosing' with empty space where the switch is drawn in the normal capture" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/manual-dosing/1280-light-forced-colors.png", "detail": "same in manual state" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-audit.png", "detail": "comparison: switch drawn at right of the label" }
+      ],
+      "factor_notes": {
+        "frequency": "Only for users with forced-colours / high-contrast settings, but on every visit by them.",
+        "impact": "The sole control for the critical task has no visible affordance; whether clicking the label toggles it was not probed.",
+        "persistence": "Both states."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Give the switch track and knob system-colour borders/fills that survive forced-colours mode.",
+      "tags": ["forced-colors", "dosing", "critical-journey"]
+    },
+    {
+      "title": "Faulty sensor gives no explanation of what is wrong or what to do",
+      "description": "A sensor flagged as needing attention should say what the problem is and how to respond, especially for volunteers untrained in hydroponics. The 'Reservoir float' row shows a red dot and the 'Water thermometer' row an amber dot; no text, tooltip area or link on screen states the fault (offline, out of calibration, reading out of range) or a next step. Meanwhile the Reservoir card reads '142 L of 200 L, Topped up 09:30' with a green chip, giving no hint that its float sensor is faulty.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true, "name": "Help users recognise, diagnose and recover from errors" },
+        { "kind": "heuristic", "id": "H10" },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Volunteers about to drain and refill the reservoir may trust a reservoir level that comes from a faulty float, and may not know whether to act or whom to call (top task 3).",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "#sensors > div.table-wrap", "snippet": "Reservoir float Tank" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "Reservoir float row: red dot only; Reservoir card: green 'Topped up 09:30'" },
+        { "type": "absence", "detail": "inventory.json lists only three nav links, the Sensors region and the dosing switch in both states; no help, details or per-sensor control exists to explain a fault." }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever any sensor is not healthy; two of five are flagged in the shipped data.",
+        "impact": "No on-screen route to diagnosis; users must already know what the colour means and what to do.",
+        "persistence": "Persists in both states."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Add a short fault description and next step to flagged rows, and mark readings that depend on a faulty sensor.",
+      "tags": ["sensors", "error-recovery"]
+    },
+    {
+      "title": "Same measurements are named differently across cards, sensors table and dosing text",
+      "description": "One measurement should carry one name throughout. The reading cards say 'Acidity', 'Conductivity' and 'Dissolved oxygen'; the Sensors table calls the matching devices 'pH probe', 'EC probe' and 'Oxygen probe'; the dosing sentence says 'top up to EC 1.8' without a unit. A volunteer who knows 'pH' and 'feed' but not 'EC' must work out that 'Conductivity' and 'EC' are the same thing to relate a reading to its sensor or to the dosing target.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true, "name": "Consistency and standards" },
+        { "kind": "heuristic", "id": "H2" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Volunteer growers and visiting school groups may fail to connect a flagged sensor to the reading it affects, or the dosing target to the conductivity card, slowing tasks 2 and 3.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=Conductivity", "snippet": "Conductivity 1.84 mS/cm" },
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "#sensors > div.table-wrap", "snippet": "EC probe" },
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=top up to EC 1.8", "snippet": "pumps A and B top up to EC 1.8" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "cards: Acidity / Conductivity / Dissolved oxygen; table: pH probe / EC probe / Oxygen probe; dosing: 'EC 1.8'" }
+      ],
+      "factor_notes": {
+        "frequency": "Every time a user cross-references cards, sensors and dosing.",
+        "impact": "Overcome by those who know the jargon (growing lead); harder for volunteers and visitors.",
+        "persistence": "Same in both states and all widths."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use one name per measurement everywhere, optionally with the abbreviation in brackets once.",
+      "tags": ["terminology", "consistency"]
+    },
+    {
+      "title": "'Warm' status does not say whether water temperature is out of range, and no target ranges are shown",
+      "description": "To check whether any reading is out of range, each reading should say so plainly or show its target. Four cards say 'In range'; the Water temperature card instead says 'Warm' in an amber chip, and the Reservoir card says 'Topped up 09:30'. No card shows its target range. A novice cannot tell whether 'Warm' means out of range, close to the limit or acceptable, or how far 23.7 °C is from the limit.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true, "name": "Match between system and the real world" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Volunteers doing task 2 may either ignore a reading that needs action or act unnecessarily; for colour-blind users the amber chip adds no distinguishing cue (deuteranopia capture shows it near the other chips).",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=Warm", "snippet": "Water temperature 23.7 °C Warm" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "'Warm' vs 'In range' on other cards; no ranges displayed" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-cvd-deuteranopia.png", "detail": "chip colours similar under deuteranopia" }
+      ],
+      "factor_notes": {
+        "frequency": "Every reading check while temperature is borderline; recurs whenever any value leaves 'In range'.",
+        "impact": "Users must recall target ranges from training or the shift checklist.",
+        "persistence": "Both states, all widths."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use a consistent status vocabulary (in range / near limit / out of range) and show each target range on the card.",
+      "tags": ["readings", "status-wording"]
+    },
+    {
+      "title": "Acidity chart has no value axis or target band",
+      "description": "A trend chart used to judge whether acidity is in range needs a value scale and the target range. 'Acidity over the last 24 hours' shows only a line with time labels (14:00 to 14:00); there are no pH values on any axis, no gridlines and no target band, so the dip around 23:00 cannot be judged as safe or out of range. At 375 px the chart is compressed to a thin strip, making the trend still harder to read.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true, "name": "Recognition rather than recall" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "principle", "id": "Gerhardt-Powals: automate comparisons / reduce uncertainty" }
+      ],
+      "impact": "Growers and the growing lead reviewing the bay before and after shifts may be unable to tell whether acidity left its range overnight (task 2).",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=Acidity over the last 24 hours" },
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 1481 }, "theme": "light", "selector": "text=Acidity over the last 24 hours" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "line with only time labels" },
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/375-light-audit.png", "detail": "chart compressed to a thin strip" }
+      ],
+      "factor_notes": {
+        "frequency": "Every time the chart is consulted.",
+        "impact": "The chart conveys shape only; values must be inferred.",
+        "persistence": "All widths and states."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Add a labelled pH axis and shade the target range.",
+      "tags": ["chart", "readings"]
+    },
+    {
+      "title": "Last-reading time does not show how old the data is",
+      "description": "Because the probe feed can drop out, growers need to see when readings are stale. The header shows only 'Last reading 14:05' in light grey, with no date, age ('3 min ago') or stale warning, and the cards carry no per-reading timestamp. A volunteer glancing at the wall tablet cannot tell whether 14:05 is current.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true, "name": "Visibility of system status" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Volunteers, who per context do not know when a reading is stale, may act on old values when checking whether readings are in range (task 2).",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=Last reading", "snippet": "Last reading" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "header right: 'Last reading 14:05' only" }
+      ],
+      "factor_notes": {
+        "frequency": "Every glance at the monitor; matters most when the feed drops out.",
+        "impact": "Users must compare against a clock themselves; stale-state behaviour itself was not assessable.",
+        "persistence": "All states and widths."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Show the age of the data and a clear warning once it passes a staleness threshold.",
+      "tags": ["freshness", "status"]
+    },
+    {
+      "title": "Manual-mode message refers to starting the pumps, but no control to start them is shown",
+      "description": "After switching to manual, the panel says 'the pumps run only when you start them.' The page offers no visible way to start a pump and no pointer to where this is done; the Dosing panel contains only the switch, the sentence and the dose log. A volunteer may wonder whether they are now expected to start the pumps from this screen.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H10", "primary": true, "name": "Help and documentation" },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "Volunteers untrained in hydroponics finishing the critical journey may be unsure whether manual mode needs further action and where, adding doubt at the point of working on the reservoir.",
+      "locations": [
+        { "route": "/", "state": "manual-dosing", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=now manual", "snippet": "Nutrient dosing is now manual: the pumps run only when you start them." }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/manual-dosing/768-light-audit.png", "detail": "Dosing panel in manual state: switch, sentence, two log lines" },
+        { "type": "absence", "detail": "inventory.json root/manual-dosing lists only links Readings, Sensors, Dosing, region Sensors and switch Automatic nutrient dosing; no pump start control. Screenshots at 375, 768, 1280 px show none." }
+      ],
+      "factor_notes": {
+        "frequency": "Each time dosing is set to manual.",
+        "impact": "Confusion rather than a block; the critical goal (stop automatic dosing) is still shown as met.",
+        "persistence": "Whenever the manual state is shown."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Say where pumps are started (for example 'at the controller in the bay') or that no action is needed here.",
+      "tags": ["dosing", "copy"]
+    },
+    {
+      "title": "Navigation label 'Readings' does not match its section heading 'Nutrient film channels'",
+      "description": "In-page navigation labels should match the headings they lead to. The header links read 'Readings', 'Sensors', 'Dosing'; the second and third match their panel headings, but the first panel is headed 'Nutrient film channels', a technical term that volunteers and visitors may not know, so the link and its target do not visibly correspond.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true, "name": "Consistency and standards" },
+        { "kind": "heuristic", "id": "H2" },
+        { "kind": "wcag", "id": "2.4.6", "name": "Headings and Labels" }
+      ],
+      "impact": "Screen-reader users navigating by headings and novices scanning the page may not recognise the readings section by the name the nav gave it.",
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "li:nth-of-type(1) > a", "snippet": "Readings" },
+        { "route": "/", "state": "default", "viewport": { "width": 768, "height": 938 }, "theme": "light", "selector": "text=Nutrient film channels", "snippet": "Nutrient film channels" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/768-light-audit.png", "detail": "nav 'Readings'; first panel heading 'Nutrient film channels'" }
+      ],
+      "factor_notes": {
+        "frequency": "On arrival and whenever navigating by link or heading.",
+        "impact": "Small; the section is first on the page.",
+        "persistence": "All states and widths."
+      },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-3", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use the same name for the link and the heading.",
+      "tags": ["navigation", "terminology"]
+    }
+  ]
+}

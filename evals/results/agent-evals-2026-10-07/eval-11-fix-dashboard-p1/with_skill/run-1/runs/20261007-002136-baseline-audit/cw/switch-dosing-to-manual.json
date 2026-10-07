@@ -1,0 +1,88 @@
+{
+  "schema": "cw-record",
+  "run": "20261007-002136-baseline-audit",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "journey": "switch-dosing-to-manual",
+  "variant": "full",
+  "persona": {
+    "group": "Volunteer grower on the evening shift at a community hydroponics farm",
+    "knows": [
+      "the reservoir is about to be drained and refilled",
+      "the pumps must not dose into an empty tank",
+      "what the plants need in broad terms; the shift checklist",
+      "own words: pH, feed, the tank, pumps"
+    ],
+    "does_not_know": [
+      "where the monitor keeps pump controls",
+      "whether the change takes effect at once",
+      "what each probe measures in detail (EC is a lead's term)"
+    ],
+    "context": "Standing in the humid bay with wet gloves, using the shared wall tablet (768 px portrait), bright grow lights"
+  },
+  "task": "Goal: make sure the pumps will not add nutrients while the tank is empty. Scenario: You are about to drain and refill the Bay 4 reservoir. Before you start, stop the system from adding nutrient solution on its own, and check that it has stopped. Success condition: role=status shows 'Nutrient dosing is now manual'. Avoided hints: 'Automatic nutrient dosing', 'Dosing'.",
+  "start_state": {
+    "url": "/",
+    "data": "readings as shipped with the page; dosing on automatic",
+    "locale": "en-GB",
+    "viewport_width": 768
+  },
+  "sequence": [
+    { "action": "goto", "url": "/" },
+    { "action": "click", "target": "role=switch[name=\"Automatic nutrient dosing\"]" },
+    { "action": "expect", "target": "role=status", "text": "Nutrient dosing is now manual" }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "action": { "action": "goto", "url": "/" },
+      "sub_goal": "Open the bay monitor on the wall tablet and look for where the pumps are controlled",
+      "visible_cues": "Header 'Bay 4 hydroponics monitor' with nav links Readings, Sensors, Dosing; readings cards; Sensors table and a 'Dosing' panel side by side below the chart, visible without scrolling at 768x900 and 768x1024.",
+      "most_likely_action": "Scan the page for the word 'pumps' or 'feed'; the Dosing panel text 'pumps A and B top up' is the first mention of pumps.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The grower knows they must stop the pumps before draining, so they open the monitor intending to find the pump control.", "evidence": ["journeys.json persona.knows"] },
+        "q2": { "answer": "yes", "story": "The Dosing panel and its switch sit above the fold at the tablet's portrait size; the nav also offers 'Dosing'. No hover or scrolling is needed.", "evidence": ["evidence/screens/root/default/768-light-audit.png", "probes/6/step-01.png (768x1024)"] },
+        "q3": { "answer": "yes", "story": "'Dosing' is not the grower's word ('feed', 'pumps'), but the panel's body text says 'pumps A and B top up', which ties the panel to the pumps they want to stop.", "evidence": ["probes/2/aria.yml region 'Dosing'"] },
+        "q4": { "answer": "yes", "story": "The page loads at once (load 15 ms) and shows the readings and the Dosing panel; nothing more is expected from this step.", "evidence": ["probes/2/probe.json load"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 2,
+      "action": { "action": "click", "target": "role=switch[name=\"Automatic nutrient dosing\"]" },
+      "sub_goal": "Turn off automatic nutrient dosing",
+      "visible_cues": "Label 'Automatic nutrient dosing' next to a green switch in the on position; text below: 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.'",
+      "most_likely_action": "Tap the green switch to turn 'automatic' off.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Reading 'Nutrient dosing is automatic: pumps A and B top up', the grower concludes that 'automatic' is what makes the pumps add feed on their own, which is exactly what they must stop.", "evidence": ["evidence/screens/root/default/768-light-audit.png"] },
+        "q2": { "answer": "yes", "story": "The switch is the only control in the panel and is shown in its on (green) state at the right of its label, visible without scrolling.", "evidence": ["probes/2/aria.yml: switch \"Automatic nutrient dosing\""] },
+        "q3": { "answer": "yes", "story": "Turning off something labelled 'Automatic' matches 'stop the system adding nutrient on its own'. Weak spot (noted, not failed): the label does not say what off means for the pumps, but the body text names the pumps.", "evidence": ["probes/2/aria.yml region 'Dosing'"] },
+        "q4": { "answer": "yes", "story": "On tap the switch moves to off and turns grey within the same frame (click 44 ms), and the text below changes in place to 'Nutrient dosing is now manual: the pumps run only when you start them.' This also answers the grower's question of whether it takes effect at once ('now').", "evidence": ["probes/2/probe.json step 1", "probes/2/step-01.png", "evidence/screens/root/manual-dosing/768-light-audit.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 3,
+      "action": { "action": "expect", "target": "role=status", "text": "Nutrient dosing is now manual" },
+      "sub_goal": "Check that dosing has stopped and stays stopped while the tank is empty",
+      "visible_cues": "Status text 'Nutrient dosing is now manual: the pumps run only when you start them.'; switch off; 'Last reading 14:05' and the pump events list unchanged.",
+      "most_likely_action": "Read the status line, and on a later look at the shared tablet (after it reloads, or when a colleague refreshes it) check the switch again.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The scenario explicitly asks the grower to check that it has stopped, so they look for confirmation.", "evidence": ["journeys.json scenario"] },
+        "q2": { "answer": "yes", "story": "The confirmation is in the same panel, directly under the switch they just tapped.", "evidence": ["probes/2/step-01.png"] },
+        "q3": { "answer": "yes", "story": "'now manual: the pumps run only when you start them' reads as 'the pumps will not add feed by themselves', matching the goal.", "evidence": ["probes/2/aria.yml status"] },
+        "q4": { "answer": "no", "story": "The confirmation does not hold. After the page is reloaded the panel shows the switch on again and 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.' The grower, who saw 'now manual' and walked off to drain the tank, has no cue that the setting was not kept; a colleague reloading the shared tablet, or the grower checking again mid-job, sees automatic dosing with no explanation of whether the pumps were ever off. Nothing on screen (no time of change, no pump state, no 'saved' indication) lets the grower tell a lasting change from a temporary one.", "evidence": ["probes/6/probe.json step 5: after reload status reads 'Nutrient dosing is automatic: pumps A and B top up to EC 1.8.'", "probes/6/step-01.png (manual)", "probes/6/final.png (automatic after reload)"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "A volunteer switches dosing to manual, sees 'Nutrient dosing is now manual' and starts draining. Missing feedback: whether the change has been kept and applied to the pumps. After any reload of the shared tablet the screen says dosing is automatic again; the grower either does not look again (and believes the pumps are off) or looks and cannot tell whether the pumps dosed into the empty tank. They may recover only by noticing the switch is on again and tapping it a second time, which nothing prompts them to do.",
+      "missing": "feedback"
+    }
+  ],
+  "overall": "would_with_effort",
+  "failure_points": [
+    "Step 3, CW-Q4: manual dosing does not survive a page reload; the confirmation gives no cue that the change is temporary"
+  ],
+  "notes": "Sequence from the journey file was complete and walked as given; no alternative paths walked (the nav link 'Dosing' is an alternative way to reach the panel). Walk carried out in an isolated subagent. These are E0 failure-point hypotheses, not predicted success: I knew the path. Probe 2 (768x900) replays the journey and passes; probe 6 (768x1024) adds a 3 s wait and a reload and shows the state reverting. Whether the real pumps received the change cannot be assessed black-box; the probe recorded no failed network requests. Out of journey scope, seen in passing: the Sensors table's Status cells are empty in the ARIA snapshot (status shown only as coloured dots), and the reservoir float shows a red dot, which matters to a grower about to drain the tank. Packet aria.json was empty, so ARIA evidence comes from probe snapshots."
+}

@@ -1,0 +1,113 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The final reply is split into \"## Fix first: before launch\" (items 1-4, each of which \"can leave a skipper outside the harbour or with no booking\") and \"## Fix next\" (items 5-11). Its closing paragraph names what it could not check: \"I didn't test with real screen readers (VoiceOver or TalkBack) or at 200% browser zoom\" and \"it's worth running the main booking with a few real skippers once points 1-4 are fixed\", plus \"Please confirm\" on whether a real backend exists."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Tide table in UTC while arrival time is local (BST); dropdown names no time zone",
+      "maps_to": "journey-app-D05",
+      "reason": "Same problem as D05: high-water times are given in UTC, the arrival-time list is local time, and on 17 October (BST) a skipper planning from the table is an hour out for the sill gate."
+    },
+    {
+      "item": "R2",
+      "title": "Arrival-time picker shows no gate window and accepts times when the gate is shut",
+      "maps_to": "journey-app-D09",
+      "reason": "D09 exactly: the hour list accepts a closed-gate time (the review booked 06:00 on 17 October) with no warning, and the gate rule sits only under the tide table instead of next to the time choice."
+    },
+    {
+      "item": "R3",
+      "title": "Gate window not repeated on the berth list, review or confirmation page",
+      "maps_to": "journey-app-D11",
+      "reason": "Broader statement of D11's first omission: the confirmation never shows the sill-gate window for the booked day. The review's fix (repeat the window on the review and confirmation pages) would fix that part of D11."
+    },
+    {
+      "item": "R4",
+      "title": "Tide table covers only 17-23 October while the date picker runs to March 2027",
+      "maps_to": "real-unseeded",
+      "reason": "Not among the seeded defects. A skipper booking any date outside that week has no high-water or gate information for their day and cannot plan arrival over the sill, which is the safety-relevant decision this flow exists to support."
+    },
+    {
+      "item": "R5",
+      "title": "\"Booking stopped\" (BK-409) dead end: no reason, next step or link; berth chosen before the length is known",
+      "maps_to": "journey-app-D04",
+      "reason": "D04 exactly: an over-length boat replaces the form with Booking stopped and a bare reference, with no explanation, nothing kept, and no way to correct the length or pick a longer berth. The 'picks a berth blind' remark is the same problem's cause, offered as a fix."
+    },
+    {
+      "item": "R6",
+      "title": "\"Length\" field ambiguous (hull vs overall), no unit; berth cards do not say LOA",
+      "maps_to": "journey-app-D03",
+      "reason": "D03 exactly: the field is labelled only Length, so a skipper may enter hull length (9.6 m) and pass the check for a berth the 10.4 m LOA boat does not fit."
+    },
+    {
+      "item": "R7",
+      "title": "Boat form cleared on Back (pageshow reset in app.js)",
+      "maps_to": "journey-app-D07",
+      "reason": "D07 exactly: going back from review empties every boat field because the page resets the form on pageshow, so one correction means retyping all of it."
+    },
+    {
+      "item": "R8",
+      "title": "Confirm booking sends nothing to a backend; name and mobile discarded",
+      "maps_to": "not-a-problem",
+      "reason": "The review itself says it assumed a front-end prototype and asks the owner to confirm. A static prototype having no backend is not a usability problem for skippers using this flow, and the harm described is conditional on a live build the review has not seen."
+    },
+    {
+      "item": "R9",
+      "title": "Booking reference (date + berth code) not unique",
+      "maps_to": "not-a-problem",
+      "reason": "Speculative implementation detail: two bookings of the same berth on the same day would be a double booking the system should not allow anyway, and the reference format does not hinder a skipper using the flow."
+    },
+    {
+      "item": "R10",
+      "title": "\"Change dates\" hidden behind an unlabelled three-dot button on the berth list",
+      "maps_to": "journey-app-D01",
+      "reason": "D01 exactly: the only route back to the dates is inside an unlabelled three-dot menu, so a skipper whose arrival day changes sees nothing to tap."
+    },
+    {
+      "item": "R11",
+      "title": "Review page has no Change links on any row",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect (D02 is about a step indicator, which Change links on the review page would not supply). A skipper who spots a mistake on the review page can only use the browser Back button, which in turn wipes the boat form, so errors go through or the booking is abandoned."
+    },
+    {
+      "item": "R12",
+      "title": "Review page omits the draught",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The review page is where a skipper checks what they entered before confirming; a draught that is collected but never shown cannot be checked, so a mistyped value reaches the office unseen, and draught matters for a drying wall berth and the sill."
+    },
+    {
+      "item": "R13",
+      "title": "Confirmation omits arrival time, gate window, boat name, total, pay-on-arrival note and what happens next",
+      "maps_to": "journey-app-D11",
+      "reason": "Broader statement of D11: the confirmation gives a reference but no arrival instructions. The review asks for the gate window and for \"what happens next (for example: call or radio the office on approach)\", which are D11's missing gate window and VHF call."
+    },
+    {
+      "item": "R14",
+      "title": "MMSI required with no hint what it is; many small boats have none",
+      "maps_to": "journey-app-D10",
+      "reason": "D10 exactly: MMSI is mandatory with no explanation of the abbreviation or what to do if the boat has none; the review's fix (make it optional and add a one-line hint) fixes it."
+    },
+    {
+      "item": "R15",
+      "title": "Terminology changes: visitor berth, pontoon space, mooring booking",
+      "maps_to": "journey-app-D08",
+      "reason": "D08 exactly: one thing has three names across the flow; the review names the same three terms and asks for \"berth\" throughout."
+    },
+    {
+      "item": "R16",
+      "title": "Error messages give no format help (\"Enter the length\", \"Enter the MMSI\")",
+      "maps_to": "journey-app-D10",
+      "reason": "D10's description includes that the error message only repeats Enter the MMSI; the review's fix (\"The MMSI is 9 digits\") addresses that facet. The length half overlaps D03's missing unit, but the item is one problem about format-less errors and D10 is the defect that names the error message."
+    },
+    {
+      "item": "R17",
+      "title": "Draught collected but never checked against the sill or berth depth",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The site asks for draught, notes that wall berth 2 dries out and that the sill has a depth limit, yet lets a deep-draught boat book either with no warning, so a skipper can arrive at a berth or gate they cannot use."
+    }
+  ]
+}

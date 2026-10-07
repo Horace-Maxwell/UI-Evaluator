@@ -1,0 +1,42 @@
+{
+  "schema": "fix-review",
+  "run": "20261007-102909-fix-f-0019-regression",
+  "baseline_run": "20261007-002136-baseline-audit",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "451a0f865160e918",
+  "evidence_valid": true,
+  "items": [],
+  "regressions": [
+    {
+      "title": "At 320 px the new Status labels wrap below their dots: 'Warning' and 'Alarm' sit on a second line, apart from the coloured marker they describe, so the cell reads as two separate items",
+      "kind": "collateral",
+      "location": { "route": "/", "state": "default", "viewport": { "width": 320 }, "selector": "Sensors table, Status column (Water thermometer, Reservoir float rows)" },
+      "evidence": [
+        ".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/evidence/screens/root/default/320-light-audit.png",
+        ".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/evidence/screens/root/manual-dosing/320-light-audit.png",
+        ".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/probes/1/final.png"
+      ]
+    },
+    {
+      "title": "To fit the status text, the Sensors table's cell padding was reduced: at 1280 px the 'Channel' and 'Status' headers nearly touch, the row text moved from about x=48 to x=45, and 'Warning' runs up to the table's right edge",
+      "kind": "collateral",
+      "location": { "route": "/", "state": "default", "viewport": { "width": 1280 }, "selector": "Sensors table header row and cells" },
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/evidence/screens/root/default/1280-light-audit.png",
+        ".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/evidence/screens/root/default/1280-light-audit.png",
+        ".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/evidence/screens/root/default/1280-light-forced-colors.png"
+      ]
+    }
+  ],
+  "disposition": "fix",
+  "scope": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "viewports": [320, 375, 1280],
+    "variants_viewed": ["1280-light-audit", "320-light-audit", "375-light-audit (manual-dosing)", "1280-light-forced-colors"],
+    "probes": [".ui-evaluator/runs/20261007-102909-fix-f-0019-regression/probes/1/probe.json"],
+    "notes": "Regression-only review as the README instructed; items left empty because F-0003 and F-0004 were verified by the re-run. diff.json reports 0 introduced findings and 0 introduced instances in the 12 persisting tool findings. Lint did not run this round (4 findings cleared_not_rechecked), so source-level regressions were not checked. The ARIA tree (probes/1/aria.yml) shows the Sensors status cells now carry text names (OK, Warning, Alarm); no names, roles or landmarks were lost. Forced-colours and more-contrast captures show the status text and no visible breakage elsewhere. The changes are confined to the Sensors table and to the colour of the 'Last reading' and metric labels; nothing else changed in the pixels. No tell swap seen. Both regressions are low severity."
+  }
+}

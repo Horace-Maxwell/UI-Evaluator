@@ -1,0 +1,61 @@
+fix(ui): F-0021 Dosing switch stays visible in forced-colours mode
+
+Finding:     F-0021 (P1, A11Y-19 / WCAG 1.4.11; merged duplicates F-0026, F-0051):
+             in Windows High Contrast / forced colours the switch track and knob and
+             the sensor dots disappeared, so dosing on/off could not be seen.
+Originating: forced-colours captures at 320 and 1280, default and manual-dosing: the
+             switch is drawn and on/off differ; the dots are drawn.
+Regression:  journey switch-dosing-to-manual; audit contrast,axe,keyboard,states;
+             normal-mode captures unchanged; ARIA unchanged.
+Drift class: local defect -> a forced-colors media block using system colours
+             (off: Canvas track outlined in ButtonText, ButtonText knob at left;
+              on: Highlight track, HighlightText knob at right).
+Layer:       styles.css, new @media (forced-colors: active) block only.
+Assumptions: none.
+Left alone:  in forced colours all dots share one colour; statuses are told apart by
+             the words added in F-0019.
+Re-test:     run 20261007-101436-fix-f-0021: axe/keyboard/contrast/states 0, journey
+             3/3; only the four forced-colours captures changed. PASSED.
+Baseline:    665ca185ac74f08453715a82013e960438c2e377; apply after F-0003.
+
+diff --git a/styles.css b/styles.css
+index 3dc9552..5cdf60d 100644
+--- a/styles.css
++++ b/styles.css
+@@ -309,6 +309,36 @@ th {
+   gap: 7px;
+ }
+ 
++@media (forced-colors: active) {
++  .switch__track,
++  .switch__knob,
++  .dot {
++    forced-color-adjust: none;
++  }
++
++  .switch__track {
++    background: Canvas;
++    box-shadow: inset 0 0 0 2px ButtonText;
++  }
++
++  .switch__knob {
++    background: ButtonText;
++  }
++
++  .switch[aria-checked="true"] .switch__track {
++    background: Highlight;
++    box-shadow: none;
++  }
++
++  .switch[aria-checked="true"] .switch__knob {
++    background: HighlightText;
++  }
++
++  .dot {
++    background: CanvasText;
++  }
++}
++
+ @media (prefers-reduced-motion: reduce) {
+   *,
+   *::before,

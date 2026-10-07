@@ -1,0 +1,147 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-002136-baseline-audit",
+  "packet_hash": "2f5b9aa733b5e9f2",
+  "notes": "Styling system: one hand-written stylesheet (styles.css) with only two custom properties (--page, --ink in :root); no component library, no Tailwind, no token JSON. Markup is static index.html; dashboard.js only toggles the dosing switch. needs-source.json and rate-ease.json were not in the packet, so no source_locations or ease_estimates for other roles' findings were requested; ease is given per finding in each candidate's _ease_of_fix field. Lint already reports MOT-01 (transition: all on .panel, styles.css:122) and MOT-03 (overshooting cubic-bezier on .switch__knob, styles.css:286); not duplicated here (ease 1 each, one declaration). Low-contrast grey #9aa0a6 (.updated styles.css:106, .metric__label styles.css:144) is left to the measured contrast audit; its root cause is the missing muted-text token in finding 1. Viewed one capture (forced-colours screenshot) to confirm finding 4. Bash was denied in this environment, so `uie findings validate` could not be run. No IME surface (no text inputs). lang=en-GB is set. Strengths: a global :focus-visible outline exists (styles.css:45) and is distinct from hover; a prefers-reduced-motion path exists (styles.css:312); the switch is a native button with role=switch and aria-checked, so Space and Enter work, and its status change is announced through role=status.",
+  "candidates": [
+    {
+      "title": "Colour values are literals instead of roles: only page and ink are tokenised",
+      "description": "Colour should come from named role tokens so states and themes stay consistent. styles.css declares only --page and --ink; 33 of 35 colour declarations are hex or rgba literals, including literals that equal --ink (#1c2b22 at lines 34, 46, 93). Root cause: missing roles for surface (#ffffff x3), border (#d5ddd7 x2, #5f6b63 x3), muted text (#3b4a40 x3, #9aa0a6 x2), hover/pressed fills (#dfe7e1 x2, #cfdcd2, #eef2ef), accent (#2f6b3a x2 plus the chart stroke in index.html), shadow (rgba(28,43,34,.12) x2) and three status families (ok/warn/alarm chips and dots use six unrelated greens, ambers and reds).",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "rule", "id": "COL-01", "primary": true } ],
+      "impact": "Status colours for chips and dots are defined independently, so they may drift apart; forced-colours and contrast fixes have to be made in many places.",
+      "locations": [
+        { "route": "/", "snippet": "a { color: #1c2b22; }", "source": { "file": "styles.css", "line": 34, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".panel background #ffffff / border #d5ddd7 / box-shadow rgba", "source": { "file": "styles.css", "line": 118, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".metric duplicates panel surface, border and shadow", "source": { "file": "styles.css", "line": 137, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".chip--ok / --warn / --alarm literals", "source": { "file": "styles.css", "line": 171, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".dot--ok / --warn / --alarm literals", "source": { "file": "styles.css", "line": 231, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".switch__track #5f6b63 / #2f6b3a", "source": { "file": "styles.css", "line": 271, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": "stroke=\"#2f6b3a\"", "source": { "file": "index.html", "line": 57, "method": "code", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:3-6", "detail": "only --page and --ink declared; uie lint: 2 of 35 colour declarations use tokens (6% < 90%)" } ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E1",
+      "recommendation": "Add role tokens (--surface, --border, --text-muted, --accent, --shadow-card, --status-ok/warn/alarm with -bg/-fg pairs) in :root and replace the literals.",
+      "tags": [ "tokens", "colour" ],
+      "_ease_of_fix": { "ease": 2, "layer": "styles.css :root tokens", "note": "One file; values already exist, only need naming and substitution." }
+    },
+    {
+      "title": "Spacing values bypass any scale: 0 of 23 on the 4 px grid",
+      "description": "Spacing should come from a declared scale. No spacing tokens exist; values such as 6, 7, 9, 10, 13, 15, 18 and 22 px are used ad hoc (topbar gap/padding, h2 margin, layout gap/padding, panel and metric padding, chip padding 1px 3px, table cell 9px 7px, alerts gap 7px).",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "rule", "id": "LAY-01", "primary": true } ],
+      "impact": "Near-equal gaps (7, 9, 10 px) may read as unintended misalignment and make rhythm between panels inconsistent.",
+      "locations": [
+        { "route": "/", "snippet": "gap: 6px 18px; padding: 10px 18px;", "source": { "file": "styles.css", "line": 55, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": "gap: 18px; padding: 18px;", "source": { "file": "styles.css", "line": 112, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": "padding: 22px;", "source": { "file": "styles.css", "line": 117, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": "padding: 1px 3px;", "source": { "file": "styles.css", "line": 164, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": "padding: 9px 7px;", "source": { "file": "styles.css", "line": 215, "method": "code", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "tool", "detail": "uie lint LAY-01: 0 of 23 spacing values on the scale" } ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E1",
+      "recommendation": "Declare a 4 px-based spacing scale as custom properties and snap each value to its nearest step.",
+      "tags": [ "tokens", "spacing" ],
+      "_ease_of_fix": { "ease": 2, "layer": "styles.css", "note": "One file, about 20 declarations." }
+    },
+    {
+      "title": "Sensor status cells are empty coloured dots with no text or accessible name",
+      "description": "Status must be conveyed by more than colour and must be exposed to assistive technology. The Status column renders <span class=\"dot dot--ok|warn|alarm\"></span> with no text, title, aria-label or icon shape; the only difference between ok, warn and alarm is background colour.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "rule", "id": "A11Y-19", "primary": true }, { "kind": "wcag", "id": "1.4.1" }, { "kind": "wcag", "id": "1.1.1" } ],
+      "impact": "Screen-reader users hear an empty Status cell for every sensor, including the reservoir float alarm; users with colour-vision deficiencies may not tell warn from alarm.",
+      "locations": [
+        { "route": "/", "state": "default", "selector": "#sensors td .dot", "snippet": "<span class=\"dot dot--alarm\"></span>", "source": { "file": "index.html", "line": 71, "method": "code", "confidence": "high" } },
+        { "route": "/", "state": "default", "selector": "#sensors td .dot--alarm", "snippet": "<td>Reservoir float</td>", "source": { "file": "index.html", "line": 75, "method": "code", "confidence": "high" } },
+        { "route": "/", "snippet": ".dot--ok/.dot--warn/.dot--alarm", "source": { "file": "styles.css", "line": 224, "method": "code", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "index.html:71-75", "detail": "five status spans with no text content or label" } ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E1",
+      "recommendation": "Render the status as text (e.g. reuse the chip component: 'OK', 'Warm', 'Alarm') with the dot as decoration, or at minimum add visually hidden text.",
+      "tags": [ "a11y", "status", "colour" ],
+      "_ease_of_fix": { "ease": 2, "layer": "index.html sensors table + .dot styles", "note": "Markup change in one table; chip styles already exist." }
+    },
+    {
+      "title": "Dosing switch and sensor dots disappear in forced-colours mode",
+      "description": "Controls and state indicators must remain visible when the OS forces colours. The switch track and knob, and the status dots, are drawn only with background-color on empty spans; the button has border: 0 and a transparent background. Forced colours removes these backgrounds, so the switch and its on/off state render as nothing, and the Status column is blank.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "rule", "id": "A11Y-22", "primary": true }, { "kind": "wcag", "id": "1.4.11" } ],
+      "impact": "High-contrast users may not find the dosing control or know whether automatic dosing is on, and cannot see any sensor status.",
+      "locations": [
+        { "route": "/", "state": "default", "selector": "#dosing-switch", "snippet": "<button class=\"switch\" role=\"switch\">", "source": { "file": "styles.css", "line": 251, "method": "code", "confidence": "high" } },
+        { "route": "/", "state": "default", "selector": ".switch__track", "snippet": ".switch__track", "source": { "file": "styles.css", "line": 265, "method": "code", "confidence": "high" } },
+        { "route": "/", "state": "default", "selector": "#sensors td .dot", "snippet": ".dot", "source": { "file": "styles.css", "line": 224, "method": "code", "confidence": "high" } }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/root/default/1280-light-forced-colors.png", "detail": "Dosing panel shows the label with no switch; Status column is empty" },
+        { "type": "code", "ref": "styles.css:251-291", "detail": "no border or forced-colors media query; state shown only via background-color and transform" }
+      ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E1",
+      "recommendation": "Give the track a 1-2 px border (transparent normally, visible in forced colours) and add @media (forced-colors: active) rules using system colours (ButtonText, Highlight) for track, knob and dots; text status per the previous finding also fixes the dots.",
+      "tags": [ "a11y", "forced-colors", "switch" ],
+      "_ease_of_fix": { "ease": 2, "layer": "styles.css switch and dot rules", "note": "CSS-only, one file." }
+    },
+    {
+      "title": "Metric values use a second font family that falls back to a generic sans-serif",
+      "description": "Content should use the declared family stack. .metric__value sets font-family: Futura, sans-serif while the body uses Verdana, \"DejaVu Sans\", sans-serif; Futura is absent on most Windows, Linux and Android systems, so the readings render in an unpredictable generic face with different metrics from the rest of the page.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "TYP-05", "primary": true } ],
+      "impact": "Readings may change width and appearance between the operators' devices, and the numerals may not be tabular.",
+      "locations": [ { "route": "/", "selector": ".metric__value", "snippet": "font-family: Futura, sans-serif;", "source": { "file": "styles.css", "line": 149, "method": "code", "confidence": "high" } } ],
+      "evidence": [ { "type": "code", "ref": "styles.css:149" } ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E0",
+      "recommendation": "Use the body stack (or a declared display token with a full fallback stack) and font-variant-numeric: tabular-nums for readings.",
+      "tags": [ "typography", "tokens" ],
+      "_ease_of_fix": { "ease": 1, "layer": "styles.css .metric__value", "note": "One declaration." }
+    },
+    {
+      "title": "Dosing switch flips state immediately with no pending or failure state",
+      "description": "A control that commands equipment should show a pending state while the command is in flight and revert with an error if it fails. The click handler sets aria-checked and the 'now manual' status text synchronously; there is no request, no busy state, no error path and no revert.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "CMP-04", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "If wired to a real controller, the screen may report manual dosing while the pumps are still automatic (or the reverse).",
+      "locations": [ { "route": "/", "selector": "#dosing-switch", "snippet": "sw.addEventListener('click'", "source": { "file": "dashboard.js", "line": 5, "method": "code", "confidence": "high" } } ],
+      "evidence": [ { "type": "code", "ref": "dashboard.js:5-11" } ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E0",
+      "recommendation": "Set aria-busy and a 'Switching...' status while the command is sent; confirm or revert the switch on response, with an error message on failure.",
+      "tags": [ "states", "switch" ],
+      "_ease_of_fix": { "ease": 3, "layer": "dashboard.js + controller API", "note": "Needs the command flow and error state, not just styling." }
+    },
+    {
+      "title": "Readings have no stale, offline or error state",
+      "description": "A live monitor should indicate when readings are out of date or the feed has failed. The 'Last reading 14:05' time and all values are static markup; dashboard.js states there is no loading, empty or error view, and nothing changes when the data ages.",
+      "problem_type": "missing_element",
+      "criteria": [ { "kind": "rule", "id": "CMP-05", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Growers may act on old readings without any cue that they are stale.",
+      "locations": [ { "route": "/", "selector": ".updated", "snippet": "Last reading", "source": { "file": "index.html", "line": 20, "method": "code", "confidence": "high" } } ],
+      "evidence": [
+        { "type": "absence", "detail": "searched index.html, styles.css and dashboard.js: no stale/offline/error class, message or handler; no data fetch exists" },
+        { "type": "code", "ref": "dashboard.js:1", "detail": "comment: no loading, empty or error view" }
+      ],
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code" } ],
+      "evidence_level": "E0",
+      "recommendation": "Add a stale threshold that restyles the 'Last reading' line as a warning with text, and an error banner when the feed fails.",
+      "tags": [ "states", "data" ],
+      "_ease_of_fix": { "ease": 3, "layer": "data flow + header + panels", "note": "Requires a data-loading path that does not exist yet." }
+    }
+  ],
+  "source_locations": [],
+  "ease_estimates": [],
+  "strengths": [
+    { "title": "Global :focus-visible outline, distinct from hover", "evidence": "styles.css:45-48" },
+    { "title": "Reduced-motion path covers all transitions", "evidence": "styles.css:312-320" },
+    { "title": "Dosing switch is a native button with role=switch, aria-checked and a role=status announcement", "evidence": "index.html:85-89; dashboard.js:5-11" }
+  ],
+  "not_assessable": [ "IME handling: no text inputs exist", "needs-source and rate-ease items: files absent from packet" ]
+}

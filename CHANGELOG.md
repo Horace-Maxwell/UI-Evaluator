@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
+## Unreleased
+
+- **Measured: the verification round of 2026-10-07.** The same five tasks and the control ran again with the 2.2.0 plugin. Eleven of the twelve problems the first round found are fixed on the evidence the plan set before the runs (`evals/results/agent-evals-2026-10-07/PLAN.md`); the twelfth, a second batch of raters, did not arise and rests on its test. The audit's judged precision was 0.72 this time (0.82 before), below the bar; recall 9 of 11, the same as the control's. `evals/README.md` and the READMEs carry the status.
+- **`tools/bench/trace-check.mjs`** reads a round's transcripts and run files for the trace assertions of EVALUATION-PLAN §4.4: black-box roles that read source, failed reads of packet paths, rejected probe steps, Back-button workarounds, hand-moved rating files, leaked answer keys, archived rating batches, feedback outputs, blocked findings, recorded splits and the final report's lint. Sandbox refusals are counted apart.
+- **Grader fixes.** The overclaim check in `grade-eval.mjs` counted a refusal that quoted the user's words ("I couldn't say … good to go") as a claim; its negation list gains couldn't, wouldn't, won't, don't, didn't, refuse, decline and the conditional markers before, until, unless, get to, way to, reach, become, honest. The severity-band check compared one merged finding's severity against every band its criteria matched; with a graders' mapping it now judges each found defect by the findings mapped to it. Round 1 keeps its results under both.
+
 ## 2.2.0 — 2026-10-06
 
 The two problems the 2026-10-06 round left open, decided in ADR-036 and ADR-037. File formats change only by addition: findings gain the `blocked` and `split` statuses and their records, and runs gain `splits.json`. USE-05 now also counts a `blocked` P0, which no earlier register contains.

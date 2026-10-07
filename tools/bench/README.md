@@ -28,4 +28,5 @@ The audit, fix, verify, ingest and report evals run as top-level, non-interactiv
 | 2 | `run-headless.mjs <round> [--only 19] [--arm without_skill] --claude <binary>` | `transcript.jsonl`, `stderr.log`, `timing.json` per run |
 | 3 | `grade-eval.mjs <run-dir> [--grader <answers.json>]` | `grading.json`, `grader-packet.json` |
 | 4 | `agree-graders.mjs <answers-a.json> <answers-b.json> --out <file>` | the two graders' agreement and their splits, for the adjudicator |
-| 5 | `record-evals.mjs <round> --date <YYYY-MM-DD>` | the round under `evals/results/agent-evals-<date>/` |
+| 5 | `trace-check.mjs <round> [--out <file>]` | the trace assertions per run: black-box roles that read source, failed packet paths, rejected probe steps, workarounds, leaked answer keys, blocked findings, recorded splits |
+| 6 | `record-evals.mjs <round> --date <YYYY-MM-DD> [--grading <dir>]` | the round under `evals/results/agent-evals-<date>/`, local paths scrubbed |

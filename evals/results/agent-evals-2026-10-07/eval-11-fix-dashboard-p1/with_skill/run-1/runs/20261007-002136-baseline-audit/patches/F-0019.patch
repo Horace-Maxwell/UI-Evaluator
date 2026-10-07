@@ -1,0 +1,57 @@
+fix(ui): F-0019 Sensor status is written out, not colour only
+
+Finding:     F-0019 (P0, WCAG 1.4.1 / A11Y-19). Same cells, same cause: F-0025 (P0),
+             F-0032 (P0), F-0020 (P1, WCAG 1.1.1 - cells empty to screen readers).
+             Each Status cell was a bare coloured dot: colour-blind growers could not
+             tell which sensor needs attention and screen readers heard nothing.
+Originating: Status cells state their status in text, distinguishable in the
+             deuteranopia/protanopia/achromatopsia captures; the ARIA snapshot gives
+             each cell a name.
+Regression:  journey switch-dosing-to-manual; audit axe,layout,contrast,census,keyboard
+             at 320-1440; ARIA diff (names gained only).
+Drift class: local defect -> visible word after each dot; dot marked aria-hidden.
+Layer:       index.html (5 Status cells), styles.css (.dot margin-right: 8px).
+Assumptions: the words "OK", "Warning", "Alarm" restate the three states the page
+             already encodes (dot--ok / dot--warn / dot--alarm). They add no new
+             fact; reword if the farm uses other terms on the bay-door checklist.
+Left alone:  what the float alarm means and what to do (F-0063, blocked on the growing
+             lead). Cosmetic: in the narrow Sensors panel "Warning"/"Alarm" wrap under
+             their dot; a nowrap attempt clipped the column and was reverted
+             (F-0019-attempt2-REVERTED.diff.txt). Deferred to the debt register.
+Re-test:     run 20261007-101620-fix-f-0019: axe/keyboard/layout/contrast 0, journey
+             3/3, 0 introduced vs baseline; ARIA cells read OK/Warning/Alarm. PASSED.
+Baseline:    665ca185ac74f08453715a82013e960438c2e377; apply after F-0003 and F-0021.
+
+diff --git a/index.html b/index.html
+index 0af3d4d..03a8ba5 100644
+--- a/index.html
++++ b/index.html
+@@ -68,11 +68,11 @@
+             <tr><th scope="col">Sensor</th><th scope="col">Channel</th><th scope="col">Status</th></tr>
+           </thead>
+           <tbody>
+-            <tr><td>pH probe</td><td>A</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>EC probe</td><td>A</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>Water thermometer</td><td>B</td><td><span class="dot dot--warn"></span></td></tr>
+-            <tr><td>Oxygen probe</td><td>B</td><td><span class="dot dot--ok"></span></td></tr>
+-            <tr><td>Reservoir float</td><td>Tank</td><td><span class="dot dot--alarm"></span></td></tr>
++            <tr><td>pH probe</td><td>A</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>EC probe</td><td>A</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>Water thermometer</td><td>B</td><td><span class="dot dot--warn" aria-hidden="true"></span>Warning</td></tr>
++            <tr><td>Oxygen probe</td><td>B</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>Reservoir float</td><td>Tank</td><td><span class="dot dot--alarm" aria-hidden="true"></span>Alarm</td></tr>
+           </tbody>
+         </table>
+       </div>
+diff --git a/styles.css b/styles.css
+index 5cdf60d..b35c3f4 100644
+--- a/styles.css
++++ b/styles.css
+@@ -225,6 +225,7 @@ th {
+   display: inline-block;
+   width: 10px;
+   height: 10px;
++  margin-right: 8px;
+   border-radius: 50%;
+ }
+ 

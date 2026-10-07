@@ -1,0 +1,260 @@
+{
+  "schema": "evaluator-output",
+  "role": "accessibility-auditor",
+  "agent": "a11y",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-002136-baseline-audit",
+  "packet_hash": "510ca3eb7a272438",
+  "notes": "Packet aria.json was empty; ARIA was taken from uie probe runs (probes/8/aria.yml, probes/12). The tools already report the 1.4.3 failures for .updated and .metric__label (#9aa0a6); they are not repeated here. No CJK text is present, so there are no CJK large-text judgements. Document title could not be read (no probe step exposes it), so 2.4.2 is left to a person. No source code, builder notes or other evaluators' files were read.",
+  "coverage": {
+    "routes": ["/"],
+    "states": ["default", "manual-dosing"],
+    "controls_exercised": 1,
+    "controls_total": 4,
+    "out_of_scope": ["in-page nav links (Readings, Sensors, Dosing) were not activated; the scripted keyboard walk reached them"]
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "summary": "Resolved 10 axe incompletes; read CVD and forced-colours captures for both states; took the ARIA tree by probe; probed the dosing switch with Space and Enter in normal and forced-colours modes.",
+      "elements_inspected": 32
+    }
+  ],
+  "strengths": [
+    {
+      "title": "The dosing switch is a real switch: name matches its visible label, checked state is exposed, Space and Enter both toggle it, and the result is written to a role=status region that existed before the change.",
+      "evidence": "probes/8/aria.yml; probes/8/screenshots/after-space.png; probes/8/screenshots/after-enter.png"
+    },
+    {
+      "title": "The acidity chart has a text alternative that states the range and low point (img \"Acidity stayed between pH 5.9 and pH 6.3 over the last 24 hours, lowest at 04:00\").",
+      "evidence": "probes/8/aria.yml"
+    },
+    {
+      "title": "Reading chips (In range, Warm, Topped up 09:30) carry words, so they survive deuteranopia, achromatopsia and forced colours.",
+      "evidence": "evidence/screens/root/default/1280-light-cvd-deuteranopia.png; evidence/screens/root/default/1280-light-forced-colors.png"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "a11y-1",
+      "title": "Sensor status is shown only by a coloured dot; colour-blind growers cannot tell which sensor needs attention",
+      "description": "In the Sensors table the Status column shows only a dot: green for four sensors, amber for Water thermometer and red for Reservoir float. There is no word, icon or shape. In the deuteranopia capture all five dots look olive and cannot be told apart, so the faulty Reservoir float looks the same as the healthy probes. The context says colour-blind volunteers are on every rota and 'see which sensor needs attention' is a core task. The same happens in the manual-dosing state and at 320 px.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "wcag", "id": "1.4.1", "primary": true},
+        {"kind": "rule", "id": "A11Y-19"}
+      ],
+      "impact": "Colour-blind growers cannot find the faulty sensor (Reservoir float) on a core task.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "bbox": [235, 670, 60, 230], "crop": "evidence/screens/root/default/1280-light-cvd-deuteranopia.png"},
+        {"route": "/", "state": "manual-dosing", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "crop": "evidence/screens/root/manual-dosing/1280-light-cvd-deuteranopia.png"},
+        {"route": "/", "state": "default", "viewport": {"width": 320, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "crop": "evidence/screens/root/default/320-light-audit.png"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-audit.png", "detail": "dots: green, green, amber (Water thermometer), green, red (Reservoir float)"},
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-cvd-deuteranopia.png", "detail": "all five dots render olive; red and green cannot be told apart"},
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-cvd-achromatopsia.png", "detail": "dots render as similar greys"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Put the status in words in each Status cell (for example 'OK', 'Check', 'Fault'), optionally next to a shape-coded icon. A text cell also fixes a11y-2 and a11y-3.",
+      "tags": ["cvd", "status"]
+    },
+    {
+      "id": "a11y-2",
+      "title": "Sensor Status cells are empty to assistive technology",
+      "description": "In the accessibility tree every Status cell is an empty 'cell' with no name, for example row \"Reservoir float Tank\" > cell \"Reservoir float\", cell \"Tank\", cell (empty). The dot has no text alternative and the visual status is not in the structure. A screen-reader user (the context names a VoiceOver user) hears no status for any sensor, including the faulty one.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "wcag", "id": "1.1.1", "primary": true},
+        {"kind": "wcag", "id": "1.3.1"},
+        {"kind": "rule", "id": "A11Y-13"}
+      ],
+      "impact": "Screen-reader users cannot learn any sensor's status.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "snippet": "row \"Reservoir float Tank\": cell \"Reservoir float\", cell \"Tank\", cell"},
+        {"route": "/", "state": "manual-dosing", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)"}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "probes/8/aria.yml", "detail": "lines 45-64: five rows, third cell has no name in every row"},
+        {"type": "probe", "ref": "probes/8/probe.json"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Use visible text in the cell (preferred, see a11y-1). If an icon is kept, mark it aria-hidden and keep the text next to it; avoid relying on aria-label on a span.",
+      "tags": ["aria", "table"]
+    },
+    {
+      "id": "a11y-3",
+      "title": "Forced colours: sensor status dots disappear entirely",
+      "description": "With forced-colors: active the Status column is blank in every row. The dots are drawn with background colour only and forced colours removes it. Windows High Contrast users get no status at all.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "wcag", "id": "1.4.1", "primary": true},
+        {"kind": "rule", "id": "A11Y-19"}
+      ],
+      "impact": "High-contrast users see no sensor status.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "crop": "evidence/screens/root/default/1280-light-forced-colors.png"},
+        {"route": "/", "state": "manual-dosing", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody td:nth-child(3)", "crop": "evidence/screens/root/manual-dosing/1280-light-forced-colors.png"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-forced-colors.png", "detail": "Status column empty in all five rows"},
+        {"type": "screenshot", "ref": "probes/12/screenshots/fc-switch-focused.png"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Text status in the cell (a11y-1) survives forced colours. If a dot remains, draw it with a border or forced-color-adjust-safe system colour (CanvasText).",
+      "tags": ["forced-colors"]
+    },
+    {
+      "id": "a11y-4",
+      "title": "Forced colours: the dosing switch track and thumb vanish, so its on/off state is not visible",
+      "description": "Under forced-colors: active the switch is drawn as nothing; only the focus ring appears when it has focus, and the on and off states look the same (probes/12 fc-switch-focused vs fc-switch-off). The status sentence below still changes, so the state can be read from the text, but the control itself is invisible when unfocused. This is the critical task (switch dosing to manual). Advisory: the status text gives a text equivalent, so no WCAG failure is claimed.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "rule", "id": "A11Y-19", "primary": true},
+        {"kind": "wcag", "id": "1.4.11"}
+      ],
+      "impact": "High-contrast users cannot find the control for the critical task or see its state.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#dosing-switch", "bbox": [552, 618, 60, 52], "crop": "probes/12/screenshots/fc-switch-focused.png"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-forced-colors.png", "detail": "unfocused: no switch drawn next to 'Automatic nutrient dosing'"},
+        {"type": "probe", "ref": "probes/12/screenshots/fc-switch-off.png", "detail": "after Space: only the focus ring, identical to the on state"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Give the track a border and the thumb a solid fill that forced colours keeps (border: 1px solid; in @media (forced-colors: active) use ButtonText/Highlight for the thumb, or build on a native checkbox with appearance and a visible state).",
+      "tags": ["forced-colors", "advisory", "critical-journey"]
+    },
+    {
+      "id": "a11y-5",
+      "title": "Faulty sensor is flagged without saying what is wrong or what to do",
+      "description": "Reservoir float shows a red dot, while the Reservoir reading card says 'Topped up 09:30' in a green chip. Nothing explains the fault or the next step. Untrained volunteers get two signals that seem to conflict and nothing to act on. Water thermometer (amber) and the 'Warm' chip have the same gap: there is no target range or action.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "heuristic", "id": "H9", "primary": true},
+        {"kind": "heuristic", "id": "H6"}
+      ],
+      "impact": "Volunteers cannot act on a sensor fault without remembering what the colour means and what to do.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors table tbody tr:nth-child(5)", "crop": "evidence/screens/root/default/1280-light-audit.png"},
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": ".metric:nth-child(5) > .chip--ok.chip", "bbox": [1026, 210, 108, 14]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-audit.png"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Write the status in plain words with the next step, e.g. 'Fault: float not reporting. Check the float switch in the tank.', and show the target range next to warn-state readings.",
+      "tags": ["cognitive"]
+    },
+    {
+      "id": "a11y-6",
+      "title": "Acidity chart has no visible value scale",
+      "description": "The 24-hour acidity chart shows time labels but no y-axis values or range band, so sighted users cannot read pH levels or see whether the line left the target range. The text alternative gives the range (pH 5.9 to 6.3) but only to screen-reader users. Advisory.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H6", "primary": true}
+      ],
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "role=img[name^=\"Acidity stayed\"]", "bbox": [41, 270, 1198, 260], "crop": "evidence/screens/root/default/1280-light-audit.png"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/root/default/1280-light-audit.png"},
+        {"type": "aria", "ref": "probes/8/aria.yml", "detail": "img \"Acidity stayed between pH 5.9 and pH 6.3 over the last 24 hours, lowest at 04:00\""}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Add y-axis labels or a shaded target band, and show the alt text's summary sentence visibly under the chart heading.",
+      "tags": ["chart", "advisory"]
+    },
+    {
+      "id": "a11y-7",
+      "title": "Sensors table is wrapped in a second region with the same name",
+      "description": "The ARIA tree has region \"Sensors\" > heading \"Sensors\" > region \"Sensors\" > table. The nested duplicate landmark adds noise to landmark navigation, and the table has no name or caption of its own. Advisory.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "wcag", "id": "1.3.1", "primary": true},
+        {"kind": "rule", "id": "A11Y-13"}
+      ],
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#sensors [role=region], #sensors section section"}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "probes/8/aria.yml", "detail": "lines 35-38"}
+      ],
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Drop the inner region (or make it a plain div for scrolling); name the table with a <caption> if needed.",
+      "tags": ["landmarks", "advisory"]
+    }
+  ],
+  "resolved_incompletes": [
+    {"id": "INC-1", "selector": ".metric:nth-child(1) > .chip--ok.chip", "state": "default", "outcome": "pass", "reason": "Chip has its own solid tint; the composited uie/contrast check (200 text nodes, both widths) reported no failure for it, and the crop shows dark green text on pale green, well above the bar. The 'obscured' flag comes from the card shadow overlap."},
+    {"id": "INC-2", "selector": ".metric:nth-child(2) > .chip--ok.chip", "state": "default", "outcome": "pass", "reason": "Same chip style as INC-1; no uie/contrast failure; crop shows dark green on pale green."},
+    {"id": "INC-3", "selector": ".chip--warn", "state": "default", "outcome": "pass", "reason": "Dark amber/brown text on pale amber tint; no uie/contrast failure on the composited background."},
+    {"id": "INC-4", "selector": ".metric:nth-child(4) > .chip--ok.chip", "state": "default", "outcome": "pass", "reason": "Same as INC-1."},
+    {"id": "INC-5", "selector": ".metric:nth-child(5) > .chip--ok.chip", "state": "default", "outcome": "pass", "reason": "Same as INC-1 ('Topped up 09:30')."},
+    {"id": "INC-6", "selector": ".metric:nth-child(1) > .chip--ok.chip", "state": "manual-dosing", "outcome": "pass", "reason": "The chip does not change between states; same as INC-1."},
+    {"id": "INC-7", "selector": ".metric:nth-child(2) > .chip--ok.chip", "state": "manual-dosing", "outcome": "pass", "reason": "Same as INC-1."},
+    {"id": "INC-8", "selector": ".chip--warn", "state": "manual-dosing", "outcome": "pass", "reason": "Same as INC-3."},
+    {"id": "INC-9", "selector": ".metric:nth-child(4) > .chip--ok.chip", "state": "manual-dosing", "outcome": "pass", "reason": "Same as INC-1."},
+    {"id": "INC-10", "selector": ".metric:nth-child(5) > .chip--ok.chip", "state": "manual-dosing", "outcome": "pass", "reason": "Same as INC-5."}
+  ],
+  "needs_human": [
+    {"sc": "4.1.2", "task": "VoiceOver on iPad, journey switch-dosing-to-manual: confirm the switch is announced as 'Automatic nutrient dosing, switch, on', that a double-tap toggles it, and that 'Nutrient dosing is now manual…' is spoken."},
+    {"sc": "1.3.2", "task": "With VoiceOver, swipe through the page at phone and tablet widths and confirm the reading order (label, value, chip per card; table row by row) makes sense."},
+    {"sc": "1.3.3", "task": "Read all copy for instructions that rely on colour, shape or position (none found by the agent; confirm, especially after status text is added)."},
+    {"sc": "2.4.2", "task": "Check the browser tab title says what this page is (e.g. 'Bay 4 hydroponics monitor'); the agent could not read it."},
+    {"sc": "1.4.1", "task": "After the fix, have a colour-blind volunteer confirm on the bay tablet, under grow lights, that each sensor's status can be read."},
+    {"sc": "1.4.4", "task": "On the bay iPad, zoom to 200% and confirm the cards, table and switch stay usable (context asks for this test)."},
+    {"sc": "2.3.1", "task": "Confirm that no live update makes values or chips flash (the probes saw a static page)."}
+  ],
+  "coverage_labels": {
+    "1.1.1": {"label": "agent-judged-fail", "reason": "Status dots have no text alternative (a11y-2); the chart alt is good."},
+    "1.2.1": {"label": "not-applicable", "reason": "No audio or video."},
+    "1.2.2": {"label": "not-applicable", "reason": "No video."},
+    "1.2.3": {"label": "not-applicable", "reason": "No video."},
+    "1.2.4": {"label": "not-applicable", "reason": "No live media."},
+    "1.2.5": {"label": "not-applicable", "reason": "No video."},
+    "1.3.1": {"label": "agent-judged-fail", "reason": "Status column carries meaning only visually (a11y-2); duplicate nested region (a11y-7)."},
+    "1.3.2": {"label": "needs-human", "reason": "ARIA order matches visual order at 320 and 1280 px; a screen-reader pass is still needed."},
+    "1.3.3": {"label": "needs-human", "reason": "No sensory-only instructions found; a person must confirm."},
+    "1.3.4": {"label": "agent-judged-pass", "reason": "Layout renders at portrait (320, 375, 768) and landscape (1024 to 1440) widths without an orientation lock."},
+    "1.4.1": {"label": "agent-judged-fail", "reason": "Sensor status is colour-only (a11y-1, a11y-3)."},
+    "1.4.5": {"label": "agent-judged-pass", "reason": "All text is live text; the chart is vector with live labels."},
+    "1.4.13": {"label": "not-applicable", "reason": "No hover- or focus-triggered content seen."},
+    "2.1.4": {"label": "agent-judged-pass", "reason": "No character-key shortcuts (lint found no A11Y-17 hits)."},
+    "2.2.1": {"label": "agent-judged-pass", "reason": "No time limits or session timeouts."},
+    "2.2.2": {"label": "agent-judged-pass", "reason": "No running or auto-advancing animations (motion: 0 running)."},
+    "2.3.1": {"label": "needs-human", "reason": "Static in probes; live updates not observed."},
+    "2.4.2": {"label": "needs-human", "reason": "Title not readable by the agent; axe found no missing title."},
+    "2.4.4": {"label": "agent-judged-pass", "reason": "Three in-page links named Readings, Sensors, Dosing, matching their sections."},
+    "2.4.5": {"label": "not-applicable", "reason": "Single-page app with one route."},
+    "2.4.6": {"label": "agent-judged-pass", "reason": "One h1, h2 per section, h3 for the chart; headings describe topics."},
+    "2.5.1": {"label": "not-applicable", "reason": "No multipoint or path gestures."},
+    "2.5.3": {"label": "agent-judged-pass", "reason": "Switch accessible name 'Automatic nutrient dosing' equals its visible label; links match text."},
+    "2.5.4": {"label": "not-applicable", "reason": "No motion actuation."},
+    "2.5.7": {"label": "not-applicable", "reason": "No drag interactions."},
+    "3.2.2": {"label": "agent-judged-pass", "reason": "Toggling the switch only updates the status text in place."},
+    "3.3.2": {"label": "agent-judged-pass", "reason": "The only control has a visible label."},
+    "3.3.3": {"label": "not-applicable", "reason": "No text input or error states."},
+    "3.3.4": {"label": "not-applicable", "reason": "No legal, financial or data submissions; dosing toggle is reversible."},
+    "3.3.7": {"label": "not-applicable", "reason": "No multi-step process."},
+    "3.3.8": {"label": "not-applicable", "reason": "No authentication."},
+    "4.1.2": {"label": "agent-judged-pass", "reason": "Switch exposes role, name and checked state; Space and Enter toggle it (probes/8). Screen-reader confirmation listed in needs_human."}
+  },
+  "ease_estimates": [
+    {"finding_id": "a11y-1", "ease": 1, "layer": "markup", "note": "add status words to five cells"},
+    {"finding_id": "a11y-2", "ease": 1, "layer": "markup"},
+    {"finding_id": "a11y-3", "ease": 1, "layer": "markup"},
+    {"finding_id": "a11y-4", "ease": 2, "layer": "css"},
+    {"finding_id": "a11y-5", "ease": 2, "layer": "copy"},
+    {"finding_id": "a11y-6", "ease": 2, "layer": "component"},
+    {"finding_id": "a11y-7", "ease": 1, "layer": "markup"}
+  ]
+}

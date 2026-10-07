@@ -1,0 +1,81 @@
+{
+  "schema": "verifier",
+  "run": "20261007-002136-baseline-audit",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "4d5fd506a0fa41a9",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0063",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280x900 light. The Sensors row 'Reservoir float / Tank' (tbody tr:nth-child(5)) shows a red dot. The ARIA snapshot gives that status cell no accessible name (aria.yml lines 61-64), so the fault is conveyed by colour only. Hovering the status cell for 800 ms showed no tooltip or explanation. No text, link or control anywhere on the page explains the fault or a next step; I checked the full-page screenshot and every ARIA node.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/initial.png",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/hover-float.png",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/aria.yml",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/probe.json"
+      ],
+      "note": "The status cells are empty in the accessibility tree for all five rows, which is also a colour-only / non-text-content issue (WCAG 1.4.1, 1.1.1); consider recording it separately. Locations 2 and 5 (.metric chip, Reservoir card) belong to F-0064 rather than this part; the lead may want to trim them. H9 fits as the primary criterion. 'Untrained volunteer has nothing to act on' is a fair reading of the evidence."
+    },
+    {
+      "candidate_id": "F-0064",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280x900 light. The Reservoir card reads '142 L of 200 L' with a green 'Topped up 09:30' chip (.metric:nth-child(5) > .chip--ok), while the Sensors row 'Reservoir float / Tank' shows a red dot at the same moment. The page has nothing that reconciles the two signals.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/initial.png",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/aria.yml"
+      ],
+      "note": "The conflict between signals is observed, but whether it is a real contradiction (rather than a float fault while the level is fine) cannot be told from the UI. That ambiguity is the problem. A better primary criterion is H1 (visibility of system status) or H4 (consistency); H9 (error recovery) fits F-0063 better. The impact text was copied from F-0063 and should say that the grower cannot tell whether the tank needs attention."
+    },
+    {
+      "candidate_id": "F-0027",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Code-sourced claim. I may not read styles.css. In the rendered UI on this macOS host the metric values visibly use a geometric face that differs from the body text, which suggests a separate family, but Futura is installed here. The claimed fallback on Windows, Linux and Android cannot be reproduced in this environment. Earlier verification passes also could not settle it from the rendered UI.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/initial.png"
+      ],
+      "note": "A human should check the computed font-family, or render on a non-Apple OS. The claim that the numerals 'may not be tabular' is speculative."
+    },
+    {
+      "candidate_id": "F-0028",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Partially reproduced. Clicking #dosing-switch flipped it to off at once (first screenshot about 30 ms after the click) and changed the status to 'Nutrient dosing is now manual...'. No pending state appeared, and no network request was made (probe.json network is empty). The claimed missing failure/revert path cannot be exercised because the prototype has no controller backend to fail. Whether a pending or error state is required depends on how the switch is meant to be wired, and only the owner knows that.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/after-click-0ms.png",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/after-click-1500ms.png",
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/probe.json"
+      ],
+      "note": "The owner should confirm whether the switch commands real equipment. If it does, confirm the finding. The impact is stated conditionally ('if wired'), which is appropriate."
+    },
+    {
+      "candidate_id": "F-0059",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The claim is about how source CSS is tokenised (literal colours instead of role tokens). This is not visible in the rendered UI, and the verifier may not read source code. Rendering shows the stated colours, but it cannot show whether they come from tokens. Earlier passes could not settle it either.",
+      "evidence": [],
+      "note": "Settle it with uie lint COL-01 output or a human code review. This is a maintainability finding, not a user-facing one."
+    },
+    {
+      "candidate_id": "F-0060",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The claim is about source spacing values not following a scale. This cannot be checked from the rendered UI without reading CSS, and the verifier may not read source code. Nothing in the screenshots shows visible misalignment between panels.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-002136-baseline-audit/probes/15/screenshots/initial.png"
+      ],
+      "note": "Settle it with the uie lint LAY-01 output or a code review. The impact ('may read as unintended misalignment') is not supported by the screenshots."
+    }
+  ]
+}

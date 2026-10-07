@@ -1,0 +1,407 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-095104-audit-standard",
+  "packet_hash": "13967f816da1ffd9",
+  "notes": "Styling system: one hand-written stylesheet (styles.css) with CSS custom properties in :root (colour, font, type scale, 4-48px spacing scale, radius, feedback duration); five static HTML pages share it; one IIFE (app.js) switches on body[data-page]. No component library, no build step, no data-insp-path. Packet lint.json was [] and census.json was {} and design.md was empty, so token drift was checked by reading styles.css directly: every colour, font family, font size, spacing, radius and duration in component rules goes through a token; the only literals are structural (44px/24px target sizes, 1-3px borders and outlines, rem max-widths, line-heights), so no drift finding is raised. Disclosure: while reading PRODUCT.md and the journey files for context I opened .ui-evaluator/journeys/change-arrival-date.json, whose _comment describes a seeded walkthrough failure (Change dates only inside the More options menu). I did not raise that as a code finding (it is a usability judgement outside this role); moving the link next to the stay summary in berths.html would be ease 1-2. I did not read anything under .eval/. Observations not raised: physical CSS properties (padding-left, text-align: left) exist but the declared locale is en-GB LTR only; app.js falls back to berth B14 when the berth parameter is missing (unreachable through the UI because the berth radio is validated); no skip link and no aria-current in the masthead (left to the accessibility auditor's rendered checks). The booking is never transmitted anywhere (contact details are validated and discarded); recorded as not assessable for a static fixture.",
+  "passes": [
+    { "pass": 1, "summary": "Read styles.css, app.js and the five HTML pages; mapped tokens, states, semantics, IME, motion and localisation hazards.", "elements_inspected": 38 }
+  ],
+  "coverage": {
+    "routes": ["/", "/berths.html", "/boat.html", "/review.html", "/confirmed.html"],
+    "states": ["default", "errors", "menu-open", "length-over-limit"],
+    "out_of_scope": ["visual taste", "usability of navigation structure"]
+  },
+  "not_assessable": [
+    "Whether a booking reaches the harbour office: the fixture has no back end, app.js only navigates to confirmed.html.",
+    "Rendered effect of :focus-visible after programmatic focus on the error summary and the 'Booking stopped' heading (browser heuristic dependent); needs a probe."
+  ],
+  "strengths": [
+    { "title": "Design tokens used consistently in every component rule", "evidence": "styles.css: all colours, type sizes, spacing, radius and transition durations reference :root custom properties (styles.css :root block); no literal colours or font sizes in component rules." },
+    { "title": "Global focus-visible indicator and reduced-motion path", "evidence": "styles.css ':focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px }' with no outline: none anywhere; transitions name specific properties (color, background-color, border-color), and a prefers-reduced-motion block neutralises them." },
+    { "title": "Error summary and inline errors wired programmatically", "evidence": "app.js errorKit sets aria-invalid and aria-describedby (hint + error id), focuses a tabindex=-1 summary with linked messages; review.html uses autocomplete=name and autocomplete=tel on the skipper's personal data." },
+    { "title": "No IME hazards", "evidence": "app.js has no keydown/keypress handlers on text inputs; the only document keydown handler checks Escape for the disclosure menu." }
+  ],
+  "candidates": [
+    {
+      "id": "code-1",
+      "title": "Boat details form is emptied whenever the boat page is shown, including on Back from review",
+      "description": "Information a user has already entered in the same process should be restored or offered when they return to a step (WCAG 3.3.7; product principle 'Never lose what a skipper has typed'). app.js registers a pageshow listener on the boat page that calls boatForm.reset() every time the page is shown, including restores from the back-forward cache, and the page never reads the boat, loa, draught and mmsi values that app.js itself carries forward in the review URL. boat.html also sets autocomplete=\"off\" on the form, which stops the browser restoring or suggesting the values.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "wcag", "id": "3.3.7", "primary": true, "name": "Redundant Entry" },
+        { "kind": "heuristic", "id": "H3" },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "impact": "A skipper who goes back from the review step to correct one boat detail may find all four fields blank and have to retype the boat name, length, draught and nine-digit MMSI, often on a phone on board.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "form#boat-form",
+          "snippet": "<form class=\"stack\" id=\"boat-form\" autocomplete=\"off\" novalidate>",
+          "source": { "file": "app.js", "line": 165, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/boat.html",
+          "state": "default",
+          "selector": "form#boat-form",
+          "snippet": "autocomplete=\"off\"",
+          "source": { "file": "boat.html", "line": 42, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:164-167", "detail": "// The form is emptied whenever the page is shown, including after the browser's Back button. window.addEventListener('pageshow', function () { boatForm.reset(); });" },
+        { "type": "code", "ref": "app.js:93,194", "detail": "stayQuery carries boat, loa, draught and mmsi to review.html, but the boat branch (app.js:162-196) never reads params to prefill the inputs." }
+      ],
+      "factor_notes": {
+        "frequency": "Every return to the boat step: Back from review, or Back after a later error. Step 3 of the critical book-visitor-berth journey.",
+        "impact": "All four boat fields must be re-entered; one is a nine-digit identifier.",
+        "persistence": "Recurs on every return; learning does not avoid it."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Remove the pageshow reset, prefill the four inputs from the query string when present, and drop autocomplete=\"off\" from the form.",
+      "tags": ["forms", "data-loss", "back-navigation"]
+    },
+    {
+      "id": "code-2",
+      "title": "Boat longer than the chosen berth ends in 'Booking stopped' with no reason and no way on",
+      "description": "Every stop in a flow should say what went wrong and what to do next (H9; product principle 'Every stop in the booking says what to do next'). When the entered length exceeds the chosen berth's limit, app.js hides the whole boat step and reveals #dead-end, whose only content is 'Booking stopped' and 'This booking cannot continue. Reference BK-409.' It does not name the length limit, the berth that was chosen, the berths that would fit, or offer a link back to the berth list or the form; BK-409 is an internal code with no meaning to the skipper.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true },
+        { "kind": "heuristic", "id": "H3" },
+        { "kind": "rule", "id": "CPY-04" }
+      ],
+      "impact": "A skipper whose boat is too long for the berth they picked may not learn why, and has no control to pick a larger berth; they may restart from the first page or phone the office.",
+      "locations": [
+        {
+          "route": "/boat.html",
+          "state": "length-over-limit",
+          "selector": "#dead-end",
+          "snippet": "<h1 id=\"stopped-title\" tabindex=\"-1\">Booking stopped</h1>",
+          "source": { "file": "boat.html", "line": 70, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/boat.html",
+          "state": "length-over-limit",
+          "selector": "#dead-end",
+          "snippet": "if (Number(v('loa')) > berth.max)",
+          "source": { "file": "app.js", "line": 187, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "boat.html:70-73", "detail": "<div class=\"stopped\" id=\"dead-end\" hidden><h1 ...>Booking stopped</h1><p>This booking cannot continue. Reference BK-409.</p></div>; no links or actions inside." },
+        { "type": "code", "ref": "app.js:186-193", "detail": "On loa > berth.max: boat-step hidden, dead-end shown, focus to heading, return. The berth limit (berth.max) and name are available but not rendered." }
+      ],
+      "factor_notes": {
+        "frequency": "Any skipper who picks a berth smaller than their boat; berth limits (8/10/12/15 m) are shown only as option detail text on the previous page.",
+        "impact": "The booking cannot continue from this screen; recovery needs Back (which also empties the boat form, see code-1) or a restart.",
+        "persistence": "One-time per booking, but not overcome by anything on the screen."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Replace the stop with an error on the Length field (or a message) that states the berth's limit and the entered length, and link back to berths.html with the stay query so a larger berth can be chosen; drop the internal reference.",
+      "tags": ["dead-end", "error-recovery"]
+    },
+    {
+      "id": "code-3",
+      "title": "Invalid-state border applies only to input elements, not to the arrival-time select or the berth radio cards",
+      "description": "A field in error should carry a visual error cue on the control itself, consistently across control types (CMP-01). styles.css styles only input[aria-invalid=\"true\"] with the error border. app.js sets aria-invalid on the #arrive select (plan page) and on the berth radios (berths page), but no rule styles select[aria-invalid] or the .option card around an invalid radio; native radios ignore the border rule. Those two controls show their error only through the message text above them.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-01", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "On a phone, a skipper scrolling to the error from the summary may not see which control needs attention for the time and berth questions, while text fields on the same flow are outlined.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "errors",
+          "selector": "select#arrive",
+          "snippet": "<select id=\"arrive\" name=\"arrive\">",
+          "source": { "file": "styles.css", "line": 283, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/berths.html",
+          "state": "errors",
+          "selector": "fieldset#berth .option",
+          "snippet": "<label class=\"option\">",
+          "source": { "file": "styles.css", "line": 360, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "styles.css:283-285", "detail": "input[aria-invalid=\"true\"] { border-color: var(--color-error); } is the only invalid-state rule." },
+        { "type": "code", "ref": "app.js:70-75", "detail": "aria-invalid set on radios inside a FIELDSET and on non-fieldset controls, including select#arrive." }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever the arrival time or the berth is left unanswered on submit.",
+        "impact": "Message text is present; the missing cue costs a moment of searching.",
+        "persistence": "Recurs on each error of these two controls."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Extend the rule to select[aria-invalid=\"true\"] and add .option:has(input[aria-invalid=\"true\"]) { border-color: var(--color-error); }.",
+      "tags": ["states", "forms"]
+    },
+    {
+      "id": "code-4",
+      "title": "Berth option cards have no selected or keyboard-focus state at card level",
+      "description": "A selectable card should show which option is chosen and which has focus at the size of the card (CMP-01). The .option label has only a hover border; there is no :has(:checked) or :focus-within rule, so the selected berth is indicated only by the 24 px native radio dot and the focus ring sits on that 24 px radio, not on the card.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-01", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "In bright light on deck, a skipper may not see at a glance which of four similar cards is selected before pressing Continue.",
+      "locations": [
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": "fieldset#berth label.option",
+          "snippet": "<label class=\"option\">",
+          "source": { "file": "styles.css", "line": 360, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "styles.css:360-390", "detail": ".option, .option:hover, .option input, .option input:hover/:active only; no checked or focus-within rule." }
+      ],
+      "factor_notes": {
+        "frequency": "Every booking passes this choice.",
+        "impact": "The radio dot does show the selection; the card gives no reinforcement.",
+        "persistence": "Every visit to the step."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Add .option:has(input:checked) { border-color: var(--color-accent); background: var(--color-accent-tint); } and .option:has(input:focus-visible) with the focus outline.",
+      "tags": ["states", "selection"]
+    },
+    {
+      "id": "code-5",
+      "title": "Arrival date outside the bookable season or in the past is accepted",
+      "description": "Input constraints that the page declares should be enforced with a specific message (H5). index.html declares min=\"2026-10-01\" max=\"2027-03-31\" on the date input, but the form has novalidate and app.js checks only that a date is present, so typed dates outside that range, or before today, pass straight to the berth list, which then shows berths as free for that date.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true },
+        { "kind": "rule", "id": "CPY-04" }
+      ],
+      "impact": "A skipper who types the wrong year or a past date may be shown free berths and complete a booking for a day they did not intend.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "input#date",
+          "snippet": "<input id=\"date\" name=\"date\" type=\"date\" min=\"2026-10-01\" max=\"2027-03-31\">",
+          "source": { "file": "app.js", "line": 114, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:114", "detail": "if (!date.value) problems.push(['date', 'Enter the date you plan to arrive']); no range or past-date check." },
+        { "type": "code", "ref": "index.html:41,45", "detail": "form novalidate; input min/max therefore not enforced on submit." }
+      ],
+      "factor_notes": {
+        "frequency": "Only when a wrong date is typed or a stale link is reused.",
+        "impact": "A booking for an unintended date can be completed without any warning.",
+        "persistence": "One-time per mistaken booking."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Validate the date against min, max and today in the submit handler, with a message that names the bookable range.",
+      "tags": ["validation", "forms"]
+    },
+    {
+      "id": "code-6",
+      "title": "Error summary link for the berth question targets the fieldset, so focus does not reach a radio",
+      "description": "An error-summary link should move focus to the first control that needs an answer (A11Y-13). app.js builds each summary link as '#' + field id; for the berth error that is #berth, a fieldset with no tabindex. Following it scrolls to the fieldset, but keyboard and screen-reader focus does not land on a radio, so the next Tab continues from the summary link's sequential position in some browsers.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-13", "primary": true },
+        { "kind": "wcag", "id": "2.4.3" }
+      ],
+      "impact": "A keyboard or screen-reader user following the error link may not arrive at the berth choices and has to find them again.",
+      "locations": [
+        {
+          "route": "/berths.html",
+          "state": "errors",
+          "selector": "#error-list a[href='#berth']",
+          "snippet": "<fieldset class=\"stack\" id=\"berth\">",
+          "source": { "file": "app.js", "line": 80, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:80", "detail": "a.href = '#' + p[0]; with p[0] = 'berth' (app.js:157) -> fieldset#berth (berths.html:60)." }
+      ],
+      "factor_notes": {
+        "frequency": "Only on the berth error, only for users who follow the summary link.",
+        "impact": "Extra navigation to reach the radios.",
+        "persistence": "Each time the error occurs."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Point fieldset errors at the first radio's id (or handle the click and focus the first radio).",
+      "tags": ["a11y", "error-summary", "keyboard"]
+    },
+    {
+      "id": "code-7",
+      "title": "Tide table states times in UTC while arrival times are chosen in local time",
+      "description": "Times a user must compare should share one time zone, the one the product declares (24-hour local time). The tide table caption says 'times in UTC', while the arrival-time select offers plain local clock times; on 17-23 October 2026 UK local time is BST (UTC+1, until 25 October), so the table's high-water times are one hour behind the clock the skipper reads and the select uses.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "A skipper planning arrival inside the sill-gate window may misjudge it by an hour unless they convert, and may arrive when the gate is closed.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "table.tides caption",
+          "snippet": "<caption>High water at the quay, times in UTC</caption>",
+          "source": { "file": "index.html", "line": 79, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "index.html:79,84-90", "detail": "caption 'times in UTC'; rows Sat 17 Oct to Fri 23 Oct 2026." },
+        { "type": "code", "ref": "index.html:62-68", "detail": "Arrival time select 06:00-21:00 with no zone." }
+      ],
+      "factor_notes": {
+        "frequency": "Every skipper who uses the table to choose an arrival time.",
+        "impact": "A one-hour error against a two-hour-either-side gate window.",
+        "persistence": "Recurs each visit until noticed."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Show tide times in UK local time (BST/GMT as applicable) and say so in the caption, matching the arrival-time list.",
+      "tags": ["localisation", "time-zone", "safety"]
+    },
+    {
+      "id": "code-8",
+      "title": "Tide times are a fixed seven-day table unrelated to the chosen arrival date",
+      "description": "The product requires the tide window wherever a time is chosen. The tide data is seven hard-coded rows (17-23 October 2026) on the plan page only; the arrival date input accepts dates until 31 March 2027, the arrival-time select carries no tide information, and the berth and review pages, which restate the arrival time, show no tide or gate window.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "principle", "id": "PRODUCT-P1", "name": "Show the tide window wherever a time is chosen" }
+      ],
+      "impact": "For any arrival outside that week a skipper gets no tide information in the booking and must find it elsewhere; on later steps they must remember the window.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "table.tides tbody",
+          "snippet": "<table class=\"tides\">",
+          "source": { "file": "index.html", "line": 84, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/",
+          "state": "default",
+          "selector": "select#arrive",
+          "snippet": "<select id=\"arrive\" name=\"arrive\">",
+          "source": { "file": "index.html", "line": 62, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/berths.html",
+          "state": "default",
+          "selector": "#stay",
+          "snippet": "<p class=\"intro measure\" id=\"stay\">",
+          "source": { "file": "berths.html", "line": 34, "method": "text search", "confidence": "medium" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "index.html:84-90", "detail": "Static rows; no script reads them or the chosen date." },
+        { "type": "code", "ref": "app.js", "detail": "No tide data or gate-window computation anywhere in app.js." }
+      ],
+      "factor_notes": {
+        "frequency": "Every booking for a date outside 17-23 October 2026; every visit to later steps.",
+        "impact": "Tide planning is left to the skipper with no in-flow support.",
+        "persistence": "Recurs every booking."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Drive the table from tide data keyed by date, show the gate window for the chosen date next to the arrival-time field, and repeat it in the stay summaries.",
+      "tags": ["content", "data", "tides"]
+    },
+    {
+      "id": "code-9",
+      "title": "Confirmation omits the arrival time shown on the review step",
+      "description": "A confirmation should restate what was booked. The review page shows 'Saturday 17 October 2026 at 15:00', but app.js passes only date, nights and berth to confirmed.html and the confirmation summary has no time or boat row, so the time the harbour office expects the boat is not on the record the skipper keeps.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "A skipper checking the confirmation later may not have the arrival time they committed to, which matters for the gate window.",
+      "locations": [
+        {
+          "route": "/confirmed.html",
+          "state": "default",
+          "selector": "dl.summary",
+          "snippet": "<dt>Arrival</dt><dd id=\"c-arrival\">",
+          "source": { "file": "app.js", "line": 224, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:224", "detail": "['date', 'nights', 'berth'].forEach(...) builds the confirmed.html query; 'arrive' and 'boat' dropped." },
+        { "type": "code", "ref": "confirmed.html:35-39", "detail": "Summary rows Arrival (date only), Berth, Nights." }
+      ],
+      "factor_notes": {
+        "frequency": "Every completed booking.",
+        "impact": "Information loss on the kept record; recoverable only from memory or the office.",
+        "persistence": "One-time per booking."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Pass 'arrive' (and boat name) to confirmed.html and render 'date at time' as the review page does.",
+      "tags": ["confirmation", "content"]
+    },
+    {
+      "id": "code-10",
+      "title": "Booking reference is derived from month, day and berth only, so it repeats",
+      "description": "A booking reference should identify one booking. app.js builds it as 'SQ-' + MMDD + '-' + berth code, with no year or sequence, so every booking of the same berth on the same day of any year gets the same reference, e.g. SQ-1017-C3.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true }
+      ],
+      "impact": "A skipper quoting the reference at the office may be matched to another booking; the reference is also guessable from public facts.",
+      "locations": [
+        {
+          "route": "/confirmed.html",
+          "state": "default",
+          "selector": "strong#ref",
+          "snippet": "<strong id=\"ref\">",
+          "source": { "file": "app.js", "line": 237, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:237", "detail": "setText('ref', 'SQ-' + dateC.slice(5, 7) + dateC.slice(8, 10) + '-' + params.get('berth'))" }
+      ],
+      "factor_notes": {
+        "frequency": "Whenever two bookings share a berth and calendar day (across years or after a rebooking).",
+        "impact": "Mismatched lookups at the office; a support contact.",
+        "persistence": "One-time per arrival."
+      },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Issue the reference from the booking record (server-side sequence or random id), not from the query string.",
+      "tags": ["confirmation", "data"]
+    }
+  ],
+  "source_locations": [],
+  "ease_estimates": [
+    { "finding_id": "code-1", "ease": 2, "layer": "app.js boat branch + boat.html form attribute", "note": "Delete the pageshow reset, prefill four inputs from params, remove autocomplete=off; one page's script." },
+    { "finding_id": "code-2", "ease": 2, "layer": "boat.html #dead-end + app.js boat branch", "note": "Render limit, berth name and a link back to berths.html?stayQuery(); or turn it into a Length field error via the existing errorKit." },
+    { "finding_id": "code-3", "ease": 1, "layer": "styles.css invalid-state rule", "note": "Widen one selector list to select and .option:has(input[aria-invalid])." },
+    { "finding_id": "code-4", "ease": 2, "layer": "styles.css .option block", "note": "Two new :has() rules on the existing card component, using existing tokens." },
+    { "finding_id": "code-5", "ease": 2, "layer": "app.js plan branch", "note": "Add range and past-date checks to the existing submit validation." },
+    { "finding_id": "code-6", "ease": 2, "layer": "app.js errorKit.show", "note": "Map fieldset ids to their first input when building summary links." },
+    { "finding_id": "code-7", "ease": 2, "layer": "index.html tide table content", "note": "Convert seven rows to local time and update the caption; no structural change." },
+    { "finding_id": "code-8", "ease": 3, "layer": "tide data source + plan, berths and review pages", "note": "Needs a dated tide data set and rendering of the gate window in several pages of the flow." },
+    { "finding_id": "code-9", "ease": 2, "layer": "app.js review/confirmed branches + confirmed.html", "note": "Add 'arrive' to the forwarded keys and a time to the arrival row." },
+    { "finding_id": "code-10", "ease": 4, "layer": "booking back end", "note": "A unique reference needs a record of bookings, which the static architecture lacks; a client-side random id is a stopgap only." }
+  ]
+}

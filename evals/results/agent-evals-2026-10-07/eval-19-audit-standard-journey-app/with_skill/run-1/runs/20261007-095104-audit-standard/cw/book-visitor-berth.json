@@ -1,0 +1,259 @@
+{
+  "schema": "cw-record",
+  "run": "20261007-095104-audit-standard",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "journey": "book-visitor-berth",
+  "variant": "full",
+  "persona": {
+    "group": "Skipper of a visiting cruising yacht, first time at Saltmarsh Quay",
+    "knows": [
+      "length overall 10.4 m including bowsprit; hull length 9.6 m",
+      "draught 1.5 m",
+      "the boat's MMSI (DSC radio)",
+      "tidal harbours can only be entered around high water"
+    ],
+    "does_not_know": [
+      "which pontoon is long enough for the boat",
+      "whether the harbour publishes tide times in local time or UTC",
+      "when the sill gate opens"
+    ],
+    "context": "Phone (375 px) in the cockpit the evening before, patchy data, one hand on the tiller line"
+  },
+  "task": "Goal in the persona's words: 'Get a safe spot for Curlew for two nights, coming in on Saturday afternoon's tide, about three o'clock.' Scenario: sailing to the quay on Saturday 17 October 2026, two nights, arriving around 15:00, yacht 10.4 m long including bowsprit, draws 1.5 m. Success: /confirmed.html shows 'Booking confirmed' and #c-berth reads 'Pontoon C, berth 3'.",
+  "start_state": { "url": "/", "data": "all four visitor berths free on 17 and 18 October 2026", "locale": "en-GB", "viewport_width": 375 },
+  "sequence": [
+    "1 fill Arrival date = 2026-10-17",
+    "2 select Nights = 2",
+    "3 select Arrival time = 15:00",
+    "4 click Check berths (expect /berths.html)",
+    "5 check radio Pontoon C, berth 3",
+    "6 click Continue (expect /boat.html)",
+    "7 fill Boat name = Curlew",
+    "8 fill Length = 10.4",
+    "9 fill Draught in metres = 1.5",
+    "10 fill MMSI = 123456789",
+    "11 click Continue (expect /review.html)",
+    "12 fill Skipper's name = Test Skipper",
+    "13 fill Mobile number = 07700 900123",
+    "14 click Confirm booking (expect 'Booking confirmed')"
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "action": { "action": "fill", "target": "label=Arrival date", "value": "2026-10-17" },
+      "sub_goal": "Say which day I'm coming in",
+      "visible_cues": "H1 'Book a visitor berth'; intro mentions sill gate and high water; 'Arrival date' field with calendar icon at the top of the form",
+      "most_likely_action": "Tap Arrival date and pick 17 October",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The heading uses the persona's own words 'visitor berth'; the first field asks for the day, which they know.", "evidence": ["probes/1/step-02.png", "evidence/aria/root/default/375-light.yml"] },
+        "q2": { "answer": "yes", "story": "The field is the first control below the intro, fully in view at 375 px.", "evidence": ["probes/1/step-02.png"] },
+        "q3": { "answer": "yes", "story": "Label 'Arrival date' matches 'the day I arrive'; the native date picker opens on tap.", "evidence": ["textbox \"Arrival date\""] },
+        "q4": { "answer": "yes", "story": "The field shows 2026/10/17 after entry; the berths page later restates 'Saturday 17 October 2026'.", "evidence": ["probes/1/step-06.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 2,
+      "action": { "action": "select", "target": "role=combobox[name=\"Nights\"]", "value": "2" },
+      "sub_goal": "Say I'm staying two nights",
+      "visible_cues": "'Nights' select showing '1 night'",
+      "most_likely_action": "Open Nights and choose '2 nights'",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Two nights is part of the persona's plan; the field asks for it directly.", "evidence": ["probes/1/step-02.png"] },
+        "q2": { "answer": "yes", "story": "Directly below the date field, in view.", "evidence": ["probes/1/step-02.png"] },
+        "q3": { "answer": "yes", "story": "'Nights' and options '2 nights' are the persona's words.", "evidence": ["combobox \"Nights\""] },
+        "q4": { "answer": "yes", "story": "The select shows '2 nights'; the next page says 'staying for 2 nights'.", "evidence": ["probes/1/step-06.png", "probes/1/step-09.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 3,
+      "action": { "action": "select", "target": "role=combobox[name=\"Arrival time\"]", "value": "15:00" },
+      "sub_goal": "Say I'll come in on the afternoon tide, around three",
+      "visible_cues": "'Arrival time' select 'Choose a time' with hourly options 06:00-21:00, no time zone and no gate hint; the 'Tide times' table ('High water at the quay, times in UTC') and the gate rule sit below the Check berths button, out of view at 375 px",
+      "most_likely_action": "Pick 15:00; a careful skipper first scrolls to the tide table to check the gate is open then",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona knows arrival time matters at a tidal harbour and the intro says to plan around high water.", "evidence": ["evidence/aria/root/default/375-light.yml"] },
+        "q2": { "answer": "yes", "story": "The select is in view under Nights.", "evidence": ["probes/1/step-02.png"] },
+        "q3": { "answer": "no", "story": "The persona wants a time inside the gate window. The select gives bare hours with no time zone; the only tide data, below the button, is captioned 'times in UTC', with HW 14:32 on Sat 17 Oct and 'gate open from about two hours before high water until two hours after'. The persona does not know whether the arrival times are local (BST) or UTC, so cannot tell whether 15:00 here means 15:00 BST or 16:00 BST, nor work out the window without converting by hand. Missing knowledge: the time zone of the arrival-time options and how they relate to the UTC tide table.", "evidence": ["evidence/aria/root/default/375-light.yml (table caption 'High water at the quay, times in UTC'; combobox \"Arrival time\" options without zone)", "probes/1/step-02.png (tide table below the fold)"] },
+        "q4": { "answer": "no", "story": "Choosing a time gives no indication whether the gate is open then. Probe: choosing 08:00 on 17 Oct (HW 02:08/14:32 UTC, so the gate is shut) still goes straight to 'Choose a pontoon space ... at 08:00' with no warning. The persona has no confirmation that 15:00 is a time they can actually get in. Missing feedback: whether the chosen time falls inside the sill-gate window.", "evidence": ["probes/14/aria.yml", "probes/1/step-09.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "A first-time skipper picks 15:00 because that's their plan, but cannot confirm it's within the gate window: arrival times carry no time zone, the tide table is in UTC and below the button, and the form accepts times when the gate is shut without comment.",
+      "missing": "both"
+    },
+    {
+      "n": 4,
+      "action": { "action": "click", "target": "role=button[name=\"Check berths\"]" },
+      "sub_goal": "See what's free",
+      "visible_cues": "Dark 'Check berths' button under the form",
+      "most_likely_action": "Tap Check berths",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Having entered dates, the persona wants to see berths.", "evidence": ["probes/1/step-06.png"] },
+        "q2": { "answer": "yes", "story": "Only button on the form, in view.", "evidence": ["probes/1/step-06.png"] },
+        "q3": { "answer": "yes", "story": "'Check berths' reads as 'see which berths are free', which is the next thing the persona wants.", "evidence": ["button \"Check berths\""] },
+        "q4": { "answer": "yes", "story": "New page 'Choose a pontoon space' restates 'Arriving on Saturday 17 October 2026 at 15:00, staying for 2 nights.'", "evidence": ["probes/1/step-09.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 5,
+      "action": { "action": "check", "target": "role=radio[name=/Pontoon C, berth 3/]" },
+      "sub_goal": "Pick a berth Curlew fits",
+      "visible_cues": "Four cards: A6 'up to 8 metres' £2.80; B14 'up to 10 metres' £3.20; C3 'up to 12 metres' £3.60; Wall 2 'up to 15 metres, settles on soft mud' £2.40, all 'per metre per night'",
+      "most_likely_action": "Compare the limits with the boat's length; a skipper thinking of hull length (9.6 m) or of the lower price may pick B14",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona wants a berth the boat fits and stays afloat in.", "evidence": ["probes/1/step-09.png"] },
+        "q2": { "answer": "yes", "story": "C3 card starts in view at 375 px; radio cards are clearly tappable.", "evidence": ["probes/1/step-09.png"] },
+        "q3": { "answer": "no", "story": "The persona has two lengths: 10.4 m overall with bowsprit and 9.6 m hull. 'Boats up to 10 metres' does not say which length is measured. B14 is cheaper and 9.6 m fits under 10, so B14 looks right. Missing knowledge: that the limit is length overall including bowsprit. Off-path consequences probed: B14 + Length 10.4 ends on 'Booking stopped' with no reason (probes/12); B14 + Length 9.6 is accepted and priced (probes/19).", "evidence": ["evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/375-light.yml", "probes/12/aria.yml", "probes/19/aria.yml"] },
+        "q4": { "answer": "yes", "story": "The chosen card shows a filled radio and a darker border.", "evidence": ["probes/1/step-11.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "A skipper who thinks of their hull length, or who picks the cheaper option, may choose Pontoon B, berth 14 because the card says 'Boats up to 10 metres' without saying length overall.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 6,
+      "action": { "action": "click", "target": "role=button[name=\"Continue\"]" },
+      "sub_goal": "Go on with that berth",
+      "visible_cues": "'Continue' button below the last card (scroll needed at 375 px)",
+      "most_likely_action": "Scroll and tap Continue",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Having picked a berth, the persona expects to move on.", "evidence": ["probes/1/step-11.png"] },
+        "q2": { "answer": "yes", "story": "Below the cards in the natural reading order; scrolling a list of cards to find the next button is expected on a phone.", "evidence": ["evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/375-light.yml"] },
+        "q3": { "answer": "yes", "story": "'Continue' after a selection is a familiar pattern.", "evidence": ["button \"Continue\""] },
+        "q4": { "answer": "yes", "story": "Page 'Your boat' says 'We use these details to check that your boat fits the space you chose.'", "evidence": ["probes/1/step-14.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 7,
+      "action": { "action": "fill", "target": "role=textbox[name=\"Boat name\"]", "value": "Curlew" },
+      "sub_goal": "Give the boat's name",
+      "visible_cues": "'Boat name' field first on the form",
+      "most_likely_action": "Type Curlew",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Expected on any berth booking.", "evidence": ["probes/1/step-14.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-14.png"] },
+        "q3": { "answer": "yes", "story": "Plain label.", "evidence": ["textbox \"Boat name\""] },
+        "q4": { "answer": "yes", "story": "Text appears; review page shows 'Curlew'.", "evidence": ["probes/1/step-22.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 8,
+      "action": { "action": "fill", "target": "role=textbox[name=\"Length\"]", "value": "10.4" },
+      "sub_goal": "Give the boat's length",
+      "visible_cues": "Label 'Length' with no unit and no hint; the next field says 'Draught in metres' with a hint",
+      "most_likely_action": "Type a length; which one (10.4 overall, 9.6 hull) and in what unit is not stated",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The page says the details check the boat fits the space.", "evidence": ["probes/1/step-14.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-14.png"] },
+        "q3": { "answer": "no", "story": "The persona has two lengths and the label is just 'Length': no 'overall', no 'including bowsprit', no unit (draught alone says 'in metres'). A skipper paying 'per metre per night' could reasonably give the 9.6 m hull length; probe shows 9.6 is accepted and the total drops accordingly. Missing knowledge: which length (LOA including bowsprit) and in which unit.", "evidence": ["evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/default/375-light.yml", "probes/19/aria.yml"] },
+        "q4": { "answer": "yes", "story": "The review page echoes 'Curlew, 10.4 metres long', which confirms metres after the fact.", "evidence": ["probes/1/step-22.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "Same missing knowledge as step 5: the persona isn't told the harbour measures length overall including bowsprit, and may enter 9.6.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 9,
+      "action": { "action": "fill", "target": "role=textbox[name=\"Draught in metres\"]", "value": "1.5" },
+      "sub_goal": "Give the draught",
+      "visible_cues": "'Draught in metres' with hint 'The depth of water your boat needs to float'",
+      "most_likely_action": "Type 1.5",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Draught matters in a tidal harbour; the persona expects it.", "evidence": ["probes/1/step-14.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-14.png"] },
+        "q3": { "answer": "yes", "story": "Label names the unit and the hint defines the term.", "evidence": ["textbox \"Draught in metres\""] },
+        "q4": { "answer": "yes", "story": "Value shown; empty-submit error gives an example ('for example 1.5').", "evidence": ["probes/1/step-19.png", "evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/errors/375-light.yml"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 10,
+      "action": { "action": "fill", "target": "role=textbox[name=\"MMSI\"]", "value": "123456789" },
+      "sub_goal": "Give the radio ID",
+      "visible_cues": "'MMSI' field",
+      "most_likely_action": "Type the MMSI",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona has a DSC radio and knows harbours may want the MMSI.", "evidence": ["probes/1/step-14.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-14.png"] },
+        "q3": { "answer": "yes", "story": "'MMSI' is the persona's own term.", "evidence": ["textbox \"MMSI\""] },
+        "q4": { "answer": "yes", "story": "Value shown in the field.", "evidence": ["probes/1/step-19.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 11,
+      "action": { "action": "click", "target": "role=button[name=\"Continue\"]" },
+      "sub_goal": "Send the boat details",
+      "visible_cues": "'Continue' under the MMSI field",
+      "most_likely_action": "Tap Continue",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Form filled; moving on is the obvious next thing.", "evidence": ["probes/1/step-19.png"] },
+        "q2": { "answer": "yes", "story": "In view at 375 px.", "evidence": ["probes/1/step-14.png"] },
+        "q3": { "answer": "yes", "story": "Same 'Continue' as the previous page.", "evidence": ["button \"Continue\""] },
+        "q4": { "answer": "yes", "story": "On the correct path (C3, 10.4) the page 'Check your mooring booking' summarises arrival, nights, berth, boat and a total. (Off path, after a step-5 failure, the feedback is 'Booking stopped' with no reason: see candidate on the dead end.)", "evidence": ["probes/1/step-22.png", "probes/12/aria.yml"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 12,
+      "action": { "action": "fill", "target": "role=textbox[name=\"Skipper’s name\"]", "value": "Test Skipper" },
+      "sub_goal": "Give my name",
+      "visible_cues": "Summary list, then 'Your contact details' heading and 'Skipper's name' field in view",
+      "most_likely_action": "Type name",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Although the H1 says 'Check', a 'Your contact details' section with empty fields is visible below the summary.", "evidence": ["probes/1/step-22.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-22.png"] },
+        "q3": { "answer": "yes", "story": "Plain label.", "evidence": ["textbox \"Skipper’s name\""] },
+        "q4": { "answer": "yes", "story": "Text appears in the field.", "evidence": ["probes/1/probe.json step 23"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 13,
+      "action": { "action": "fill", "target": "role=textbox[name=\"Mobile number\"]", "value": "07700 900123" },
+      "sub_goal": "Give a number they can text",
+      "visible_cues": "'Mobile number' with hint 'The harbour office sends a text if the gate times change'",
+      "most_likely_action": "Type mobile",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The hint gives a reason the persona values.", "evidence": ["probes/1/step-22.png"] },
+        "q2": { "answer": "yes", "story": "In view.", "evidence": ["probes/1/step-22.png"] },
+        "q3": { "answer": "yes", "story": "Plain label.", "evidence": ["textbox \"Mobile number\""] },
+        "q4": { "answer": "yes", "story": "Text appears in the field.", "evidence": ["probes/1/probe.json step 24"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 14,
+      "action": { "action": "click", "target": "role=button[name=\"Confirm booking\"]" },
+      "sub_goal": "Lock in the berth",
+      "visible_cues": "'Confirm booking' below the contact fields (scroll at 375 px); 'You pay at the harbour office ... Nothing is charged online' at top",
+      "most_likely_action": "Tap Confirm booking",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona wants the place secured; the page says nothing is charged, so confirming is safe.", "evidence": ["probes/1/step-22.png"] },
+        "q2": { "answer": "yes", "story": "Directly after the last field.", "evidence": ["evidence/aria/review-html-date-2026-10-17-nights-2-arrive-15-00-berth-c3-b/default/375-light.yml"] },
+        "q3": { "answer": "yes", "story": "'Confirm booking' matches 'make sure there's a place waiting'.", "evidence": ["button \"Confirm booking\""] },
+        "q4": { "answer": "no", "story": "'Booking confirmed' with reference SQ-1017-C3 and the berth are shown, so the booking itself is clear. But the persona's goal was a berth for the afternoon tide: the confirmation lists 'Arrival: Saturday 17 October 2026' without the 15:00 time the review showed, and says nothing about when the gate is open. A skipper may be unsure their arrival time was recorded and still has no gate window to plan the passage against. Missing feedback: the confirmed arrival time and gate window.", "evidence": ["probes/1/final.png", "evidence/aria/confirmed-html-date-2026-10-17-nights-2-berth-c3/default/375-light.yml"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "Booking success is clear, but the confirmation drops the arrival time and gives no gate window, so the persona leaves without confirmation of the tide-dependent part of the plan.",
+      "missing": "feedback"
+    }
+  ],
+  "overall": "would_with_effort",
+  "notes": "Four-question variant at 375x812, light theme, isolated subagent. Sequence taken from journeys.json and replayed in one probe (probes/1, all 27 actions passed); off-path probes 12 (B14 + 10.4 -> 'Booking stopped'), 14 (08:00 accepted) and 19 (B14 + 9.6 accepted) were used only as evidence for failure stories, not to change the path. Failed steps: 3 (Q3, Q4), 5 (Q3), 8 (Q3), 14 (Q4). These are failure-point hypotheses at E0, not predicted user outcomes. Independence: the journeys.json _comment mentions a ground-truth.json; it was not opened. Screenshots from probe are viewport-only (full_page did not extend them); below-the-fold content was judged from ARIA snapshots."
+}

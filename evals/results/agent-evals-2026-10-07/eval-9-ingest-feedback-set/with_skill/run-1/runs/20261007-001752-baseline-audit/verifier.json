@@ -1,0 +1,47 @@
+{
+  "schema": "verifier",
+  "run": "20261007-001752-baseline-audit",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "548b059a873b2fc8",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0019",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375px on /boat.html default: #mmsi has the bare label 'MMSI' and no hint paragraph or description, while 'Draught in metres' carries the hint 'The depth of water your boat needs to float'. No help link or explanation of MMSI anywhere on the page (ARIA snapshot). Iteration 1, so no ceiling flag; dismissal ledger is empty.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/11/final.png",
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/11/aria.yml"
+      ],
+      "note": "Wording: Draught sits above MMSI, not 'next to it'. The quoted impact ('cannot complete the booking online') belongs to F-0020's mechanism (MMSI is mandatory); for this finding, the impact the evidence supports is hesitation at the field. 'Skippers stall' rests on the feedback quotes, not on observation."
+    },
+    {
+      "candidate_id": "F-0020",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375px: I filled Boat name, Length and Draught, left MMSI blank and pressed Continue. The page stayed on /boat.html, showed the 'There is a problem' summary with 'Enter the MMSI', showed #mmsi-error 'Enter the MMSI' and marked #mmsi invalid. The page has no checkbox, link or other alternative for boats without an MMSI (ARIA snapshot). The only other route is the harbour office phone number in the footer.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/12/final.png",
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/12/aria.yml",
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/12/probe.json"
+      ],
+      "note": "The PRODUCT.md claim was not checked; it is outside the verifier's allowed inputs. The cited criteria are debatable: H7 (flexibility) fits weakly. A required field with no alternative path is closer to H5 (error prevention) or to a task-completion/requirements problem. The rater could use H5 as primary. This finding is distinct from F-0019 (the field is mandatory vs the field is unexplained), so no split is needed."
+    },
+    {
+      "candidate_id": "F-0018",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The claim is about performance on weak mobile data in the field. uie probe cannot throttle the network, and the candidate itself says field conditions cannot be reproduced locally. On the unthrottled local server, / loaded in 19 ms, the berths, boat and review pages each completed goto in about 0.5 s, and there were no failed or 4xx/5xx requests. That neither confirms nor refutes the claim. It needs a throttled measurement (Lighthouse or DevTools Slow 4G: page weight, request count, render-blocking resources) or field data from a human.",
+      "evidence": [
+        ".ui-evaluator/runs/20261007-001752-baseline-audit/probes/13/probe.json"
+      ],
+      "note": "Evidence is 3 of 94 self-selected reporters, and one reporter had no signal at all, which no page change can fix. The location 'body' on '/' is overall_structure; the reports cover the whole booking flow."
+    }
+  ]
+}

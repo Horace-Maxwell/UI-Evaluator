@@ -1,0 +1,310 @@
+{
+  "schema": "evaluator-output",
+  "role": "accessibility-auditor",
+  "agent": "a11y",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-095104-audit-standard",
+  "packet_hash": "3a531299cb6b1e21",
+  "notes": "Packet read: README, context, checks.json (axe 0 violations / 0 incompletes; contrast 0 needs-judgment items, no CJK text; keyboard 162 stops, 0 issues; dialogs 0 probed; forms, live-regions, layout, targets, cvd all 0 hits), ARIA snapshots for all 10 route-states, default / CVD / forced-colours captures. Probes 22 (More options disclosure: Enter opens, Tab enters list, Esc closes and returns focus to the button; Change dates link pre-fills date, nights and time), 26 (invalid boat values), 30 (Length 34 on berth B14 -> Booking stopped), 41 (08:00 arrival on 17 Oct accepted with no gate-window warning). The 'back' failure in probe 30 is a probe artefact (fresh tab, no history) and is not reported. No source code, builder notes or other evaluator outputs were read. Page titles are not in the packet, so 2.4.2 is left to a person.",
+  "passes": [
+    { "pass": 1, "summary": "Resolve incompletes, CVD and forced-colours review, ARIA semantics per route-state", "elements_inspected": 64 },
+    { "pass": 2, "summary": "Pattern probes (disclosure), form error paths, journey replay of book-visitor-berth and change-arrival-date" }
+  ],
+  "coverage": {
+    "routes": ["/", "/berths.html", "/boat.html", "/review.html", "/confirmed.html"],
+    "states": ["/#default", "/#errors", "/berths.html#default", "/berths.html#menu-open", "/boat.html#default", "/boat.html#errors", "/boat.html#length-over-limit", "/review.html#default", "/review.html#errors", "/confirmed.html#default"],
+    "controls_exercised": 14,
+    "controls_total": 16
+  },
+  "candidates": [
+    {
+      "id": "a11y-1",
+      "title": "\"Booking stopped\" does not say which entry is wrong or how to fix it when the boat is longer than the chosen berth",
+      "description": "On the boat-details step, a length over the chosen berth's limit (10.4 m on Pontoon B, berth 14, which takes boats up to 10 m) replaces the whole form with 'Booking stopped. This booking cannot continue. Reference BK-409.' The system has detected an input error, but the message does not name the field (Length), does not describe the error (longer than the 10 m limit of this berth), and does not suggest a fix, although one is known: Pontoon C, berth 3 (12 m) and Wall berth 2 (15 m) were free on the same dates. The page has no link back to the berth list or to the form, and the entered values are gone. 3.3.1 requires the item in error to be identified and described in text; 3.3.3 requires a known correction to be suggested.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "wcag", "id": "3.3.1", "primary": true, "name": "Error identification" },
+        { "kind": "wcag", "id": "3.3.3", "name": "Error suggestion" },
+        { "kind": "rule", "id": "A11Y-27" },
+        { "kind": "heuristic", "id": "H9" }
+      ],
+      "impact": "Visiting skippers on the critical book-visitor-berth journey reach a dead end with no idea why. Screen-reader users hear only 'This booking cannot continue'. The only way forward is to phone the harbour office, which is open 08:00 to 20:00, or to start again from the home page, and many will abandon the booking.",
+      "locations": [
+        {
+          "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14",
+          "state": "length-over-limit",
+          "viewport": { "width": 1280, "height": 900 },
+          "theme": "light",
+          "selector": "role=heading[name=\"Booking stopped\"]",
+          "crop": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/length-over-limit/1280-light.png",
+          "snippet": "heading \"Booking stopped\" [level=1]; paragraph: This booking cannot continue. Reference BK-409.",
+          "journey": "book-visitor-berth"
+        }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/length-over-limit/1280-light.png", "detail": "The whole main region is replaced by a two-line message with no field reference, cause or next step." },
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/length-over-limit/1280-light.yml", "detail": "main contains only the heading 'Booking stopped' and one paragraph; no link back, no alert naming the field." },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/30/", "detail": "Length 34 (a plausible length in feet) on B14 gives the same dead end; the URL does not change, so the form is replaced in place." },
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/1280-light.yml", "detail": "Pontoon C, berth 3 (up to 12 m) and Wall berth 2 (up to 15 m) are free on the same dates, so a correction is known to the system." }
+      ],
+      "found_by": [ { "role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 2 } ],
+      "factor_notes": { "frequency": "Every booking where the boat is longer than the berth picked; berth choice comes before length is asked.", "impact": "Task cannot be completed online from this state.", "persistence": "Recurs on every attempt; the user only learns the cause from the harbour office." },
+      "evidence_level": "E0",
+      "recommendation": "Keep the form and show the standard error pattern (summary with role=alert plus an inline error on Length tied with aria-describedby and aria-invalid): 'Your boat is 10.4 metres long. Pontoon B, berth 14 takes boats up to 10 metres.' Add a link back to the berth list ('Choose a different berth') that keeps the dates and boat details, and name the berths that fit. Better still, ask for length before or alongside the berth choice and show only berths that fit (see a11y-4).",
+      "tags": ["errors", "forms", "dead-end"]
+    },
+    {
+      "id": "a11y-2",
+      "title": "Length field gives no unit, while draught and berth limits are in metres",
+      "description": "The boat-details form labels the field only 'Length', with no hint text. The neighbouring field says 'Draught in metres' and the berth limits are in metres, but nothing tells the user which unit Length uses. Many UK skippers know their LOA in feet. When '34 ft' is entered the error says only 'Enter the length as a number', which still gives no unit; entering 34 then triggers 'Booking stopped' (a11y-1). MMSI also has no hint about its format (9 digits) and no explanation of the term. 3.3.2 requires labels or instructions when content needs user input in a particular format.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "wcag", "id": "3.3.2", "primary": true, "name": "Labels or instructions" },
+        { "kind": "wcag", "id": "3.3.3", "name": "Error suggestion" },
+        { "kind": "rule", "id": "A11Y-27" },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "impact": "Skippers who think in feet enter a value about three times too large and are stopped. Older skippers using magnification may miss the 'in metres' on the field below, so they cannot infer the unit from nearby fields.",
+      "locations": [
+        {
+          "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14",
+          "state": "default",
+          "viewport": { "width": 1280, "height": 900 },
+          "selector": "role=textbox[name=\"Length\"]",
+          "bbox": [208, 337, 320, 44],
+          "crop": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/default/1280-light.png",
+          "snippet": "text: Length / textbox \"Length\" (no description) vs text: Draught in metres / paragraph: The depth of water your boat needs to float",
+          "journey": "book-visitor-berth"
+        },
+        {
+          "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14",
+          "state": "invalid-values (probe 26)",
+          "selector": "role=textbox[name=\"Length\"]",
+          "snippet": "paragraph: Enter the length as a number / textbox \"Length\" [invalid]: 34 ft"
+        }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/aria/boat-html-date-2026-10-17-nights-2-arrive-15-00-berth-b14/errors/1280-light.yml", "detail": "Error texts: 'Enter the length' (no unit) vs 'Enter the draught in metres, for example 1.5'." },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/26/aria.yml", "detail": "'34 ft' -> 'Enter the length as a number'; MMSI '12' accepted without error." },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/30/screenshots/length-34-feet.png", "detail": "Length 34 -> Booking stopped." }
+      ],
+      "found_by": [ { "role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Label the field 'Length overall (LOA) in metres' and add hint text such as 'For example 9.5. To convert feet, divide by 3.28.' Make the error say 'Enter the length in metres, for example 9.5'. Give MMSI a hint ('9 digits, on your VHF radio licence') and validate it.",
+      "tags": ["forms", "units", "labels"]
+    },
+    {
+      "id": "a11y-3",
+      "title": "Change dates, a core task, is hidden behind an unlabelled \"...\" overflow button",
+      "description": "On the berth list, the only in-flow way to change the arrival date (top task 2, journey change-arrival-date) is a 'Change dates' link inside a disclosure opened by an icon-only '...' button. The button sits at the far right, away from the 'Arriving on Saturday 17 October 2026 at 15:00' summary it relates to. Its accessible name is 'More options', but nothing visible says so. The disclosure works by keyboard (probe 22: Enter opens, Tab reaches the link, Esc closes and returns focus), so this is not a WCAG failure; it is a recognition problem. Users have to guess that dates live under a generic overflow icon. Speech-control users must also guess the hidden name 'More options' to activate it.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "heuristic", "id": "H8" }
+      ],
+      "impact": "Skippers who realise they picked the wrong day (e.g. after checking the tide) cannot see how to fix it. They are likely to use browser Back or restart, and at 400% zoom or on a phone in a cockpit the small icon is easy to miss.",
+      "locations": [
+        {
+          "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00",
+          "state": "default",
+          "viewport": { "width": 1280, "height": 900 },
+          "selector": "role=button[name=\"More options\"]",
+          "bbox": [1028, 205, 44, 44],
+          "crop": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/1280-light.png",
+          "snippet": "button \"More options\" (visible glyph: ...); list > link \"Change dates\" shown only when expanded",
+          "journey": "change-arrival-date"
+        }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/1280-light.png", "detail": "Only a '...' glyph is visible; no 'Change' text near the arrival summary." },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/22/", "detail": "Disclosure keyboard model correct; Change dates link pre-fills date, nights and time on the home page." }
+      ],
+      "found_by": [ { "role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Put a visible 'Change dates' text link directly after the arrival summary sentence (and 'Harbour rules' as a plain link). Drop the overflow menu; with only two items it saves no space.",
+      "tags": ["cognitive", "discoverability", "speech-control"]
+    },
+    {
+      "id": "a11y-4",
+      "title": "Tide table is in UTC and the arrival time is not checked against the sill-gate window",
+      "description": "The plan-visit page asks for an arrival time from a plain list (06:00 to 21:00) and, below it, shows 'High water at the quay, times in UTC' with the rule 'the sill gate is open from about two hours before high water until two hours after'. The product formats times in local time, and on 17 October the UK is on BST (UTC+1). To pick a workable time the skipper must remember the HW time, add an hour and work out a plus or minus 2 h window, then hold that in mind while choosing from the list above the table. Choosing 08:00 on Saturday 17 October, when the gate is shut (HW 03:08 BST, gate open until about 05:08 BST), is accepted without a warning, and the berth list repeats 'at 08:00'.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "heuristic", "id": "H5" },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "The arrival time matters as much as the date at this harbour. A skipper who misses the timezone shift or does the sum wrong books an arrival when the boat cannot enter. The cognitive load falls on exactly the moment of decision, often on a phone underway.",
+      "locations": [
+        {
+          "route": "/",
+          "state": "default",
+          "viewport": { "width": 1280, "height": 900 },
+          "selector": "role=table[name=\"High water at the quay, times in UTC\"]",
+          "crop": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/22/final.png",
+          "snippet": "caption: High water at the quay, times in UTC; combobox \"Arrival time\" options 06:00-21:00 with no indication of gate open/closed",
+          "journey": "book-visitor-berth"
+        },
+        {
+          "route": "/berths.html?date=2026-10-17&nights=1&arrive=08:00",
+          "state": "after submit (probe 41)",
+          "viewport": { "width": 375, "height": 812 },
+          "selector": "main > p",
+          "snippet": "Arriving on Saturday 17 October 2026 at 08:00, staying for 1 night."
+        }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/aria/root/default/1280-light.yml", "detail": "Table caption states UTC; HW Sat 17 Oct 02:08 and 14:32 UTC." },
+        { "type": "probe", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/probes/41/", "detail": "08:00 arrival on 17 Oct accepted; berth list shows no gate warning." },
+        { "type": "quote", "detail": "context.md: 'Formats: ... 24-hour times in local time'; 'the arrival time matters as much as the date'." }
+      ],
+      "found_by": [ { "role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Show tide times in local time, labelled as such (e.g. 'BST'). Once a date is chosen, offer only the arrival times inside that day's gate windows, or mark each time option 'gate open' or 'gate closed' in text. Warn in text before 'Check berths' if the chosen time is outside the window.",
+      "tags": ["cognitive", "memory", "error-prevention", "time"]
+    },
+    {
+      "id": "a11y-5",
+      "title": "Berth is chosen before boat length is asked, so a mismatch is only found at the end",
+      "description": "The flow asks the skipper to pick a berth (each card states 'Boats up to N metres') before asking for the boat's length on the next page. Nothing on the berth list asks for or filters by length, and nothing on the boat page re-checks the fit until submission, which then ends in 'Booking stopped' (a11y-1). The skipper has to compare their LOA with each card's limit from memory.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Avoidable dead ends in the critical journey, and a memory bridge across two pages for a figure that decides whether the booking can go ahead.",
+      "locations": [
+        {
+          "route": "/berths.html?date=2026-10-17&nights=2&arrive=15:00",
+          "state": "default",
+          "selector": "role=group[name=\"Pontoon spaces free on these dates\"]",
+          "crop": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/screens/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/1280-light.png",
+          "journey": "book-visitor-berth"
+        },
+        {
+          "route": "/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14",
+          "state": "default",
+          "selector": "role=textbox[name=\"Length\"]",
+          "journey": "book-visitor-berth"
+        }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": ".ui-evaluator/runs/20261007-095104-audit-standard/evidence/aria/berths-html-date-2026-10-17-nights-2-arrive-15-00/default/1280-light.yml", "detail": "Four radios with limits 8, 10, 12 and 15 m; no length input on this step." }
+      ],
+      "found_by": [ { "role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 2 } ],
+      "evidence_level": "E0",
+      "recommendation": "Ask for length (and draught) on the plan-visit step or at the top of the berth list, then show only berths that fit, with the others listed as 'too short for your boat'. Show the chosen berth's limit beside the Length field.",
+      "tags": ["cognitive", "flow-order"]
+    }
+  ],
+  "strengths": [
+    { "title": "Error summaries use role=alert, take focus, link to each field, and inline errors are tied to invalid fields on all three forms", "evidence": "aria root/errors, boat/errors, review/errors snapshots" },
+    { "title": "Berth choice uses native radios inside a named group, with the full description in each accessible name", "evidence": "aria berths default" },
+    { "title": "More options follows the APG disclosure model (aria-expanded toggles, Esc closes and returns focus), and the Change dates link pre-fills earlier answers (3.3.7)", "evidence": "probes/22" },
+    { "title": "Tide table has a caption plus column and row headers; review and confirmation pages use description lists", "evidence": "aria root/default, review, confirmed" },
+    { "title": "Forced-colours rendering keeps card borders, radio outlines, button borders and link colours; errors stay readable in text under every CVD simulation", "evidence": "berths menu-open forced-colors capture; root errors achromatopsia capture" }
+  ],
+  "resolved_incompletes": [],
+  "_resolved_incompletes_note": "axe reported 0 incomplete results across 10 states x {320, 1280} (checks.json axe.incomplete = 0; incomplete_by_resolver contrast 0, auditor 0). The contrast check listed 0 CJK items for judgement (needs_judgment = 0, no CJK text detected). Nothing to resolve.",
+  "needs_human": [
+    { "sc": ["4.1.2", "4.1.3", "1.3.1", "1.3.2"], "item": "Screen-reader pass of journeys book-visitor-berth and change-arrival-date with VoiceOver + iOS Safari and TalkBack + Android Chrome (users' stated AT). Confirm the radio cards read once and not twice (the snapshot shows each label's text both as the radio name and as sibling text), error summaries are announced on submit, and what is announced and where focus lands when 'Booking stopped' replaces the form." },
+    { "sc": ["1.3.2"], "item": "Meaningful sequence: confirm reading order matches visual order at 320 px and 1280 px (the auditor saw no difference between DOM order and layout; the More options panel follows its button in both)." },
+    { "sc": ["1.3.3"], "item": "Sensory characteristics: read all instructions; the auditor found none relying on shape, position or colour." },
+    { "sc": ["2.4.2"], "item": "Page titles: not in the packet. Check that each step has a descriptive, unique title (e.g. 'Choose a berth - Saltmarsh Quay') and that error states prefix 'Error:'." },
+    { "sc": ["3.3.4"], "item": "Error prevention: confirm the review step lets users correct each item before confirming (the review page has no 'Change' links; only browser Back), and that a booking can be cancelled or amended afterwards." },
+    { "sc": ["1.4.4", "1.4.10"], "item": "Real zoom: text-only 200% in iOS Safari (larger text sizes are common among these users) and page zoom 400% in desktop Chrome on all five routes, as a check on the emulation." },
+    { "sc": ["2.5.3"], "item": "Speech control (Voice Control on iOS): try to open the '...' button by speaking. Its name 'More options' is not visible." },
+    { "sc": ["2.3.1"], "item": "Flashing: confirm there is none (no video or animation was found; quick confirmation only)." },
+    { "sc": ["1.4.11"], "item": "Real Windows contrast theme (High Contrast Black) on the berth list and the error states; Chromium forced-colours emulation looked correct." }
+  ],
+  "coverage_labels": {
+    "1.1.1": "agent-judged-pass",
+    "1.2.1": "not-applicable",
+    "1.2.2": "not-applicable",
+    "1.2.3": "not-applicable",
+    "1.2.4": "not-applicable",
+    "1.2.5": "not-applicable",
+    "1.3.1": "agent-judged-pass",
+    "1.3.2": "needs-human",
+    "1.3.3": "needs-human",
+    "1.3.4": "agent-judged-pass",
+    "1.3.5": "agent-judged-pass",
+    "1.4.1": "agent-judged-pass",
+    "1.4.2": "not-applicable",
+    "1.4.3": "agent-judged-pass",
+    "1.4.4": "agent-judged-pass",
+    "1.4.5": "agent-judged-pass",
+    "1.4.10": "agent-judged-pass",
+    "1.4.11": "agent-judged-pass",
+    "1.4.12": "agent-judged-pass",
+    "1.4.13": "not-applicable",
+    "2.1.1": "agent-judged-pass",
+    "2.1.2": "agent-judged-pass",
+    "2.1.4": "not-applicable",
+    "2.2.1": "agent-judged-pass",
+    "2.2.2": "not-applicable",
+    "2.3.1": "needs-human",
+    "2.4.1": "agent-judged-pass",
+    "2.4.2": "needs-human",
+    "2.4.3": "agent-judged-pass",
+    "2.4.4": "agent-judged-pass",
+    "2.4.5": "agent-judged-pass",
+    "2.4.6": "agent-judged-pass",
+    "2.4.7": "agent-judged-pass",
+    "2.4.11": "agent-judged-pass",
+    "2.5.1": "not-applicable",
+    "2.5.2": "agent-judged-pass",
+    "2.5.3": "agent-judged-pass",
+    "2.5.4": "not-applicable",
+    "2.5.7": "not-applicable",
+    "2.5.8": "agent-judged-pass",
+    "3.1.1": "agent-judged-pass",
+    "3.1.2": "agent-judged-pass",
+    "3.2.1": "agent-judged-pass",
+    "3.2.2": "agent-judged-pass",
+    "3.2.3": "agent-judged-pass",
+    "3.2.4": "agent-judged-pass",
+    "3.2.6": "agent-judged-pass",
+    "3.3.1": "agent-judged-fail",
+    "3.3.2": "agent-judged-fail",
+    "3.3.3": "agent-judged-fail",
+    "3.3.4": "needs-human",
+    "3.3.7": "agent-judged-pass",
+    "3.3.8": "not-applicable",
+    "4.1.2": "agent-judged-pass",
+    "4.1.3": "agent-judged-pass"
+  },
+  "_coverage_reasons": {
+    "_note": "Labels on criteria whose matrix coverage is auto or scripted (e.g. 1.4.3, 1.4.10, 2.4.7) only say the auditor saw nothing contrary; the tools' results decide them. 1.4.3 is not agent-judged in this run: no CJK text is in scope.",
+    "1.1.1": "Only image is the anchor glyph in the site name link, hidden from the tree; the link is named 'Saltmarsh Quay'. No informative images.",
+    "1.2.x": "No audio or video on any route (media check 0 hits).",
+    "1.3.1": "Lists, table caption with row and column headers, named radio group, description lists and labels all match the visual structure. One h1 per page, h2s under it, landmarks banner/nav/main/contentinfo present.",
+    "1.3.4": "Layouts at 320, 375 and 1280 px render without an orientation lock.",
+    "1.4.1": "Under all four CVD captures, errors carry text and a bordered summary, the footer link is underlined, and selection uses native radios. No colour-coded status.",
+    "1.4.5": "No raster text.",
+    "1.4.13": "No hover or focus-triggered content; the More options panel opens on activation.",
+    "2.1.4": "No single-key shortcuts observed.",
+    "2.2.1": "No time limits observed in the journey.",
+    "2.2.2": "No moving, blinking or auto-updating content.",
+    "2.4.5": "Pages after home are steps in a process (exempt); home reachable from nav.",
+    "2.4.6": "Headings and labels describe their purpose; the Length unit gap is recorded under 3.3.2.",
+    "2.5.1/2.5.4/2.5.7": "No path, multipoint, drag or motion gestures.",
+    "2.5.3": "Visible labels are contained in accessible names (radios, textboxes, buttons). The '...' button has no visible text label, so 2.5.3 does not apply; noted for speech-control in a11y-3.",
+    "3.2.2": "Probes 41 and 26: changing selects and fields causes no context change until a button is pressed.",
+    "3.2.6": "Harbour office phone in the footer of every route, same position.",
+    "3.3.1": "Fail: a11y-1 (Booking stopped names no field or cause).",
+    "3.3.2": "Fail: a11y-2 (Length has no unit; MMSI no format).",
+    "3.3.3": "Fail: a11y-1 (no correction offered though one is known); a11y-2 error text omits the unit.",
+    "3.3.7": "Change dates link pre-fills date, nights and time (probe 22); review repeats earlier answers.",
+    "3.3.8": "No authentication step.",
+    "4.1.2": "Disclosure button toggles aria-expanded; radios, selects and textboxes are named with states."
+  },
+  "ease_estimates": [
+    { "finding_id": "a11y-1", "ease": 2, "layer": "boat-details page error handling", "note": "Reuse the existing error-summary component; add a back link that keeps the parameters." },
+    { "finding_id": "a11y-2", "ease": 1, "layer": "boat-details field copy", "note": "Label, hint and error text change." },
+    { "finding_id": "a11y-3", "ease": 1, "layer": "berth list header", "note": "Replace the overflow disclosure with two text links." },
+    { "finding_id": "a11y-4", "ease": 3, "layer": "plan-visit form and tide data", "note": "Timezone conversion plus filtering time options by gate window." },
+    { "finding_id": "a11y-5", "ease": 3, "layer": "journey order", "note": "Move length input earlier and filter berths." }
+  ]
+}

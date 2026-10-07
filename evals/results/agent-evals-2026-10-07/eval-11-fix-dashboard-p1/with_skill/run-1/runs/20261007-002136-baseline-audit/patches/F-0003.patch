@@ -1,0 +1,41 @@
+fix(ui): F-0003 Muted text reaches readable contrast (also clears F-0004)
+
+Finding:     F-0003 (P1, A11Y-01 / WCAG 1.4.3) and its twin F-0004 (P1, A11Y-11):
+             "Last reading 14:05" and the five metric labels were #9aa0a6 on white /
+             #f3f6f2, measured 2.42:1 (needs 4.5:1; brief asks for well above it under
+             grow-light glare).
+Originating: axe color-contrast and the contrast check on / (default, manual-dosing),
+             320-1440 px, light: no hit.
+Regression:  journey switch-dosing-to-manual; audit contrast,axe,census; visual diff.
+Drift class: one-off value -> replaced with the page's existing secondary ink #3b4a40
+             (already used by .status-line, .axis, a:hover). About 9:1 on white.
+Layer:       styles.css, .updated and .metric__label colour only.
+Assumptions: none beyond reusing the existing secondary ink.
+Left alone:  token conformance of other literals (F-0015, P3, deferred).
+Re-test:     run 20261007-101237-fix-f-0003: axe 0, contrast 0, journey 3/3,
+             0 introduced; pixel change only on the six targeted text runs. PASSED.
+Baseline:    665ca185ac74f08453715a82013e960438c2e377 (apply patches in order:
+             F-0003, F-0021, F-0019).
+
+diff --git a/styles.css b/styles.css
+index f4a67c7..3dc9552 100644
+--- a/styles.css
++++ b/styles.css
+@@ -103,7 +103,7 @@ h3 {
+ }
+ 
+ .updated {
+-  color: #9aa0a6;
++  color: #3b4a40;
+ }
+ 
+ .layout {
+@@ -141,7 +141,7 @@ h3 {
+ }
+ 
+ .metric__label {
+-  color: #9aa0a6;
++  color: #3b4a40;
+   margin-bottom: 7px;
+ }
+ 

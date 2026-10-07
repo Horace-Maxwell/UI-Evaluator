@@ -1,0 +1,867 @@
+{
+ "eval": 19,
+ "assertions": [
+  {
+   "text": "Precision after verification is at least 0.8",
+   "how": "a grader who has not seen the run maps each confirmed finding that is not a deterministic tool finding to one seeded defect, to 'real but not seeded' (with the reason it is a genuine problem for these users), or to 'not a problem'; precision = (seeded + real but not seeded) / confirmed judged findings >= 0.8. Also report the strict precision, seeded / confirmed judged findings, and the recall by meaning"
+  },
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+  }
+ ],
+ "material": {
+  "findings": [
+   {
+    "id": "F-0006",
+    "method": "judged",
+    "title": "\"Booking stopped\" does not say which entry is wrong or how to fix it when the boat is longer than the chosen berth",
+    "description": "On the boat-details step, a length over the chosen berth's limit (10.4 m on Pontoon B, berth 14, which takes boats up to 10 m) replaces the whole form with 'Booking stopped. This booking cannot continue. Reference BK-409.' The system has detected an input error, but the message does not name the field (Length), does not describe the error (longer than the 10 m limit of this berth), and does not suggest a fix, although one is known: Pontoon C, berth 3 (12 m) and Wall berth 2 (15 m) were free on the same dates. The page has no link back to the berth list or to the form, and the entered values are gone. 3.3.1 requires the item in error to be identified and described in text; 3.3.3 requires a known correction to be suggested.",
+    "criteria": [
+     "3.3.1",
+     "3.3.3",
+     "A11Y-27",
+     "H9",
+     "H3",
+     "CPY-04",
+     "CW-Q4",
+     "H2",
+     "DES-execution",
+     "DES-appeal"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "length-over-limit"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0008",
+    "method": "judged",
+    "title": "Change dates, a core task, is hidden behind an unlabelled \"...\" overflow button",
+    "description": "On the berth list, the only in-flow way to change the arrival date (top task 2, journey change-arrival-date) is a 'Change dates' link inside a disclosure opened by an icon-only '...' button. The button sits at the far right, away from the 'Arriving on Saturday 17 October 2026 at 15:00' summary it relates to. Its accessible name is 'More options', but nothing visible says so. The disclosure works by keyboard (probe 22: Enter opens, Tab reaches the link, Esc closes and returns focus), so this is not a WCAG failure; it is a recognition problem. Users have to guess that dates live under a generic overflow icon. Speech-control users must also guess the hidden name 'More options' to activate it.",
+    "criteria": [
+     "H6",
+     "H8",
+     "H3",
+     "H7",
+     "CW-Q2",
+     "DES-hierarchy",
+     "DES-execution"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default",
+     "menu-open"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0010",
+    "method": "judged",
+    "title": "Berth is chosen before boat length is asked, so a mismatch is only found at the end",
+    "description": "The flow asks the skipper to pick a berth (each card states 'Boats up to N metres') before asking for the boat's length on the next page. Nothing on the berth list asks for or filters by length, and nothing on the boat page re-checks the fit until submission, which then ends in 'Booking stopped' (a11y-1). The skipper has to compare their LOA with each card's limit from memory.",
+    "criteria": [
+     "H5",
+     "H6",
+     "ISO 9241-110 suitability for the task",
+     "H7"
+    ],
+    "routes": [
+     "/berths.html",
+     "/boat.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0011",
+    "method": "judged",
+    "title": "Boat details form is emptied whenever the boat page is shown, including on Back from review",
+    "description": "Information a user has already entered in the same process should be restored or offered when they return to a step (WCAG 3.3.7; product principle 'Never lose what a skipper has typed'). app.js registers a pageshow listener on the boat page that calls boatForm.reset() every time the page is shown, including restores from the back-forward cache, and the page never reads the boat, loa, draught and mmsi values that app.js itself carries forward in the review URL. boat.html also sets autocomplete=\"off\" on the form, which stops the browser restoring or suggesting the values.",
+    "criteria": [
+     "3.3.7",
+     "H3",
+     "H5",
+     "H6",
+     "H7"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "default (after Back from review)"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0013",
+    "method": "judged",
+    "title": "Invalid-state border applies only to input elements, not to the arrival-time select or the berth radio cards",
+    "description": "A field in error should carry a visual error cue on the control itself, consistently across control types (CMP-01). styles.css styles only input[aria-invalid=\"true\"] with the error border. app.js sets aria-invalid on the #arrive select (plan page) and on the berth radios (berths page), but no rule styles select[aria-invalid] or the .option card around an invalid radio; native radios ignore the border rule. Those two controls show their error only through the message text above them.",
+    "criteria": [
+     "CMP-01",
+     "H4",
+     "H9",
+     "DES-coherence"
+    ],
+    "routes": [
+     "/",
+     "/berths.html",
+     "/boat.html",
+     "/review.html"
+    ],
+    "states": [
+     "errors",
+     "malformed values (probe 29)"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0014",
+    "method": "judged",
+    "title": "Berth option cards have no selected or keyboard-focus state at card level",
+    "description": "A selectable card should show which option is chosen and which has focus at the size of the card (CMP-01). The .option label has only a hover border; there is no :has(:checked) or :focus-within rule, so the selected berth is indicated only by the 24 px native radio dot and the focus ring sits on that 24 px radio, not on the card.",
+    "criteria": [
+     "CMP-01",
+     "H1"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0015",
+    "method": "judged",
+    "title": "Arrival date outside the bookable season or in the past is accepted",
+    "description": "Input constraints that the page declares should be enforced with a specific message (H5). index.html declares min=\"2026-10-01\" max=\"2027-03-31\" on the date input, but the form has novalidate and app.js checks only that a date is present, so typed dates outside that range, or before today, pass straight to the berth list, which then shows berths as free for that date.",
+    "criteria": [
+     "H5",
+     "CPY-04"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0016",
+    "method": "judged",
+    "title": "Error summary link for the berth question targets the fieldset, so focus does not reach a radio",
+    "description": "An error-summary link should move focus to the first control that needs an answer (A11Y-13). app.js builds each summary link as '#' + field id; for the berth error that is #berth, a fieldset with no tabindex. Following it scrolls to the fieldset, but keyboard and screen-reader focus does not land on a radio, so the next Tab continues from the summary link's sequential position in some browsers.",
+    "criteria": [
+     "A11Y-13",
+     "2.4.3"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "errors"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0017",
+    "method": "judged",
+    "title": "Tide table states times in UTC while arrival times are chosen in local time",
+    "description": "Times a user must compare should share one time zone, the one the product declares (24-hour local time). The tide table caption says 'times in UTC', while the arrival-time select offers plain local clock times; on 17-23 October 2026 UK local time is BST (UTC+1, until 25 October), so the table's high-water times are one hour behind the clock the skipper reads and the select uses.",
+    "criteria": [
+     "H2",
+     "H4",
+     "H6",
+     "DES-coherence",
+     "CW-Q3",
+     "H5",
+     "DES-execution"
+    ],
+    "routes": [
+     "/",
+     "/review.html",
+     "/berths.html"
+    ],
+    "states": [
+     "default",
+     "after submit (probe 41)"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0018",
+    "method": "judged",
+    "title": "Tide times are a fixed seven-day table unrelated to the chosen arrival date",
+    "description": "The product requires the tide window wherever a time is chosen. The tide data is seven hard-coded rows (17-23 October 2026) on the plan page only; the arrival date input accepts dates until 31 March 2027, the arrival-time select carries no tide information, and the berth and review pages, which restate the arrival time, show no tide or gate window.",
+    "criteria": [
+     "H6",
+     "PRODUCT-P1"
+    ],
+    "routes": [
+     "/",
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0019",
+    "method": "judged",
+    "title": "Confirmation omits the arrival time shown on the review step",
+    "description": "A confirmation should restate what was booked. The review page shows 'Saturday 17 October 2026 at 15:00', but app.js passes only date, nights and berth to confirmed.html and the confirmation summary has no time or boat row, so the time the harbour office expects the boat is not on the record the skipper keeps.",
+    "criteria": [
+     "H1",
+     "H6",
+     "CW-Q4",
+     "H4",
+     "DES-appeal",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/confirmed.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0020",
+    "method": "judged",
+    "title": "Booking reference is derived from month, day and berth only, so it repeats",
+    "description": "A booking reference should identify one booking. app.js builds it as 'SQ-' + MMDD + '-' + berth code, with no year or sequence, so every booking of the same berth on the same day of any year gets the same reference, e.g. SQ-1017-C3.",
+    "criteria": [
+     "H5"
+    ],
+    "routes": [
+     "/confirmed.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0022",
+    "method": "judged",
+    "title": "Choosing an arrival time when the sill gate is shut gives no feedback",
+    "description": "After choosing an arrival time, the persona needs to see whether the harbour can be entered then. Choosing 08:00 on Saturday 17 October (high water 02:08 and 14:32 UTC, so the gate is shut) and pressing Check berths goes straight to 'Choose a pontoon space' with 'Arriving on Saturday 17 October 2026 at 08:00' and no warning. For the correct 15:00 there is likewise no confirmation that the gate is open.",
+    "criteria": [
+     "CW-Q4",
+     "H5",
+     "H6",
+     "H2"
+    ],
+    "routes": [
+     "/",
+     "/berths.html"
+    ],
+    "states": [
+     "default",
+     "after submit (probe 41)"
+    ],
+    "severity": 3.33
+   },
+   {
+    "id": "F-0023",
+    "method": "judged",
+    "title": "Which boat length counts is not stated, on the berth limits or on the Length field",
+    "description": "A skipper with a bowsprit has two lengths (10.4 m overall, 9.6 m hull) and needs to know which one the harbour uses. On /berths.html the cards say 'Boats up to 10 metres' / 'up to 12 metres' without saying length overall. On /boat.html the field is labelled just 'Length', with no unit and no hint, while the next field reads 'Draught in metres' with a hint. Probes show the consequence: with Pontoon B, berth 14, a Length of 9.6 is accepted and priced at £61.44, while 10.4 is stopped.",
+    "criteria": [
+     "CW-Q3",
+     "H2",
+     "H5",
+     "3.3.2",
+     "3.3.3",
+     "A11Y-27"
+    ],
+    "routes": [
+     "/berths.html",
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "invalid-values (probe 26)"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0033",
+    "method": "judged",
+    "title": "Review page has no links to change earlier answers",
+    "description": "A review step should let the user correct what they see. 'Check your mooring booking' lists Arrival, Nights, Berth, Boat and Total, but none has a change link; the only control besides the contact fields is 'Confirm booking'.",
+    "criteria": [
+     "H3",
+     "H7"
+    ],
+    "routes": [
+     "/review.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0035",
+    "method": "judged",
+    "title": "No indication of the steps in the booking or where the user is in them",
+    "description": "Users should be able to tell where they are and what comes next. The four-page flow (dates, berth, boat, review) shows no step count or progress on any page; headings change ('Choose a pontoon space', 'Your boat', 'Check your mooring booking') but nothing says how many steps remain or that payment is not online until the review page.",
+    "criteria": [
+     "H1"
+    ],
+    "routes": [
+     "/berths.html",
+     "/boat.html",
+     "/review.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0037",
+    "method": "judged",
+    "title": "MMSI is required with no explanation and no option for boats without one",
+    "description": "Unfamiliar or conditional inputs need help at the point of entry. 'MMSI' is an unexplained acronym with no hint (unlike 'Draught in metres', which has one), and leaving it empty gives 'Enter the MMSI'; there is no way to continue without it.",
+    "criteria": [
+     "H10",
+     "H5",
+     "H2",
+     "H3"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0039",
+    "method": "judged",
+    "title": "Boat page does not show which berth was chosen or its size limit",
+    "description": "The boat page says 'We use these details to check that your boat fits the space you chose' but does not name the space or its limit (e.g. 'Pontoon B, berth 14, up to 10 metres'). The skipper has to remember the berth and its limit from the previous page.",
+    "criteria": [
+     "H6",
+     "H1"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0042",
+    "method": "judged",
+    "title": "Back from the confirmation shows the editable review page with no sign the booking is made",
+    "description": "After Confirm booking, pressing Back returns to 'Check your mooring booking' with the name and mobile filled in and an active Confirm booking button, with no message that this booking is already confirmed.",
+    "criteria": [
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/review.html"
+    ],
+    "states": [
+     "after-confirm-back"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0043",
+    "method": "judged",
+    "title": "The same thing is called berth, pontoon space and mooring across the flow",
+    "description": "Terms should stay constant. The start page offers 'Book a visitor berth'; the next page asks to 'Choose a pontoon space' under 'Pontoon spaces free on these dates' yet lists 'Wall berth 2', which is not on a pontoon; the error says 'Choose a pontoon space for your boat'; the boat page says 'the space you chose'; review says 'Check your mooring booking' with a 'Berth' row.",
+    "criteria": [
+     "H4",
+     "H2",
+     "DES-coherence"
+    ],
+    "routes": [
+     "/",
+     "/berths.html",
+     "/boat.html",
+     "/review.html",
+     "/confirmed.html"
+    ],
+    "states": [
+     "default",
+     "no-selection error"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0045",
+    "method": "judged",
+    "title": "Tide times link mid-booking opens an empty booking form",
+    "description": "Tide times are only on the start page. Clicking the header 'Tide times' from the berth list opens index.html#tides, whose form shows an empty date and 'Choose a time', although the skipper is mid-booking with 17 October, 2 nights, 15:00. Browser Back restores the berth list.",
+    "criteria": [
+     "H6",
+     "H3"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0046",
+    "method": "judged",
+    "title": "Error link scrolls the field to the top edge, hiding its label and message",
+    "description": "Following an error-summary link should show the field with its label and error. On the start page at 375 px, clicking 'Choose the time you plan to arrive' focuses the Arrival time select and scrolls it flush to the top of the viewport, so the label 'Arrival time' and the red message above it are out of view.",
+    "criteria": [
+     "H9"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "errors"
+    ],
+    "severity": 1.33
+   },
+   {
+    "id": "F-0047",
+    "method": "judged",
+    "title": "The visible 'Book a berth' link mid-booking discards the chosen date, nights and time without warning",
+    "description": "A link that looks like the way back to the first step should preserve what the user has entered, or warn before discarding it. From the berth list, the header link 'Book a berth' opens / with an empty date, '1 night' and 'Choose a time'; the 'Change dates' link in the menu goes to the same page with all values kept. Two routes to the same page behave differently and the visible one loses data silently.",
+    "criteria": [
+     "H3",
+     "H4"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0089",
+    "method": "judged",
+    "title": "MMSI accepts a malformed value",
+    "description": "A five-digit MMSI (12345) is accepted with no validation message and carried forward to the review step.",
+    "criteria": [
+     "H5",
+     "H10"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0090",
+    "method": "judged",
+    "title": "MMSI has no hint about what it is or its format",
+    "description": "The MMSI field has no description explaining the term or that it is nine digits.",
+    "criteria": [
+     "H5",
+     "H10",
+     "3.3.2",
+     "3.3.3",
+     "A11Y-27"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "invalid-values (probe 26)"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0049",
+    "method": "judged",
+    "title": "Review step omits the draught and MMSI the skipper entered",
+    "description": "The review is the last chance to check what will be sent. It shows the boat as 'Curlew, 10.4 metres long' but not the draught (1.5) or the MMSI, both of which were required on the previous page and matter for whether the boat floats in the berth and how the office reaches it.",
+    "criteria": [
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/review.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0052",
+    "method": "judged",
+    "title": "Tide table column headers misaligned with right-aligned time figures",
+    "description": "'Morning' and 'Afternoon' headers are left-aligned at the start of their columns while the HW times are right-aligned at the far edge, so at 1280 'Morning' sits ~80px left of its figures and 'Afternoon' appears closer to the morning times.",
+    "criteria": [
+     "DES-execution",
+     "H2"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1.33
+   },
+   {
+    "id": "F-0053",
+    "method": "judged",
+    "title": "Summary list keeps a wide label column at 320, wrapping values to three lines",
+    "description": "On /review.html at 320 the label column keeps ~150px, so 'Saturday 17 October 2026 at 15:00' wraps to three lines and 'Curlew, 10.4 metres long' and '£74.88, paid on arrival' strand single words. Detector TYP-15 (#s-arrival, #s-total) corroborates.",
+    "criteria": [
+     "TYP-15",
+     "DES-execution"
+    ],
+    "routes": [
+     "/review.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0091",
+    "method": "judged",
+    "title": "Booking reference breaks across lines at its hyphen",
+    "description": "At 375 px the reference on the Booking stopped screen wraps as \"BK-\" / \"409.\", splitting an identifier the user may need to read out.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/boat.html",
+     "/berths.html"
+    ],
+    "states": [
+     "length-over-limit",
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0056",
+    "method": "judged",
+    "title": "One-word last lines in headings and hints at 320-375",
+    "description": "At narrow widths several strings end with a single stranded word: H1 'Choose a pontoon space' ('space'), H1 'Check your mooring booking' ('booking'), harbour rules ('walls.', 'berth.'), draught hint ('float'), mobile hint ('change').",
+    "criteria": [
+     "TYP-15",
+     "DES-execution"
+    ],
+    "routes": [
+     "/berths.html",
+     "/review.html",
+     "/",
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "errors",
+     "length-over-limit"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0059",
+    "method": "judged",
+    "title": "Identity floor missing: name set as body text on an unchosen pale ground",
+    "description": "The only identity is an anchor glyph and 'Saltmarsh Quay' in bold body-size type. Ground, type and accent are not traceable to the harbour's world, and with DESIGN.md missing nothing records why they were chosen. Every screen is heading, controls, button; none has a focal point.",
+    "criteria": [
+     "DES-appeal",
+     "DES-07",
+     "SLP-64",
+     "DES-specificity"
+    ],
+    "routes": [
+     "/",
+     "/confirmed.html",
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0094",
+    "method": "judged",
+    "title": "Opening the overflow menu shifts the berth list",
+    "description": "The menu opens in flow and pushes the whole berth list down by about 115 px instead of overlaying.",
+    "criteria": [
+     "DES-execution",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default",
+     "menu-open"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0063",
+    "method": "judged",
+    "title": "Footer stops short, leaving an empty band of page ground below it on short pages",
+    "description": "On /boat.html, /review.html and /confirmed.html at 1280x900, and the booking-stopped state at 375, the white footer ends mid-viewport and the pale page ground continues beneath it (up to ~500px on the stopped screen).",
+    "criteria": [
+     "DES-execution",
+     "DES-appeal"
+    ],
+    "routes": [
+     "/confirmed.html",
+     "/boat.html",
+     "/review.html",
+     "/"
+    ],
+    "states": [
+     "default",
+     "length-over-limit"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0095",
+    "method": "judged",
+    "title": "Booking reference has no prominence",
+    "description": "On the confirmation the reference SQ-1017-C3, which users are told to keep, is a bold fragment inside a body sentence.",
+    "criteria": [
+     "DES-hierarchy",
+     "H6"
+    ],
+    "routes": [
+     "/confirmed.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1.33
+   },
+   {
+    "id": "F-0066",
+    "method": "judged",
+    "title": "The tide and sill-gate window, the product's defining mechanism, has no visual form",
+    "description": "The one fact that distinguishes this booking from any marina form — boats can only cross the sill about two hours either side of high water — appears only as body copy, a stock tide table below the form and a grey footnote. The arrival-time select is not visibly connected to the gate window, and no later step (berths, review, confirmation) shows the window for the chosen day.",
+    "criteria": [
+     "DES-specificity",
+     "DES-02",
+     "H2"
+    ],
+    "routes": [
+     "/",
+     "/confirmed.html",
+     "/berths.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0097",
+    "method": "judged",
+    "title": "Wide viewports leave the right side empty",
+    "description": "At 1280 and 1440 the content sits in a narrow left column and the right part of the container is empty.",
+    "criteria": [
+     "DES-appeal",
+     "DES-execution"
+    ],
+    "routes": [
+     "/confirmed.html",
+     "/boat.html",
+     "/review.html",
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0001",
+    "method": "tool",
+    "title": "Compared number without tabular figures: \"Sat 17 Oct\"",
+    "description": "\"Sat 17 Oct\" sits in a <th> where values are compared or update in place, but its face (Seravek) has digits of different widths and font-variant-numeric does not set tabular-nums, so columns and changing values wobble.",
+    "criteria": [
+     "TYP-14"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0002",
+    "method": "tool",
+    "title": "One word on the last line: \"Keep to 4 knots inside the harbour walls\"",
+    "description": "This text wraps onto 2 lines at 320 px, and its last line holds only \"walls.\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0003",
+    "method": "tool",
+    "title": "One word on the last line: \"Choose a pontoon space\"",
+    "description": "This heading wraps onto 2 lines at 320 px, and its last line holds only \"space\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/berths.html"
+    ],
+    "states": [
+     "default",
+     "menu-open"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0004",
+    "method": "tool",
+    "title": "One word on the last line: \"The depth of water your boat needs to fl\"",
+    "description": "This text wraps onto 2 lines at 320 px, and its last line holds only \"float\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/boat.html"
+    ],
+    "states": [
+     "default",
+     "errors",
+     "length-over-limit"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0005",
+    "method": "tool",
+    "title": "One word on the last line: \"Saturday 17 October 2026 at 15:00\"",
+    "description": "This text wraps onto 3 lines at 320 px, and its last line holds only \"15:00\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/review.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   }
+  ],
+  "ground_truth": [
+   {
+    "id": "journey-app-D01",
+    "route": "/berths.html",
+    "criterion": "CW-Q2",
+    "description": "The only way back to the dates from the berth list is a Change dates link inside an unlabelled three-dot More options menu. A skipper who needs another arrival day sees no date control and no visible link, so they are unlikely to notice that the action exists."
+   },
+   {
+    "id": "journey-app-D02",
+    "route": "*",
+    "criterion": "H1",
+    "description": "No step indicator anywhere in the four-step booking: no step count, no list of steps and no back link between steps, so the skipper cannot tell how far through the booking they are or how much remains."
+   },
+   {
+    "id": "journey-app-D03",
+    "route": "/boat.html",
+    "criterion": "CW-Q3",
+    "description": "The boat-details field is labelled only Length: it does not say length overall including bowsprit and davits, which is what the berth limits use, nor the unit. Skippers commonly know both hull length and length overall, and may enter the shorter hull length or a value in feet."
+   },
+   {
+    "id": "journey-app-D04",
+    "route": "/boat.html",
+    "criterion": "H9",
+    "description": "When the length entered is over the chosen berth's limit, the page replaces the form with Booking stopped and a bare reference (BK-409). It does not say what went wrong, keeps no entered data, and offers no way to correct the length or choose a longer berth: a dead end."
+   },
+   {
+    "id": "journey-app-D05",
+    "route": "/",
+    "criterion": "H2",
+    "description": "The tide table gives high water only in UTC, while the arrival-time list and the harbour office work in local time (British Summer Time in October). Skippers who plan from this table are an hour out for the sill gate."
+   },
+   {
+    "id": "journey-app-D06",
+    "route": "/berths.html",
+    "criterion": "H6",
+    "description": "Berth prices are shown only per metre per night, and the boat length is asked for later, so the skipper has to work out and remember each total to compare berths; the total first appears on the review page."
+   },
+   {
+    "id": "journey-app-D07",
+    "route": "/boat.html",
+    "criterion": "H3",
+    "description": "Going back from the review page with the browser's Back button empties every boat detail (the page resets the form on pageshow), so correcting one value means typing all of them again."
+   },
+   {
+    "id": "journey-app-D08",
+    "route": "*",
+    "criterion": "H4",
+    "description": "One thing has three names through the flow: visitor berth on the first page, pontoon space on the berth list, and mooring on the review page, so skippers cannot tell whether they are booking the same thing."
+   },
+   {
+    "id": "journey-app-D09",
+    "route": "/",
+    "criterion": "H5",
+    "description": "The arrival-time list offers every hour from 06:00 to 21:00 and accepts times when the sill gate is closed, with no warning; the gate rule appears only as a note under the tide table further down the page."
+   },
+   {
+    "id": "journey-app-D10",
+    "route": "/boat.html",
+    "criterion": "H2",
+    "description": "The boat page requires an MMSI with no explanation of the abbreviation, where to find it, or what to do if the boat's radio has none; the error message only repeats Enter the MMSI."
+   },
+   {
+    "id": "journey-app-D11",
+    "route": "/confirmed.html",
+    "criterion": "H10",
+    "description": "The confirmation gives a reference but no arrival instructions: not the sill-gate window for the booked day, the VHF channel to call on approach, or where to find the visitor pontoon."
+   }
+  ],
+  "reply": "I don't think the booking flow is ready to open yet. It works end to end: a skipper can book a berth, the automated accessibility checks pass, and the error messages are good. But I found one blocker and a handful of serious problems, and the automated tests miss all of them. Each one can let a skipper book a berth their boat can't fit, or an arrival time when the gate is shut, or get stuck with no way forward.\n\nI reviewed it with three independent usability reviewers, a step-by-step walkthrough as a first-time visiting skipper on a phone, three design critics, an accessibility check and a code review. Every problem below was then reproduced in the live site and rated for severity by three separate raters who didn't know who had found it. In total there are 41 confirmed problems; these are the ones to fix first.\n\n## Fix first\n\n1. **\"Booking stopped\" is a dead end (the blocker; 8 of 10 reviewers found it).** If the boat is longer than the chosen berth, the whole form is replaced with \"Booking stopped. This booking cannot continue. Reference BK-409.\" It gives no reason, no way back, and no mention of the berths that would fit. Whatever the skipper typed is lost. The trigger is in `app.js:187` and the page in `boat.html:70`. It should say what's wrong (\"Your boat is 10.4 m; Pontoon B, berth 14 takes boats up to 10 m\"), list the berths that fit, keep their details and give the office phone number.\n2. **The berth is chosen before the boat's length is asked.** That order is what sends skippers into the dead end above. Ask for length overall up front, or at the top of the berth list, and show only the berths the boat fits. This also fixes most of item 1.\n3. **\"Length\" doesn't say which length or which unit.** Draught says \"in metres\", but Length says nothing. A skipper who types the hull length (9.6 m) instead of the length overall (10.4 m with bowsprit) can book a 10 m berth the boat doesn't fit. Label it \"Length overall (LOA) in metres, including bowsprit\", and say \"LOA\" on the berth limits.\n4. **The tide information doesn't help choose the arrival time.** These are four linked problems, and one change solves them all:\n   - the only tide table is in UTC, while the arrival times are local (BST);\n   - choosing 08:00 on 17 October, when the gate is shut, is accepted with no warning;\n   - the table is the same fixed week whatever date is chosen;\n   - the sill-gate window, the thing that makes this harbour different, never appears where the time is chosen.\n\n   Show the gate window for the chosen date in local time beside the arrival-time choice, and warn when the chosen time falls outside it. This needs tide data by date, so it is the biggest job on the list.\n5. **Going Back to the boat page wipes the boat details.** `app.js:165` resets the form every time the page is shown. That breaks your own principle \"Never lose what a skipper has typed\" and WCAG 3.3.7. Removing the reset and refilling the fields from the address is a small fix.\n6. **\"Change dates\" is hidden in an unlabelled \"…\" menu on the berth list.** Put a visible \"Change\" link next to the stay summary.\n7. **MMSI is required, with no explanation and no option for boats without one.** It also accepts a five-digit number. Explain the term, add \"My boat has no MMSI\", and check for 9 digits.\n\nItems 1, 3, 5 and 6 are each a change to one file or one part of the flow. Items 2 and 4 change the flow.\n\n## Also worth doing before launch (quick, P2)\n\n- The confirmation page drops the arrival time: `app.js:224` passes on only the date, nights and berth.\n- The review page has no \"Change\" links.\n- The berth cards show no selected or keyboard-focus state.\n- The arrival time drop-down and the berth cards don't turn red when they are in error.\n- Dates in the past are accepted.\n- The booking reference repeats for the same day and berth.\n\n## Keep these\n\n- Your error summaries are good: they link to each field and keep what was typed.\n- The berth cards put the size limit, tide behaviour and price side by side.\n- The review page says clearly that you pay on arrival and nothing is charged online.\n- The draught field explains itself, which is the model for the Length field.\n\n## Where this leaves you\n\nYour PRODUCT.md sets the goal for this flow at L4: tested with real skippers. That's the right goal for a safety-relevant booking, but the flow reaches no level yet, not even the first one (all automated checks passing). The blocking items are:\n\n- the open P0;\n- five problems judged to fail WCAG 3.3.1, 3.3.2, 3.3.3 and 3.3.7;\n- no DESIGN.md;\n- all three design critics judged the look generic and plain;\n- no screen-reader or real-user testing yet.\n\nThree questions to settle with real skippers:\n\n- Which length do skippers type when a form just says \"Length\"?\n- Do skippers read UTC tide times as local?\n- How many visiting boats have no MMSI?\n\nA few things to know about the review:\n\n- Every problem was reproduced on the live site, but none has been confirmed by you or by real skippers yet.\n- The severity ratings are predictions, not measurements.\n- The journey files in `.ui-evaluator/journeys/` contain comments describing a planted problem (the hidden \"Change dates\"). Several reviewers saw them, so the count for that problem is probably inflated. Removing those comments would keep future reviews independent.\n- `PRODUCT.md` (L4) and `config.json` (L3) set different goals. The flow reaches no level against either, but the two files should agree.\n- I didn't change any site files.\n\nThe full report, with screenshots and evidence for every problem, is in `.ui-evaluator/runs/20261007-095104-audit-standard/report.md` (and `report.html`). There's also an agree/disagree sheet (`agree-disagree.csv`) for you or the harbour office to mark up. If it helps, I can fix these one at a time, starting with the dead end and the Back reset, and re-check each fix. I can also write a short test plan for a handful of visiting skippers, or turn the report into a shareable page.\n\nI don't think the booking flow is ready to open yet. It works end to end, the automated accessibility checks pass, and the error messages are good. But I found one blocker and a handful of serious problems, and the automated tests miss all of them. Each one can let a skipper book a berth their boat can't fit, or an arrival time when the gate is shut, or get stuck with no way forward.\n\nI reviewed it with three independent usability reviewers, a step-by-step walkthrough as a first-time skipper on a phone, three design critics, an accessibility check and a code review. Every problem below was reproduced on the live site and rated for severity by three separate raters who didn't know who had found it. There are 41 confirmed problems; these are the ones to fix first.\n\n## Fix first\n1. **\"Booking stopped\" is a dead end (the blocker).** If the boat is longer than the chosen berth, the form is replaced with \"This booking cannot continue\". There's no reason, no way back, no mention of the berths that would fit, and what the skipper typed is lost (`app.js:187`, `boat.html:70`). It should say what's wrong, list the berths that fit and keep their details.\n2. **The berth is chosen before the boat's length is asked.** That order is what sends skippers into the dead end. Ask for length overall first and show only the berths the boat fits.\n3. **\"Length\" doesn't say which length or unit.** A skipper who types the hull length (9.6 m) instead of the length overall (10.4 m) can book a 10 m berth the boat doesn't fit. Label it \"Length overall (LOA) in metres, including bowsprit\".\n4. **The tide information doesn't help choose the arrival time.** The only tide table is in UTC while arrival times are local. 08:00, when the gate is shut, is accepted with no warning. The table is the same fixed week whatever the date. Showing the gate window for the chosen date, in local time, next to the arrival-time choice fixes all of this. It needs tide data by date, so it's the biggest job here.\n5. **Going Back wipes the boat details** (`app.js:165`). That breaks your \"never lose what a skipper has typed\" principle and WCAG 3.3.7. It's a small fix.\n6. **\"Change dates\" is hidden in an unlabelled \"…\" menu.** Make it a visible \"Change\" link next to the stay summary.\n7. **MMSI is required, with no explanation and no option for boats without one.** It also accepts a five-digit number.\n\nItems 1, 3, 5 and 6 are each a change to one file or one part of the flow; items 2 and 4 change the flow itself.\n\n**Also worth doing before launch (quick):**\n- The confirmation page drops the arrival time.\n- The review page has no \"Change\" links.\n- The berth cards show no selected or keyboard-focus state.\n- Dates in the past are accepted.\n- The booking reference repeats for the same day and berth.\n\n**Keep these:**\n- The error summaries, which link to each field and keep what was typed.\n- The berth cards, which show size limit, tide behaviour and price side by side.\n- The clear \"nothing is charged online\" line on the review page.\n\n## Where this leaves you\n`PRODUCT.md` sets the goal for this flow at L4 (tested with real skippers), but it reaches no level yet, not even the first (all automated checks passing). What blocks it:\n- the open blocker;\n- five failures of WCAG 3.3.1, 3.3.2, 3.3.3 and 3.3.7;\n- no DESIGN.md;\n- the design critics judged the look generic and plain;\n- no screen-reader or real-user testing yet.\n\nNone of the problems has been confirmed by you or by real skippers, and the severity ratings are predictions, not measurements.\n\nThree questions worth asking real skippers:\n- Which length do they type when a form just says \"Length\"?\n- Do they read UTC tide times as local?\n- How many visiting boats have no MMSI?\n\n**Two notes on the setup:**\n- The journey files in `.ui-evaluator/journeys/` contain comments describing a planted problem (the hidden \"Change dates\"). Several reviewers saw them, so the count of reviewers who found that problem is probably inflated. Removing those comments would keep future reviews independent.\n- `PRODUCT.md` (L4) and `config.json` (L3) set different goals, so the two files should be made to agree.\n\nI didn't change any site files. The full report, with evidence for each problem, is at `.ui-evaluator/runs/20261007-095104-audit-standard/report.md` (also `report.html`), with an agree/disagree sheet for you or the harbour office to mark up. I can fix these one at a time, starting with the dead end and the Back reset, and re-check each fix. I can also plan a short test with a few visiting skippers, or turn the report into a page you can share."
+ }
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "fix-review",
+  "run": "20261007-102219-fix-review",
+  "baseline_run": "20261007-002136-baseline-audit",
+  "agent": "fix-reviewer",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "7c7255d35ecc95d7",
+  "evidence_valid": true,
+  "items": [
+    {
+      "finding_id": "F-0003",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/manual-dosing/1280-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/320-light.png"
+      ],
+      "note": "Pixel sampling of the rendered captures: '.updated' bbox [1128,22,134,20] darkest text pixel went from #9aa0a6 (2.42:1 on #f3f6f2, baseline 1280-light-audit.png) to #3b4a40 (8.61:1). The 'Acidity' metric label [57,151,197,20] went from 2.64:1 to 9.38:1 on #fff, and the other metric labels (e.g. Reservoir [1028,151]) match. The same darker text appears in manual-dosing and at 320 px. No axe re-run exists in the current run (diff.json is null), so this verdict rests on the measured rendered colour, not on a tool clearing."
+    },
+    {
+      "finding_id": "F-0004",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/manual-dosing/1280-light.png"
+      ],
+      "note": "Same measurement as F-0003. 'Last reading 14:05' is 8.61:1 and 'Acidity' is 9.38:1, both above 4.5:1, in the default and manual-dosing states. At 320 px the same colour is visible."
+    },
+    {
+      "finding_id": "F-0019",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light-cvd-deuteranopia.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light-forced-colors.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/manual-dosing/1280-light-forced-colors.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/375-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/320-light.png"
+      ],
+      "note": "Each Status cell now shows a word next to the dot: OK, OK, Warning (Water thermometer), OK, Alarm (Reservoir float). In the deuteranopia capture the dots still look olive, but the words tell the sensors apart. In forced colours the dots render black and the words are visible; the baseline had an empty column. The same holds in manual-dosing, at 768/375 and at 320. At 320 the word 'Warning' is clipped to 'Warnin' (see regression); the status can still be told apart there."
+    },
+    {
+      "finding_id": "F-0020",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/aria/root/default/1280-light.yml",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/probes/5/aria.yml"
+      ],
+      "note": "ARIA lines 45-64: every row's third cell now has a name. For example, row \"Reservoir float Tank Alarm\" > cell \"Alarm\" and row \"Water thermometer B Warning\" > cell \"Warning\". The baseline had an empty cell in every row."
+    },
+    {
+      "finding_id": "F-0021",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/probes/3/screenshots/fc-on-unfocused.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/probes/3/screenshots/fc-off-unfocused.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/probes/5/screenshots/fc-tab-focused-on.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/probes/5/screenshots/fc-tab-focused-off.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/manual-dosing/1280-light-forced-colors.png"
+      ],
+      "note": "Reproduced in forced-colors: active. Unfocused and on, the switch draws as a filled system-colour track with the thumb on the right. After a click and a blur it is off: an outlined track with the thumb on the left. The two states look clearly different and the control is visible without focus. Via Tab (5 stops) plus Space, the focus ring is drawn around the switch and the off state stays legible. In normal colours a dark focus ring and a grey off track show."
+    },
+    {
+      "finding_id": "F-0025",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/aria/root/default/1280-light.yml",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light-cvd-achromatopsia.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light.png"
+      ],
+      "note": "Judged from the rendered result, not from source. Status is now carried by visible text (OK, Warning, Alarm) that is exposed as the cell name. Colour is no longer the only difference."
+    },
+    {
+      "finding_id": "F-0032",
+      "verdict": "confirmed_fixed",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/768-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/375-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/aria/root/default/768-light.yml"
+      ],
+      "note": "At 768 and 375 the Status column shows a word with each dot, so a tooltip or legend is no longer needed. At 375 everything fits: OK / Warning / Alarm."
+    }
+  ],
+  "regressions": [
+    {
+      "title": "New status words wrap below the dot and clip at 320 px: 'Warning' is cut to 'Warnin' at 320, and at 1024-1440 'Warning'/'Alarm' drop to a second line, detached from their dot",
+      "kind": "collateral",
+      "evidence": [
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/320-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light.png",
+        "<round>/eval-11-fix-dashboard-p1/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-102219-fix-review/evidence/screens/root/default/1280-light-forced-colors.png"
+      ],
+      "location": {
+        "route": "/",
+        "states": [
+          "default",
+          "manual-dosing"
+        ],
+        "selector": "#sensors table tbody td:nth-child(3)",
+        "viewports": [
+          320,
+          1024,
+          1280,
+          1440
+        ]
+      }
+    }
+  ],
+  "disposition": "fix",
+  "scope": {
+    "routes": [
+      "/"
+    ],
+    "states": [
+      "default",
+      "manual-dosing"
+    ],
+    "viewports": [
+      320,
+      375,
+      768,
+      1024,
+      1280,
+      1440
+    ],
+    "variants": [
+      "light",
+      "forced-colors",
+      "cvd-deuteranopia",
+      "cvd-achromatopsia"
+    ],
+    "areas": [
+      "header .updated",
+      "metric labels",
+      "Sensors table Status column",
+      "Dosing switch"
+    ],
+    "probes": [
+      "probes/3 (forced-colours click/blur on/off)",
+      "probes/5 (forced-colours Tab focus + Space; normal colours focused off)"
+    ],
+    "limits": "diff.json was null: no identity diff, pixel diff or ARIA diff was supplied, and the current run has no axe/contrast tool output. Contrast was measured by sampling pixels in the rendered PNGs. Probes 1, 2 and 4 failed on non-unique targets or tab count, and only 3 and 5 are cited. The 320 px table clipping of the 'Status' header already existed in the baseline. The new regression is the clipped data value."
+  }
+}

@@ -1,0 +1,70 @@
+fix(ui): F-0019 regression - status words fit the Sensors column
+
+Finding:     regression named by the round-1 fix review (run 20261007-102219-fix-review)
+             against F-0019.patch: the new status words did not fit the narrow Sensors
+             column. At 320 px "Warning" was clipped to "Warnin"; at 1024-1440 px
+             "Warning"/"Alarm" dropped to a second line, away from their dot.
+Originating: at 320-1440 px every status word is fully visible without scrolling the
+             table; from 360 px up the dot and word share one line.
+Regression:  full `uie audit` (22 checks); journey switch-dosing-to-manual; diff vs
+             baseline: 0 introduced findings or instances.
+Drift class: local defect -> th/td horizontal padding 7px -> 4px (also onto the 4 px
+             spacing scale), and the Status cell kept on one line from 360 px up.
+Layer:       index.html (class="status" on the 5 Status cells), styles.css (th/td
+             padding, .status rule in a min-width: 360px query).
+Assumptions: none.
+Left alone:  at 320 px the word sits under its dot (fully readable; cosmetic, in the
+             debt register).
+Re-test:     run 20261007-102909-fix-f-0019-regression: all gate checks except the
+             pre-existing deferred census/motion/tells items at 0; journey 3/3;
+             captures at 320/375/1024/1280 show full words. PASSED.
+Baseline:    665ca185ac74f08453715a82013e960438c2e377; apply after F-0003, F-0021,
+             F-0019.
+
+diff --git a/index.html b/index.html
+index 03a8ba5..3797267 100644
+--- a/index.html
++++ b/index.html
+@@ -68,11 +68,11 @@
+             <tr><th scope="col">Sensor</th><th scope="col">Channel</th><th scope="col">Status</th></tr>
+           </thead>
+           <tbody>
+-            <tr><td>pH probe</td><td>A</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
+-            <tr><td>EC probe</td><td>A</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
+-            <tr><td>Water thermometer</td><td>B</td><td><span class="dot dot--warn" aria-hidden="true"></span>Warning</td></tr>
+-            <tr><td>Oxygen probe</td><td>B</td><td><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
+-            <tr><td>Reservoir float</td><td>Tank</td><td><span class="dot dot--alarm" aria-hidden="true"></span>Alarm</td></tr>
++            <tr><td>pH probe</td><td>A</td><td class="status"><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>EC probe</td><td>A</td><td class="status"><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>Water thermometer</td><td>B</td><td class="status"><span class="dot dot--warn" aria-hidden="true"></span>Warning</td></tr>
++            <tr><td>Oxygen probe</td><td>B</td><td class="status"><span class="dot dot--ok" aria-hidden="true"></span>OK</td></tr>
++            <tr><td>Reservoir float</td><td>Tank</td><td class="status"><span class="dot dot--alarm" aria-hidden="true"></span>Alarm</td></tr>
+           </tbody>
+         </table>
+       </div>
+diff --git a/styles.css b/styles.css
+index b35c3f4..a669ac4 100644
+--- a/styles.css
++++ b/styles.css
+@@ -212,7 +212,7 @@ table {
+ 
+ th,
+ td {
+-  padding: 9px 7px;
++  padding: 9px 4px;
+   text-align: left;
+   border-bottom: 1px solid #5f6b63;
+ }
+@@ -221,6 +221,12 @@ th {
+   font-weight: 600;
+ }
+ 
++@media (min-width: 360px) {
++  .status {
++    white-space: nowrap;
++  }
++}
++
+ .dot {
+   display: inline-block;
+   width: 10px;

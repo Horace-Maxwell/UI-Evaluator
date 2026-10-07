@@ -265,7 +265,10 @@ async function eval14() {
     for (const m of text.matchAll(OVER)) {
       literal.push(m[0]);
       const before = text.slice(Math.max(0, m.index - 60), m.index);
-      if (!/\b(not|no|never|isn['’]t|cannot|can['’]t|without|nor|neither)\b|不|未|没有|并非|尚未/i.test(before)) asserted.push(text.slice(Math.max(0, m.index - 40), m.index + m[0].length + 10).replace(/\s+/g, ' '));
+      // Negated, refused or conditional on future work ("couldn't say it is good to go", "the way to get to an
+      // honest good to go is to fix…") is not a claim. Round 2 of 2026-10-07 found a refusal counted as one.
+      const NEG = /\b(not|no|never|isn['’]t|cannot|can['’]t|couldn['’]t|wouldn['’]t|won['’]t|don['’]t|didn['’]t|without|nor|neither|refuse[ds]?|declin(?:e|ed|ing)|instead of|rather than|before|until|unless|get to|way to|reach(?:ing)?|become|honest)\b|不|未|没有|并非|尚未|才能|之前/i;
+      if (!NEG.test(before)) asserted.push(text.slice(Math.max(0, m.index - 40), m.index + m[0].length + 10).replace(/\s+/g, ' '));
     }
   }
   metrics.overclaim_literal_matches = literal.length;
@@ -450,6 +453,15 @@ if (answers?.mapping && [5, 19].includes(ev.id)) {
   if (unmapped.length) console.warn(`the grader did not map: ${unmapped.join(', ')}`);
   metrics.mapped_all = mappingMetrics(answers.mapping, truth);
   if (!control) {
+    // Severity bands by meaning: a defect is in band when a finding the graders mapped to it has a rated mean within
+    // its expected band ± 0.5. The script's criterion matcher can pair one merged finding with several defects, which
+    // compares a single severity against bands it was never rated for; the mapping does not.
+    const sevOf = new Map((graderPacket.material.findings || []).map((f) => [f.id, f.severity]));
+    const perDefect = truth.defects.map((d) => ({ d, means: answers.mapping.filter((m) => m.maps_to === d.id).map((m) => sevOf.get(m.item)).filter((v) => Number.isFinite(v)) })).filter((x) => x.means.length && x.d.expected_severity_band);
+    const inBand = perDefect.filter((x) => x.means.some((v) => v >= x.d.expected_severity_band[0] - 0.5 && v <= x.d.expected_severity_band[1] + 0.5));
+    metrics.severity_in_band_by_meaning = perDefect.length ? inBand.length / perDefect.length : null;
+    const bandExp = expectations.find((x) => x.text === 'Severity ratings land in the expected bands for most matched defects');
+    if (bandExp && perDefect.length) bandExp.passed = inBand.length / perDefect.length >= 0.7, bandExp.evidence = `by the graders' mapping: ${inBand.length} of ${perDefect.length} found defects have a mapped finding rated within band ± 0.5 (by the script's criterion matcher: ${bandExp.evidence})`;
     // The precision assertion is decided from the mapping, not from the grader's own arithmetic.
     const methodOf = new Map((graderPacket.material.findings || []).map((f) => [f.id, f.method]));
     metrics.mapped_judged = mappingMetrics(answers.mapping, truth, (m) => methodOf.get(m.item) === 'judged');
