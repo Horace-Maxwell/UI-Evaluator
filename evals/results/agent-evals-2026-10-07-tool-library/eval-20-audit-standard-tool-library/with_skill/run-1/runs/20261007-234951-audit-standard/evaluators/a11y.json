@@ -1,0 +1,228 @@
+{
+  "schema": "evaluator-output",
+  "role": "accessibility-auditor",
+  "agent": "a11y",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-234951-audit-standard",
+  "packet_hash": "9c73ce020bcdea58",
+  "notes": "Black-box audit from the packet, ARIA snapshots, captures and uie probe (probes 5, 13, 15, 17, 33, 43, 45, 57 under runs/20261007-234951-audit-standard/probes/). I did not read source code, builder notes or other evaluators' files. Tool-reported failures are not repeated here: contrast, reflow, text spacing, 200% text, focus obscured by the action bar, the find-page focus-order jump, the target spacing, and the 56 unreachable stops in tool.html loan-open. Two things were checked and passed, so they are not findings. (1) The Available-from badges differ by colour (green or grey), but each badge states its date in text, so 1.4.1 passes. (2) Under forced colours the selected day keeps a thicker border and a bold number. That cue is visible but faint. Also under forced colours the 'Added to your basket' toast loses its container and floats over the calendar header; the text stays readable (advisory only, A11Y-22). Owner context noted: members mostly use phones in the evening with dark mode and larger text. Dark-mode captures of the selected day, the radios and the error states were reviewed and keep their non-colour cues. CVD captures exist at 1280 px only. At 320 px the session dots on the calendar are a shape cue (dot or no dot), not hue alone.",
+  "coverage": {
+    "routes": ["/?items=ladder-3m", "/tool.html?id=drill-18v-two&items=ladder-3m", "/basket.html?items=drill-18v-two&day=2026-10-17", "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471"],
+    "states": ["default", "filters-open", "no-results", "day-chosen", "loan-open", "added", "errors"]
+  },
+  "resolved_incompletes": [
+    {"id": "INC-1", "rule": "aria-valid-attr-value", "selector": "#loan-button", "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "default", "verdict": "pass", "reason": "The listbox is collapsed (aria-expanded=false) and #loan-list is hidden or absent. Probe 13 confirmed '#loan-list' is hidden. While aria-expanded is false, an aria-controls target that is not rendered is permitted, so the reference is valid.", "evidence": "probes/13/probe.json"},
+    {"id": "INC-2", "rule": "aria-valid-attr-value", "selector": "#loan-button", "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "day-chosen", "verdict": "pass", "reason": "Same collapsed state as INC-1. Probe 13 clicked the 17 October day and '#loan-list' was still hidden with aria-expanded=false.", "evidence": "probes/13/probe.json"},
+    {"id": "INC-3", "rule": "aria-valid-attr-value", "selector": "#loan-button", "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "loan-open", "verdict": "pass", "reason": "When expanded, the controlled element exists. The state recipe's expectation that '#loan-list' is visible passed, and the ARIA snapshot shows listbox 'Loan length' with options 'One week' [selected] and 'Two weeks'. The keyboard model of this listbox fails separately; see the A11Y-25 finding.", "evidence": "evidence/aria/tool-html-id-drill-18v-two-items-ladder-3m/loan-open/1280-light.yml"},
+    {"id": "INC-4", "rule": "aria-valid-attr-value", "selector": "#loan-button", "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "added", "verdict": "pass", "reason": "Collapsed (aria-expanded=false) after a day was chosen and the tool was added. The same reasoning as INC-1 applies.", "evidence": "evidence/aria/tool-html-id-drill-18v-two-items-ladder-3m/added/1280-light.yml"},
+    {"id": "INC-5", "rule": "color-contrast", "selector": "#toast", "verdict": "deferred", "reason": "Assigned to the contrast check (resolver: contrast), not to the auditor. Visual check: at 320 px the toast is white bold text on a near-black panel and reads clearly, but the pixel-sampled ratio belongs to the contrast check."}
+  ],
+  "candidates": [
+    {
+      "title": "Loan-length listbox keeps focus on Tab and Shift+Tab and does not close on Esc",
+      "description": "Under the APG listbox popup and select-only combobox models, Esc closes the popup and returns focus to the button, and Tab closes it and moves on. On the tool page, once 'One week' (#loan-button) is opened, Up and Down move between options and Enter selects and returns focus to the button. But Esc leaves the list open with focus on the option (probe 15: '#loan-list' still visible after Escape), and Tab and Shift+Tab leave focus on the same option (probe 17: two Tabs and then two Shift+Tabs, focus ring unchanged on 'One week'). The only ways out are Enter or a click. This is the mechanism behind the keyboard check's 56 unreachable stops in the loan-open state.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "rule", "id": "A11Y-25", "primary": true},
+        {"kind": "rule", "id": "A11Y-03"}
+      ],
+      "impact": "Keyboard-only members, whom the context names, may think the page is stuck after opening the loan-length list. Screen-reader users hear a listbox, press Esc or Tab as that role leads them to expect, and get no response.",
+      "locations": [
+        {"route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "loan-open", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#loan-button", "bbox": [96, 568, 611, 44], "snippet": "<button type=\"button\" id=\"loan-button\" class=\"listbox__button\" aria-haspopup=\"listbox\" aria-expanded=\"true\" aria-controls=\"loan-list\">"}
+      ],
+      "evidence": [
+        {"type": "probe", "ref": "probes/15/", "detail": "focus #loan-button, Enter, Escape: expectation '#loan-list hidden' failed; esc.png shows the list open with focus on 'One week'"},
+        {"type": "probe", "ref": "probes/17/", "detail": "focus #loan-button, Enter, Tab, Tab, Shift+Tab, Shift+Tab: tab2.png and shift2.png show the focus ring still on option 'One week'"},
+        {"type": "probe", "ref": "probes/5/", "detail": "ArrowDown moves to 'Two weeks'; Enter selects it, closes the list and returns focus to the button (works)"}
+      ],
+      "factor_notes": {"frequency": "Every reservation passes this control on the critical journey reserve-tool-for-saturday.", "impact": "Keyboard users can leave only with Enter or a click; Esc and Tab do nothing.", "persistence": "Happens every time the list is opened."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Use a native <select> for the two loan lengths. If the custom listbox stays, close it on Esc (focus back to the button) and on Tab (focus moves on), keeping the current Up, Down and Enter behaviour.",
+      "tags": ["keyboard", "apg", "listbox"]
+    },
+    {
+      "title": "Pick-up session options are shown in reverse date order while keyboard and screen-reader order runs forward",
+      "description": "Under 1.3.2, the reading order that assistive technology exposes should match the visual order when order affects meaning. On the basket page the DOM and ARIA order of the session radios is chronological, from Saturday 10 October to Wednesday 28 October. On screen the order is reversed at every width. At 320 px Wednesday 28 October is at the top and Saturday 10 October at the bottom. At 1280 px Wednesday 28 October spans the first row, then the second row runs right to left from Saturday 24 to Saturday 10. Arrow keys inside the radio group therefore move visually backwards, and a screen reader reads the dates in the opposite order to what sighted users see.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "wcag", "id": "1.3.2", "primary": true},
+        {"kind": "wcag", "id": "2.4.3"}
+      ],
+      "impact": "Members choosing a session may be told 'next' while the highlight moves up or left. A sighted keyboard user or a screen-magnifier user may pick the wrong session, and a volunteer helping a screen-reader user may describe a different first option than the one announced.",
+      "locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": {"width": 320, "height": 900}, "theme": "light", "selector": "role=group[name=\"Pick-up session\"]", "crop": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/320-light.png", "snippet": "radio \"Saturday 10 October, 10:00 to 13:00\""},
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "role=group[name=\"Pick-up session\"]", "crop": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png", "snippet": "radio \"Saturday 10 October, 10:00 to 13:00\""}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/basket-html-items-drill-18v-two-day-2026-10-17/errors/1280-light.yml", "detail": "radios in order: Sat 10, Wed 14, Sat 17, Wed 21, Sat 24, Wed 28"},
+        {"type": "screenshot", "ref": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/320-light.png", "detail": "visual order top to bottom: Wed 28, Sat 24, Wed 21, Sat 17, Wed 14, Sat 10"},
+        {"type": "screenshot", "ref": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/errors/1280-dark-forced-colors.png", "detail": "reversed in forced colours and dark too"},
+        {"type": "screenshot", "ref": "probes/57/screenshots/portrait.png", "detail": "390 x 844 portrait capture"}
+      ],
+      "factor_notes": {"frequency": "Every reservation goes through this step; it is the core task change-pickup-session.", "impact": "The session order is the information being chosen from.", "persistence": "Every width and theme."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Remove the visual reversal (row-reverse, wrap-reverse or order) so the sessions display chronologically in DOM order. If newest-first is wanted, reorder the DOM instead.",
+      "tags": ["reading-order", "radio-group"]
+    },
+    {
+      "title": "Pick-up day chosen on the tool page is not pre-selected among the basket's sessions",
+      "description": "Members should not have to remember a choice they have just made. On the tool page the member picks a pick-up day (for example Saturday 17 October, which is a session), and the basket line repeats 'Pick up Saturday 17 October'. Yet the 'Pick-up session' radios start empty, and pressing Continue gives the error 'Choose a pick-up session'. The same date has to be found and chosen again from six options listed in reverse order. 3.3.7 is met narrowly, because the earlier answer is available to select, but the member still has to carry the choice across screens.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H6", "primary": true},
+        {"kind": "heuristic", "id": "H8"},
+        {"kind": "wcag", "id": "3.3.7"}
+      ],
+      "impact": "Older members and those reserving while doing something else may meet an error on a step they believe they have finished, and may pick a different session from the day they chose.",
+      "locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "errors", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "role=group[name=\"Pick-up session\"]", "snippet": "Pick up Saturday 17 October · one week · deposit £20"}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/basket-html-items-drill-18v-two-day-2026-10-17/errors/1280-light.yml", "detail": "alert 'There is a problem' > 'Choose a pick-up session' while the basket line says 'Pick up Saturday 17 October'; no radio checked"},
+        {"type": "screenshot", "ref": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png"}
+      ],
+      "factor_notes": {"frequency": "Every reservation whose chosen day is a session.", "impact": "An extra decision and an error state on the critical path.", "persistence": "Every visit."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Pre-select the session that matches the chosen pick-up day and let the member change it.",
+      "tags": ["cognitive", "memory"]
+    },
+    {
+      "title": "Search with no matches shows the full tool list and announces nothing",
+      "description": "After a search, members should learn what happened. Searching 'ladder' writes '1 tool found' into the status region and filters the list, which works. Searching 'sewing machine' leaves the status region empty and the list showing all ten tools, with no 'no tools found' message on screen or in the live region (probe 45). Screen-reader users hear nothing, and sighted users see what looks like matching results.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H1", "primary": true},
+        {"kind": "heuristic", "id": "H9"},
+        {"kind": "rule", "id": "A11Y-15"}
+      ],
+      "impact": "Members searching for something the library does not stock may believe the listed tools are matches, or may keep searching without knowing the search failed.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "no-results", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#results", "snippet": "status"}
+      ],
+      "evidence": [
+        {"type": "probe", "ref": "probes/45/", "detail": "fill #q 'sewing machine', click Search: aria.yml shows an empty 'status' and all 10 list items"},
+        {"type": "probe", "ref": "probes/43/", "detail": "for comparison, 'ladder' gives status '1 tool found' and 1 item"}
+      ],
+      "factor_notes": {"frequency": "Any search for an unstocked item or a misspelling.", "impact": "Misleading result set, with nothing announced.", "persistence": "Every such search."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "On zero matches, show and announce 'No tools match \"…\"' in the existing status region, with a way to clear the search.",
+      "tags": ["search", "live-region", "empty-state"]
+    },
+    {
+      "title": "'Reserve this tool' sits outside every landmark",
+      "description": "Under A11Y-26, primary content belongs inside a landmark. On the tool page the ARIA snapshot places button 'Reserve this tool' (in the fixed action bar) after main and before contentinfo, outside any landmark. Screen-reader users who move by landmarks, or who read main only, will not meet the page's primary action.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "rule", "id": "A11Y-26", "primary": true}
+      ],
+      "impact": "Screen-reader members may finish reading main without finding how to reserve.",
+      "locations": [
+        {"route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "default", "viewport": {"width": 320, "height": 900}, "theme": "light", "selector": "#reserve", "bbox": [117, 1252, 187, 47], "snippet": "<button type=\"button\" id=\"reserve\" class=\"button\">Reserve this tool"}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/tool-html-id-drill-18v-two-items-ladder-3m/loan-open/1280-light.yml", "detail": "'- button \"Reserve this tool\"' at the top level, between main and contentinfo"}
+      ],
+      "factor_notes": {"frequency": "Every tool page.", "impact": "The primary action is harder to discover by landmark.", "persistence": "Every visit."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Move the action bar inside main (it can stay visually fixed), or place it right after the pick-up day section in the DOM.",
+      "tags": ["landmarks", "advisory"]
+    },
+    {
+      "title": "Item headings share the level of their section heading on the find and basket pages",
+      "description": "Under A11Y-26, a heading nested inside a section ranks one level below the section heading. On the find page each tool card's heading is h2, the same level as the 'Tools' h2 that contains them. On the basket page the tool's heading is h2 under the 'Tools' h2. The heading list for screen-reader users is flat, so the cards look like peers of 'Search' and 'Opening times'.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "rule", "id": "A11Y-26", "primary": true}
+      ],
+      "impact": "Screen-reader members navigating by heading level cannot jump between sections and skip the ten cards.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "#results article h2", "snippet": "heading \"Cordless drill 18 V, combi, two batteries\" [level=2]"},
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": {"width": 1280, "height": 900}, "theme": "light", "selector": "role=region[name=\"Tools\"] h2", "snippet": "heading \"Cordless drill 18 V, combi, two batteries\" [level=2]"}
+      ],
+      "evidence": [
+        {"type": "aria", "ref": "evidence/aria/items-ladder-3m/filters-open/1280-light.yml"},
+        {"type": "aria", "ref": "evidence/aria/basket-html-items-drill-18v-two-day-2026-10-17/errors/1280-light.yml"}
+      ],
+      "factor_notes": {"frequency": "Find and basket pages.", "impact": "Navigation is less efficient; content is still reachable.", "persistence": "Always."},
+      "found_by": [{"role": "accessibility-auditor", "agent": "a11y", "model": "claude-opus-5-5", "method": "a11y", "pass": 1}],
+      "evidence_level": "E0",
+      "recommendation": "Make card and basket-item headings h3.",
+      "tags": ["headings", "advisory"]
+    }
+  ],
+  "needs_human": [
+    {"sc": ["4.1.2", "1.3.1", "4.1.3"], "item": "VoiceOver on iOS Safari and TalkBack on Android Chrome (the context's stated pairs): run the journey reserve-tool-for-saturday end to end. Confirm the loan-length listbox, the day buttons' pressed state, the 'Added to your basket' status, the error summaries and the done page are announced correctly. On the done page, check whether 'Cordless drill…' is read twice, because the ARIA snapshot shows the list item and a repeated text node."},
+    {"sc": ["1.3.2"], "item": "Confirm the reversed session order with a screen reader and a keyboard (see the finding). Also check the find page, where the Search region follows the ten results in the DOM."},
+    {"sc": ["2.5.3"], "item": "Speech control (iOS Voice Control): the day buttons show '10 Open' while their names are 'Saturday 10 October, open'. Check whether saying 'tap 10 Open' or 'tap 17' activates them."},
+    {"sc": ["1.3.3"], "item": "Sensory wording: the instruction 'Days marked Open (a green dot on a small screen)' refers to colour and shape. Confirm it is understandable without colour and that the dot is recognisable at the members' larger text sizes."},
+    {"sc": ["2.2.1"], "item": "Ask the owner whether the basket hold ('Items are held for you while you finish') expires. If it does, check that a warning and an extension exist."},
+    {"sc": ["2.4.2"], "item": "Check that each page title is descriptive and unique (find, tool, basket, confirm, done). Titles were not in the packet."},
+    {"sc": ["3.3.4"], "item": "Confirm that a reservation can be reviewed and changed before 'Confirm reservation', and cancelled afterwards (the done page offers only a phone call)."},
+    {"sc": ["1.4.4", "1.4.10"], "item": "Real zoom: page zoom to 400% and iOS Larger Text or Dynamic Type on a phone in dark mode (the owner says members commonly use larger text and dark mode), as a check on the emulated 200% text and reflow failures."},
+    {"sc": ["2.1.1"], "item": "Keyboard-only run of the longest journey, including the calendar of 21 day buttons and the loan-length list, after fixes."},
+    {"sc": ["A11Y-22"], "item": "A real Windows contrast theme: check the selected-day cue (a faint thicker border in Chromium emulation) and the toast."}
+  ],
+  "coverage_labels": {
+    "1.1.1": "agent-judged-pass",
+    "1.2.1": "not-applicable",
+    "1.2.2": "not-applicable",
+    "1.2.3": "not-applicable",
+    "1.2.4": "not-applicable",
+    "1.2.5": "not-applicable",
+    "1.3.1": "agent-judged-pass",
+    "1.3.2": "agent-judged-fail",
+    "1.3.3": "needs-human",
+    "1.3.4": "agent-judged-pass",
+    "1.4.1": "agent-judged-pass",
+    "1.4.5": "agent-judged-pass",
+    "1.4.13": "not-applicable",
+    "2.1.4": "agent-judged-pass",
+    "2.2.1": "needs-human",
+    "2.2.2": "agent-judged-pass",
+    "2.3.1": "not-applicable",
+    "2.4.2": "needs-human",
+    "2.4.4": "agent-judged-pass",
+    "2.4.5": "agent-judged-pass",
+    "2.4.6": "agent-judged-pass",
+    "2.5.1": "not-applicable",
+    "2.5.3": "needs-human",
+    "2.5.4": "not-applicable",
+    "2.5.7": "not-applicable",
+    "3.2.2": "agent-judged-pass",
+    "3.3.2": "agent-judged-pass",
+    "3.3.3": "agent-judged-pass",
+    "3.3.4": "needs-human",
+    "3.3.7": "agent-judged-pass",
+    "3.3.8": "not-applicable",
+    "4.1.2": "agent-judged-pass"
+  },
+  "_coverage_reasons": {
+    "1.1.1": "Only images are wrench icons on the cards and the logo; ARIA snapshots expose no img nodes, so they are hidden as decorative, which suits icons that repeat adjacent text.",
+    "1.2.1-1.2.5": "No audio or video on any route.",
+    "1.3.1": "Groups, labels, lists, definition lists and error associations are exposed; heading-level flatness is recorded as advisory A11Y-26, not a 1.3.1 failure.",
+    "1.3.2": "Session radios are visually reversed against DOM order (finding).",
+    "1.3.4": "Probe 57: basket renders in 844x390 landscape and 390x844 portrait with no orientation lock.",
+    "1.4.1": "Errors, open days, selection and badges all carry text, shape or weight cues in the CVD, achromatopsia and forced-colours captures.",
+    "1.4.5": "No raster or canvas text seen in captures.",
+    "1.4.13": "No hover- or focus-triggered content; the toast follows an action.",
+    "2.1.4": "Typing into the search field (probes 43, 45) triggered no shortcuts.",
+    "2.2.2": "No auto-moving, blinking or auto-updating content seen; the toast is a brief status.",
+    "2.4.4": "Link text is descriptive; 'Change' sits inside the 'Pick-up session' definition, so its purpose is clear in context.",
+    "2.4.5": "Main navigation plus search and the tool list give more than one way to reach tool pages; basket, confirm and done are steps in a process.",
+    "2.4.6": "Headings and labels describe their topic.",
+    "2.5.1/2.5.4/2.5.7": "No gestures, motion or dragging.",
+    "3.2.2": "Choosing a day or loan length changes only the related text and the pressed or selected state; no context change.",
+    "3.3.2": "Visible labels, format examples ('like FT-01234', 'like 07700 900123') and a native date input.",
+    "3.3.3": "Error messages say how to fix the input.",
+    "3.3.7": "The earlier day is available to select, so this narrowly passes; the cognitive cost is recorded as an H6 finding.",
+    "3.3.8": "No authentication step; the membership number is an identifier typed into an ordinary field.",
+    "4.1.2": "Listbox, option, aria-expanded, aria-selected, the day buttons' aria-pressed and the Filters disclosure's expanded state all update in the snapshots; the keyboard-model gap is A11Y-25.",
+    "left_to_tools": "1.3.5, 1.4.2, 1.4.3, 1.4.4, 1.4.10, 1.4.11, 1.4.12, 2.1.1, 2.1.2, 2.4.1, 2.4.3, 2.4.7, 2.4.11, 2.5.2, 2.5.8, 3.1.1, 3.1.2, 3.2.1, 3.2.3, 3.2.4, 3.2.6, 3.3.1 and 4.1.3 are auto or scripted. 1.4.3 has no CJK text in scope (lang check: cjk_detected=false), so no agent-judged label is needed. For 2.1.2, the loan-open listbox can be left with Enter, so I do not judge it a WCAG trap; the pattern failure is the A11Y-25 finding."
+  }
+}

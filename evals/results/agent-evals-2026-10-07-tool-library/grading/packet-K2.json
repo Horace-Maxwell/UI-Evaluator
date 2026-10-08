@@ -1,0 +1,1985 @@
+{
+ "eval": 20,
+ "assertions": [
+  {
+   "text": "Precision after verification is at least 0.8",
+   "how": "a grader who has not seen the run maps each confirmed finding that is not a deterministic tool finding to one seeded defect, to 'real but not seeded' (with the reason it is a genuine problem for these users), or to 'not a problem'; precision = (seeded + real but not seeded) / confirmed judged findings >= 0.8. Also report the strict precision, seeded / confirmed judged findings, and the recall by meaning"
+  },
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+  }
+ ],
+ "material": {
+  "findings": [
+   {
+    "id": "F-0026",
+    "method": "judged",
+    "title": "Not reachable by keyboard: \"Fernhill Tool Library\"",
+    "description": "The a \"Fernhill Tool Library\" is tabbable in the DOM, but a complete Tab walk never reached it. People who use a keyboard or switch cannot operate it.",
+    "criteria": [
+     "A11Y-03",
+     "2.1.1",
+     "A11Y-25",
+     "H3"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "loan-open"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0027",
+    "method": "judged",
+    "title": "Visual order of content differs from reading and focus order on the basket sessions and the find page",
+    "description": "Content should be read and navigated in the order it is shown (1.3.2, 2.4.3). On the basket page the DOM and the accessibility tree list the six pick-up sessions in date order (Sat 10, Wed 14, Sat 17, Wed 21, Sat 24, Wed 28). The screen shows them in reverse (Wed 28 first, Sat 10 last) at both 320 and 1280 px. Arrow keys in the radio group therefore move visually upwards, and a screen reader reads the list in the opposite order to the screen. On the find page the Search region is shown above the tool list but comes after all ten tool cards in the accessibility tree, so screen-reader users reach search only after every card. The scripted walk already reported the focus jump on the find page; the reading-order effect and the basket reversal are new.",
+    "criteria": [
+     "1.3.2",
+     "2.4.3",
+     "A11Y-21",
+     "H4",
+     "H2"
+    ],
+    "routes": [
+     "/basket.html",
+     "/"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0029",
+    "method": "judged",
+    "title": "Loan-length button is named only by its value, not by the Loan length label",
+    "description": "A control's programmatic name should carry its visible label, so that its purpose is announced with its value (APG collapsible listbox: the button is labelled by the label and the value). The button's accessible name is \"One week\". The visible label \"Loan length\" is a separate heading and is not part of the button's name or description. On Tab a screen reader announces only \"One week, collapsed, button\".",
+    "criteria": [
+     "1.3.1",
+     "4.1.2",
+     "A11Y-13"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0030",
+    "method": "judged",
+    "title": "Day buttons' accessible names do not contain their visible text \"10 Open\"",
+    "description": "The accessible name of a control with visible text should contain that text, preferably at the start (2.5.3). At 1280 px, session days show \"10 Open\" but are named \"Saturday 10 October, open\". The visible string \"10 Open\" is not in the name, and the name starts with words that are not shown. Non-session days contain their digit (\"9\" is named \"Friday 9 October\"), so only session days are affected.",
+    "criteria": [
+     "2.5.3",
+     "A11Y-27"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "loan-open",
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0031",
+    "method": "judged",
+    "title": "Session-day dot disappears in forced colours at small widths",
+    "description": "Under forced colours, meaningful indicators should stay visible (A11Y-22). At 320 px the word \"Open\" is replaced by a small green dot under the date. In the forced-colours capture the dots are gone, and session days (10, 14, 17, 21, 24, 28) differ from closed days only in that the date sits slightly higher in the cell. The instruction above the calendar still tells people to look for a green dot.",
+    "criteria": [
+     "A11Y-22",
+     "H1"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "day-chosen"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0032",
+    "method": "judged",
+    "title": "Item headings share the level of their section heading on the find and basket pages",
+    "description": "Heading levels should follow the structure shown (A11Y-26, supporting 1.3.1 and 2.4.6). Under the level-2 heading \"Tools\", each tool card title on the find page and the tool title in the basket are also level 2. A heading list therefore shows the section and its items as siblings.",
+    "criteria": [
+     "A11Y-26"
+    ],
+    "routes": [
+     "/",
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0033",
+    "method": "judged",
+    "title": "Reserve this tool button and the added-to-basket status sit outside every landmark",
+    "description": "All content, and above all the primary action, should be inside a landmark (A11Y-26). On the tool page, button \"Reserve this tool\" and the status \"Added to your basket\" are top-level nodes between main and contentinfo, outside main and every other landmark.",
+    "criteria": [
+     "A11Y-26"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "added"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0034",
+    "method": "judged",
+    "title": "Confirmation page exposes the reserved tool's name twice to assistive technology",
+    "description": "The accessibility tree should match what is shown. On the done page the Tools definition holds a list item \"Cordless drill 18 V, combi, two batteries\" followed by a text node with the same name, while the screen shows the name once.",
+    "criteria": [
+     "H8",
+     "A11Y-21",
+     "1.3.1"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0035",
+    "method": "judged",
+    "title": "Pick-up day calendar accepts days when the library is closed",
+    "description": "A form should prevent choices that cannot work (H5). A reservation works only at a session, yet the calendar lets members choose non-session days. In the day-chosen state, Monday 12 October is selected and the page confirms \"Pick-up day: Monday 12 October\" without comment. The basket then asks for a session separately.",
+    "criteria": [
+     "H5",
+     "H6",
+     "ISO 9241-110 #6",
+     "H2"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "day-chosen",
+     "added"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0036",
+    "method": "judged",
+    "title": "Search with no matching tools leaves the previous results on screen and announces nothing",
+    "description": "A data view should show an empty state when a query matches nothing. search() only renders and updates the role=status text when list.length is non-zero; with zero matches it returns silently, so the grid keeps the previous (unfiltered or earlier) results and the status region keeps its old text. The same applies to the date and category filters, which call search() on change.",
+    "criteria": [
+     "CMP-05",
+     "CMP-14",
+     "H1",
+     "A11Y-15",
+     "H9"
+    ],
+    "routes": [
+     "/index.html",
+     "/"
+    ],
+    "states": [
+     "search-no-results",
+     "no-results"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0037",
+    "method": "judged",
+    "title": "Results grid track minimum of 330 px is wider than the 320 px viewport's content box",
+    "description": "Content must reflow at 320 CSS px without horizontal scrolling. .results uses repeat(auto-fill, minmax(330px, 1fr)); at 320 px the page content box is 288 px (16 px padding each side), so the single column is still 330 px and overflows by about 42 px.",
+    "criteria": [
+     "A11Y-07",
+     "1.4.10"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0038",
+    "method": "judged",
+    "title": "Tool names on cards are cut to one line, hiding the words that tell similar tools apart",
+    "description": "Names that differ only at the end should stay distinguishable. .card__name a sets white-space: nowrap with text-overflow: ellipsis. Several catalogue names share a long prefix and differ only in the tail ('Cordless drill 18 V, combi, two batteries' vs '... one battery'; 'Manual tile cutter, 600 mm' vs 'Electric wet tile saw, 180 mm' less so). With a 96 px thumbnail beside the name, the text column is roughly 180-280 px, so the differing tail is likely to be replaced by an ellipsis.",
+    "criteria": [
+     "H6",
+     "CMP-22",
+     "CW-Q3",
+     "H8"
+    ],
+    "routes": [
+     "/index.html",
+     "/"
+    ],
+    "states": [
+     "default",
+     "search results 'drill'"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0141",
+    "method": "judged",
+    "title": "Loan-length listbox traps Tab while open",
+    "description": "With the loan-length list open on the tool page, Tab moves between the options instead of leaving the widget; five Tabs left focus on 'Two weeks'. Only choosing an option with Enter closes it.",
+    "criteria": [
+     "A11Y-25",
+     "A11Y-03",
+     "2.1.2"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "listbox-open"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0142",
+    "method": "judged",
+    "title": "Loan-length listbox does not close on outside click or blur",
+    "description": "Claimed from code: clicking or moving focus outside the open loan-length list leaves it open.",
+    "criteria": [
+     "A11Y-25",
+     "A11Y-03",
+     "2.1.2"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "listbox-open"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0143",
+    "method": "judged",
+    "title": "Loan-length trigger does not open with ArrowDown or ArrowUp",
+    "description": "Claimed from code: the loan-length button does not respond to arrow keys, which a listbox trigger is expected to support.",
+    "criteria": [
+     "A11Y-25",
+     "A11Y-03",
+     "2.1.2"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "listbox-open"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0041",
+    "method": "judged",
+    "title": "Continue and Confirm reservation show no visible change during their 1.2 s and 1.5 s waits",
+    "description": "An action should be acknowledged within 0.1 s and show progress when it takes over 1 s. On submit, both handlers only set aria-busy=\"true\" on the button and wait (setTimeout 1200 ms on basket, 1500 ms on confirm). styles.css has no [aria-busy] rule, the label does not change, and the button is not disabled, so nothing visible changes until navigation.",
+    "criteria": [
+     "CMP-04",
+     "CMP-10",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/basket.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "busy",
+     "default"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0042",
+    "method": "judged",
+    "title": "Confirm reservation can be submitted again during the wait, allocating extra reservation numbers",
+    "description": "A commit action should be idempotent while it is in flight. Each submit of #confirm-form pushes a new reference (FT-4471 + refs.length) into sessionStorage before the 1.5 s timeout; the button is not disabled and the handler has no in-flight guard. Two submits create two references for the same slot, and done.html then shows 'Reservation numbers: FT-4471 and FT-4472' for one booking.",
+    "criteria": [
+     "CMP-16",
+     "H5"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "busy"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0043",
+    "method": "judged",
+    "title": "After the basket hold expires, Continue always fails with 'Something went wrong. Try again.'",
+    "description": "An error should state the cause and a way out that works. When holdExpired() is true the basket submit shows only 'Something went wrong. Try again.' The hold start time in sessionStorage is never reset by this path, so every retry fails the same way; the only reset is the 'Reserve another tool' link on done.html, which the member cannot reach.",
+    "criteria": [
+     "H9",
+     "CMP-18"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "hold-expired"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0044",
+    "method": "judged",
+    "title": "Basket hold has a 10-minute limit that is never shown, warned about or extendable",
+    "description": "A time limit should be disclosed and adjustable or extendable. HOLD_MINUTES = 10 starts on the first reserve; the basket page says only 'Items are held for you while you finish' and there is no countdown, warning before expiry or extend action.",
+    "criteria": [
+     "2.2.1",
+     "H1",
+     "H10"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0045",
+    "method": "judged",
+    "title": "Closed days can be chosen as the pick-up day and are rejected only after Confirm reservation",
+    "description": "Errors should be prevented where the choice is made. The calendar renders all 21 days as enabled buttons; only open days carry the 'Open' mark. Reserve accepts any day. The closed-day check runs only in the confirm submit timeout (after 1.5 s), and its error items have no link back to the tool page where the day is set.",
+    "criteria": [
+     "H5",
+     "CMP-18"
+    ],
+    "routes": [
+     "/tool.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "default",
+     "error-closed-day"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0046",
+    "method": "judged",
+    "title": "The 'Change' link for the pick-up session drops the session already chosen",
+    "description": "Going back to change one answer should keep the current answer selected. On confirm.html the Change link is plain 'basket.html' with no slot parameter; initBasket pre-checks a session only from the ?slot= parameter, so the member returns to an unselected list and must choose again even to keep the same session.",
+    "criteria": [
+     "CMP-19",
+     "H3",
+     "H6"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0047",
+    "method": "judged",
+    "title": "The stated three-tool limit is not enforced when adding to the basket",
+    "description": "A stated rule should be enforced where it applies. The finder intro says members can reserve up to three tools at a time, but the reserve handler appends to the basket with no count check, and neither basket nor confirm checks the count.",
+    "criteria": [
+     "H5",
+     "H4"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0048",
+    "method": "judged",
+    "title": "Mobile and membership number checks reject common valid ways of typing them",
+    "description": "Validation should accept the formats people and autofill produce. The phone pattern /^0\\d{4}\\s?\\d{6}$/ rejects +44 7700 900123 (the form autofill often supplies with autocomplete=tel), 07700-900123 and 07700 900 123. The membership pattern /^FT-\\d{5}$/ is case-sensitive, so 'ft-01234' fails.",
+    "criteria": [
+     "CMP-18",
+     "H5",
+     "ISO 9241-110 #6"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "error",
+     "errors"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0049",
+    "method": "judged",
+    "title": "CSS reordering makes the visual order differ from the focus order on the finder and the session list",
+    "description": "Reading and focus order should match the visual order. The finder's DOM puts results before the search form, but above 480 px CSS order puts the form first visually, so Tab goes through all result links before reaching the search box shown at the top. The session list uses flex-direction: row-reverse with flex-wrap: wrap-reverse, so sessions in chronological DOM order are laid out right-to-left and bottom-to-top, and arrow keys move opposite to what is seen.",
+    "criteria": [
+     "2.4.3",
+     "1.3.2",
+     "A11Y-03"
+    ],
+    "routes": [
+     "/index.html",
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0050",
+    "method": "judged",
+    "title": "Dark-theme success token differs from DESIGN.md and its tint equals the card surface",
+    "description": "Tokens should match the declared palette. In dark mode --color-ok is #2f7d4a (design success: #8fd1a8) and --color-ok-tint is #1d2622, identical to --color-surface. The 'Available from' badge (.badge--ok) therefore has no visible fill and its text computes to about 3.1:1 against #1d2622, below 4.5:1 for 16 px bold text.",
+    "criteria": [
+     "COL-01",
+     "A11Y-11",
+     "1.4.3"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0051",
+    "method": "judged",
+    "title": "'Added to your basket' toast disappears after about 1.35 seconds",
+    "description": "Confirmation messages should stay long enough to read and act on. The toast is shown, then given is-leaving after 1200 ms and hidden 150 ms later; there is no link to the basket and no way to keep it.",
+    "criteria": [
+     "CMP-13",
+     "H1"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "toast"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0055",
+    "method": "judged",
+    "title": "Fixed action bar on the tool page covers the end of the page; no space is reserved for it",
+    "description": "Content should not sit permanently under a fixed bar. .actionbar is position: fixed with a 72 px minimum height, but .page--bar reduces the bottom padding to 8 px and nothing adds padding equal to --actionbar to the body, so at the end of scroll the footer and, on wide screens where the footer is one line, the bottom of the last calendar row sit under the bar.",
+    "criteria": [
+     "A11Y-05",
+     "LAY-14"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0057",
+    "method": "judged",
+    "title": "Search field sits below the whole tool list on a phone",
+    "description": "A member arriving with a specific tool in mind expects to find a way to search near the top of a 'Find a tool' page. At 375 px the 'Search tools' field, the 'Search' button and the Filters button come after all ten tool cards, roughly two-thirds down a 2593 px page. Nothing in the first viewport shows that search exists.",
+    "criteria": [
+     "CW-Q2",
+     "H6",
+     "H7"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0058",
+    "method": "judged",
+    "title": "Search results change above the viewport, leaving only the last result next to the search box",
+    "description": "After a search, the member should be able to see what changed and how many results there are. At 375 px the list filters above the search box. The status '2 tools found' is at the top of the list, out of view, and the only card in view is the last result, 'Cordless drill 18 V, combi, one battery'. Focus and scroll stay at the search box.",
+    "criteria": [
+     "CW-Q4",
+     "H1"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "search results 'drill'"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0060",
+    "method": "judged",
+    "title": "Pick-up day grid is below the fold and its heading is covered by the sticky Reserve bar",
+    "description": "A required choice should be visible, or clearly signposted, before the commit button. On the tool page at 375 px, the first viewport ends at 'Loan length'. The sticky 'Reserve this tool' bar covers the 'Pick-up day' heading, and the day grid is below the fold. The prominent commit button is offered before the required day is visible.",
+    "criteria": [
+     "CW-Q2",
+     "H5"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0061",
+    "method": "judged",
+    "title": "After 'Reserve this tool' nothing persistent says the reservation is unfinished or where to go next",
+    "description": "After a member presses a button labelled 'Reserve', they should see whether the reservation is made and, if not, what remains. Pressing 'Reserve this tool' only adds the tool to the basket. The only feedback is a small toast, 'Added to your basket', which has gone by the 4.4 s capture and is absent from the ARIA snapshot. The button label stays the same. The header link 'Basket (1)', the only way on, is scrolled out of view at 375 px, and nothing near the button points to the basket, to the session choice or to the confirmation still needed.",
+    "criteria": [
+     "CW-Q1",
+     "CW-Q4",
+     "CW-Q2",
+     "H1",
+     "H2",
+     "H6"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "after reserve",
+     "added"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0062",
+    "method": "judged",
+    "title": "Basket asks for a pick-up session again after the day was already chosen",
+    "description": "Information the member has already given should carry forward. On the tool page the member chose Saturday 17 October, and the basket card repeats 'Pick up Saturday 17 October'. The 'Pick-up session' list below has nothing preselected and must be answered again. Pressing Continue without it shows 'Choose a pick-up session'.",
+    "criteria": [
+     "CW-Q1",
+     "H7",
+     "H4",
+     "H5",
+     "H6"
+    ],
+    "routes": [
+     "/basket.html",
+     "/tool.html",
+     "/confirm.html",
+     "/basket.html (via Change on confirm)"
+    ],
+    "states": [
+     "default",
+     "day-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0063",
+    "method": "judged",
+    "title": "Pick-up sessions are listed latest first, so the first Saturday shown is not this Saturday",
+    "description": "Date choices are expected in date order, soonest first. The basket's session list runs Wed 28 Oct, Sat 24 Oct, Wed 21 Oct, Sat 17 Oct, Wed 14 Oct, Sat 10 Oct. A member looking for 'Saturday morning' meets Saturday 24 October first; this Saturday (17 October) is fourth.",
+    "criteria": [
+     "CW-Q3",
+     "H4"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0064",
+    "method": "judged",
+    "title": "Continue and Confirm reservation give no acknowledgement while the next page loads",
+    "description": "A tap should be acknowledged at once. After 'Continue' in the basket, the screen is unchanged at 200 ms and 800 ms, with no pressed or busy state, and /confirm.html arrives at about 1.2 s. After 'Confirm reservation', the screen is unchanged at 300 ms and 'Reservation confirmed' appears at about 1.0 s.",
+    "criteria": [
+     "CW-Q4",
+     "H1"
+    ],
+    "routes": [
+     "/basket.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "session chosen",
+     "filled"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0066",
+    "method": "judged",
+    "title": "A search with no matches shows the full tool list and no message",
+    "description": "Searching for 'sewing machine' and pressing Search leaves all 10 tools on screen, and the results status region is empty. Nothing says that no tool matched. The member needs to know that the library does not have what they searched for.",
+    "criteria": [
+     "H1",
+     "H9"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "no-results"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0068",
+    "method": "judged",
+    "title": "Filters toggle shows only an icon",
+    "description": "The control that reveals the 'Available from' date filter and Category is a square button with a three-line icon and no visible text; its name 'Filters' exists only in the accessibility tree. A first-time member reading labels literally needs a visible word to know this opens date and category filtering.",
+    "criteria": [
+     "H6",
+     "H2"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0069",
+    "method": "judged",
+    "title": "'Available from' filter wording does not match what it filters",
+    "description": "The filter field is labelled 'Available from' with the hint 'Show tools you could pick up on or after this day.' Entering 12 October left only the six tools available from Saturday 10 October and removed tools available from 14, 17, 21 and 24 October, which could be picked up after 12 October. The cards use the same phrase 'Available from' for the tool's first available date. The member needs the label to say what the list will show.",
+    "criteria": [
+     "H2",
+     "H4"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "filters-open"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0071",
+    "method": "judged",
+    "title": "Pick-up dates before the tool is available are accepted",
+    "description": "The pressure washer is 'Available from Saturday 17 October', yet Saturday 10 October can be chosen and reserved on its tool page, and the basket then offers every session, including Saturday 10 and Wednesday 14 October, under 'You can collect at any of these sessions'. A member needs to be stopped from booking a collection before the tool is back.",
+    "criteria": [
+     "H5",
+     "H1"
+    ],
+    "routes": [
+     "/tool.html",
+     "/basket.html"
+    ],
+    "states": [
+     "day-chosen",
+     "default"
+    ],
+    "severity": 3.67
+   },
+   {
+    "id": "F-0072",
+    "method": "judged",
+    "title": "Pick-up day and pick-up session are chosen separately and can contradict each other",
+    "description": "The flow asks for the collection date twice: a pick-up day on the tool page and a pick-up session in the basket. The basket does not preselect the session that matches the chosen day, and any session can be picked. After choosing Wednesday 21 October as session, the confirm page shows 'Tools … pick up Saturday 17 October' and 'Pick-up session Wednesday 21 October' side by side; with pick-up day 10 October, session 28 October is also accepted. A member needs one collection date and a summary that agrees with itself.",
+    "criteria": [
+     "H4",
+     "H2",
+     "H6",
+     "H5"
+    ],
+    "routes": [
+     "/tool.html",
+     "/basket.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "day-chosen",
+     "default"
+    ],
+    "severity": 3.67
+   },
+   {
+    "id": "F-0075",
+    "method": "judged",
+    "title": "Details typed on the confirm page are lost after changing the session",
+    "description": "Typing the membership number on the confirm page, following Change, choosing another session and continuing returns to the confirm page with the membership number field empty. The member expects what they already typed to be kept during a round trip within the same reservation.",
+    "criteria": [
+     "H3",
+     "H6"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0077",
+    "method": "judged",
+    "title": "Remove takes a tool out of the basket at once with no undo",
+    "description": "Pressing Remove on a basket item removes it immediately; the page shows 'Your basket is empty' with no confirmation, no undo and no message saying what was removed. Getting it back means finding the tool, choosing the day and loan length again.",
+    "criteria": [
+     "H3",
+     "H5"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0078",
+    "method": "judged",
+    "title": "Error summary stays after the basket is emptied",
+    "description": "After a failed Continue and then Remove, the basket says 'Your basket is empty' but the 'There is a problem' alert still asks to 'Choose a pick-up session', linking to a session list that is no longer on the page. Messages should describe the current state.",
+    "criteria": [
+     "H1",
+     "H9"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0079",
+    "method": "judged",
+    "title": "Basket does not say how long tools are held",
+    "description": "The basket says 'Items are held for you while you finish.' It does not say for how long, or what happens if the member leaves and comes back. The journey persona does not know how long the basket holds a tool, and with one of each tool the hold matters.",
+    "criteria": [
+     "H1",
+     "H10"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0080",
+    "method": "judged",
+    "title": "Reserved tool stays in the basket after the reservation is confirmed",
+    "description": "On the done page the header still reads 'Basket (1)', and opening the basket from there shows the just-reserved drill with its pick-up details and a Continue button, as if it were not yet reserved. After confirming, the member needs the basket to reflect that the tool is reserved.",
+    "criteria": [
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/done.html",
+     "/basket.html"
+    ],
+    "states": [
+     "default",
+     "after confirm"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0081",
+    "method": "judged",
+    "title": "Format errors on confirm read as if the field were empty",
+    "description": "Entering '01234' as the membership number and '07700 90012' as the mobile gives 'Enter your membership number, like FT-01234' and 'Enter a UK mobile number, like 07700 900123'. The messages are the same as for empty fields and do not say what is wrong with the value typed (missing 'FT-' prefix; one digit short).",
+    "criteria": [
+     "H9",
+     "CPY-04",
+     "3.3.3"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "errors"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0082",
+    "method": "judged",
+    "title": "Loan-length list does not close with Escape",
+    "description": "Opening the 'One week' loan-length control shows a list of options; pressing Escape leaves the list open. Users expect a pop-up list to close with Escape without changing the value.",
+    "criteria": [
+     "H3",
+     "H4",
+     "2.1.1"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "loan-open"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0089",
+    "method": "judged",
+    "title": "Search and filter choices are not kept in the address, so a filtered list cannot be revisited or shared",
+    "description": "For repeat use, a search or date filter is expected to be reflected in the URL so Back, reload or a bookmark returns to it. After searching 'drill' the URL stays '/?items=ladder-3m'.",
+    "criteria": [
+     "H7"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0091",
+    "method": "judged",
+    "title": "Change opens the basket with no session selected, not the one currently chosen",
+    "description": "When editing a choice, the current value should be shown. Arriving from Change with Saturday 17 October chosen, the basket's session list has no radio checked.",
+    "criteria": [
+     "H6",
+     "H1"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default (from Change)"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0097",
+    "method": "judged",
+    "title": "Keyboard focus on calendar days is hidden behind the sticky 'Reserve this tool' bar",
+    "description": "A keyboard user needs to see which day has focus before pressing it. On tool.html at 375x667, tabbing from Loan length into the calendar moves focus to Friday 16 October and later Saturday 24 October, but the page scrolls only enough to put the focused button at the bottom edge, where the fixed 'Reserve this tool' bar covers it completely. The focused day is not visible at all; only after pressing Enter does the 'Pick-up day' text reveal what was chosen.",
+    "criteria": [
+     "H1",
+     "2.4.11"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0106",
+    "method": "judged",
+    "title": "Each calendar day is a separate tab stop, so reaching Reserve takes over 20 key presses",
+    "description": "Composite widgets such as a date grid are expected to be one tab stop navigated with arrow keys. On tool.html every one of the 21 day buttons is in the tab order: eight Tabs from Loan length only reach Friday 16 October, sixteen reach Saturday 24 October, and the Reserve button comes after all 21.",
+    "criteria": [
+     "H7",
+     "H4"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0110",
+    "method": "judged",
+    "title": "Every tool card shows the same placeholder wrench thumbnail",
+    "description": "All ten cards on the find page carry an identical wrench line glyph in a flat pale-green square, at every width and in both themes. The thumbnail slot is the only imagery slot on the product and it shows nothing about the tool.",
+    "criteria": [
+     "DES-appeal",
+     "DES-specificity",
+     "SLP-58"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0111",
+    "method": "judged",
+    "title": "No identity beyond the name: stock glyph plus bold body text in the masthead, no product-derived device",
+    "description": "The masthead is a wrench line icon and 'Fernhill Tool Library' set in the body family at body size, bold. No surface carries a mark, the membership-card green as a recognisable motif, the community centre, or any device from the library's world; the declared membership-card origin of the green is invisible.",
+    "criteria": [
+     "DES-specificity",
+     "DES-brandfit"
+    ],
+    "routes": [
+     "/",
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0144",
+    "method": "judged",
+    "title": "Sticky Reserve bar hides the open loan-length options at 375 px",
+    "description": "At 375 px, with the loan-length list opened, the fixed Reserve bar covers every option except 'One week'.",
+    "criteria": [
+     "DES-execution",
+     "FUN-06",
+     "A11Y-05"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0145",
+    "method": "judged",
+    "title": "Added-to-basket toast is drawn over calendar cells",
+    "description": "The 'Added to your basket' toast sits over calendar day cells at viewport height on the tool page.",
+    "criteria": [
+     "DES-execution",
+     "FUN-06",
+     "A11Y-05"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0113",
+    "method": "judged",
+    "title": "Tool names truncated with an ellipsis on phone widths",
+    "description": "At 375 the card titles cut off ('Cordless drill 18 V, co...', 'Extension ladder 3 m ...'), so the two cordless drills, which differ only by 'two batteries' / 'one battery', look identical.",
+    "criteria": [
+     "DES-execution",
+     "FUN-06"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0114",
+    "method": "judged",
+    "title": "Filter panel uses unstyled native date and select controls, misaligned",
+    "description": "The 'Available from' date field shows the browser 'yyyy/mm/dd' mask and system calendar glyph, and 'Category' is a native select with a system chevron whose label sits ~30px lower than 'Available from'. The rest of the product uses a custom-styled loan select.",
+    "criteria": [
+     "DES-coherence",
+     "DES-appeal",
+     "DES-execution"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "filters-open"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0115",
+    "method": "judged",
+    "title": "Dark theme drops the available badge's pill, inverting emphasis",
+    "description": "In dark mode 'Available from Sat 10 Oct' renders as mid-green text with no visible tinted background, while 'Available from Sat 17/24 Oct' and 'Wed 21 Oct' keep a grey pill. The more useful state now looks weaker than the less useful one.",
+    "criteria": [
+     "DES-coherence",
+     "A11Y-11"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0146",
+    "method": "judged",
+    "title": "Reservation number, session and deposit have no emphasis on the done page",
+    "description": "On done.html the reservation number, session and deposit are body-weight values in the same key-value box as the confirm summary, so what the member must remember does not stand out.",
+    "criteria": [
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1.33
+   },
+   {
+    "id": "F-0117",
+    "method": "judged",
+    "title": "Basket session list runs latest-first in an uneven one-plus-five layout at desktop widths",
+    "description": "At 1280 'Wednesday 28 October' sits alone in a full-width card, followed by five narrow cards (24, 21, 17, 14, 10 October) where each date wraps to three lines. Order runs backwards in time.",
+    "criteria": [
+     "DES-execution",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0118",
+    "method": "judged",
+    "title": "Tool details split into two lists with misaligned value columns",
+    "description": "Category/Deposit/Available from values start at x≈224 while Chuck/Batteries/Weight/Case values start at x≈180, with a small extra gap between the groups, on every width.",
+    "criteria": [
+     "DES-execution"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0119",
+    "method": "judged",
+    "title": "Search drops below the whole tool list on phones",
+    "description": "At 375 the 'Search tools' field and filter button appear after all ten cards, while at 1280 they sit above the grid.",
+    "criteria": [
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0121",
+    "method": "judged",
+    "title": "No visual identity beyond the name set in bold body type",
+    "description": "The masthead is 'Fernhill Tool Library' in the body face at body weight-bold next to a stock wrench outline. No surface carries a mark, the membership-card green as a recognisable object, the community-centre room or any material from the library's world. The design.md rationale (green from the membership card) is not visible to a visitor.",
+    "criteria": [
+     "DES-specificity",
+     "SLP-64",
+     "DES-brandfit"
+    ],
+    "routes": [
+     "all"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0122",
+    "method": "judged",
+    "title": "Reservation number uses the same FT- prefix as membership numbers",
+    "description": "Different identifiers should look different. The done page shows 'Reservation number FT-4471', while membership numbers are shown as 'FT-01234' on the confirm page.",
+    "criteria": [
+     "H4",
+     "H2"
+    ],
+    "routes": [
+     "/done.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0123",
+    "method": "judged",
+    "title": "Every tool card shows the same wrench glyph as a placeholder thumbnail",
+    "description": "On the find page each of the ten cards has an identical pale-green square containing the same wrench icon. The thumbnail slot that DESIGN.md calls \"a thumbnail\" carries no information about which tool it is.",
+    "criteria": [
+     "DES-appeal",
+     "DES-specificity"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0124",
+    "method": "judged",
+    "title": "No identity or focal point on any surface",
+    "description": "The only identity is \"Fernhill Tool Library\" in bold body text beside a 16 px glyph. No surface has a typographic moment, imagery or a device drawn from the library's world; the membership-card green declared in DESIGN.md reads as a generic action green.",
+    "criteria": [
+     "DES-specificity",
+     "DES-appeal",
+     "DES-brandfit"
+    ],
+    "routes": [
+     "items-ladder-3m",
+     "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0125",
+    "method": "judged",
+    "title": "Tool titles truncate on phones so the two drills read identically",
+    "description": "At 375 every card title is cut with an ellipsis; \"Cordless drill 18 V, combi, two batteries\" and \"...one battery\" both show \"Cordless drill 18 V, co...\".",
+    "criteria": [
+     "TYP-15",
+     "DES-execution"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0126",
+    "method": "judged",
+    "title": "Search block drops below all ten cards on phones",
+    "description": "At 375 the \"Search tools\" field, Search button and filter toggle appear after the full list, near the footer, whereas on desktop they sit above the list.",
+    "criteria": [
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0127",
+    "method": "judged",
+    "title": "Filter panel uses unthemed browser-default date and select controls",
+    "description": "With filters open, \"Available from\" is a native yyyy/mm/dd date field with the system calendar icon, and \"Category\" a native select with a different height and vertical offset from the date field.",
+    "criteria": [
+     "DES-execution",
+     "DES-coherence"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "filters-open"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0129",
+    "method": "judged",
+    "title": "Tool details split into two misaligned definition lists",
+    "description": "Under \"Details\" the first three rows (Category, Deposit, Available from) use a value column at x≈224, the next four (Chuck, Batteries, Weight, Case) at x≈180, with an extra gap between them.",
+    "criteria": [
+     "DES-execution"
+    ],
+    "routes": [
+     "tool-html-id-drill-18v-two-items-ladder-3m"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0130",
+    "method": "judged",
+    "title": "Pick-up sessions in reverse date order with one stranded full-width card",
+    "description": "On basket at 1280 the sessions run Wed 28 Oct (alone, full width) then Sat 24 to Sat 10 in a row of five narrow cards whose text wraps to three lines.",
+    "criteria": [
+     "DES-execution",
+     "LAY-03"
+    ],
+    "routes": [
+     "basket-html-items-drill-18v-two-day-2026-10-17"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0148",
+    "method": "judged",
+    "title": "Content column leaves the right half empty at wide widths",
+    "description": "On tool, confirm and done pages at 1280 px the content sits in a column of roughly 610 px with the right half of the page blank.",
+    "criteria": [
+     "DES-appeal",
+     "DES-execution"
+    ],
+    "routes": [
+     "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1",
+     "basket-html-items-drill-18v-two-day-2026-10-17",
+     "confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0149",
+    "method": "judged",
+    "title": "Footer stops short, leaving a grey band below it",
+    "description": "On basket and done at 1280 x 900 the footer ends above the bottom of the viewport, leaving an empty grey band.",
+    "criteria": [
+     "DES-appeal",
+     "DES-execution"
+    ],
+    "routes": [
+     "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1",
+     "basket-html-items-drill-18v-two-day-2026-10-17",
+     "confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0132",
+    "method": "judged",
+    "title": "Done page still shows \"Basket (1)\" after the reservation is confirmed",
+    "description": "The masthead on \"Reservation confirmed\" reads \"Basket (1)\".",
+    "criteria": [
+     "H1",
+     "DES-execution"
+    ],
+    "routes": [
+     "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.67
+   },
+   {
+    "id": "F-0133",
+    "method": "judged",
+    "title": "Available badges lose their tint in dark mode",
+    "description": "In the dark theme the \"Available from Sat 10 Oct\" badges have no background and dim green text, while later-date badges keep a grey background, so the hierarchy between available-now and later is inverted.",
+    "criteria": [
+     "COL-14",
+     "DES-coherence"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0134",
+    "method": "judged",
+    "title": "No-results search still shows the full catalogue on phones",
+    "description": "In the no-results state with \"sewing machine\" in the search field (375), all ten tools remain listed and no empty-state message is visible above them.",
+    "criteria": [
+     "H1",
+     "DES-execution"
+    ],
+    "routes": [
+     "items-ladder-3m"
+    ],
+    "states": [
+     "no-results"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0150",
+    "method": "judged",
+    "title": "Availability badges wrap 'Oct' alone onto a second line at 375 px",
+    "description": "At 375 px the badges read 'Available from Sat 10 / Oct', with the month alone on a second line.",
+    "criteria": [
+     "TYP-15",
+     "DES-execution"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0151",
+    "method": "judged",
+    "title": "Main navigation links wrap to two lines at 375 px",
+    "description": "At 375 px 'Find a tool', 'Basket (1)' and 'Opening times' each wrap onto two lines in the masthead.",
+    "criteria": [
+     "TYP-15",
+     "DES-execution"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0152",
+    "method": "judged",
+    "title": "Done and confirm content fill only half the width at 1280 px",
+    "description": "On confirm and done at 1280 px the form and 'What happens next' sit beside empty space. Overlaps F-0131.",
+    "criteria": [
+     "DES-appeal",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/done.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0153",
+    "method": "judged",
+    "title": "Reservation number is plain body text on the done page",
+    "description": "The reservation number on done.html has no typographic emphasis. Overlaps F-0116.",
+    "criteria": [
+     "DES-appeal",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/done.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0139",
+    "method": "judged",
+    "title": "No-results state shows the full list with no empty-state message",
+    "description": "The no-results captures show 'sewing machine' in the search field and all ten tools listed, with no message. Either the empty state is missing or the capture did not submit; the state as captured is not designed.",
+    "criteria": [
+     "DES-execution"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "no-results"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0001",
+    "method": "tool",
+    "title": "axe color-contrast: Elements must meet minimum color contrast ratio thresholds",
+    "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (serious impact). Fix any of the following: Element has insufficient color contrast of 3.07 (foreground color: #2f7d4a, background color: #1d2622, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1",
+    "criteria": [
+     "A11Y-01",
+     "1.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0002",
+    "method": "tool",
+    "title": "Text contrast below 4.5:1: \"Available from Sat 10 Oct\"",
+    "description": "Text \"Available from Sat 10 Oct\" (16 px, weight 700) has 3.07:1 against its computed background in the dark theme at 320 px; it needs 4.5:1.",
+    "criteria": [
+     "A11Y-11",
+     "1.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0003",
+    "method": "tool",
+    "title": "Weak by APCA, passes WCAG: \"Members can reserve up to three tools at\"",
+    "description": "Body text \"Members can reserve up to three tools at a time and collect \" passes WCAG at 8.33:1 but reads APCA-style Lc 59.5 (advisory floor 75) in the dark theme. Advisory only: consider moving the text token along its ramp.",
+    "criteria": [
+     "COL-14"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0004",
+    "method": "tool",
+    "title": "Weak by APCA, passes WCAG: \"Category\"",
+    "description": "Content text \"Category\" passes WCAG at 8.33:1 but reads APCA-style Lc 59.5 (advisory floor 60) in the dark theme. Advisory only: consider moving the text token along its ramp.",
+    "criteria": [
+     "COL-14"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0005",
+    "method": "tool",
+    "title": "Weak by APCA, passes WCAG: \"Items are held for you while you finish.\"",
+    "description": "Body text \"Items are held for you while you finish. Choose when you wil\" passes WCAG at 8.33:1 but reads APCA-style Lc 59.5 (advisory floor 75) in the dark theme. Advisory only: consider moving the text token along its ramp.",
+    "criteria": [
+     "COL-14"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0006",
+    "method": "tool",
+    "title": "Weak by APCA, passes WCAG: \"Tools\"",
+    "description": "Content text \"Tools\" passes WCAG at 7.33:1 but reads APCA-style Lc 57.9 (advisory floor 60) in the dark theme. Advisory only: consider moving the text token along its ramp.",
+    "criteria": [
+     "COL-14"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0007",
+    "method": "tool",
+    "title": "Weak by APCA, passes WCAG: \"Reservation number\"",
+    "description": "Content text \"Reservation number\" passes WCAG at 7.33:1 but reads APCA-style Lc 57.9 (advisory floor 60) in the dark theme. Advisory only: consider moving the text token along its ramp.",
+    "criteria": [
+     "COL-14"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0008",
+    "method": "tool",
+    "title": "Touch-primary controls closer than 8 px: \"Saturday 17 October, open\" and \"Reserve this tool\"",
+    "description": "On the 768 px touch viewport, the hit areas of these primary controls are 0 px apart (edge to edge); they need ≥ 8 px.",
+    "criteria": [
+     "CMP-06"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "added"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0009",
+    "method": "tool",
+    "title": "Text clips under the text-spacing override in li:nth-of-type(1) > article.card > div.card__body > h2.card_",
+    "description": "With line-height 1.5, paragraph spacing 2em, letter spacing 0.12em and word spacing 0.16em, text (\"Cordless drill 18 V, combi, two batteries\") is cut off at 1280 px (scroll 427×50 vs client 390×50).",
+    "criteria": [
+     "A11Y-08",
+     "1.4.12"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0010",
+    "method": "tool",
+    "title": "Text clips at 200 % text size in li:nth-of-type(1) > article.card > div.card__body > h2.card_",
+    "description": "With the root font size at 200 %, text (\"Cordless drill 18 V, combi, two batteries\") is cut off at 1280 px.",
+    "criteria": [
+     "A11Y-09",
+     "1.4.4"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0011",
+    "method": "tool",
+    "title": "Overlapping text: #reserve",
+    "description": "At 1280 px, text of #reserve (\"Reserve this tool\") overlaps text of button.day:nth-of-type(9) > span.day__num (\"17\") by 16×14 px.",
+    "criteria": [
+     "FUN-06"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0012",
+    "method": "tool",
+    "title": "Horizontal page overflow on /?items=ladder-3m",
+    "description": "scrollWidth 346 px > clientWidth 320 px at 320 px. Widest offender: #results > li:nth-of-type(1) extends 26 px past the viewport; 9 more.",
+    "criteria": [
+     "FUN-05"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0013",
+    "method": "tool",
+    "title": "Content does not reflow at 320 px on /?items=ladder-3m",
+    "description": "scrollWidth 346 px > clientWidth 320 px at 320 px. Widest offender: #results > li:nth-of-type(1) extends 26 px past the viewport; 9 more.",
+    "criteria": [
+     "A11Y-07",
+     "1.4.10"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0014",
+    "method": "tool",
+    "title": "Clipped text in li:nth-of-type(1) > article.card > div.card__body > h2.card_",
+    "description": "Text (\"Cordless drill 18 V, combi, two batteries\") overflows a box with overflow hidden at 320 px (scroll 327×46 vs client 184×46, axis x).",
+    "criteria": [
+     "FUN-06"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0015",
+    "method": "tool",
+    "title": "Text overlaps under the text-spacing override: #reserve",
+    "description": "At 320 px with the WCAG 1.4.12 spacing override, #reserve (\"Reserve this tool\") overlaps #tool-from (\"Saturday 10 October\").",
+    "criteria": [
+     "A11Y-08",
+     "1.4.12"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0016",
+    "method": "tool",
+    "title": "Text overlaps at 200 % text size: #reserve",
+    "description": "At 320 px with the root font size at 200 %, #reserve (\"Reserve this tool\") overlaps #tool-blurb (\"A brushless combi drill with hammer action, two 4 Ah batteri\").",
+    "criteria": [
+     "A11Y-09",
+     "1.4.4"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0017",
+    "method": "tool",
+    "title": "One word on the last line: \"You can collect at any of these sessions\"",
+    "description": "This text wraps onto 2 lines at 1280 px, and its last line holds only \"deposit.\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/basket.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0018",
+    "method": "tool",
+    "title": "One word on the last line: \"Nothing is paid online. Bring the deposi\"",
+    "description": "This text wraps onto 2 lines at 1280 px, and its last line holds only \"session.\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "default",
+     "errors"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0019",
+    "method": "tool",
+    "title": "Body text closer than 16 px to the viewport edge: \"Cleaning · deposit £30\"",
+    "description": "Text starts 145 px from the left and ends 9.7 px from the right edge of a 320 px viewport; body text needs ≥ 16 px at widths below 768 px.",
+    "criteria": [
+     "LAY-05"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0020",
+    "method": "tool",
+    "title": "One word on the last line: \"Cordless drill 18 V, combi, two batterie\"",
+    "description": "This heading wraps onto 3 lines at 320 px, and its last line holds only \"batteries\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "loan-open",
+     "added"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0021",
+    "method": "tool",
+    "title": "One word on the last line: \"Reservation confirmed\"",
+    "description": "This heading wraps onto 2 lines at 320 px, and its last line holds only \"confirmed\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0022",
+    "method": "tool",
+    "title": "Cramped padding: \"Pressure washer, 130 bar Cleaning · depo\"",
+    "description": "Inside this bordered or filled container (17 px text): horizontal inset 6.4 px < 8.5 px.",
+    "criteria": [
+     "LAY-04"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0023",
+    "method": "tool",
+    "title": "One word on the last line: \"Drills and drivers · deposit £20\"",
+    "description": "This text wraps onto 2 lines at 375 px, and its last line holds only \"£20\". A stranded word weakens the shape of the block.",
+    "criteria": [
+     "TYP-15"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0024",
+    "method": "tool",
+    "title": "Focus order jumps back: \"Electric wet tile saw, 180 mm\" → \"Search tools\"",
+    "description": "After \"Electric wet tile saw, 180 mm\", Tab moves to \"Search tools\", which sits 654 px above it in the same column; the focus order does not follow the visual reading order (clear-inversion heuristic).",
+    "criteria": [
+     "A11Y-03",
+     "2.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "filters-open",
+     "no-results"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0025",
+    "method": "tool",
+    "title": "Focused element hidden behind body > div.actionbar: \"One week\"",
+    "description": "When \"One week\" receives focus (Tab), none of nine sample points on its box reaches it: body > div.actionbar (fixed) paints over it, so the focused element is not visible.",
+    "criteria": [
+     "A11Y-05",
+     "2.4.11"
+    ],
+    "routes": [
+     "/tool.html"
+    ],
+    "states": [
+     "default",
+     "day-chosen",
+     "added"
+    ],
+    "severity": 3
+   }
+  ],
+  "ground_truth": [
+   {
+    "id": "tool-library-D01",
+    "route": "/",
+    "criterion": "CW-Q2",
+    "description": "At 480 px and below the stylesheet reorders the page so the list of tools comes before the search form, and the only way to the 'Available from' date and the category filter is an icon-only button (three lines) that opens a collapsed panel below the list. A member who wants tools for a given Saturday sees ten cards first and no date control, so they are unlikely to notice that filtering by day exists. The document order is form then results, so keyboard focus also runs against the visual order."
+   },
+   {
+    "id": "tool-library-D02",
+    "route": "/",
+    "criterion": "H1",
+    "description": "A search with no matching tool (for example 'sewing machine') leaves the previous results on the page and shows no message: the status region stays empty and the list does not change. The member cannot tell whether the search ran, whether nothing matched, or whether the old list is the answer."
+   },
+   {
+    "id": "tool-library-D03",
+    "route": "/",
+    "criterion": "CW-Q3",
+    "description": "Tool names are kept on one line and cut with an ellipsis inside the card's text column. At phone widths 'Cordless drill 18 V, combi, two batteries' and 'Cordless drill 18 V, combi, one battery' both read 'Cordless drill 18 V, co…' (at 375 px; a character more or less at other widths), so a member cannot tell which card is the right one without opening each; only from about 480 px does the difference show. The full name is only in the link's hidden overflow."
+   },
+   {
+    "id": "tool-library-D04",
+    "route": "/",
+    "criterion": "1.4.3",
+    "description": "In the dark theme the 'Available from' badge is a mid green (#2f7d4a) on the card surface (#1d2622), about 3.1:1 for 16 px bold text, below the 4.5:1 that text of that size needs; the light theme passes. Members who use dark mode on their phones get the availability line as the least legible text on the page."
+   },
+   {
+    "id": "tool-library-D05",
+    "route": "/",
+    "criterion": "FUN-05",
+    "description": "The results grid asks for columns at least 330 px wide; at 320 px the content box is 288 px, so the cards run 42 px past it and the page scrolls sideways by 26 px. The same happens at 200% zoom on a 640 px window."
+   },
+   {
+    "id": "tool-library-D06",
+    "route": "/tool.html",
+    "criterion": "H5",
+    "description": "Every day in the calendar can be chosen, including the days the library is closed; only session days carry the word 'Open' (a green dot on a phone). Choosing a closed day highlights it and the page confirms 'Pick-up day: Monday 12 October'. The reservation is refused three steps later, on the confirm page ('The library is closed on Monday 12 October…'), and the only way back to the calendar is the browser."
+   },
+   {
+    "id": "tool-library-D07",
+    "route": "/tool.html",
+    "criterion": "H1",
+    "description": "Pressing 'Reserve this tool' shows 'Added to your basket' for 1.2 seconds and nothing else changes nearby; the only lasting sign is the basket count in the header, which on a phone is above the fold. A member who looked away, or who reads slowly, does not know whether the press worked and presses again."
+   },
+   {
+    "id": "tool-library-D08",
+    "route": "/tool.html",
+    "criterion": "2.4.11",
+    "description": "The 'Reserve this tool' bar is fixed to the bottom of the window and nothing keeps the page clear of it: the page ends 8 px under the calendar and the footer runs under the bar. A day button that sits in the bottom 72 px of the window counts as visible to the browser, so Tab reaches it without scrolling and the bar covers the focused control: at 768 px wide (900 px tall) the first two rows of days, at 1280 px the third row; on a phone the footer and the desk phone number sit under the bar at the end of the page."
+   },
+   {
+    "id": "tool-library-D09",
+    "route": "/tool.html",
+    "criterion": "2.1.2",
+    "description": "The loan-length list opens as a custom listbox. Inside it, Tab moves to the next option and wraps around, and Escape does nothing, so a keyboard user cannot leave the list except by choosing an option with Enter."
+   },
+   {
+    "id": "tool-library-D10",
+    "route": "/basket.html",
+    "criterion": "H1",
+    "description": "The basket says 'Items are held for you while you finish' but shows no time; the hold is ten minutes from the first item and is kept only in the browser. When it has lapsed, Continue waits 1.2 seconds and then says 'Something went wrong. Try again.', which is not what happened and does not say what to do."
+   },
+   {
+    "id": "tool-library-D11",
+    "route": "/basket.html",
+    "criterion": "2.4.3",
+    "description": "The pick-up sessions are laid out in reverse (row-reverse with reversed wrapping), so the earliest session appears last on screen, at the bottom of the stack on a phone and at the end of the row on a desktop, while coming first in the document. Tab moves from the rightmost card leftwards, against reading order, and a screen reader hears the sessions in an order a sighted member does not see."
+   },
+   {
+    "id": "tool-library-D12",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "'Confirm reservation' stays enabled while the request runs for 1.5 seconds, and nothing visible says that anything is happening. A second press, which is what people do when nothing seems to happen, allocates a second reservation number; the confirmation page then lists two reservations for one visit, and the desk holds the tool twice."
+   },
+   {
+    "id": "tool-library-D13",
+    "route": "/confirm.html",
+    "criterion": "H3",
+    "description": "The 'Change' link beside the pick-up session returns to the basket without the chosen session, so a member who only wanted to look at the summary comes back to a basket with no session selected and has to choose again. Nothing says the choice was dropped."
+   }
+  ],
+  "reply": "I'd hold the launch until a handful of problems are fixed. They are mostly in the logic of the flow rather than the look, and the biggest ones are on phones and in dark mode, which is how most of your members will use it. The flow reached **no assurance level**; you were aiming for L3.\n\nI reviewed the five pages that make up the reservation flow: finding a tool, the tool page, the basket, confirming and the done page. They were checked at phone, tablet and desktop widths, in light and dark mode. The review combined automated accessibility and layout checks with step-by-step runs of the \"reserve a drill for Saturday\" journey on a 375 px phone. Independent reviewers then examined the flow, a separate checker re-ran every candidate problem in the browser, and three more reviewers rated how serious each one is without seeing who found it.\n\nEverything here is expert and automated review. No real members were watched, so read \"members may…\" as a prediction, not an observation.\n\n## Fix these first\n\n1. **\"Reserve this tool\" doesn't actually reserve anything.**\n   - It only adds the tool to a basket, and the only sign is an \"Added to your basket\" message that disappears in about 1.3 seconds.\n   - On a phone the \"Basket (1)\" link has already scrolled out of view.\n   - A member may close the page thinking the drill is booked and turn up on Saturday to find nothing set aside. All three raters gave this the top severity.\n   - Fix: rename the button \"Add to basket\", or keep a message on screen saying \"1 tool held — choose a session to finish\", with a link.\n2. **The basket gets stuck if a member pauses for more than 10 minutes.**\n   - The basket silently holds tools for 10 minutes. After that, Continue shows \"Something went wrong. Try again.\" on every attempt, and there's no way out.\n   - This was reproduced after about 10.5 minutes, which is very likely for someone booking in the evening between other things.\n   - Fix: show how long the hold lasts, warn before it ends, and renew it rather than failing.\n3. **The pick-up date is asked for twice, and the answers can contradict each other.**\n   - Members pick a day on the tool page, then pick a session again in the basket. Nothing is pre-selected, and the sessions are listed latest first, so the first Saturday shown isn't this Saturday.\n   - The confirm page can end up showing \"pick up Saturday 17 October\" next to \"session Wednesday 21 October\".\n   - Closed days and dates before a tool is back are accepted. Closed days are only rejected after Confirm.\n   - Fix: offer only open days on or after the tool's return date, ask for the date once, and list sessions soonest first.\n4. **Confirm can be pressed twice.**\n   - Continue and Confirm show no response for 1.2–1.5 s, and pressing Confirm a second time produced two reservation numbers for one booking (FT-4471 and FT-4472).\n   - Fix: disable the button and show progress while it works.\n5. **Dark mode: the green \"Available from…\" label is too faint to read comfortably.**\n   - Its contrast is 3.07:1 against the 4.5:1 required, and its pill background disappears because it is the same colour as the card.\n   - Fix: change two dark-mode colour values in `styles.css:60–61`. This is the cheapest fix on the list.\n6. **The sticky \"Reserve this tool\" bar on phones hides what sits under it.**\n   - It covers keyboard focus on calendar days and on the loan-length button, and covers the open loan-length options at 375 px.\n   - Separately, that loan-length list doesn't close with Escape or a tap outside, and Tab stays inside it.\n7. **The tool list on phones.**\n   - Tool names are cut to one line, so the one-battery and two-battery drills look identical.\n   - At 320 px the list scrolls sideways by 26 px.\n   - Search sits below all ten tools, and a search with no matches just shows the whole list with no message.\n\n**Also worth fixing before launch:**\n- Phone numbers starting \"+44\" and lowercase \"ft-\" membership numbers are rejected.\n- \"Change\" on the confirm page drops the chosen session and clears the details already typed.\n- After confirming, the basket still shows the tool as \"Basket (1)\".\n- The three-tools-per-member limit isn't enforced.\n\n## Keep these\n\n- Error messages on the basket and confirm pages are very good. They're specific, link to the field, take keyboard focus and keep what was typed.\n- The done page clearly says what to bring, where to go and what to do if plans change.\n- The confirm page says nothing is paid online.\n- Open days are marked with the word \"Open\", not just colour.\n- Apart from that green label, dark mode holds up: error and selected states stay clear.\n\n## Look and feel\n\nAll three design reviewers independently found the site plain and generic. The main reasons are the same wrench placeholder on every tool, unstyled browser date pickers, and no identity beyond the library's name. That doesn't block reservations, but it's the next thing to tackle once the problems above are fixed.\n\n## Still needs a person\n\n- A pass with a screen reader (VoiceOver or TalkBack) to check whether the \"Added to your basket\" message is announced.\n- Ten WCAG checks that can't be automated, such as page titles.\n- A short test with about five members on their phones in the evening, to confirm how serious problem 1 really is.\n\nI couldn't ask you questions during this run, so I made these assumptions:\n- \"Reservation flow\" means those five pages.\n- Your goal is L3, the level the project setup already specified (owner-confirmed, before real-member testing).\n- The bare done page showing a made-up reservation number when no booking exists is out of scope. Tell me if it should be in scope, because a member who bookmarks or reloads that page would see it.\n\nThe test reservations I made exist only in the browser session; the site sends nothing to a server.\n\nIf you'd like, I can start fixing in the order above, one problem at a time with a re-check after each. I'd begin with the dark-mode colours and the double-submit, which are quick, then problem 1.\n\nFiles are in `.ui-evaluator/runs/20261008-005630-audit-standard/`:\n- report.md\n- report.html\n- debrief.md\n- agree-disagree.csv\n\nI'd hold the launch until a handful of problems are fixed. They're mostly in the logic of the flow rather than the look, and the worst ones hit exactly your situation: phones and dark mode. The flow reached **no assurance level**; you were aiming for L3.\n\nI reviewed the five reservation pages (find a tool, tool page, basket, confirm, done) at phone, tablet and desktop widths, in light and dark mode. That covered automated accessibility and layout checks, a step-by-step run of \"reserve a drill for Saturday\" on a 375 px phone, independent reviewers, a re-check of every problem in the browser, and three blind severity ratings. No real members were watched, so read \"members may…\" below as a prediction, not an observation.\n\n## Fix these first\n1. **\"Reserve this tool\" doesn't reserve anything.** It only adds the tool to a basket. The only sign is an \"Added to your basket\" message that disappears in about 1.3 seconds, and on a phone the \"Basket (1)\" link has already scrolled off screen. A member may leave thinking the drill is booked and find nothing set aside on Saturday. All three raters gave this the top severity.\n2. **The basket gets stuck after 10 minutes.** The basket silently holds tools for 10 minutes. After that, Continue shows \"Something went wrong. Try again.\" on every attempt, with no way out. This was reproduced, and it's likely for someone booking in the evening between other things.\n3. **The pick-up date is asked twice, and the answers can contradict each other.** Members pick a day on the tool page, then a session in the basket, where nothing is pre-selected and sessions run latest first. The confirm page can then show \"Saturday 17\" next to \"Wednesday 21\". Closed days and dates before a tool is back are accepted.\n4. **Confirm can be pressed twice.** The button gives no response for 1.2–1.5 s, and a second press produced two reservation numbers (FT-4471 and FT-4472) for one booking.\n5. **Dark mode: the green \"Available from…\" label is too faint.** Its contrast is 3.07:1 against the 4.5:1 required. The fix is two colour values at `styles.css:60–61`, the cheapest item on this list.\n6. **The sticky \"Reserve this tool\" bar on phones covers what's under it**, including keyboard focus on calendar days and the loan-length options. That loan-length list also doesn't close with Escape or a tap outside.\n7. **The tool list on phones:**\n   - Tool names are cut to one line, so the one-battery and two-battery drills look identical.\n   - At 320 px the page scrolls sideways.\n   - Search sits below all ten tools.\n   - A search with no matches shows the whole list and no message.\n\nAlso worth fixing before launch:\n- Phone numbers starting \"+44\" are rejected.\n- \"Change\" on the confirm page clears the chosen session and the details already typed.\n- After confirming, the basket still shows \"Basket (1)\".\n- The three-tool limit isn't enforced.\n\n## Keep these\n- Error messages on the basket and confirm pages are very good: specific, linked to the field, and they keep what was typed.\n- The done page clearly says what to bring and where to go.\n- Open days are marked with the word \"Open\", not just colour.\n- Apart from the green label, dark mode holds up.\n\n## Look and feel\nAll three design reviewers independently found the site plain and generic: the same wrench placeholder on every tool, unstyled browser date pickers, and no identity beyond the library's name. That doesn't block reservations, so it can wait until the problems above are fixed.\n\n## Still needs a person\n- A screen-reader pass (VoiceOver or TalkBack) to check the \"Added to your basket\" message is announced.\n- Ten accessibility checks that can't be automated, such as page titles.\n- A short test with about five members on their phones in the evening.\n\nI couldn't ask you questions during this run, so I assumed:\n- \"Reservation flow\" means those five pages.\n- L3 is the target, as the existing project setup says.\n- Bare `/done.html` was out of scope. It shows a made-up reservation number when no booking exists, so tell me if it should be reviewed too.\n\nThe test bookings exist only in the browser; the site sends nothing to a server.\n\nIf you'd like, I can start fixing in this order, one problem at a time with a re-check after each. I'd begin with the dark-mode colours and the double-submit, which are quick, then problem 1.\n\nThe final reply is also saved to `.eval/reply.md`. Files are in `.ui-evaluator/runs/20261008-005630-audit-standard/`:\n- report.md\n- report.html\n- debrief.md\n- agree-disagree.csv"
+ }
+}

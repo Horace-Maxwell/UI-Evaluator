@@ -1,0 +1,144 @@
+{
+  "schema": "verifier",
+  "run": "20261007-234951-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "a7836bec8c107cb9",
+  "iteration": 1,
+  "_notes": "Did not open any app source; the code refs (app.js, index.html, tool.html) in the candidates were not followed. curl of the served HTML was refused by the permission system, so attributes that only show up in the DOM could not be checked. Probe dirs are under the session scratchpad. The dismissal ledger is empty. Iteration 1, so no ceiling flags.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0140",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. On the tool page every one of the 21 days is an enabled button. Clicking Monday 12 October (no 'open' label) and then Reserve gives the status 'Added to your basket' with no warning. The basket then lists 'Pick up Monday 12 October · one week · deposit £20', still with no warning. The closed day is caught only after the confirm submit (see F-0141).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Wording: 'Reserve accepts a closed day' is accurate for the tool and basket steps. The overall flow does block it at confirm. The shared impact text says members 'may complete a reservation for a tool on a day it is still out on loan'. That belongs to F-0142, not to the closed-day case. This candidate is closely related to F-0141 (same root, prevention vs recovery). The lead may want to merge them."
+    },
+    {
+      "candidate_id": "F-0141",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. On confirm.html with day=2026-10-12, I filled in all three details and pressed Confirm reservation. After a delay of about 1-3 s an alert 'There is a problem' appears. It contains the plain list item 'The library is closed on Monday 12 October, so this pick-up day is not possible. Choose another day.' with no link. The only nearby link is 'Change' beside the pick-up session. It goes to basket.html, which has no pick-up day control (checked in p3).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "I reached the confirm page by URL (day=2026-10-12) because the basket Continue button did not navigate within 800 ms in my probe (p4). Its own delay is likely the cause, not a defect. Recovery is the primary concern here, so H9 (help users recognise, diagnose and recover from errors) fits better than H5 as the primary criterion. The location's route uses day=2026-10-17, which does not produce this error; the error state needs a closed day."
+    },
+    {
+      "candidate_id": "F-0142",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The pressure washer page says 'Available from Saturday 17 October'. Choosing Saturday 10 October and pressing Reserve shows 'Added to your basket'. Then confirm.html?items=pressure-washer&day=2026-10-10&slot=sat-2026-10-10 with details filled in goes to 'Reservation confirmed', FT-4471, pick-up Saturday 10 October, with no warning at any step.",
+      "evidence": [
+        "<tmp>"
+      ],
+      "note": "Scope caveat: the reproduction uses tool id pressure-washer. The declared tool route is id=drill-18v-two, whose available-from date (Sat 10) is the first open day, so this cannot show on the declared route. I confirmed it because the page template and flow are in scope; the owner may want to widen the route list. The candidate's locations and evidence are copied from F-0140 (Monday 12 selector, closed-day snippet) and do not anchor this claim. Replace them with the p10 probe."
+    },
+    {
+      "candidate_id": "F-0054",
+      "verdict": "needs_human",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "The claim concerns inline style attributes in index.html and tool.html, and it states there is no visible effect. The selectors #opening and #specs exist (Opening times region and Details list in the ARIA snapshots), but rendered output cannot distinguish an inline margin from a token-based one. Probe gives no attribute inspection, curl of the served HTML was refused, and I may not read source.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Someone with DOM inspection can settle this in seconds by checking the style attribute on #opening and #specs. The 1280 capture shows that the Details list rows from 'Chuck' down sit at a different label-column indent from the rows above. That fits #specs being a separately styled list, but it does not prove the inline margin."
+    },
+    {
+      "candidate_id": "F-0112",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "The evidence shows it. On find, tool, basket, confirm and done (captures and my probes) the masthead is the bold text 'Fernhill Tool Library' beside a small line wrench icon. Card imagery is the same wrench glyph on a pale green tile for all ten tools. No photography, illustration or drawn device appears. Absence checked by me on all five surfaces at 1280.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Existence is confirmed. Whether it matters is for rating. The two evidence entries are the same file; the done.html location has no screenshot attached (see p10/final.png). F-0128 describes the same mechanism and should be merged with this one."
+    },
+    {
+      "candidate_id": "F-0143",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "The capture shows it and my probe reproduced it. At 1280 the Pick-up session cards appear visually as Wed 28 (full width), then Sat 24, Wed 21, Sat 17, Wed 14 and Sat 10. Visual order is latest first.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png",
+        "<tmp>"
+      ],
+      "note": "The ARIA/DOM order is chronological (Sat 10 first) while the visual order is reversed. Screen reader and keyboard order therefore disagree with visual order, so WCAG 1.3.2 / 2.4.3 may be a better or additional criterion than DES-hierarchy. The impact text is shared with F-0144 and mixes both problems."
+    },
+    {
+      "candidate_id": "F-0144",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "The capture shows it and my probe reproduced it. At 1280 the first session card (Wed 28) spans the full width, and the other five share one row with labels wrapping to three lines (e.g. 'Saturday 24 / October, 10:00 to / 13:00').",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png",
+        "<tmp>"
+      ],
+      "note": "The location route '/basket.html' has no query string. The evidence comes from the declared route basket.html?items=drill-18v-two&day=2026-10-17."
+    },
+    {
+      "candidate_id": "F-0145",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. Both drill cards render the title as 'Cordless drill 18 V, co...', so 'two batteries' and 'one battery' cannot be told apart visually. Other titles are truncated too (ladder, hedge trimmer, pressure washer, tile cutter, sander, jigsaw, wet tile saw).",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png",
+        "<tmp>"
+      ],
+      "note": "Accessible names are complete (ARIA shows the full link text), so the truncation is visual only. The shared impact text also covers F-0146; trim it to this problem."
+    },
+    {
+      "candidate_id": "F-0146",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. The 'Search tools' field, Search button and Filters button come after all ten tool cards, near the bottom of the page (about y≈2100 of 2593 px). At 1280 search is above the cards.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png",
+        "<tmp>"
+      ],
+      "note": "The location bboxes are copied from F-0145/F-0147 (card title and nav) and do not point at the search field. Re-anchor to the Search region. The DOM order also puts Search after Tools."
+    },
+    {
+      "candidate_id": "F-0147",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. The nav items wrap to two lines: 'Find a / tool', 'Basket / (1)', 'Opening / times'.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png",
+        "<tmp>"
+      ],
+      "note": "The impact text (two batteries vs one; finding search) does not describe this problem. Rewrite it."
+    },
+    {
+      "candidate_id": "F-0128",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "The evidence shows it, and it is the same observation as F-0112. The identity elements are the bold wordmark with a small wrench icon and the green. There is no imagery of the room or items, and no drawn device, on any of the five surfaces I viewed.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png",
+        "<tmp>"
+      ],
+      "note": "Duplicate of F-0112 (same element, same mechanism); merge. Wording: 'bold wordmark set as body-weight text' contradicts itself. Say 'body-size bold text'. The evidence ref 'items-ladder-3m/default/1280-light.png' is relative, but the location crop path resolves. The '16 px' wrench size is not verifiable from the capture."
+    }
+  ]
+}

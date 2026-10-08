@@ -1,0 +1,137 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The final reply is ordered \"Fix first: these break bookings\" (1-4), \"Fix next: phone, dark mode and larger text\" (5-10), then \"Then: smaller problems\", and its notes say \"I tested in Chromium with phone emulation, not on real iOS or Android devices, and I didn't use VoiceOver or TalkBack. Before launch, do a quick pass with both screen readers on problems 5, 8 and 9.\""
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Basket hold expires without warning; Continue fails with 'Try again' forever",
+      "maps_to": "tool-library-D10",
+      "reason": "Same problem as D10: the basket says items are held but shows no time, the ten-minute hold lapses, and Continue then answers 'Something went wrong. Try again.', which neither says what happened nor what to do. The review's extra detail (retrying never works because the timer is not reset; the Change route hits the same dead end) is the same underlying defect."
+    },
+    {
+      "item": "R2",
+      "title": "Calendar accepts impossible pick-up days; closed-day refusal only at Confirm with no way back",
+      "maps_to": "tool-library-D06",
+      "reason": "Same as D06: every calendar day can be chosen including days the library is closed, the refusal only comes on the confirm page after the details are typed, and the 'Choose another day' message gives no route back. The review states it slightly more broadly (also days before the tool's 'available from' date); its fix, offering only open sessions on or after availability, would fix the defect."
+    },
+    {
+      "item": "R3",
+      "title": "Tool-page day and basket session can disagree; confirm summary shows two pick-up dates",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect (D06 is about closed days, D13 about the session dropped on Change). The review quotes the confirm page showing 'pick up Saturday 17 October' beside 'Pick-up session: Wednesday 21 October'; a member who trusts the summary can turn up on the wrong day, so a self-contradicting confirmation is a genuine problem for these members."
+    },
+    {
+      "item": "R4",
+      "title": "Two cordless drills truncated to the same name on phones",
+      "maps_to": "tool-library-D03",
+      "reason": "Exactly D03: tool names are kept on one line with an ellipsis, so at 375 px both drills read 'Cordless drill 18 V, co…' and the member cannot tell which card is the right one without opening each."
+    },
+    {
+      "item": "R5",
+      "title": "Double-tapping Confirm creates two reservations",
+      "maps_to": "tool-library-D12",
+      "reason": "Exactly D12: a second press of 'Confirm reservation' while the 1.5 s request runs allocates a second reservation number, and the done page lists both (FT-4471 and FT-4472)."
+    },
+    {
+      "item": "R6",
+      "title": "Basket count and hold not cleared after the reservation completes",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The review observed the done page still showing 'Basket (1)' and the hold persisting until 'Reserve another tool' is tapped. Members cannot tell from the header whether the booking went through, and the stale hold sends their next booking into the hold-lapse dead end, so it is a genuine status and consistency problem."
+    },
+    {
+      "item": "R7",
+      "title": "On phones the search box sits below all tool cards; date filter behind an unlabelled icon",
+      "maps_to": "tool-library-D01",
+      "reason": "Same as D01: at phone widths the stylesheet puts the list before the search form, so the results change off-screen above the member, and the date/category filter is reachable only through an icon-only button that members are unlikely to notice."
+    },
+    {
+      "item": "R8",
+      "title": "Search with no matches leaves the old list and shows no message",
+      "maps_to": "tool-library-D02",
+      "reason": "Exactly D02: a search with no matching tool ('mower' in the review, 'sewing machine' in the seed) leaves the previous results in place with an empty status region, so the member cannot tell whether the search ran or nothing matched."
+    },
+    {
+      "item": "R9",
+      "title": "Dark-mode 'Available from' badge contrast 3.07:1",
+      "maps_to": "tool-library-D04",
+      "reason": "Exactly D04: in the dark theme the badge's green (#2f7d4a) on the card surface is about 3.1:1 for 16 px text, below the 4.5:1 needed. The missing tint background the review adds is part of the same badge-legibility problem."
+    },
+    {
+      "item": "R10",
+      "title": "Sideways scrolling at 320 px and at 200% text from the 330 px minimum card width",
+      "maps_to": "tool-library-D05",
+      "reason": "Same as D05: the results grid asks for 330 px columns, so at 320 px the find page is wider than the viewport and scrolls sideways, and the same happens at 200% zoom/text. The review's minmax(min(100%, 330px), 1fr) is the fix for that defect; the calendar overflow it adds is a further instance of the same reflow failure."
+    },
+    {
+      "item": "R11",
+      "title": "Pick-up sessions laid out in reverse; keyboard order runs opposite to the visual order",
+      "maps_to": "tool-library-D11",
+      "reason": "Exactly D11: row-reverse with reversed wrapping puts the latest session first on screen while the document order (and so Tab and screen-reader order) starts from the earliest, so focus moves against reading order."
+    },
+    {
+      "item": "R12",
+      "title": "Coming back via 'Change' loses the chosen session",
+      "maps_to": "tool-library-D13",
+      "reason": "Exactly D13: the 'Change' link beside the pick-up session returns to the basket without the chosen session, so the member has to choose again. The review's fix (pass the slot in the Change link) would fix it."
+    },
+    {
+      "item": "R13",
+      "title": "Loan-length listbox traps the keyboard (Tab cycles, Escape does nothing)",
+      "maps_to": "tool-library-D09",
+      "reason": "Exactly D09: inside the custom loan-length listbox Tab moves between options and wraps around, and Escape does nothing, so a keyboard user cannot leave it except by choosing an option."
+    },
+    {
+      "item": "R14",
+      "title": "'Added to your basket' vanishes after about 1.3 s with no next step",
+      "maps_to": "tool-library-D07",
+      "reason": "Same as D07: the only confirmation of 'Reserve this tool' is a message that disappears after roughly a second with nothing lasting nearby, so a member who looked away does not know whether the press worked; the review adds that it also fails to point to the basket step."
+    },
+    {
+      "item": "R15",
+      "title": "Forms reject lowercase membership number and +44 phone format",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. Rejecting 'ft-01234' and '+44 7700 900123' turns ordinary input (phone keyboards change case; +44 is the normal international form of a UK number) into validation errors the member must work out under a ten-minute hold, an error-prevention problem the review shows concretely."
+    },
+    {
+      "item": "R16",
+      "title": "Continue and Confirm show no visible busy state (only aria-busy)",
+      "maps_to": "tool-library-D12",
+      "reason": "The same underlying problem as D12, which says that while 'Confirm reservation' runs for 1.5 s nothing visible says anything is happening, and that this is what produces the second press. The review restates that cause here with Continue's 1.2 s wait added; giving both buttons the visible working state it asks for addresses D12."
+    },
+    {
+      "item": "R17",
+      "title": "Fixed action bar on the tool page covers the desk phone number in the footer",
+      "maps_to": "tool-library-D08",
+      "reason": "A narrower statement of D08, which says nothing keeps the page clear of the fixed 'Reserve this tool' bar and that on a phone the footer and desk phone number sit under it. The review's fix (bottom padding at least the bar's 72 px) is the clearance that defect lacks, though the review did not notice the covered focused day buttons."
+    },
+    {
+      "item": "R18",
+      "title": "Done page: hidden #c-tool makes screen readers announce the tool name twice",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. A duplicated announcement on the confirmation page is a small but genuine accessibility problem: it wastes screen-reader users' time and, on a page where the number of reservations matters, can suggest the tool was booked twice."
+    },
+    {
+      "item": "R19",
+      "title": "Done page omits the return date and loan length",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The member chose a loan length but the confirmation never says when the tool is due back, the one fact they most need to keep, so they must remember it or ring the desk."
+    },
+    {
+      "item": "R20",
+      "title": "'Up to three tools' limit stated but not enforced",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded. The flow tells members a limit and then silently lets them exceed it, so an over-limit reservation is discovered at the desk rather than prevented in the basket; a minor but genuine error-prevention gap."
+    },
+    {
+      "item": "R21",
+      "title": "Going back via 'Change' from confirm loses the typed details",
+      "maps_to": "real-unseeded",
+      "reason": "Not seeded: D13 covers the dropped session, not the confirm form's name, membership number and phone. Retyping those on a phone, with a ten-minute hold running, is a real cost and a consistency problem distinct from D13 (fixing either would not fix the other)."
+    }
+  ]
+}

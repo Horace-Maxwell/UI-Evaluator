@@ -1,0 +1,298 @@
+{
+  "fixture": "tool-library",
+  "clean": false,
+  "provenance": "Seeded by construction on 2026-10-07 as a harder companion to journey-app: every problem shows in rendering, interaction or time rather than in the markup alone, and PRODUCT.md states facts about the library but no rule that a seeded problem breaks. Four defects are deterministic and need the browser (dark-theme contrast, overflow at 320 px, a sticky bar over focused controls and a keyboard trap are caught by uie audit); nine are judged. Every page otherwise meets the deterministic floor in both themes, so deterministic detections that match no defect here are false positives. EVALUATION-PLAN §3 asks for two independent labellers on analytical defects; that review has not happened yet, so the cw stories and severity bands are the seeder's analytical judgement.",
+  "_design": "One defect per criterion per route. Where a deterministic check could also report a judged defect (CSS order against the DOM, an ellipsis as clipped text or as text that runs to the card's edge), the check's criterion is listed under also_criteria so that detection matches the defect instead of counting as a false positive.",
+  "defects": [
+    {
+      "id": "tool-library-D01",
+      "criterion": "CW-Q2",
+      "also_criteria": [
+        "H6",
+        "2.4.3",
+        "A11Y-03"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "default",
+      "selector": "#filters-toggle",
+      "file": "styles.css",
+      "description": "At 480 px and below the stylesheet reorders the page so the list of tools comes before the search form, and the only way to the 'Available from' date and the category filter is an icon-only button (three lines) that opens a collapsed panel below the list. A member who wants tools for a given Saturday sees ten cards first and no date control, so they are unlikely to notice that filtering by day exists. The document order is form then results, so keyboard focus also runs against the visual order.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 2,
+        "question": "CW-Q2",
+        "failure_story": "On the phone the member lands on a list of tools with no date control in sight; the search box and an unlabelled icon sit below the list. They scroll past the cards looking for 'Saturday', then search by name instead and never filter by day."
+      }
+    },
+    {
+      "id": "tool-library-D02",
+      "criterion": "H1",
+      "also_criteria": [
+        "A11Y-15",
+        "4.1.3"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "no-results",
+      "selector": "#results-status",
+      "file": "app.js",
+      "description": "A search with no matching tool (for example 'sewing machine') leaves the previous results on the page and shows no message: the status region stays empty and the list does not change. The member cannot tell whether the search ran, whether nothing matched, or whether the old list is the answer.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D03",
+      "criterion": "CW-Q3",
+      "also_criteria": [
+        "H6",
+        "FUN-06",
+        "A11Y-08",
+        "A11Y-09",
+        "LAY-04"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "default",
+      "selector": ".card__name",
+      "file": "styles.css",
+      "description": "Tool names are kept on one line and cut with an ellipsis inside the card's text column. At phone widths 'Cordless drill 18 V, combi, two batteries' and 'Cordless drill 18 V, combi, one battery' both read 'Cordless drill 18 V, co…' (at 375 px; a character more or less at other widths), so a member cannot tell which card is the right one without opening each; only from about 480 px does the difference show. The full name is only in the link's hidden overflow.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 3,
+        "question": "CW-Q3",
+        "failure_story": "Two cards read 'Cordless drill 18 V, co…' and nothing more. The member opens the first, finds one battery, goes back and opens the second."
+      }
+    },
+    {
+      "id": "tool-library-D04",
+      "criterion": "1.4.3",
+      "also_criteria": [
+        "A11Y-11"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": ".badge--ok",
+      "file": "styles.css",
+      "description": "In the dark theme the 'Available from' badge is a mid green (#2f7d4a) on the card surface (#1d2622), about 3.1:1 for 16 px bold text, below the 4.5:1 that text of that size needs; the light theme passes. Members who use dark mode on their phones get the availability line as the least legible text on the page.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "contrast",
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D05",
+      "criterion": "FUN-05",
+      "also_criteria": [
+        "1.4.10",
+        "A11Y-07",
+        "LAY-05"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": ".results",
+      "file": "styles.css",
+      "description": "The results grid asks for columns at least 330 px wide; at 320 px the content box is 288 px, so the cards run 42 px past it and the page scrolls sideways by 26 px. The same happens at 200% zoom on a 640 px window.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "layout",
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D06",
+      "criterion": "H5",
+      "also_criteria": [
+        "H9",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "day-chosen",
+      "selector": ".day[aria-pressed=\"true\"]",
+      "file": "app.js",
+      "description": "Every day in the calendar can be chosen, including the days the library is closed; only session days carry the word 'Open' (a green dot on a phone). Choosing a closed day highlights it and the page confirms 'Pick-up day: Monday 12 October'. The reservation is refused three steps later, on the confirm page ('The library is closed on Monday 12 October…'), and the only way back to the calendar is the browser.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 5,
+        "question": "CW-Q4",
+        "failure_story": "The member taps the Monday because that is when the shelves go up; the day highlights and the page echoes it. Nothing says Monday is not a session until the last page refuses the reservation."
+      }
+    },
+    {
+      "id": "tool-library-D07",
+      "criterion": "H1",
+      "also_criteria": [
+        "2.2.1",
+        "A11Y-15"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "added",
+      "selector": "#toast",
+      "file": "app.js",
+      "description": "Pressing 'Reserve this tool' shows 'Added to your basket' for 1.2 seconds and nothing else changes nearby; the only lasting sign is the basket count in the header, which on a phone is above the fold. A member who looked away, or who reads slowly, does not know whether the press worked and presses again.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D08",
+      "criterion": "2.4.11",
+      "also_criteria": [
+        "A11Y-05",
+        "CMP-06",
+        "FUN-06",
+        "A11Y-08",
+        "A11Y-09"
+      ],
+      "kind": "deterministic",
+      "route": "/tool.html",
+      "state": "default",
+      "selector": ".actionbar",
+      "file": "styles.css",
+      "description": "The 'Reserve this tool' bar is fixed to the bottom of the window and nothing keeps the page clear of it: the page ends 8 px under the calendar and the footer runs under the bar. A day button that sits in the bottom 72 px of the window counts as visible to the browser, so Tab reaches it without scrolling and the bar covers the focused control: at 768 px wide (900 px tall) the first two rows of days, at 1280 px the third row; on a phone the footer and the desk phone number sit under the bar at the end of the page.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "keyboard",
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D09",
+      "criterion": "2.1.2",
+      "also_criteria": [
+        "A11Y-03"
+      ],
+      "kind": "deterministic",
+      "route": "/tool.html",
+      "state": "loan-open",
+      "selector": "#loan-list",
+      "file": "app.js",
+      "description": "The loan-length list opens as a custom listbox. Inside it, Tab moves to the next option and wraps around, and Escape does nothing, so a keyboard user cannot leave the list except by choosing an option with Enter.",
+      "expected_severity_band": [
+        3,
+        4
+      ],
+      "expected_check": "keyboard",
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D10",
+      "criterion": "H1",
+      "also_criteria": [
+        "CW-Q4",
+        "H9"
+      ],
+      "kind": "judged",
+      "route": "/basket.html",
+      "state": "default",
+      "selector": ".intro",
+      "file": "app.js",
+      "description": "The basket says 'Items are held for you while you finish' but shows no time; the hold is ten minutes from the first item and is kept only in the browser. When it has lapsed, Continue waits 1.2 seconds and then says 'Something went wrong. Try again.', which is not what happened and does not say what to do.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 9,
+        "question": "CW-Q4",
+        "failure_story": "The member comes back to the basket after a phone call and presses Continue; after a pause the page says something went wrong. Trying again fails the same way, with no hint that the hold has lapsed."
+      }
+    },
+    {
+      "id": "tool-library-D11",
+      "criterion": "2.4.3",
+      "also_criteria": [
+        "1.3.2",
+        "A11Y-03"
+      ],
+      "kind": "judged",
+      "route": "/basket.html",
+      "state": "default",
+      "selector": "#sessions",
+      "file": "styles.css",
+      "description": "The pick-up sessions are laid out in reverse (row-reverse with reversed wrapping), so the earliest session appears last on screen, at the bottom of the stack on a phone and at the end of the row on a desktop, while coming first in the document. Tab moves from the rightmost card leftwards, against reading order, and a screen reader hears the sessions in an order a sighted member does not see.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D12",
+      "criterion": "H5",
+      "also_criteria": [
+        "H1",
+        "3.3.4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": "#confirm",
+      "file": "app.js",
+      "description": "'Confirm reservation' stays enabled while the request runs for 1.5 seconds, and nothing visible says that anything is happening. A second press, which is what people do when nothing seems to happen, allocates a second reservation number; the confirmation page then lists two reservations for one visit, and the desk holds the tool twice.",
+      "expected_severity_band": [
+        3,
+        4
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D13",
+      "criterion": "H3",
+      "also_criteria": [
+        "H1",
+        "H6"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": ".summary a[href=\"basket.html\"]",
+      "file": "confirm.html",
+      "description": "The 'Change' link beside the pick-up session returns to the basket without the chosen session, so a member who only wanted to look at the summary comes back to a basket with no session selected and has to choose again. Nothing says the choice was dropped.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    }
+  ]
+}

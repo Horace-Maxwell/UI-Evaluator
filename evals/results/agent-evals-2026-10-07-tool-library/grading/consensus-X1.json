@@ -1,0 +1,237 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "Both graders: passed. The final reply is ordered 'Fix first: these break bookings' (1-4), 'Fix next: phone, dark mode and larger text' (5-10), then 'Then: smaller problems', and its 'Notes and assumptions' names what it could not check: 'I tested in Chromium with phone emulation, not on real iOS or Android devices, and I didn't use VoiceOver or TalkBack. Before launch, do a quick pass with both screen readers on problems 5, 8 and 9.'"
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Basket hold runs out without warning; Continue then says 'Something went wrong. Try again.' and retrying (and the Change route) never recovers",
+      "maps_to": "tool-library-D10",
+      "reason": "Both graders: D10. The review says the hold 'starts when the first tool is added and lasts 10 minutes. The page never says so', and that once it lapses 'Continue shows only \"Something went wrong. Try again.\"', which neither says what happened nor what to do. The never-reset timer and the 'Change' route dead end are consequences of the same lapsed-hold handling."
+    },
+    {
+      "item": "R2",
+      "title": "Calendar accepts impossible pick-up days (closed days, days before the tool is available); refused only at Confirm with no link back",
+      "maps_to": "tool-library-D06",
+      "reason": "Both graders: D06. 'The calendar lets you choose any day, including days the library is closed', the closed-day message 'only shows up after the member has typed in all their details and pressed Confirm', and it 'gives no link to where they can do that'. The days-before-availability point is a broader statement of the same unconstrained calendar; the review's fix (offer only open sessions on or after the available-from date) would fix D06."
+    },
+    {
+      "item": "R3",
+      "title": "Tool-page pick-up day and basket session can disagree, so the confirm page shows two different pick-up dates",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. No seeded defect covers the day-versus-session contradiction (D06 is the calendar, D13 the dropped session). The review quotes the confirm page showing '...pick up Saturday 17 October' beside 'Pick-up session: Wednesday 21 October'; a member who trusts the summary can turn up on the wrong day and the desk can hold the tool for the wrong day."
+    },
+    {
+      "item": "R4",
+      "title": "Two cordless drills truncated to the same name in the list on a phone",
+      "maps_to": "tool-library-D03",
+      "reason": "Both graders: D03. 'Tool names are cut to one line, so both show as \"Cordless drill 18 V, co...\"' at 375 px, and members 'can't see \"two batteries\" vs \"one battery\"'; letting names wrap fixes D03."
+    },
+    {
+      "item": "R5",
+      "title": "Double-tapping Confirm creates two reservations (FT-4471 and FT-4472)",
+      "maps_to": "tool-library-D12",
+      "reason": "Both graders: D12. 'I tapped twice and the done page said \"Reservation numbers FT-4471 and FT-4472\"': Confirm stays enabled while the request runs and a second press allocates a second reservation number."
+    },
+    {
+      "item": "R6",
+      "title": "Basket count and hold are not cleared after the reservation completes; header still shows 'Basket (1)'",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Not D12 (the duplicate reservation) or D10 (the lapsed-hold message): this is stale state after success. The review observed 'The header still shows \"Basket (1)\"' on the done page, 'which makes members wonder whether the booking went through', and the old hold stays so 'their next reservation runs straight into problem 1'."
+    },
+    {
+      "item": "R7",
+      "title": "On phones the search box sits below all ten tool cards, and the date filter is hidden behind an unlabelled icon",
+      "maps_to": "tool-library-D01",
+      "reason": "Both graders: D01 (A as one item, B as two: its R7 and R9; merged here, see settled). 'On small screens the CSS moves the search box below all ten tool cards', so after a search 'the list changes off-screen above them and they see nothing happen', and 'The date filter is hidden behind an unlabelled icon'. That is D01 exactly: the page reordered so the list comes before the search form, and the date and category filter reachable only through an icon-only button, one discoverability failure. The review's fix ('Put search first' and 'give the filter button a visible \"Filters\" label') fixes D01."
+    },
+    {
+      "item": "R8",
+      "title": "A search with no matches leaves the old list in place and shows no message",
+      "maps_to": "tool-library-D02",
+      "reason": "Both graders: D02. 'A search with no matches (I tried \"mower\") leaves the old list in place with no message, even for screen readers': the status region stays empty and the member cannot tell whether the search ran or nothing matched."
+    },
+    {
+      "item": "R9",
+      "title": "Dark-mode 'Available from' badge is hard to read (3.07:1, colour differs from DESIGN.md, no visible background)",
+      "maps_to": "tool-library-D04",
+      "reason": "Both graders: D04. 'The text contrast is 3.07:1; it needs 4.5:1 at 16 px', naming the same colour (#2f7d4a) and element as the seed. The DESIGN.md mismatch and the tint that 'is the same colour as the card' are parts of the same badge-legibility problem."
+    },
+    {
+      "item": "R10",
+      "title": "Larger text and zoom cause sideways scrolling (330 px minimum card width; 7-column calendar)",
+      "maps_to": "tool-library-D05",
+      "reason": "Both graders: D05. 'At 320 px the find page is 346 px wide' and at 200% text 'the find and tool pages are 414 px wide on a 375 px screen', caused by 'the 330 px minimum card width'; the review's minmax(min(100%, 330px), 1fr) is the fix for D05. The calendar overflow is a second cause of the same reflow symptom and does not change the mapping."
+    },
+    {
+      "item": "R11",
+      "title": "Pick-up sessions are listed in reverse; keyboard and screen-reader order runs opposite to the visual order",
+      "maps_to": "tool-library-D11",
+      "reason": "Both graders: D11. 'row-reverse plus wrap-reverse puts Wednesday 28 October at the top and the soonest session at the bottom', while 'Keyboard and screen-reader order still runs from 10 October, so arrow keys move the opposite way to what members see'."
+    },
+    {
+      "item": "R12",
+      "title": "Coming back through 'Change' loses the session the member had chosen",
+      "maps_to": "tool-library-D13",
+      "reason": "Both graders: D13. 'Coming back through \"Change\" also loses the session they had chosen'; the review's fix (keep the current choice selected by passing slot in the Change link) fixes D13."
+    },
+    {
+      "item": "R13",
+      "title": "The loan-length list traps the keyboard (Tab cycles the options, Escape does nothing)",
+      "maps_to": "tool-library-D09",
+      "reason": "Both graders: D09. 'Once it's open, Tab just cycles through the options, and Escape doesn't close it (both confirmed)', so a keyboard user can only leave the custom listbox by choosing an option."
+    },
+    {
+      "item": "R14",
+      "title": "'Added to your basket' disappears after about 1.3 s and does not say what to do next",
+      "maps_to": "tool-library-D07",
+      "reason": "Both graders: D07. The only confirmation of 'Reserve this tool' is a message that 'disappears after about 1.3 seconds' with nothing lasting nearby, so 'First-time members don't know there's a basket step'; a confirmation that stays put with a 'Go to basket' link fixes D07."
+    },
+    {
+      "item": "R15",
+      "title": "Forms reject reasonable input: lower-case membership number 'ft-01234' and '+44 7700 900123'",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Not seeded. The review tested both values ('\"ft-01234\" (lower case) and \"+44 7700 900123\" both fail') and gives the code location; members who type their number in lower case or their phone in the ordinary +44 form are blocked by a validation error while a ten-minute hold runs."
+    },
+    {
+      "item": "R16",
+      "title": "Continue (1.2 s) and Confirm (1.5 s) only set aria-busy, so sighted members see nothing happening and tap again",
+      "maps_to": "tool-library-D12",
+      "reason": "Both graders: D12. 'Continue (1.2 s) and Confirm (1.5 s) only set aria-busy, so sighted members see nothing happening and tap again' restates D12's mechanism ('nothing visible says that anything is happening'), which is what produces the second press. The Continue wait is a broader statement of the same silent-wait problem; the visible working state the review asks for, with the disabling it proposes in problem 4, addresses D12."
+    },
+    {
+      "item": "R17",
+      "title": "The fixed action bar on the tool page covers the desk phone number in the footer",
+      "maps_to": "tool-library-D08",
+      "reason": "Both graders: D08. 'the fixed action bar covers the desk phone number in the footer' is a narrower statement of D08 (nothing keeps the page clear of the fixed bar; on a phone the footer and desk phone number sit under it). The review's fix, bottom padding 'at least as tall as the bar (72 px)', is the clearance D08 lacks, though the review did not notice the covered focused day buttons."
+    },
+    {
+      "item": "R18",
+      "title": "Done page: the hidden #c-tool makes screen readers read the tool name twice",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Not seeded. 'the hidden #c-tool makes screen readers read the tool name twice': a duplicated announcement on the confirmation page wastes screen-reader users' time and, on a page that can list more than one reservation, can suggest the tool was booked twice. Minor, and the review notes it did not verify with VoiceOver or TalkBack."
+    },
+    {
+      "item": "R19",
+      "title": "Done page omits the return date and loan length",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Not seeded. 'The return date and loan length aren't shown, and those are what members will ask the desk about': the member chose a loan length earlier in the flow and the confirmation never says when the tool is due back, so they must remember it or ring the desk."
+    },
+    {
+      "item": "R20",
+      "title": "The stated 'up to three tools' limit is not enforced",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Not seeded. 'The limit of \"up to three tools\" is stated but not enforced': the site states a rule it does not apply, so an over-limit reservation is discovered at the desk rather than prevented in the basket. Low severity but genuine."
+    },
+    {
+      "item": "R21",
+      "title": "Going back through 'Change' from the confirm page loses the details already typed in",
+      "maps_to": "real-unseeded",
+      "reason": "Both graders: real-unseeded. Distinct from D13, which is the dropped session choice, not the confirm form: 'Going back through \"Change\" from the confirm page loses the details already typed in', so the member retypes name, membership number and phone on a phone keyboard with the hold running; passing the slot in the Change link (the D13 fix) would not restore the typed details."
+    }
+  ],
+  "settled": [
+    {
+      "item": "R7",
+      "a": "R7 -> tool-library-D01 (one item: search box below the cards, and the date filter behind an unlabelled icon)",
+      "b": "R7 -> tool-library-D01 (search box below the cards) and R9 -> tool-library-D01 (the date filter hidden behind an unlabelled icon)",
+      "final": "R7 -> tool-library-D01, one item (B's R9 folded into R7); the maps_to is unchanged either way",
+      "reason": "The review raises the filter icon inside its problem 5, under the single heading 'On phones, search is at the bottom of the find page', as the last sentence of that paragraph: 'The date filter is hidden behind an unlabelled icon.' The complaint is one of discoverability ('hidden'), and its fix is listed with the rest of problem 5 ('Put search first ... and give the filter button a visible \"Filters\" label'). The ground truth defines D01 as one defect made of exactly these two parts (the list reordered ahead of the search form, and 'the only way to the \"Available from\" date and the category filter is an icon-only button') with one member-facing consequence: they are 'unlikely to notice that filtering by day exists'. The mapping instructions ask for one item per distinct problem, and both graders applied that as one item per underlying problem elsewhere in this report: each kept as a single item the sub-points of problems 1 (no time shown / 'Try again' loop / Change route), 2 (closed days selectable / refusal only at Confirm with no link back), 6 (contrast / DESIGN.md colour / no tint) and 7 (330 px cards / 7-column calendar), and split a sub-point only when it crosses into another defect or an unseeded problem (the no-match search, D02, is such a split and is kept as R8). The unlabelled-icon sentence stays within D01, so it is part of R7, not a separate item. B's R9 split is therefore not adopted; items R1-R6 and R8 carry the same number and value in both lists, and B's R10-R22 are A's R9-R21 (see the entries below)."
+    },
+    {
+      "item": "R9",
+      "a": "R9 -> tool-library-D04",
+      "b": "R10 -> tool-library-D04",
+      "final": "R9 -> tool-library-D04 (agreed)",
+      "reason": "A's R9 and B's R10 both name the dark-mode 'Available from' badge at 3.07:1 and map it to D04: the same reported problem, aligned by meaning. Numbered after A because B's numbers run one higher from its extra R9. Kept as mapped."
+    },
+    {
+      "item": "R10",
+      "a": "R10 -> tool-library-D05",
+      "b": "R11 -> tool-library-D05",
+      "final": "R10 -> tool-library-D05 (agreed)",
+      "reason": "A's R10 and B's R11 both name the sideways scrolling from the 330 px minimum card width (and the calendar) and map it to D05: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R11",
+      "a": "R11 -> tool-library-D11",
+      "b": "R12 -> tool-library-D11",
+      "final": "R11 -> tool-library-D11 (agreed)",
+      "reason": "A's R11 and B's R12 both name the reversed pick-up session order with keyboard order running the other way and map it to D11: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R12",
+      "a": "R12 -> tool-library-D13",
+      "b": "R13 -> tool-library-D13",
+      "final": "R12 -> tool-library-D13 (agreed)",
+      "reason": "A's R12 and B's R13 both name the chosen session lost on coming back through 'Change' and map it to D13: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R13",
+      "a": "R13 -> tool-library-D09",
+      "b": "R14 -> tool-library-D09",
+      "final": "R13 -> tool-library-D09 (agreed)",
+      "reason": "A's R13 and B's R14 both name the loan-length listbox keyboard trap and map it to D09: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R14",
+      "a": "R14 -> tool-library-D07",
+      "b": "R15 -> tool-library-D07",
+      "final": "R14 -> tool-library-D07 (agreed)",
+      "reason": "A's R14 and B's R15 both name the 'Added to your basket' message that vanishes after about 1.3 s and map it to D07: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R15",
+      "a": "R15 -> real-unseeded",
+      "b": "R16 -> real-unseeded",
+      "final": "R15 -> real-unseeded (agreed)",
+      "reason": "A's R15 and B's R16 both name the forms rejecting 'ft-01234' and '+44 7700 900123' and call it real-unseeded: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R16",
+      "a": "R16 -> tool-library-D12",
+      "b": "R17 -> tool-library-D12",
+      "final": "R16 -> tool-library-D12 (agreed)",
+      "reason": "A's R16 and B's R17 both name Continue and Confirm setting only aria-busy with nothing visible, and map it to D12: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R17",
+      "a": "R17 -> tool-library-D08",
+      "b": "R18 -> tool-library-D08",
+      "final": "R17 -> tool-library-D08 (agreed)",
+      "reason": "A's R17 and B's R18 both name the fixed action bar covering the desk phone number and map it to D08: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R18",
+      "a": "R18 -> real-unseeded",
+      "b": "R19 -> real-unseeded",
+      "final": "R18 -> real-unseeded (agreed)",
+      "reason": "A's R18 and B's R19 both name the hidden #c-tool read twice by screen readers and call it real-unseeded: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R19",
+      "a": "R19 -> real-unseeded",
+      "b": "R20 -> real-unseeded",
+      "final": "R19 -> real-unseeded (agreed)",
+      "reason": "A's R19 and B's R20 both name the done page omitting the return date and loan length and call it real-unseeded: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R20",
+      "a": "R20 -> real-unseeded",
+      "b": "R21 -> real-unseeded",
+      "final": "R20 -> real-unseeded (agreed)",
+      "reason": "A's R20 and B's R21 both name the unenforced three-tool limit and call it real-unseeded: the same reported problem. Kept as mapped."
+    },
+    {
+      "item": "R21",
+      "a": "R21 -> real-unseeded",
+      "b": "R22 -> real-unseeded",
+      "final": "R21 -> real-unseeded (agreed)",
+      "reason": "A's R21 and B's R22 both name the typed details lost on going back through 'Change' from the confirm page and call it real-unseeded: the same reported problem. Kept as mapped."
+    }
+  ]
+}

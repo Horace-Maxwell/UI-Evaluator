@@ -1,0 +1,65 @@
+{
+  "_comment": "Critical journey for the tool-library fixture (a community tool library's online reservation). The walkthrough evaluator walks these steps; the analytical CW ground truth is in ground-truth.json (defects with a cw field). Test values only: FT-01234 is a fixture membership number and 07700 900123 is in Ofcom's drama range.",
+  "schema_version": 1,
+  "id": "reserve-tool-for-saturday",
+  "title": "Reserve a drill for Saturday's session",
+  "criticality": "critical",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Library members reserving online for the first time",
+    "knows": [
+      "the tool they want: the 18 V cordless drill that comes with two batteries",
+      "that tools are collected at the Saturday morning session",
+      "their membership number, FT-01234, and their mobile number",
+      "that there is a deposit, paid at the desk"
+    ],
+    "does_not_know": [
+      "that only the days marked 'Open' are sessions",
+      "how long the basket holds a tool for them",
+      "where the date filter is"
+    ],
+    "context": "On a phone on Thursday evening, planning Saturday's job, with a cup of tea going cold"
+  },
+  "goal": "Have the drill with two batteries waiting at Saturday morning's session",
+  "scenario": "You are putting up shelves on Saturday 17 October 2026 and want the cordless drill that comes with two batteries, for one week. Your membership number is FT-01234. Make sure it is reserved for you to collect at Saturday morning's session.",
+  "avoided_hints": [
+    "Filters",
+    "Reserve this tool",
+    "Continue",
+    "Confirm reservation",
+    "Basket"
+  ],
+  "start_state": {
+    "url": "/",
+    "data": "every tool is available from its listed date; the basket is empty",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/done\\.html" },
+      { "text": "Reservation confirmed" },
+      { "target": "#c-tool", "text": "Cordless drill 18 V, combi, two batteries" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "fill", "target": "role=searchbox[name=\"Search tools\"]", "value": "drill" },
+    { "action": "click", "target": "role=button[name=\"Search\"]" },
+    { "action": "click", "target": "role=link[name=\"Cordless drill 18 V, combi, two batteries\"]" },
+    { "action": "expect", "url": "/tool\\.html" },
+    { "action": "click", "target": ".day[data-day=\"2026-10-17\"]" },
+    { "action": "click", "target": "role=button[name=\"Reserve this tool\"]" },
+    { "action": "expect", "target": "#basket-link", "text": "Basket (1)" },
+    { "action": "click", "target": "role=link[name=\"Basket (1)\"]" },
+    { "action": "expect", "url": "/basket\\.html" },
+    { "action": "check", "target": "role=radio[name=\"Saturday 17 October, 10:00 to 13:00\"]" },
+    { "action": "click", "target": "role=button[name=\"Continue\"]" },
+    { "action": "expect", "url": "/confirm\\.html" },
+    { "action": "fill", "target": "label=Membership number", "value": "FT-01234" },
+    { "action": "fill", "target": "label=Your name", "value": "Test Member" },
+    { "action": "fill", "target": "label=Mobile number", "value": "07700 900123" },
+    { "action": "click", "target": "role=button[name=\"Confirm reservation\"]" },
+    { "action": "expect", "text": "Reservation confirmed" }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "_comment": "Core journey for the tool-library fixture: a member on the confirm page moves the collection to a Wednesday evening. The start URL seeds the basket so the step opens on its own.",
+  "schema_version": 1,
+  "id": "change-pickup-session",
+  "title": "Move the collection to a Wednesday evening",
+  "criticality": "core",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Members who have reached the confirm page and want a different session",
+    "knows": [
+      "that the library also opens on Wednesday evenings",
+      "which session they chose a moment ago"
+    ],
+    "does_not_know": [
+      "whether changing the session keeps the rest of the reservation"
+    ],
+    "context": "On a phone, mid-reservation, after a message changed their weekend plans"
+  },
+  "goal": "Collect on Wednesday 21 October instead of Saturday 17 October",
+  "scenario": "You have reached the confirmation page with Saturday 17 October chosen, but a Wednesday evening suits you better now. Change the collection to Wednesday 21 October and get back to confirming.",
+  "avoided_hints": [
+    "Change",
+    "Continue"
+  ],
+  "start_state": {
+    "url": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+    "data": "one tool in the basket, Saturday 17 October chosen as the session",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/confirm\\.html" },
+      { "target": "#summary-slot", "text": "Wednesday 21 October, 18:00 to 20:00" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17" },
+    { "action": "click", "target": "role=link[name=\"Change\"]" },
+    { "action": "expect", "url": "/basket\\.html" },
+    { "action": "check", "target": "role=radio[name=\"Wednesday 21 October, 18:00 to 20:00\"]" },
+    { "action": "click", "target": "role=button[name=\"Continue\"]" },
+    { "action": "expect", "url": "/confirm\\.html" },
+    { "action": "expect", "target": "#summary-slot", "text": "Wednesday 21 October, 18:00 to 20:00" }
+  ]
+}

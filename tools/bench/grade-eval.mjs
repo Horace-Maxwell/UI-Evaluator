@@ -41,6 +41,8 @@ const control = path.basename(path.dirname(runDir)) === 'without_skill';
 const ws = path.join(runDir, 'workspace');
 const wsUie = path.join(ws, '.ui-evaluator');
 const fixtureDir = (name) => path.join(ROOT, 'evals/fixtures', name);
+// The eval's site fixture (the listed fixture that carries fixture.json): audits are graded against its ground truth.
+const siteFixture = (ev.files || []).map((f) => path.join(ROOT, f)).find((d) => fs.existsSync(path.join(d, 'fixture.json'))) || fixtureDir('journey-app');
 const read = (p, fb = null) => {
   try {
     return fs.readFileSync(p, 'utf8');
@@ -110,7 +112,7 @@ function uie(args, { cwd = ws } = {}) {
   });
 }
 
-// --- matching judged findings to the ground truth (evals 5 and 19) --------------------------------------------------
+// --- matching findings to the ground truth (evals 5, 19 and 20) --------------------------------------------------
 
 function criteriaOf(f) {
   return new Set((f.criteria || []).map((c) => String(c.id)));
@@ -159,7 +161,7 @@ async function auditChecks(depth, minHe) {
     const ratings = (fs.existsSync(rdir) ? fs.readdirSync(rdir) : []).filter((f) => f.endsWith('.json')).map((f) => valid('rating', json(path.join(rdir, f))).valid);
     return { passed: !!v && valid('verifier', v).valid && ratings.filter(Boolean).length >= 3, evidence: `verifier.json ${v ? (valid('verifier', v).valid ? 'valid' : 'invalid') : 'missing'}; ${ratings.filter(Boolean).length} valid rating file(s) of ${ratings.length}` };
   };
-  const truth = json(path.join(fixtureDir('journey-app'), 'ground-truth.json'));
+  const truth = json(path.join(siteFixture, 'ground-truth.json'));
   const merged = json(path.join(run?.dir || '', 'merged.json'), { findings: [] });
   const pool = (register.findings.length ? register.findings : merged.findings).filter((f) => CONFIRMED.has(f.status));
   const judged = pool.filter((f) => !(f.found_by || []).every((b) => b.method === 'tool'));
@@ -168,10 +170,14 @@ async function auditChecks(depth, minHe) {
   metrics.matched = matched;
   metrics.confirmed_findings = pool.length;
   metrics.confirmed_judged_findings = judged.length;
+  // A fixture with deterministic defects (tool-library) reports the judged and deterministic counts beside the total.
+  const kinds = [...new Set(truth.defects.map((d) => d.kind).filter(Boolean))];
+  const byKind = kinds.length > 1 ? `; ${kinds.map((k) => `${k} ${matched.filter((x) => truth.defects.find((d) => d.id === x.defect)?.kind === k).length} of ${truth.defects.filter((d) => d.kind === k).length}`).join(', ')}` : '';
   checks['Recall of the seeded analytical defects is at least 0.6'] = () => ({
     passed: matched.length / truth.defects.length >= 0.6,
-    evidence: `${matched.length} of ${truth.defects.length} seeded defects matched by criterion and route (${matched.map((x) => `${x.defect.replace('journey-app-', '')}→${x.finding}`).join(', ')}); ${pool.length} confirmed finding(s), ${judged.length} judged`,
+    evidence: `${matched.length} of ${truth.defects.length} seeded defects matched by criterion and route (${matched.map((x) => `${x.defect.replace(`${truth.fixture}-`, '')}→${x.finding}`).join(', ')})${byKind}; ${pool.length} confirmed finding(s), ${judged.length} judged`,
   });
+  checks['Recall of the seeded defects is at least 0.6'] = checks['Recall of the seeded analytical defects is at least 0.6'];
   checks['At least 7 of the 11 judged defects are reported as confirmed findings'] = () => ({ passed: matched.length >= 7, evidence: `${matched.length} matched` });
   checks['Severity ratings land in the expected bands for most matched defects'] = () => {
     const rated = matched.filter((x) => x.mean !== null && x.band);
@@ -215,7 +221,7 @@ function documentsWritten() {
 
 /** The control arm of an audit eval: what the user received, for the same blind mapping as the skill's findings. */
 function controlAudit() {
-  const truth = json(path.join(fixtureDir('journey-app'), 'ground-truth.json'));
+  const truth = json(path.join(siteFixture, 'ground-truth.json'));
   const docs = documentsWritten();
   metrics.documents_written = docs;
   graderPacket.material.report = [`--- final reply ---\n${replyText.trim()}`, ...docs.map((f) => `--- ${f} ---\n${read(path.join(ws, f), '')}`)].join('\n\n').slice(0, 60000);
@@ -408,9 +414,9 @@ async function eval12() {
 // The assertions a control-arm run is graded on: the ones that do not read the skill's files.
 const ARM_NEUTRAL = new Set(['No fixture source file was modified', 'The reply puts the fixes in priority order and says what needs a person']);
 
-if (control && ![5, 19].includes(ev.id)) usage(`no control-arm grading for eval ${ev.id}`);
+if (control && ![5, 19, 20].includes(ev.id)) usage(`no control-arm grading for eval ${ev.id}`);
 if (control) controlAudit();
-else if (ev.id === 19) await auditChecks('standard', 3);
+else if (ev.id === 19 || ev.id === 20) await auditChecks('standard', 3);
 else if (ev.id === 5) await auditChecks('rigorous', 5);
 else if (ev.id === 14) await eval14();
 else if (ev.id === 9) await eval9();
@@ -446,8 +452,8 @@ for (const a of ev.assertions) {
 }
 if (answers?.mapping) metrics.grader_mapping = answers.mapping;
 if (answers?.metrics) Object.assign(metrics, answers.metrics);
-if (answers?.mapping && [5, 19].includes(ev.id)) {
-  const truth = json(path.join(fixtureDir('journey-app'), 'ground-truth.json'));
+if (answers?.mapping && [5, 19, 20].includes(ev.id)) {
+  const truth = json(path.join(siteFixture, 'ground-truth.json'));
   const listed = (graderPacket.material.findings || []).map((f) => f.id);
   const unmapped = listed.filter((id) => !answers.mapping.some((m) => m.item === id));
   if (unmapped.length) console.warn(`the grader did not map: ${unmapped.join(', ')}`);

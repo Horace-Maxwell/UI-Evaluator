@@ -1,0 +1,140 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The final reply groups problems under \"Fix before launch\", \"Fix next: accessibility failures\" and \"Usability problems worth fixing before launch\", then gives an explicit \"Suggested order\" (#1-#4 first, then #5-#7, then #8-#10 and the usability list). Under \"Things I didn't cover\" it names real VoiceOver or TalkBack, real iOS Safari and 200% desktop zoom and says \"someone should do them by hand before launch, ideally with one or two older members on their own phones\"."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Basket hold expires after 10 minutes with an unexplained 'Something went wrong' and no way to recover",
+      "maps_to": "tool-library-D10",
+      "reason": "Same problem as D10: the ten-minute hold is never shown on the basket page, and once it lapses Continue returns \"Something went wrong. Try again.\", which is not what happened and gives no way forward. The review's extra detail that retrying and reloading do not clear it matches D10's hold being kept only in the browser."
+    },
+    {
+      "item": "R2",
+      "title": "Closed days are selectable in the calendar; refusal only arrives on the confirm page with no way back",
+      "maps_to": "tool-library-D06",
+      "reason": "Matches D06: every one of the 21 days can be tapped, the closed-day refusal (\"The library is closed on Thursday 15 October... Choose another day\") appears only after Confirm, and there is no link back to the calendar two pages earlier."
+    },
+    {
+      "item": "R3",
+      "title": "A pick-up day before the tool's 'available from' date is accepted without warning",
+      "maps_to": "real-unseeded",
+      "reason": "Not among the seeded defects: D06 is about closed library days, a different constraint, and disabling closed days would not stop this. The review reproduced it (pressure washer back 17 October, reserved for 10 October, accepted silently). A member would turn up for a tool that is still out on loan and the desk would hold an unfulfillable reservation."
+    },
+    {
+      "item": "R4",
+      "title": "Tool-page pick-up day and basket session are collected separately and can contradict each other on the confirm page",
+      "maps_to": "real-unseeded",
+      "reason": "No seeded defect covers two unreconciled date choices; D13 only covers the dropped selection on Change, and carrying the session through Change would not stop a member picking a different session in the basket. The review showed the confirm page reading \"pick up Thursday 15 October\" beside \"Pick-up session: Wednesday 21 October\", so the member and the desk get two different dates for one reservation."
+    },
+    {
+      "item": "R5",
+      "title": "'Change' link reopens the basket with no session selected",
+      "maps_to": "tool-library-D13",
+      "reason": "Same as D13: tapping Change returns to the basket without carrying the chosen session, so the member has to choose again, and nothing says the choice was dropped."
+    },
+    {
+      "item": "R6",
+      "title": "Confirm stays enabled with no visible busy state during the 1.5 s request; a double tap creates two reservations",
+      "maps_to": "tool-library-D12",
+      "reason": "Matches D12 exactly: nothing visible changes while the request runs (only aria-busy), and a second press produced two reservation numbers (FT-4471 and FT-4472). The aside that the basket's Continue has the same unseen 1.2 s wait is the same missing-busy-state problem on the previous page of the flow, not a separate defect."
+    },
+    {
+      "item": "R7",
+      "title": "Truncated tool names make the two drills indistinguishable at phone width",
+      "maps_to": "tool-library-D03",
+      "reason": "Same as D03: one-line nowrap plus ellipsis in the card makes both drills read \"Cordless drill 18 V, co...\" at 375 px, hiding the \"two batteries\" / \"one battery\" difference the critical journey depends on."
+    },
+    {
+      "item": "R8",
+      "title": "'Available from' badge fails contrast in dark mode",
+      "maps_to": "tool-library-D04",
+      "reason": "Same as D04: --color-ok #2f7d4a on #1d2622 in the dark theme, about 3.1:1 against the 4.5:1 required; the review even cites the DESIGN.md value #8fd1a8 as the fix."
+    },
+    {
+      "item": "R9",
+      "title": "Page scrolls sideways at 320 px because the results grid has a 330 px minimum column",
+      "maps_to": "tool-library-D05",
+      "reason": "Same as D05: minmax(330px, 1fr) forces the grid wider than a 320 px viewport (page 347 px wide), so the page scrolls horizontally (WCAG 1.4.10)."
+    },
+    {
+      "item": "R10",
+      "title": "Loan-length custom listbox traps keyboard focus (Tab cycles between options, Escape does nothing)",
+      "maps_to": "tool-library-D09",
+      "reason": "Same as D09: inside the open listbox Tab wraps between \"One week\" and \"Two weeks\" and Escape does not close it, so a keyboard user can only leave by choosing an option with Enter; the review's accidental change to two weeks illustrates exactly that."
+    },
+    {
+      "item": "R11",
+      "title": "Loan-length button's accessible name is only the current value ('One week'), with no 'Loan length'",
+      "maps_to": "real-unseeded",
+      "reason": "A different problem from the keyboard trap and not one of the seeded defects. A screen-reader member who reaches the control hears only \"One week\" and is not told that it sets the loan length, so they cannot tell what the control is for before operating it (WCAG 4.1.2 / 2.4.6)."
+    },
+    {
+      "item": "R12",
+      "title": "Session list rendered in reverse order on screen compared with DOM, focus and screen-reader order",
+      "maps_to": "tool-library-D11",
+      "reason": "Same as D11: .sessions uses row-reverse plus wrap-reverse, so 28 October sits at the top while arrow keys and screen readers proceed in date order, the opposite way (WCAG 1.3.2 / 2.4.3)."
+    },
+    {
+      "item": "R13",
+      "title": "Fixed bottom bar covers the footer and desk phone number and can obscure focused calendar days",
+      "maps_to": "tool-library-D08",
+      "reason": "Same as D08: nothing keeps the page clear of the fixed 72 px bar (.page--bar leaves only 8 px bottom padding), so on a phone the footer and desk phone number sit under it and tabbed day buttons can be covered (WCAG 2.4.11)."
+    },
+    {
+      "item": "R14",
+      "title": "'Added to your basket' message vanishes after about 1.3 s and has no link to the basket",
+      "maps_to": "tool-library-D07",
+      "reason": "Same as D07: pressing Reserve shows only a short-lived message, and the lasting sign is the \"Basket (1)\" count in the header that the member has to spot; a member who looked away cannot tell the press worked."
+    },
+    {
+      "item": "R15",
+      "title": "A search with no matches leaves the old results on screen with a stale status",
+      "maps_to": "tool-library-D02",
+      "reason": "Same as D02: searching \"strimmer\" left the previous two drills on screen and gave no no-results message. The review reports the status region still saying \"2 tools found\" where D02 says it stays empty; either way the member cannot tell whether the search ran or what matched."
+    },
+    {
+      "item": "R16",
+      "title": "At phone width the search box sits below all ten tools and the date filter is behind an unlabelled icon button",
+      "maps_to": "tool-library-D01",
+      "reason": "Same as D01: the order swaps under 480 px push the search form about 2,100 px down below the list, and the 'Available from' date filter is only reachable through an icon-only button, so members are unlikely to discover filtering by day."
+    },
+    {
+      "item": "R17",
+      "title": "Details form rejects common ways of typing the membership number and phone number",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect. The review tried ft-01234, FT 01234, 07700 900 123 and +44 7700 900123 and all were refused. Members typing on a phone routinely use spaces, lower case or +44 (and autofill inserts them), so many would be stopped at the last form without being told what format is expected."
+    },
+    {
+      "item": "R18",
+      "title": "Done page still shows 'Basket (1)' and the old item persists into a second reservation",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect. After confirmation the header still reports an item in the basket, so a member can believe the reservation is unfinished and go round again, and the review found that reserving again in the same visit brings the old reservation numbers back, which risks duplicate bookings at the desk."
+    },
+    {
+      "item": "R19",
+      "title": "'Choose a pick-up day first.' error is not associated with the calendar or announced; focus jumps to a day button",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect. The error text is neither tied to the calendar (aria-describedby) nor in a live region, and focus is moved to the 9 October button, so a screen-reader member who presses Reserve without choosing a day is moved somewhere else without being told why (WCAG 3.3.1 / 4.1.3)."
+    },
+    {
+      "item": "R20",
+      "title": "Open-day marker on phones is only an 8 px green dot (colour and shape alone)",
+      "maps_to": "real-unseeded",
+      "reason": "Not a seeded defect. The review's words are about the marker, not about choosing closed days: \"The tool-page hint says 'a green dot on a small screen'. That relies on colour and shape alone, and the dot is only 8 px.\" Fixing that, which is the review's first remedy (\"Showing 'Open' under the date at every size\"), would leave D06 intact: closed days still selectable, refused on the confirm page, no way back. On a phone the only sign that a day is open is an 8 px coloured dot, so older, low-vision and colour-blind members cannot reliably tell open days from closed ones (WCAG 1.4.1 Use of Color)."
+    }
+  ],
+  "settled": [
+    {
+      "item": "R20",
+      "a": "tool-library-D06",
+      "b": "real-unseeded",
+      "final": "real-unseeded",
+      "reason": "The review's own words make this a problem of how open days are marked, not of closed days being choosable: \"The tool-page hint says 'a green dot on a small screen'. That relies on colour and shape alone, and the dot is only 8 px.\" D06 is the H5 failure that every calendar day can be chosen, the refusal comes three steps later on the confirm page and the only way back is the browser; D06's description mentions the green dot only as the weak cue behind that mistake. The mapping rule for a narrower statement is whether fixing what the review describes would fix the defect, and it would not: the review's own first remedy, \"Showing 'Open' under the date at every size\", leaves closed days selectable, refused late and with no way back, so D06 would reproduce exactly as seeded. Grader A's point that the alternative remedy, \"listing only open days\", would fix D06 is true, but that remedy goes beyond the reported problem; it is the review's fix for #2, and a shared fix does not make two problems one. The review itself treats them as two problems (\"fixes this and #2 together\") and already reports D06 as #2 (R2), and both graders applied the same shared-fix-does-not-merge test to R3 and R4. It is a genuine accessibility problem for these members: on a phone the only sign that a day is open is an 8 px coloured dot, so older, low-vision and colour-blind members, whom the notes say are common, cannot reliably tell open days from closed ones (WCAG 1.4.1 Use of Color), so it is not not-a-problem. Grader B's mapping stands."
+    }
+  ]
+}

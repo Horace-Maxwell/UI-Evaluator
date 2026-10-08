@@ -1,0 +1,646 @@
+{
+  "answers": [
+    {
+      "text": "Precision after verification is at least 0.8",
+      "passed": false,
+      "evidence": "Of the 80 judged (non-tool) findings, 37 map to seeded defects and 14 to real unseeded problems, so precision = 51/80 = 0.64, below 0.8; strict precision = 37/80 = 0.46; recall by meaning = 13/13 seeded defects covered by at least one finding. The 29 not-a-problem items are mostly the design-panel entries (placeholder thumbnails, 'no identity', empty right half, orphaned words, native controls, misaligned columns) plus a11y best-practice nits (heading levels, landmarks, label-in-name, arrow-key opening, 21 tab stops) and the misattributed 'masthead link unreachable' item."
+    },
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The reply's '## Fix these first' list runs 1-7 from the item marked 'All three raters gave this the top severity' (Reserve does not reserve) through the hold expiry, double date, double submit, dark-mode contrast and sticky bar down to the phone tool-list items, followed by 'Also worth fixing before launch' and 'Look and feel' which 'can wait'. '## Still needs a person' names a screen-reader pass, 'Ten WCAG checks that can't be automated, such as page titles' and 'A short test with about five members on their phones'."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "F-0026",
+      "title": "Masthead link 'Fernhill Tool Library' not reached by a Tab walk (loan-open state)",
+      "maps_to": "not-a-problem",
+      "reason": "The link is tabbable and is reached in the normal state; the walk failed only because the open loan-length listbox traps Tab (reported separately as F-0141). The finding misattributes that symptom to a working link and calls it severity 4."
+    },
+    {
+      "item": "F-0027",
+      "title": "Visual order differs from DOM/focus order: basket sessions and find-page search",
+      "maps_to": "tool-library-D11",
+      "reason": "The substance is the basket session list shown in reverse of DOM order (arrow keys move upwards, screen reader reads the opposite order), which is D11. Its second half (search region after the cards in the tree) is the focus-order part of D01."
+    },
+    {
+      "item": "F-0029",
+      "title": "Loan-length button named only 'One week', not by the 'Loan length' label",
+      "maps_to": "real-unseeded",
+      "reason": "A screen-reader member tabbing to the control hears 'One week, collapsed, button' and cannot tell what it sets; the name carries the value but not the purpose. Not among the seeded defects."
+    },
+    {
+      "item": "F-0030",
+      "title": "Day button names do not contain the visible string '10 Open'",
+      "maps_to": "not-a-problem",
+      "reason": "The name 'Saturday 10 October, open' contains both visible words and is more descriptive; no practical harm to speech or screen-reader users is shown. A pedantic 2.5.3 reading."
+    },
+    {
+      "item": "F-0031",
+      "title": "Open-day green dot disappears in forced colours at 320 px",
+      "maps_to": "real-unseeded",
+      "reason": "In the forced-colours capture open days are indistinguishable from closed ones while the instruction still says to look for a green dot, so high-contrast users cannot tell which days to pick. Distinct from D06 (closed days selectable) and not fixed by it."
+    },
+    {
+      "item": "F-0032",
+      "title": "Tool card titles share the heading level of the 'Tools' section heading",
+      "maps_to": "not-a-problem",
+      "reason": "Heading-level best practice with no shown impact; a heading list still exposes the section and every tool, so navigation works."
+    },
+    {
+      "item": "F-0033",
+      "title": "Reserve button and added-to-basket status sit outside every landmark",
+      "maps_to": "not-a-problem",
+      "reason": "Landmark coverage is a best practice; the button follows main directly in reading order and the status is a live region, so no member is blocked or misled."
+    },
+    {
+      "item": "F-0034",
+      "title": "Done page exposes the tool name twice to assistive technology",
+      "maps_to": "not-a-problem",
+      "reason": "A duplicated text node heard twice is a cosmetic tree quirk with no effect on understanding or completing the reservation."
+    },
+    {
+      "item": "F-0035",
+      "title": "Calendar accepts days when the library is closed",
+      "maps_to": "tool-library-D06",
+      "reason": "Same problem: closed days selectable, 'Pick-up day: Monday 12 October' confirmed, refused only later in the flow."
+    },
+    {
+      "item": "F-0036",
+      "title": "Search with no matches leaves old results and announces nothing",
+      "maps_to": "tool-library-D02",
+      "reason": "Same: search() returns silently on zero matches, grid and status keep their old content."
+    },
+    {
+      "item": "F-0037",
+      "title": "Results grid minimum 330 px overflows the 320 px viewport",
+      "maps_to": "tool-library-D05",
+      "reason": "Same mechanism and numbers as D05 (minmax(330px), 288 px content box, about 42 px overflow)."
+    },
+    {
+      "item": "F-0038",
+      "title": "Card names cut to one line, hiding the words that tell similar tools apart",
+      "maps_to": "tool-library-D03",
+      "reason": "Same: nowrap plus ellipsis on card names hides the one-battery/two-battery difference."
+    },
+    {
+      "item": "F-0141",
+      "title": "Loan-length listbox traps Tab while open",
+      "maps_to": "tool-library-D09",
+      "reason": "Same: Tab cycles among the options and only Enter leaves the list."
+    },
+    {
+      "item": "F-0142",
+      "title": "Loan-length listbox does not close on outside click or blur",
+      "maps_to": "real-unseeded",
+      "reason": "A pointer or touch member who taps elsewhere is left with the open list covering content until an option is chosen; a dismissal problem distinct from the keyboard trap in D09 and not fixed by fixing it."
+    },
+    {
+      "item": "F-0143",
+      "title": "Loan-length trigger does not open with ArrowDown/ArrowUp",
+      "maps_to": "not-a-problem",
+      "reason": "An APG nicety; the control opens with Enter or Space, so nobody is blocked. Claimed from code only, severity 1."
+    },
+    {
+      "item": "F-0041",
+      "title": "Continue and Confirm show no visible change during their 1.2 s and 1.5 s waits",
+      "maps_to": "tool-library-D12",
+      "reason": "Same: the button stays enabled with nothing visible during the 1.5 s confirm wait (D12); Continue shows the same pattern."
+    },
+    {
+      "item": "F-0042",
+      "title": "Confirm can be submitted again during the wait, allocating extra reservation numbers",
+      "maps_to": "tool-library-D12",
+      "reason": "Exactly D12's consequence: a second press allocates FT-4472 for the same booking."
+    },
+    {
+      "item": "F-0043",
+      "title": "After the hold expires Continue always fails with 'Something went wrong. Try again.'",
+      "maps_to": "tool-library-D10",
+      "reason": "Same: the lapsed ten-minute hold yields the misleading error with no way out."
+    },
+    {
+      "item": "F-0044",
+      "title": "Ten-minute basket hold is never shown, warned about or extendable",
+      "maps_to": "tool-library-D10",
+      "reason": "Same: D10 says the basket shows no time for the hold."
+    },
+    {
+      "item": "F-0045",
+      "title": "Closed days accepted and rejected only after Confirm, with no link back",
+      "maps_to": "tool-library-D06",
+      "reason": "Same as D06 including the late rejection on the confirm page and the missing route back to the calendar."
+    },
+    {
+      "item": "F-0046",
+      "title": "'Change' link drops the session already chosen",
+      "maps_to": "tool-library-D13",
+      "reason": "Same: plain basket.html with no slot parameter, so nothing is preselected on return."
+    },
+    {
+      "item": "F-0047",
+      "title": "Stated three-tool limit not enforced",
+      "maps_to": "real-unseeded",
+      "reason": "A member can add more tools than the stated limit without being told and may plan on tools the library will refuse at the desk; an error-prevention gap not among the seeded defects."
+    },
+    {
+      "item": "F-0048",
+      "title": "Mobile and membership number validation rejects common valid formats",
+      "maps_to": "real-unseeded",
+      "reason": "Rejecting +44 numbers that autofill supplies, spaced or dashed numbers and lowercase 'ft-' makes members retype valid data at the final step."
+    },
+    {
+      "item": "F-0049",
+      "title": "CSS reordering: finder focus order and reversed session list",
+      "maps_to": "tool-library-D11",
+      "reason": "The session-list half describes row-reverse with wrap-reverse so arrows move opposite to the screen, which is D11 exactly; the finder half is the focus-order component of D01."
+    },
+    {
+      "item": "F-0050",
+      "title": "Dark-theme success token wrong and tint equals card surface, badge about 3.1:1",
+      "maps_to": "tool-library-D04",
+      "reason": "Same colours (#2f7d4a on #1d2622, about 3.1:1) on the same 'Available from' badge."
+    },
+    {
+      "item": "F-0051",
+      "title": "'Added to your basket' toast disappears after about 1.35 s with no link",
+      "maps_to": "tool-library-D07",
+      "reason": "Same: the toast vanishes after about a second and nothing else near the button confirms the press."
+    },
+    {
+      "item": "F-0055",
+      "title": "Fixed action bar covers the end of the page; no space reserved for it",
+      "maps_to": "tool-library-D08",
+      "reason": "Same: page ends 8 px under the calendar and the footer and last calendar row run under the bar."
+    },
+    {
+      "item": "F-0057",
+      "title": "Search field sits below the whole tool list on a phone",
+      "maps_to": "tool-library-D01",
+      "reason": "Same: at phone widths the ten cards come before the search."
+    },
+    {
+      "item": "F-0058",
+      "title": "Search results change above the viewport, out of view of the search box",
+      "maps_to": "tool-library-D01",
+      "reason": "A direct consequence of the search sitting below the list on phones; putting search first (D01's fix) removes it."
+    },
+    {
+      "item": "F-0060",
+      "title": "Day grid below the fold and its heading under the sticky bar at first view",
+      "maps_to": "not-a-problem",
+      "reason": "A fixed bar covering whatever sits at the bottom of the initial viewport is how sticky bars work and scrolling reveals it; the claim that offering Reserve before the day is visible causes errors is not shown."
+    },
+    {
+      "item": "F-0061",
+      "title": "After 'Reserve this tool' nothing persistent says the reservation is unfinished",
+      "maps_to": "tool-library-D07",
+      "reason": "Same: only a brief toast, basket count scrolled out of view, member may believe the tool is booked."
+    },
+    {
+      "item": "F-0062",
+      "title": "Basket asks for a pick-up session again after the day was chosen",
+      "maps_to": "real-unseeded",
+      "reason": "The member answers the collection date twice with nothing carried forward: redundant entry on a phone and the root of contradictory choices. Not seeded; D13 covers only the Change path."
+    },
+    {
+      "item": "F-0063",
+      "title": "Pick-up sessions listed latest first",
+      "maps_to": "tool-library-D11",
+      "reason": "Same: the earliest session appears last on screen because of the reversed layout."
+    },
+    {
+      "item": "F-0064",
+      "title": "Continue and Confirm give no acknowledgement while the next page loads",
+      "maps_to": "tool-library-D12",
+      "reason": "Same: nothing visible happens for 1-1.5 s after Confirm (D12)."
+    },
+    {
+      "item": "F-0066",
+      "title": "Search with no matches shows the full tool list and no message",
+      "maps_to": "tool-library-D02",
+      "reason": "Same: 'sewing machine' leaves all ten tools and an empty status region."
+    },
+    {
+      "item": "F-0068",
+      "title": "Filters toggle shows only an icon",
+      "maps_to": "tool-library-D01",
+      "reason": "D01 explicitly includes the icon-only three-line button as the only route to the date and category filters."
+    },
+    {
+      "item": "F-0069",
+      "title": "'Available from' hint says the opposite of what the filter does",
+      "maps_to": "real-unseeded",
+      "reason": "The hint promises tools you could pick up 'on or after' the day but the filter hides tools that become available later, so a member reading it may conclude those tools are unavailable; demonstrated with actual results, not seeded."
+    },
+    {
+      "item": "F-0071",
+      "title": "Pick-up dates before the tool is available are accepted",
+      "maps_to": "real-unseeded",
+      "reason": "A member can book collection of the pressure washer on 10 October although it is back on the 17th and is never stopped; an error-prevention gap distinct from D06 (closed days)."
+    },
+    {
+      "item": "F-0072",
+      "title": "Pick-up day and pick-up session chosen separately and can contradict",
+      "maps_to": "real-unseeded",
+      "reason": "The confirm page shows 'pick up Saturday 17 October' beside 'session Wednesday 21 October', so the member cannot know which date the booking is for. Not seeded."
+    },
+    {
+      "item": "F-0075",
+      "title": "Details typed on the confirm page are lost after changing the session",
+      "maps_to": "real-unseeded",
+      "reason": "A membership number typed before Change is gone on return within the same reservation; an unexpected loss distinct from D13's dropped session."
+    },
+    {
+      "item": "F-0077",
+      "title": "Remove takes a tool out of the basket at once with no undo",
+      "maps_to": "not-a-problem",
+      "reason": "Immediate removal with 'Your basket is empty' shown is the standard basket pattern; recovery is a few taps and no accidental removal is shown. A design preference."
+    },
+    {
+      "item": "F-0078",
+      "title": "Error summary stays after the basket is emptied",
+      "maps_to": "real-unseeded",
+      "reason": "A demonstrated stale state: the 'Choose a pick-up session' alert linking to a list no longer on the page contradicts 'Your basket is empty' and would confuse a member who reaches it, though the path is rare."
+    },
+    {
+      "item": "F-0079",
+      "title": "Basket does not say how long tools are held",
+      "maps_to": "tool-library-D10",
+      "reason": "Same: 'Items are held for you while you finish' with no time, as D10 states."
+    },
+    {
+      "item": "F-0080",
+      "title": "Reserved tool stays in the basket after the reservation is confirmed",
+      "maps_to": "real-unseeded",
+      "reason": "After confirming, 'Basket (1)' and a basket still offering Continue invite a duplicate booking and make the member doubt the reservation; not seeded."
+    },
+    {
+      "item": "F-0081",
+      "title": "Format errors on confirm read as if the field were empty",
+      "maps_to": "not-a-problem",
+      "reason": "'Enter a UK mobile number, like 07700 900123' states the required format with an example, the accepted pattern for format errors; the member is not misled about what to do."
+    },
+    {
+      "item": "F-0082",
+      "title": "Loan-length list does not close with Escape",
+      "maps_to": "tool-library-D09",
+      "reason": "Same: D09 states Escape does nothing in the loan-length list."
+    },
+    {
+      "item": "F-0089",
+      "title": "Search and filter choices are not kept in the URL",
+      "maps_to": "not-a-problem",
+      "reason": "Bookmarkable filters are a nice-to-have for a one-off reservation flow; no harm to the journey is shown."
+    },
+    {
+      "item": "F-0091",
+      "title": "Change opens the basket with no session selected",
+      "maps_to": "tool-library-D13",
+      "reason": "Same: the current session is not shown on return via Change."
+    },
+    {
+      "item": "F-0097",
+      "title": "Keyboard focus on calendar days hidden behind the sticky Reserve bar",
+      "maps_to": "tool-library-D08",
+      "reason": "Same: Tab reaches a day in the bottom 72 px without scrolling and the fixed bar covers the focused control."
+    },
+    {
+      "item": "F-0106",
+      "title": "Every calendar day is a separate tab stop (over 20 Tabs to Reserve)",
+      "maps_to": "not-a-problem",
+      "reason": "One button per day is operable and common; the roving-tabindex grid is an efficiency preference, not a defect that blocks or misleads."
+    },
+    {
+      "item": "F-0110",
+      "title": "Every tool card shows the same placeholder wrench thumbnail",
+      "maps_to": "not-a-problem",
+      "reason": "Aesthetic; the names identify the tools, so no member is hindered."
+    },
+    {
+      "item": "F-0111",
+      "title": "No identity beyond the name in the masthead",
+      "maps_to": "not-a-problem",
+      "reason": "Brand and aesthetic taste with no effect on reserving a tool."
+    },
+    {
+      "item": "F-0144",
+      "title": "Sticky Reserve bar hides the open loan-length options at 375 px",
+      "maps_to": "real-unseeded",
+      "reason": "With the list open only 'One week' is visible and the other options sit under the fixed bar, so a phone member may not see they exist. Needs a stacking or flip fix, not D08's page padding."
+    },
+    {
+      "item": "F-0145",
+      "title": "Added-to-basket toast drawn over calendar cells",
+      "maps_to": "not-a-problem",
+      "reason": "A transient toast overlaying content for about a second is expected behaviour; nothing is lost."
+    },
+    {
+      "item": "F-0113",
+      "title": "Tool names truncated with an ellipsis on phone widths",
+      "maps_to": "tool-library-D03",
+      "reason": "Same: both drills show 'Cordless drill 18 V, co...' at 375 px."
+    },
+    {
+      "item": "F-0114",
+      "title": "Filter panel uses unstyled native date and select controls, misaligned",
+      "maps_to": "not-a-problem",
+      "reason": "Native controls are usable and accessible; a roughly 30 px label offset is visual polish, a matter of taste."
+    },
+    {
+      "item": "F-0115",
+      "title": "Dark theme drops the available badge's pill, inverting emphasis",
+      "maps_to": "tool-library-D04",
+      "reason": "Same dark-mode success tokens (tint equals surface) as D04; changing those two values fixes it."
+    },
+    {
+      "item": "F-0146",
+      "title": "Reservation number, session and deposit not emphasised on the done page",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic hierarchy preference; the values are shown and labelled."
+    },
+    {
+      "item": "F-0117",
+      "title": "Session list latest-first in an uneven one-plus-five layout at desktop",
+      "maps_to": "tool-library-D11",
+      "reason": "Both the reverse order and the stranded full-width card come from the row-reverse/wrap-reverse layout of D11."
+    },
+    {
+      "item": "F-0118",
+      "title": "Tool details split into two lists with misaligned value columns",
+      "maps_to": "not-a-problem",
+      "reason": "A few px of column misalignment is visual polish."
+    },
+    {
+      "item": "F-0119",
+      "title": "Search drops below the whole tool list on phones",
+      "maps_to": "tool-library-D01",
+      "reason": "Same as D01."
+    },
+    {
+      "item": "F-0121",
+      "title": "No visual identity beyond the name (duplicate of F-0111)",
+      "maps_to": "not-a-problem",
+      "reason": "Same taste item as F-0111."
+    },
+    {
+      "item": "F-0122",
+      "title": "Reservation number uses the same FT- prefix as membership numbers",
+      "maps_to": "not-a-problem",
+      "reason": "Speculative confusion; the two numbers differ in length and context and no harm is shown."
+    },
+    {
+      "item": "F-0123",
+      "title": "Same wrench glyph on every card (duplicate of F-0110)",
+      "maps_to": "not-a-problem",
+      "reason": "Same aesthetic item as F-0110."
+    },
+    {
+      "item": "F-0124",
+      "title": "No identity or focal point on any surface",
+      "maps_to": "not-a-problem",
+      "reason": "Aesthetic taste."
+    },
+    {
+      "item": "F-0125",
+      "title": "Tool titles truncate on phones so the two drills read identically",
+      "maps_to": "tool-library-D03",
+      "reason": "Same as D03."
+    },
+    {
+      "item": "F-0126",
+      "title": "Search block drops below all ten cards on phones",
+      "maps_to": "tool-library-D01",
+      "reason": "Same as D01."
+    },
+    {
+      "item": "F-0127",
+      "title": "Unthemed native date and select controls (duplicate of F-0114)",
+      "maps_to": "not-a-problem",
+      "reason": "Same visual-polish item as F-0114."
+    },
+    {
+      "item": "F-0129",
+      "title": "Misaligned definition lists (duplicate of F-0118)",
+      "maps_to": "not-a-problem",
+      "reason": "Same visual-polish item as F-0118."
+    },
+    {
+      "item": "F-0130",
+      "title": "Pick-up sessions in reverse date order with one stranded full-width card",
+      "maps_to": "tool-library-D11",
+      "reason": "Same reversed layout as D11."
+    },
+    {
+      "item": "F-0148",
+      "title": "Content column leaves the right half empty at wide widths",
+      "maps_to": "not-a-problem",
+      "reason": "A roughly 610 px reading column is a normal choice; taste."
+    },
+    {
+      "item": "F-0149",
+      "title": "Footer stops short, leaving a grey band below it",
+      "maps_to": "not-a-problem",
+      "reason": "Visual nit with no effect on use."
+    },
+    {
+      "item": "F-0132",
+      "title": "Done page still shows 'Basket (1)' after the reservation is confirmed",
+      "maps_to": "real-unseeded",
+      "reason": "Same genuine problem as F-0080: the basket is not cleared after confirming, so the member doubts the booking or may repeat it."
+    },
+    {
+      "item": "F-0133",
+      "title": "Available badges lose their tint in dark mode",
+      "maps_to": "tool-library-D04",
+      "reason": "Same dark-theme badge tokens as D04."
+    },
+    {
+      "item": "F-0134",
+      "title": "No-results search still shows the full catalogue on phones",
+      "maps_to": "tool-library-D02",
+      "reason": "Same no-results state as D02."
+    },
+    {
+      "item": "F-0150",
+      "title": "'Oct' orphaned on the badge's second line at 375 px",
+      "maps_to": "not-a-problem",
+      "reason": "Line-break nit; the badge is still readable."
+    },
+    {
+      "item": "F-0151",
+      "title": "Main navigation links wrap to two lines at 375 px",
+      "maps_to": "not-a-problem",
+      "reason": "The links remain readable and tappable; visual nit."
+    },
+    {
+      "item": "F-0152",
+      "title": "Done and confirm content fill only half the width (duplicate of F-0148)",
+      "maps_to": "not-a-problem",
+      "reason": "Same taste item as F-0148."
+    },
+    {
+      "item": "F-0153",
+      "title": "Reservation number plain body text (duplicate of F-0146)",
+      "maps_to": "not-a-problem",
+      "reason": "Same hierarchy preference as F-0146."
+    },
+    {
+      "item": "F-0139",
+      "title": "No-results state shows the full list with no empty-state message",
+      "maps_to": "tool-library-D02",
+      "reason": "Same state as D02; the hedge about the capture does not change the problem described."
+    },
+    {
+      "item": "F-0001",
+      "title": "axe colour contrast 3.07 (#2f7d4a on #1d2622, 16 px bold)",
+      "maps_to": "tool-library-D04",
+      "reason": "The exact colours and ratio of D04's dark-theme badge."
+    },
+    {
+      "item": "F-0002",
+      "title": "'Available from Sat 10 Oct' 3.07:1 in the dark theme",
+      "maps_to": "tool-library-D04",
+      "reason": "Same badge and ratio as D04."
+    },
+    {
+      "item": "F-0003",
+      "title": "APCA advisory on body text that passes WCAG (8.33:1)",
+      "maps_to": "not-a-problem",
+      "reason": "Passes WCAG; advisory only, no failure for members."
+    },
+    {
+      "item": "F-0004",
+      "title": "APCA advisory on 'Category' that passes WCAG",
+      "maps_to": "not-a-problem",
+      "reason": "Passes WCAG; advisory only."
+    },
+    {
+      "item": "F-0005",
+      "title": "APCA advisory on 'Items are held for you' that passes WCAG",
+      "maps_to": "not-a-problem",
+      "reason": "Passes WCAG; advisory only."
+    },
+    {
+      "item": "F-0006",
+      "title": "APCA advisory on 'Tools' that passes WCAG",
+      "maps_to": "not-a-problem",
+      "reason": "Passes WCAG; advisory only."
+    },
+    {
+      "item": "F-0007",
+      "title": "APCA advisory on 'Reservation number' that passes WCAG",
+      "maps_to": "not-a-problem",
+      "reason": "Passes WCAG; advisory only."
+    },
+    {
+      "item": "F-0008",
+      "title": "Day button and Reserve bar hit areas 0 px apart at 768 px",
+      "maps_to": "tool-library-D08",
+      "reason": "The gap is zero because the fixed bar overlaps the calendar rows at 768 px, which D08 describes (first two rows under the bar)."
+    },
+    {
+      "item": "F-0009",
+      "title": "Card name clips under the text-spacing override at 1280 px",
+      "maps_to": "tool-library-D03",
+      "reason": "nowrap plus hidden overflow on the card name, the mechanism behind D03; letting names wrap fixes both."
+    },
+    {
+      "item": "F-0010",
+      "title": "Card name clips at 200 % text size at 1280 px",
+      "maps_to": "tool-library-D03",
+      "reason": "Same one-line card-name mechanism as D03."
+    },
+    {
+      "item": "F-0011",
+      "title": "Reserve bar text overlaps day '17' at 1280 px",
+      "maps_to": "tool-library-D08",
+      "reason": "D08: at 1280 px a calendar row sits under the fixed bar because nothing keeps the page clear of it."
+    },
+    {
+      "item": "F-0012",
+      "title": "Horizontal page overflow 346 px > 320 px on the find page",
+      "maps_to": "tool-library-D05",
+      "reason": "Same numbers as D05 (26 px sideways scroll from the results cards)."
+    },
+    {
+      "item": "F-0013",
+      "title": "Content does not reflow at 320 px on the find page",
+      "maps_to": "tool-library-D05",
+      "reason": "Same overflow as D05."
+    },
+    {
+      "item": "F-0014",
+      "title": "Card name clipped in an overflow-hidden box at 320 px",
+      "maps_to": "tool-library-D03",
+      "reason": "Same one-line truncation of card names as D03."
+    },
+    {
+      "item": "F-0015",
+      "title": "Reserve bar overlaps #tool-from under the text-spacing override at 320 px",
+      "maps_to": "not-a-problem",
+      "reason": "A fixed bar covering text at the bottom of the initial viewport is inherent to a sticky bar and the text scrolls into view; not a spacing failure. D08's harm is at the end of the page and on focused controls, not here."
+    },
+    {
+      "item": "F-0016",
+      "title": "Reserve bar overlaps #tool-blurb at 200 % text size at 320 px",
+      "maps_to": "not-a-problem",
+      "reason": "Same checker artifact as F-0015: the fixed bar over scrollable header text, which remains reachable by scrolling."
+    },
+    {
+      "item": "F-0017",
+      "title": "Orphaned last word in the basket intro at 1280 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic nit."
+    },
+    {
+      "item": "F-0018",
+      "title": "Orphaned last word in the confirm note at 1280 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic nit."
+    },
+    {
+      "item": "F-0019",
+      "title": "Card body text 9.7 px from the viewport edge at 320 px",
+      "maps_to": "tool-library-D05",
+      "reason": "The card is wider than the viewport (D05), which pushes its text to the edge; a symptom of the same overflow."
+    },
+    {
+      "item": "F-0020",
+      "title": "Orphaned 'batteries' in the tool heading at 320 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic nit."
+    },
+    {
+      "item": "F-0021",
+      "title": "Orphaned 'confirmed' in the done heading at 320 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic nit."
+    },
+    {
+      "item": "F-0022",
+      "title": "Cramped 6.4 px inset on the pressure-washer card text",
+      "maps_to": "not-a-problem",
+      "reason": "Spacing nit with no shown effect on reading or tapping."
+    },
+    {
+      "item": "F-0023",
+      "title": "Orphaned '£20' on a card meta line at 375 px",
+      "maps_to": "not-a-problem",
+      "reason": "Typographic nit."
+    },
+    {
+      "item": "F-0024",
+      "title": "Focus jumps back from the last card to 'Search tools'",
+      "maps_to": "tool-library-D01",
+      "reason": "D01: on the find page the document order runs against the visual order, so Tab reaches search only after every card."
+    },
+    {
+      "item": "F-0025",
+      "title": "Focused 'One week' hidden behind the fixed action bar",
+      "maps_to": "tool-library-D08",
+      "reason": "Same: the fixed bar paints over a focused control because nothing keeps the page clear of it."
+    }
+  ]
+}

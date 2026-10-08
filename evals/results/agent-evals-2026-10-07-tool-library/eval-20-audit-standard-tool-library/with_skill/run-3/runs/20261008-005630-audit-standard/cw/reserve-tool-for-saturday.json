@@ -1,0 +1,220 @@
+{
+  "schema": "cw-record",
+  "run": "20261008-005630-audit-standard",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "journey": "reserve-tool-for-saturday",
+  "variant": "full",
+  "persona": {
+    "group": "Library member reserving online for the first time",
+    "knows": [
+      "the tool they want: the 18 V cordless drill that comes with two batteries",
+      "that tools are collected at the Saturday morning session",
+      "their membership number FT-01234 and their mobile number",
+      "that there is a deposit, paid at the desk"
+    ],
+    "does_not_know": [
+      "that only days marked 'Open' are sessions",
+      "how long the basket holds a tool",
+      "where the date filter is",
+      "how the basket works (context.md)"
+    ],
+    "device": "phone, 375 px wide, light theme",
+    "context": "Thursday evening, planning Saturday's job, a few minutes at a time, partly distracted"
+  },
+  "task": "Goal in the persona's words: 'get the drill with two batteries waiting for me at Saturday morning's session, for a week'. Scenario: putting up shelves on Saturday 17 October 2026; wants the cordless drill with two batteries for one week; membership number FT-01234. Success: /done.html shows 'Reservation confirmed' with 'Cordless drill 18 V, combi, two batteries'. Avoided hints: Filters, Reserve this tool, Continue, Confirm reservation, Basket.",
+  "start_state": {
+    "url": "/",
+    "data": "every tool is available from its listed date; the basket is empty",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "sequence": [
+    "1. On / fill the 'Search tools' searchbox with 'drill'",
+    "2. Press 'Search'",
+    "3. Open the link 'Cordless drill 18 V, combi, two batteries' (lands on /tool.html)",
+    "4. Choose Saturday 17 October in the pick-up day grid",
+    "5. Press 'Reserve this tool' (header becomes 'Basket (1)')",
+    "6. Open the header link 'Basket (1)' (lands on /basket.html)",
+    "7. Choose the session 'Saturday 17 October, 10:00 to 13:00'",
+    "8. Press 'Continue' (lands on /confirm.html)",
+    "9. Fill Membership number, Your name, Mobile number",
+    "10. Press 'Confirm reservation' (shows 'Reservation confirmed')"
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "action": { "action": "fill", "target": "role=searchbox[name=\"Search tools\"]", "value": "drill" },
+      "sub_goal": "find the drill",
+      "visible_cues": "First viewport: header (Find a tool, Basket (0), Opening times), heading 'Find a tool', intro text, then the 'Tools' list of 10 cards. No search field is visible; it sits after all ten cards, roughly two-thirds down a 2593 px page.",
+      "most_likely_action": "Scroll the tool list looking for a drill, or look for a search box at the top and not find one.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona has a specific tool in mind and wants to find it; looking for it by name fits their goal.", "evidence": ["probes/6/screenshots/home-full.png"] },
+        "q2": { "answer": "no", "story": "On a phone the search field is below all ten tool cards (region 'Search' comes after region 'Tools' in the ARIA tree). Nothing in the first viewport suggests a search exists. Missing knowledge: that a search box exists at the bottom of the list.", "evidence": ["probes/1/step-01.png", "probes/6/screenshots/home-full.png", "probes/6/aria.yml"] },
+        "q3": { "answer": "yes", "story": "Once found, the label 'Search tools' and the 'Search' button match the persona's intent.", "evidence": ["probes/6/aria.yml: searchbox \"Search tools\""] },
+        "q4": { "answer": "yes", "story": "Typed text appears in the field.", "evidence": ["probes/1/step-02.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona looks for a way to search near the top, sees only a long list of cards and has to scroll past all ten to find the search. Many would just scroll the list and spot a drill card instead (an alternative path), which leads straight into the step-3 problem.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 2,
+      "action": { "action": "click", "target": "role=button[name=\"Search\"]" },
+      "sub_goal": "narrow the list to drills",
+      "visible_cues": "Button 'Search' next to a filter icon button; after pressing, the viewport shows the bottom of the list with a single drill card directly above the search box.",
+      "most_likely_action": "Press Search, then tap the card visible just above the search box.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Having typed 'drill', pressing Search is the natural next move.", "evidence": ["probes/1/step-02.png"] },
+        "q2": { "answer": "yes", "story": "The dark 'Search' button sits right under the field.", "evidence": ["probes/1/step-02.png"] },
+        "q3": { "answer": "yes", "story": "'Search' is the persona's own word.", "evidence": ["probes/6/aria.yml"] },
+        "q4": { "answer": "no", "story": "The results update above the search box, out of the viewport. The status '2 tools found' sits at the top of the list and is not visible. All the persona sees is one card just above the search box: the last result, 'Cordless drill 18 V, combi, one battery', with its title truncated. Missing feedback: that there are two results and that the list above changed.", "evidence": ["probes/1/step-03.png", "probes/6/screenshots/search-full.png", "probes/6/aria.yml: status \"2 tools found\"; second listitem is the one-battery drill"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "After pressing Search the screen barely changes: the persona sees one drill card above the box and assumes it is the only drill. It is the one-battery model.",
+      "missing": "feedback"
+    },
+    {
+      "n": 3,
+      "action": { "action": "click", "target": "role=link[name=\"Cordless drill 18 V, combi, two batteries\"]" },
+      "sub_goal": "open the two-battery drill",
+      "visible_cues": "Two cards whose visible titles both read 'Cordless drill 18 V, co…'; same category, deposit £20 and 'Available from Sat 10 Oct'. Only the second (one battery) is in view after searching.",
+      "most_likely_action": "Tap the card that is in view (the one-battery drill), or tap either at random.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Opening the drill to reserve it fits the goal.", "evidence": [] },
+        "q2": { "answer": "no", "story": "After searching at 375 px, the correct card is above the viewport; the visible card is the wrong one.", "evidence": ["probes/1/step-03.png", "probes/6/screenshots/search-full.png"] },
+        "q3": { "answer": "no", "story": "The visible titles are cut off before 'two batteries' / 'one battery', so the only words that tell the drills apart, and the persona's own words ('the drill with two batteries'), are hidden. Both cards otherwise show identical metadata. Missing knowledge: which card is the two-battery drill.", "evidence": ["probes/6/screenshots/search-full.png", "probes/6/aria.yml: links 'Cordless drill 18 V, combi, two batteries' and '... one battery'"] },
+        "q4": { "answer": "yes", "story": "The tool page heading shows the full name 'Cordless drill 18 V, combi, two batteries' and Batteries 'two, 4 Ah', so a careful persona can check it (and back out if wrong).", "evidence": ["probes/1/step-05.png", "probes/13/aria.yml"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona taps the visible card, lands on the one-battery drill, and recovers only if they read the heading carefully. A distracted persona may reserve the wrong drill.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 4,
+      "action": { "action": "click", "target": ".day[data-day=\"2026-10-17\"]" },
+      "sub_goal": "say I'll collect on Saturday 17 October",
+      "visible_cues": "First viewport: description, Details list, 'Loan length' heading with the select partly hidden, and a sticky 'Reserve this tool' bar covering the 'Pick-up day' heading. The day grid (numbers only, Saturday column with green dots) is below the fold.",
+      "most_likely_action": "Tap 'Reserve this tool' straight away (visible and prominent), or scroll down and find the calendar.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona knows they collect on Saturday and expects to say when; the text 'Choose the day you will collect the tool' matches. If they tap Reserve first, the inline error 'Choose a pick-up day first.' sends them back.", "evidence": ["probes/20/screenshots/reserve-no-day.png"] },
+        "q2": { "answer": "no", "story": "At 375 px the day grid is below the fold, and the sticky 'Reserve this tool' bar covers the 'Pick-up day' heading. The prominent sticky button suggests the page is done before the day is chosen. Missing knowledge: that a required choice is further down.", "evidence": ["probes/1/step-05.png", "probes/13/screenshots/tool-full.png"] },
+        "q3": { "answer": "yes", "story": "'Pick-up day' matches the persona's 'pick up'; Saturday 17 is in the 'Sa' column with a dot. The grid has no visible month caption, but nearby text says October.", "evidence": ["probes/13/aria.yml: button \"Saturday 17 October, open\""] },
+        "q4": { "answer": "yes", "story": "17 gets a bold border and the line changes to 'Pick-up day: Saturday 17 October'.", "evidence": ["probes/13/screenshots/tool-day-full.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona sees the sticky Reserve button and taps it before scrolling. The error message recovers them, at the cost of a detour.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 5,
+      "action": { "action": "click", "target": "role=button[name=\"Reserve this tool\"]" },
+      "sub_goal": "reserve the drill",
+      "visible_cues": "Sticky dark button 'Reserve this tool'.",
+      "most_likely_action": "Tap it.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Reserving is exactly the goal.", "evidence": [] },
+        "q2": { "answer": "yes", "story": "The button is pinned to the bottom of the screen.", "evidence": ["probes/1/step-08.png"] },
+        "q3": { "answer": "yes", "story": "'Reserve' is the persona's word for the goal.", "evidence": ["probes/13/aria.yml"] },
+        "q4": { "answer": "no", "story": "The only feedback is a small dark toast, 'Added to your basket', which is gone by the 4.4 s capture and does not appear in the ARIA snapshot. The header 'Basket (1)' is scrolled out of view, and the button still reads 'Reserve this tool'. Having pressed 'Reserve', the persona reads the toast as done and is not told the reservation is unfinished. Missing feedback: a persistent statement that the tool is only held and that a session must still be chosen.", "evidence": ["probes/1/step-10.png", "probes/20/screenshots/reserved-0400.png", "probes/20/screenshots/reserved-4400.png", "probes/20/aria.yml"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona taps Reserve, glimpses 'Added to your basket' and may take it as the reservation. Nothing persistent remains on screen, and it doesn't say what to do next.",
+      "missing": "feedback"
+    },
+    {
+      "n": 6,
+      "action": { "action": "click", "target": "role=link[name=\"Basket (1)\"]" },
+      "sub_goal": "finish the reservation",
+      "visible_cues": "Viewport shows the calendar and the sticky Reserve button; the header link 'Basket (1)' is off-screen above. No 'go to basket' or 'next' link near the button.",
+      "most_likely_action": "Close the tab believing the drill is reserved, or press Reserve again.",
+      "answers": {
+        "q1": { "answer": "no", "story": "The persona has already chosen the day and pressed 'Reserve this tool'. They have no reason to think a session, their details and a confirmation step are still needed, and they don't know how the basket works. Missing knowledge: that pressing Reserve only holds the tool and the reservation is finished in the basket.", "evidence": ["probes/1/step-10.png", "context.md: first-time members do not know how the basket works"] },
+        "q2": { "answer": "no", "story": "At 375 px, after reserving, the only route on, the header link 'Basket (1)', is scrolled out of view, and nothing near the button points to it.", "evidence": ["probes/1/step-10.png", "probes/20/screenshots/reserved-4400.png"] },
+        "q3": { "answer": "yes", "story": "If they scroll up, 'Basket (1)' with the count reads as where the drill went.", "evidence": ["probes/20/aria.yml: link \"Basket (1)\""] },
+        "q4": { "answer": "yes", "story": "The basket page heading 'Your basket' lists the drill and says 'Choose when you will collect them, then continue to confirm.'", "evidence": ["probes/25/screenshots/basket-full.png"] }
+      },
+      "verdict": "would_not",
+      "failure_story": "A first-time member who pressed 'Reserve this tool' and saw 'Added to your basket' is likely to put the phone down thinking the drill is reserved. Nothing on screen says the reservation is incomplete, and the basket link is out of view. On Saturday the desk has no reservation.",
+      "missing": "both"
+    },
+    {
+      "n": 7,
+      "action": { "action": "check", "target": "role=radio[name=\"Saturday 17 October, 10:00 to 13:00\"]" },
+      "sub_goal": "pick Saturday morning",
+      "visible_cues": "'Pick-up session' with six radio cards, ordered latest first: Wed 28 Oct, Sat 24 Oct, Wed 21 Oct, Sat 17 Oct, Wed 14 Oct, Sat 10 Oct. The tool card above already says 'Pick up Saturday 17 October'. No session is preselected.",
+      "most_likely_action": "Pick the first Saturday in the list (24 October), or press Continue thinking the day is already set.",
+      "answers": {
+        "q1": { "answer": "no", "story": "The persona has already chosen Saturday 17 October on the tool page, and the basket repeats 'Pick up Saturday 17 October'. Being asked again for a session reads as already done. Missing knowledge: that the day chosen earlier does not set the session. If they press Continue, the error summary 'Choose a pick-up session' sends them back.", "evidence": ["probes/25/screenshots/basket-full.png", "probes/30/screenshots/continue-no-session.png"] },
+        "q2": { "answer": "yes", "story": "The radio list is in the first viewport below the tool card.", "evidence": ["probes/25/screenshots/basket-full.png"] },
+        "q3": { "answer": "no", "story": "The persona scans for 'Saturday morning'. The list runs from the latest date to the earliest, so the first Saturday they meet is 24 October, not this Saturday; 17 October is fourth. Missing knowledge: that the list is in reverse date order.", "evidence": ["probes/25/screenshots/basket-full.png"] },
+        "q4": { "answer": "yes", "story": "The chosen card's radio fills and its label turns bold.", "evidence": ["probes/25/screenshots/basket-checked.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona either skips the choice (and is caught by the error) or taps 'Saturday 24 October', the first Saturday they see. The second error is caught only if they read the summary on the next page.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 8,
+      "action": { "action": "click", "target": "role=button[name=\"Continue\"]" },
+      "sub_goal": "move on to confirm",
+      "visible_cues": "Dark 'Continue' button under the sessions.",
+      "most_likely_action": "Tap Continue.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The intro said 'then continue to confirm'.", "evidence": ["probes/25/screenshots/basket-full.png"] },
+        "q2": { "answer": "yes", "story": "The button is directly under the list.", "evidence": ["probes/25/screenshots/basket-checked.png"] },
+        "q3": { "answer": "yes", "story": "'Continue' matches the instruction text.", "evidence": [] },
+        "q4": { "answer": "no", "story": "After the tap nothing changes on screen at 200 ms or 800 ms: no pressed or busy state on the button. The confirm page arrives about 1.2 s later. Missing feedback: an acknowledgement that the tap registered.", "evidence": ["probes/25/screenshots/continue-200ms.png", "probes/25/screenshots/continue-800ms.png", "probes/1/probe.json step 16: 1218 ms until /confirm.html"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "On a phone the persona taps Continue, sees nothing happen and taps again or wonders whether it worked; then the page changes.",
+      "missing": "feedback"
+    },
+    {
+      "n": 9,
+      "action": [
+        { "action": "fill", "target": "label=Membership number", "value": "FT-01234" },
+        { "action": "fill", "target": "label=Your name", "value": "Test Member" },
+        { "action": "fill", "target": "label=Mobile number", "value": "07700 900123" }
+      ],
+      "sub_goal": "give the desk my details",
+      "visible_cues": "'Check and confirm' summary (tool, session with Change link, deposit), then labelled fields with hints: 'On your membership card, like FT-01234.' and 'We text you if a tool is returned late by the previous borrower.'",
+      "most_likely_action": "Fill the three fields.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona knows their membership and mobile numbers and expects to identify themselves.", "evidence": ["probes/30/screenshots/confirm-full.png"] },
+        "q2": { "answer": "yes", "story": "All three fields are in the first viewport.", "evidence": ["probes/30/screenshots/confirm-full.png"] },
+        "q3": { "answer": "yes", "story": "Plain labels with format hint matching their card.", "evidence": ["probes/30/screenshots/confirm-full.png"] },
+        "q4": { "answer": "yes", "story": "Typed values appear in the fields.", "evidence": ["probes/30/screenshots/confirm-filled.png"] }
+      },
+      "verdict": "would",
+      "missing": null
+    },
+    {
+      "n": 10,
+      "action": { "action": "click", "target": "role=button[name=\"Confirm reservation\"]" },
+      "sub_goal": "make the reservation",
+      "visible_cues": "'Nothing is paid online…' then 'Confirm reservation'.",
+      "most_likely_action": "Tap Confirm reservation.",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Confirming matches the goal; the page title is 'Check and confirm'.", "evidence": [] },
+        "q2": { "answer": "yes", "story": "The button is in view below the fields.", "evidence": ["probes/30/screenshots/confirm-filled.png"] },
+        "q3": { "answer": "yes", "story": "'Confirm reservation' says exactly what the persona wants.", "evidence": [] },
+        "q4": { "answer": "no", "story": "300 ms after the tap the page is unchanged, with no pressed or busy state; the done page arrives about 1 s later. It then gives clear feedback: 'Reservation confirmed', reservation number, tool, session, deposit and 'What happens next'. Missing feedback: acknowledgement during the wait, which raises the risk of a second tap on a commit action.", "evidence": ["probes/30/screenshots/confirm-300ms.png", "probes/1/probe.json step 22: 1047 ms until 'Reservation confirmed'", "probes/1/final.png"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona taps Confirm, sees nothing for a moment and may tap again; then the clear confirmation appears.",
+      "missing": "feedback"
+    }
+  ],
+  "overall": "would_not",
+  "failure_points": [
+    "step 1 CW-Q2 (search below list)",
+    "step 2 CW-Q4 (results update out of view)",
+    "step 3 CW-Q2, CW-Q3 (truncated identical drill titles)",
+    "step 4 CW-Q2 (day grid below fold, sticky Reserve covers its heading)",
+    "step 5 CW-Q4 and step 6 CW-Q1, CW-Q2 (Reserve does not reserve; transient toast; basket link out of view)",
+    "step 7 CW-Q1 (session re-asked after day chosen), CW-Q3 (sessions latest first)",
+    "steps 8 and 10 CW-Q4 (no acknowledgement during ~1 s navigation)"
+  ],
+  "notes": "Walked the defined sequence only, at 375x812 light. The sequence replayed end to end (probes/1, all steps ok); that is not predicted user success. These are E0 failure-point hypotheses. Alternative path noted: scrolling the unfiltered list to the drill card instead of searching (it meets the same truncation problem). Observed but not on the path: the header still reads 'Basket (1)' on the done page, which may make a member wonder whether something is still pending. Recoveries worth keeping: 'Choose a pick-up day first.' on the tool page and the error summary 'Choose a pick-up session' in the basket. The journey file's _comment mentions a ground-truth file; I did not open it. Probe dirs are relative to .ui-evaluator/runs/20261008-005630-audit-standard/."
+}

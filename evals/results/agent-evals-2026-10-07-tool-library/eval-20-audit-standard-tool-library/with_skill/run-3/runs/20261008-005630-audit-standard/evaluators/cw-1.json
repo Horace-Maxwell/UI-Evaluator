@@ -1,0 +1,225 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261008-005630-audit-standard",
+  "packet_hash": "6a3d03783e57d0a0",
+  "notes": "Cognitive walkthrough (full four-question variant) of reserve-tool-for-saturday at 375x812, light theme. Record: cw/reserve-tool-for-saturday.json. Journey verdict would_not (step 6). All candidates are E0 failure-point hypotheses; the replay passing is not predicted user success. Evidence refs are relative to .ui-evaluator/runs/20261008-005630-audit-standard/. The journey file's _comment mentions a ground-truth file; it was not opened.",
+  "coverage": {
+    "routes": ["/", "/tool.html?id=drill-18v-two", "/basket.html", "/confirm.html", "/done.html"],
+    "states": ["home default", "home after search", "tool default", "tool day chosen", "tool reserve without day", "tool after reserve", "basket default", "basket no-session error", "confirm default", "confirm filled", "done"]
+  },
+  "task_suitability": [
+    { "task": "reserve-tool-for-saturday", "completable": true, "evidence": "probes/1/probe.json: defined sequence replays, all steps ok (completable by someone who knows the path; not a prediction of user success)" }
+  ],
+  "strengths": [
+    { "title": "Pressing 'Reserve this tool' before choosing a day shows 'Choose a pick-up day first.' next to the day grid, so the member can recover", "evidence": "probes/20/screenshots/reserve-no-day.png" },
+    { "title": "Basket shows an error summary 'There is a problem / Choose a pick-up session' when Continue is pressed with no session", "evidence": "probes/30/screenshots/continue-no-session.png" },
+    { "title": "Done page says clearly what was reserved, the session, the deposit to bring and what to do if the member can't make it", "evidence": "probes/1/final.png" }
+  ],
+  "not_assessable": [
+    "Behaviour on real mobile Safari/Chrome (probes ran in Chromium at 375x812)",
+    "Whether the toast is announced to screen readers (it was absent from the ARIA snapshot at the captured moments)"
+  ],
+  "candidates": [
+    {
+      "title": "Search field sits below the whole tool list on a phone",
+      "description": "A member arriving with a specific tool in mind expects to find a way to search near the top of a 'Find a tool' page. At 375 px the 'Search tools' field, the 'Search' button and the Filters button come after all ten tool cards, roughly two-thirds down a 2593 px page. Nothing in the first viewport shows that search exists.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "First-time members on a phone may not notice that they can search, and may scroll the list instead, which leads them to the indistinguishable drill cards.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=searchbox[name=\"Search tools\"]", "snippet": "Search tools", "journey": "reserve-tool-for-saturday", "step": 1 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/6/screenshots/home-full.png", "detail": "full page at 375 px: search after ten cards" },
+        { "type": "screenshot", "ref": "probes/1/step-01.png", "detail": "first viewport: no search visible" },
+        { "type": "aria", "ref": "probes/6/aria.yml", "detail": "region 'Search' follows region 'Tools'" }
+      ],
+      "factor_notes": { "frequency": "Every visit to / on a phone, which is the main device.", "impact": "Adds scrolling and pushes members onto the list path; recoverable.", "persistence": "Returning members learn where it is." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Place the search above the tool list on small screens.",
+      "tags": ["findability", "mobile", "search"]
+    },
+    {
+      "title": "Search results change above the viewport, leaving only the last result next to the search box",
+      "description": "After a search, the member should be able to see what changed and how many results there are. At 375 px the list filters above the search box. The status '2 tools found' is at the top of the list, out of view, and the only card in view is the last result, 'Cordless drill 18 V, combi, one battery'. Focus and scroll stay at the search box.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Members may think the one visible drill is the only result and open the one-battery drill instead of the one they wanted.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/", "state": "search results 'drill'", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "search results 'drill'", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Search\"]", "snippet": "Search", "journey": "reserve-tool-for-saturday", "step": 2 }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/1/step-03.png", "detail": "viewport after pressing Search: one drill card (the last result) above the search box; no count visible" },
+        { "type": "aria", "ref": "probes/6/aria.yml", "detail": "status '2 tools found' at top of region 'Tools'; second listitem is 'Cordless drill 18 V, combi, one battery'" },
+        { "type": "screenshot", "ref": "probes/6/screenshots/search-full.png" }
+      ],
+      "factor_notes": { "frequency": "Every search on a phone.", "impact": "Can lead to opening the wrong tool; recoverable if the member reads the tool heading.", "persistence": "Likely to recur, because the layout puts results above the field." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "After searching, bring the start of the results and the count into view.",
+      "tags": ["feedback", "search", "mobile"]
+    },
+    {
+      "title": "Tool card titles truncate before the words that distinguish the two cordless drills",
+      "description": "Each card should show enough of its name for members to tell similar tools apart. At 375 px both drill cards show 'Cordless drill 18 V, co…', cutting off 'two batteries' and 'one battery'. Their category, deposit (£20) and availability (Sat 10 Oct) are identical. The full names exist only as accessible names.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q3", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Members looking for 'the drill with two batteries' cannot tell which card it is and may open or reserve the one-battery drill.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/", "state": "search results 'drill'", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/", "state": "search results 'drill'", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=link[name=\"Cordless drill 18 V, combi, two batteries\"]", "snippet": "Cordless drill 18 V, combi, two batteries", "journey": "reserve-tool-for-saturday", "step": 3 },
+        { "route": "/", "state": "search results 'drill'", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=link[name=\"Cordless drill 18 V, combi, one battery\"]", "snippet": "Cordless drill 18 V, combi, one battery", "journey": "reserve-tool-for-saturday", "step": 3 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/6/screenshots/search-full.png", "detail": "both titles read 'Cordless drill 18 V, co…'" },
+        { "type": "screenshot", "ref": "probes/6/screenshots/home-full.png", "detail": "other cards truncated too (e.g. 'Extension ladder 3 m …')" },
+        { "type": "aria", "ref": "probes/6/aria.yml" }
+      ],
+      "factor_notes": { "frequency": "Every list view on a phone; affects any tools that differ only in the end of their names.", "impact": "Wrong-tool choice is possible; the tool page heading allows recovery if read.", "persistence": "Persists for returning members." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Let card titles wrap instead of truncating.",
+      "tags": ["labels", "truncation", "mobile"]
+    },
+    {
+      "title": "Pick-up day grid is below the fold and its heading is covered by the sticky Reserve bar",
+      "description": "A required choice should be visible, or clearly signposted, before the commit button. On the tool page at 375 px, the first viewport ends at 'Loan length'. The sticky 'Reserve this tool' bar covers the 'Pick-up day' heading, and the day grid is below the fold. The prominent commit button is offered before the required day is visible.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "impact": "Members may tap Reserve before choosing a day and need the error message to find the calendar, a detour on a phone.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=group[name=\"Pick-up day\"]", "snippet": "Pick-up day", "journey": "reserve-tool-for-saturday", "step": 4 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/1/step-05.png", "detail": "first viewport on tool page: no day grid; sticky Reserve bar at bottom" },
+        { "type": "screenshot", "ref": "probes/13/screenshots/tool-full.png", "detail": "sticky bar overlaps the 'Pick-up day' heading" },
+        { "type": "probe", "ref": "probes/20/screenshots/reserve-no-day.png", "detail": "Reserve without day shows 'Choose a pick-up day first.'" }
+      ],
+      "factor_notes": { "frequency": "Every reservation on a phone.", "impact": "Detour, recovered by the inline error.", "persistence": "Members likely learn it after one reservation." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Keep the sticky bar from covering content, and consider placing the day choice before the details on small screens.",
+      "tags": ["findability", "mobile", "sticky"]
+    },
+    {
+      "title": "After 'Reserve this tool' nothing persistent says the reservation is unfinished or where to go next",
+      "description": "After a member presses a button labelled 'Reserve', they should see whether the reservation is made and, if not, what remains. Pressing 'Reserve this tool' only adds the tool to the basket. The only feedback is a small toast, 'Added to your basket', which has gone by the 4.4 s capture and is absent from the ARIA snapshot. The button label stays the same. The header link 'Basket (1)', the only way on, is scrolled out of view at 375 px, and nothing near the button points to the basket, to the session choice or to the confirmation still needed.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "cw", "id": "CW-Q4" },
+        { "kind": "cw", "id": "CW-Q2" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "First-time members, who don't know how the basket works, are likely to believe the drill is reserved and leave. No reservation reaches the desk, and the member may turn up on Saturday to find no tool set aside.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/tool.html?id=drill-18v-two", "state": "after reserve", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two", "state": "after reserve", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Reserve this tool\"]", "snippet": "Reserve this tool", "journey": "reserve-tool-for-saturday", "step": 5 },
+        { "route": "/tool.html?id=drill-18v-two", "state": "after reserve", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=link[name=\"Basket (1)\"]", "snippet": "Basket", "journey": "reserve-tool-for-saturday", "step": 6 }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/1/step-10.png", "detail": "500 ms after Reserve: toast 'Added to your basket'; header out of view" },
+        { "type": "probe", "ref": "probes/20/screenshots/reserved-4400.png", "detail": "4.4 s after Reserve: toast gone, view unchanged apart from the selected day" },
+        { "type": "aria", "ref": "probes/20/aria.yml", "detail": "no status/alert containing the toast text; link 'Basket (1)' only in banner" },
+        { "type": "quote", "ref": "context.md", "detail": "first-time members do not know how the basket works" }
+      ],
+      "factor_notes": { "frequency": "Every first reservation; the critical journey.", "impact": "The member may leave with no reservation made and not find out until Saturday.", "persistence": "Members who learn the basket flow avoid it; first-timers and infrequent members (a handful of times a year) meet it again." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "After adding, show a persistent message such as 'Held in your basket - choose a session to finish' with a link to the basket, and/or label the button for what it does.",
+      "tags": ["feedback", "flow", "basket", "critical-journey"]
+    },
+    {
+      "title": "Basket asks for a pick-up session again after the day was already chosen",
+      "description": "Information the member has already given should carry forward. On the tool page the member chose Saturday 17 October, and the basket card repeats 'Pick up Saturday 17 October'. The 'Pick-up session' list below has nothing preselected and must be answered again. Pressing Continue without it shows 'Choose a pick-up session'.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "heuristic", "id": "H7" }
+      ],
+      "impact": "Members may think the session is already set, press Continue and hit an error. Or they may choose a session that differs from the day they picked.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=radio[name=\"Saturday 17 October, 10:00 to 13:00\"]", "snippet": "Saturday 17 October, 10:00 to 13:00", "journey": "reserve-tool-for-saturday", "step": 7 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/25/screenshots/basket-full.png", "detail": "card says 'Pick up Saturday 17 October'; no session preselected" },
+        { "type": "probe", "ref": "probes/30/screenshots/continue-no-session.png", "detail": "Continue with no session: 'There is a problem / Choose a pick-up session'" }
+      ],
+      "factor_notes": { "frequency": "Every reservation.", "impact": "Error detour, or a session mismatched with the chosen day.", "persistence": "Recurs each time, though members may learn it." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Preselect the session matching the chosen pick-up day, or ask for the day only once.",
+      "tags": ["flow", "redundancy", "basket"]
+    },
+    {
+      "title": "Pick-up sessions are listed latest first, so the first Saturday shown is not this Saturday",
+      "description": "Date choices are expected in date order, soonest first. The basket's session list runs Wed 28 Oct, Sat 24 Oct, Wed 21 Oct, Sat 17 Oct, Wed 14 Oct, Sat 10 Oct. A member looking for 'Saturday morning' meets Saturday 24 October first; this Saturday (17 October) is fourth.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q3", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "Members may pick the wrong Saturday, and the tool is then set aside a week late.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=radio[name=\"Wednesday 28 October, 18:00 to 20:00\"]", "snippet": "Wednesday 28 October, 18:00 to 20:00", "journey": "reserve-tool-for-saturday", "step": 7 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/25/screenshots/basket-full.png", "detail": "order: 28 Oct, 24 Oct, 21 Oct, 17 Oct, 14 Oct, 10 Oct" }
+      ],
+      "factor_notes": { "frequency": "Every reservation.", "impact": "Wrong session possible; the confirm summary shows the session, so careful members may catch it.", "persistence": "Persists." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "List sessions in date order, soonest first.",
+      "tags": ["ordering", "dates", "basket"]
+    },
+    {
+      "title": "Continue and Confirm reservation give no acknowledgement while the next page loads",
+      "description": "A tap should be acknowledged at once. After 'Continue' in the basket, the screen is unchanged at 200 ms and 800 ms, with no pressed or busy state, and /confirm.html arrives at about 1.2 s. After 'Confirm reservation', the screen is unchanged at 300 ms and 'Reservation confirmed' appears at about 1.0 s.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Members on a phone may think the tap missed and tap again. On the commit button this may cause confusion about whether the reservation was made twice.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve the two-battery drill for Saturday", "journey": "reserve-tool-for-saturday", "route": "/basket.html", "state": "session chosen", "viewport": { "width": 375, "height": 812 }, "theme": "light" },
+      "locations": [
+        { "route": "/basket.html", "state": "session chosen", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Continue\"]", "snippet": "Continue", "journey": "reserve-tool-for-saturday", "step": 8 },
+        { "route": "/confirm.html", "state": "filled", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Confirm reservation\"]", "snippet": "Confirm reservation", "journey": "reserve-tool-for-saturday", "step": 10 }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/25/screenshots/continue-200ms.png", "detail": "200 ms after Continue: unchanged" },
+        { "type": "probe", "ref": "probes/25/screenshots/continue-800ms.png", "detail": "800 ms after Continue: unchanged" },
+        { "type": "probe", "ref": "probes/1/probe.json", "detail": "step 16: 1218 ms until /confirm.html; step 22: 1047 ms until 'Reservation confirmed'" },
+        { "type": "probe", "ref": "probes/30/screenshots/confirm-300ms.png", "detail": "300 ms after Confirm reservation: unchanged" }
+      ],
+      "factor_notes": { "frequency": "Twice per reservation.", "impact": "Uncertainty and repeat taps; the done page then confirms clearly.", "persistence": "Every time." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Show a pressed or busy state on tap and ignore repeat taps until the next page loads.",
+      "tags": ["feedback", "latency"]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261007-234951-audit-standard",
+  "packet_hash": "89c69522b295c1ac",
+  "notes": "Cognitive walkthrough (four-question variant) of journey reserve-tool-for-saturday at 375x812, light theme. Record: cw/reserve-tool-for-saturday.json. Probes: probes/cw-1-full (correct sequence, passed), probes/cw-1-detail (viewport captures, timing, basket error), probes/cw-1-tool (Reserve before choosing a day). All candidates are E0 failure-point hypotheses; the walker's completion is not predicted user success. Independence: the journey file's _comment field mentions a ground-truth file; it was not opened. No source, builder notes, detector output or other evaluators' files were read. Evidence paths are relative to the run directory.",
+  "coverage": {
+    "routes": ["/", "/tool.html", "/basket.html", "/confirm.html", "/done.html"],
+    "states": ["home default", "home after search", "tool default", "tool reserve-without-day", "tool day-chosen", "tool added", "basket default", "basket errors", "confirm filled", "done"],
+    "out_of_scope": ["Filters panel", "Change session link on confirm", "journey change-pickup-session"]
+  },
+  "strengths": [
+    { "title": "Confirm page restates tool, loan length, pick-up day, session and deposit before commit, with 'Nothing is paid online', which answers the persona's deposit question", "evidence": "probes/cw-1-full/screenshots/s7-confirm.png" },
+    { "title": "Membership number hint 'On your membership card, like FT-01234' matches what the persona holds", "evidence": "probes/cw-1-full/screenshots/s7-confirm.png" },
+    { "title": "Done page states reservation number, session, deposit and what to bring, plus what to do if they cannot make the session", "evidence": "probes/cw-1-full/screenshots/s8-done.png" }
+  ],
+  "candidates": [
+    {
+      "title": "'Reserve this tool' only adds to a basket, and nothing in view says the reservation is unfinished or leads on to finish it",
+      "description": "A button labelled with the user's goal should either complete that goal or make clear what remains and offer the next step. On the tool page, 'Reserve this tool' adds the tool to a basket; the only feedback is a toast 'Added to your basket' that disappears within 4 s, the button label stays the same, and the only way on, the header link 'Basket (1)', is scrolled out of view. A first-time member who pressed 'Reserve' has no cue that a session, their details and a confirmation are still required.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "cw", "id": "CW-Q2" },
+        { "kind": "cw", "id": "CW-Q4" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "A member may leave believing the drill is reserved and arrive on Saturday with no reservation.",
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two", "state": "added", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Reserve this tool\"]", "snippet": "Reserve this tool", "journey": "reserve-tool-for-saturday", "step": 5 },
+        { "route": "/tool.html?id=drill-18v-two", "state": "added", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "#basket-link", "snippet": "Basket", "journey": "reserve-tool-for-saturday", "step": 6 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-full/screenshots/s5-added.png", "detail": "toast 'Added to your basket' just after the tap; header out of view" },
+        { "type": "probe", "ref": "probes/cw-1-detail/screenshots/added-after-4s.png", "detail": "4 s after the tap: toast gone, screen as before the tap, no next-step control" }
+      ],
+      "factor_notes": { "frequency": "every reservation passes through this button", "impact": "can end the task silently without a reservation (step verdict would_not)", "persistence": "first-time and occasional members (a handful of times a year) meet it each time" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Label the action for what it does (for example 'Add to basket'), and after adding show a persistent in-view message with a link to finish the reservation.",
+      "tags": ["feedback", "flow", "journey:reserve-tool-for-saturday"]
+    },
+    {
+      "title": "Search field sits after the full tool list on a phone",
+      "description": "On a find page, search should be visible near the top. At 375 px the 'Search tools' field and 'Search' button appear after all ten tool cards, about two screens down; the first viewport shows no search or hint of one.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q2", "primary": true } ],
+      "impact": "Members on phones may not find search and browse or guess instead, which here leads into the identical drill titles.",
+      "locations": [ { "route": "/", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=searchbox[name=\"Search tools\"]", "snippet": "Search tools", "journey": "reserve-tool-for-saturday", "step": 1 } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-detail/screenshots/home-full.png", "detail": "full page: search after ten cards" },
+        { "type": "screenshot", "ref": "probes/cw-1-full/step-01.png", "detail": "first viewport: no search visible" }
+      ],
+      "factor_notes": { "frequency": "every phone visit to the find page", "impact": "detour, recoverable when the wanted tool is near the top", "persistence": "grows with the catalogue" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Place the search field above the tool list.",
+      "tags": ["findability", "mobile"]
+    },
+    {
+      "title": "Search results update above the viewport with no visible change near the Search button",
+      "description": "A search should show its result where the user is looking. After tapping Search at 375 px the page stays scrolled at the field; the filtered list changes above, out of view, and no count or message appears near the button.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q4", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Members may think the search did nothing and tap again or give up on search.",
+      "locations": [ { "route": "/", "state": "after-search", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Search\"]", "snippet": "Search", "journey": "reserve-tool-for-saturday", "step": 2 } ],
+      "evidence": [ { "type": "probe", "ref": "probes/cw-1-detail/screenshots/after-search-viewport.png", "detail": "viewport after the tap shows field, Opening times and the bottom of the last card" } ],
+      "factor_notes": { "frequency": "every search on a phone", "impact": "confusion, recoverable by scrolling", "persistence": "each search" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Show the result count near the field and move focus or scroll to the results.",
+      "tags": ["feedback", "search"]
+    },
+    {
+      "title": "The two 18 V drill titles truncate to the same visible text, hiding 'two batteries' and 'one battery'",
+      "description": "Items that differ should be distinguishable in a list. At 375 px both cards read 'Cordless drill 18 V, co...' with the same category, deposit and availability; the distinguishing words appear only in the accessible names ('combi, two batteries' / 'combi, one battery').",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q3", "primary": true }, { "kind": "heuristic", "id": "H6" } ],
+      "impact": "Members looking for 'the drill with two batteries' may open or reserve the wrong drill.",
+      "locations": [ { "route": "/", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "#results li", "snippet": "Cordless drill 18 V, combi", "journey": "reserve-tool-for-saturday", "step": 3 } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-full/screenshots/s2-results.png", "detail": "both titles end in 'co...'" },
+        { "type": "aria", "ref": "evidence/aria/items-ladder-3m/default/375-light.yml", "detail": "links 'Cordless drill 18 V, combi, two batteries' and '... one battery'" }
+      ],
+      "factor_notes": { "frequency": "any search or browse that shows both drills", "impact": "wrong tool chosen unless noticed on the detail page", "persistence": "every visit on narrow screens" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Let card titles wrap instead of truncating.",
+      "tags": ["content", "mobile"]
+    },
+    {
+      "title": "Sticky 'Reserve this tool' is in view before the required pick-up day calendar",
+      "description": "A required choice should be visible, or announced, before the action that depends on it. On the tool page at 375 px the first viewport shows the sticky 'Reserve this tool' button while the 'Pick-up day' calendar is below the fold; nothing says a day must be chosen first. Pressing it shows 'Choose a pick-up day first.'.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q1", "primary": true }, { "kind": "heuristic", "id": "H5" } ],
+      "impact": "Members are likely to press Reserve first and meet an error before they have done anything wrong.",
+      "locations": [ { "route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Reserve this tool\"]", "snippet": "Reserve this tool", "journey": "reserve-tool-for-saturday", "step": 4 } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-detail/screenshots/tool-viewport.png", "detail": "first viewport: no calendar, sticky Reserve" },
+        { "type": "probe", "ref": "probes/cw-1-tool/screenshots/reserve-no-day.png", "detail": "Reserve without a day: 'Choose a pick-up day first.'" }
+      ],
+      "factor_notes": { "frequency": "every reservation on a phone", "impact": "error then recovery", "persistence": "first-time members" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Keep the button disabled-looking with a hint, or label it with the missing step, until a day is chosen.",
+      "tags": ["flow", "mobile"]
+    },
+    {
+      "title": "'Choose a pick-up day first.' error stays on screen after a day is chosen",
+      "description": "An error should clear once it is resolved. After pressing Reserve without a day and then choosing one, 'Pick-up day: Friday 16 October' (or Saturday 17) shows directly above the still-visible red 'Choose a pick-up day first.'; the ARIA snapshot also still contains the message.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q4", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Members may doubt their day was accepted and tap again or pick another day.",
+      "locations": [ { "route": "/tool.html?id=drill-18v-two", "state": "day-chosen-after-error", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "text=Choose a pick-up day first.", "snippet": "Choose a pick-up day first.", "journey": "reserve-tool-for-saturday", "step": 4 } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/cw-1-tool/screenshots/day-16-friday.png", "detail": "day shown as chosen; error still shown" },
+        { "type": "aria", "ref": "probes/cw-1-tool/aria.yml", "detail": "paragraph 'Choose a pick-up day first.' with day 17 pressed" }
+      ],
+      "factor_notes": { "frequency": "whenever Reserve was pressed before choosing a day", "impact": "contradictory feedback, recoverable", "persistence": "until the page is left" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Clear the message when a day is selected.",
+      "tags": ["feedback", "errors"]
+    },
+    {
+      "title": "Basket asks for a pick-up session after the pick-up day was already chosen",
+      "description": "Users should not be asked the same thing twice. The basket line already says 'Pick up Saturday 17 October', yet 'Pick-up session' radios start unselected and Continue fails with 'Choose a pick-up session' until one is chosen.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q1", "primary": true }, { "kind": "heuristic", "id": "H7" } ],
+      "impact": "Members may press Continue, hit an error and be unsure how the 'session' differs from the 'day' they chose.",
+      "locations": [ { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=radiogroup", "snippet": "Pick-up session", "journey": "reserve-tool-for-saturday", "step": 7 } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-full/screenshots/s6-basket.png", "detail": "day shown in basket; no session preselected" },
+        { "type": "probe", "ref": "probes/cw-1-detail/screenshots/basket-continue-no-session.png", "detail": "Continue without a session: 'There is a problem / Choose a pick-up session'" }
+      ],
+      "factor_notes": { "frequency": "every reservation", "impact": "error and doubt, recoverable", "persistence": "every visit" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Preselect the session that matches the chosen pick-up day, or ask only once.",
+      "tags": ["flow"]
+    },
+    {
+      "title": "Pick-up session list runs latest first and includes sessions before the chosen pick-up day",
+      "description": "Date choices are expected in chronological order and limited to valid options. The list reads Wed 28, Sat 24, Wed 21, Sat 17, Wed 14, Sat 10 October, although the tool's pick-up day is Saturday 17; the first 'Saturday' a scanning user meets is the 24th.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q3", "primary": true }, { "kind": "heuristic", "id": "H5" } ],
+      "impact": "Members may pick the wrong Saturday, or a session before their pick-up day, and not notice until the confirm page or the desk.",
+      "locations": [ { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=radio[name=\"Wednesday 28 October, 18:00 to 20:00\"]", "snippet": "Wednesday 28 October, 18:00 to 20:00", "journey": "reserve-tool-for-saturday", "step": 7 } ],
+      "evidence": [ { "type": "screenshot", "ref": "probes/cw-1-full/screenshots/s6-basket.png", "detail": "order 28, 24, 21, 17, 14, 10 October" } ],
+      "factor_notes": { "frequency": "every reservation", "impact": "possible wrong session", "persistence": "every visit" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "List sessions earliest first, from the pick-up day onwards.",
+      "tags": ["content", "dates"]
+    },
+    {
+      "title": "Continue and Confirm reservation show no busy state during about a second of waiting",
+      "description": "A tap should be acknowledged at once. After 'Continue' on the basket (about 0.8 to 1.2 s to the next page) and 'Confirm reservation' (about 1.1 to 1.5 s), captures at 300 ms show the page and buttons unchanged, with no pressed or loading state.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "cw", "id": "CW-Q4", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Members may tap again; on the commit button that risks a duplicate submission or doubt about whether it went through.",
+      "locations": [
+        { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Continue\"]", "snippet": "Continue", "journey": "reserve-tool-for-saturday", "step": 8 },
+        { "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "role=button[name=\"Confirm reservation\"]", "snippet": "Confirm reservation", "journey": "reserve-tool-for-saturday", "step": 10 }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/cw-1-detail/screenshots/continue-300ms.png", "detail": "300 ms after Continue: unchanged; expect /confirm took 813 ms (1221 ms in cw-1-full)" },
+        { "type": "probe", "ref": "probes/cw-1-detail/screenshots/confirm-300ms.png", "detail": "300 ms after Confirm: unchanged; expect 'Reservation confirmed' took 1145 ms (1548 ms in cw-1-full)" }
+      ],
+      "factor_notes": { "frequency": "every reservation, twice", "impact": "repeat taps, doubt", "persistence": "each use" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Show a pressed or loading state on tap and ignore repeat taps while waiting.",
+      "tags": ["feedback", "latency"]
+    },
+    {
+      "title": "Header still shows 'Basket (1)' after the reservation is confirmed",
+      "description": "After a checkout completes, indicators of pending items should reset. On 'Reservation confirmed' the header link reads 'Basket (1)'.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "cw", "id": "CW-Q4", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "A member may wonder whether the drill is still waiting in the basket rather than reserved.",
+      "locations": [ { "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "viewport": { "width": 375, "height": 812 }, "theme": "light", "selector": "#basket-link", "snippet": "Basket", "journey": "reserve-tool-for-saturday", "step": 10 } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/cw-1-full/screenshots/s8-done.png", "detail": "header 'Basket (1)' above 'Reservation confirmed'" },
+        { "type": "aria", "ref": "probes/cw-1-full/aria.yml", "detail": "link 'Basket (1)' on done page" }
+      ],
+      "factor_notes": { "frequency": "every completed reservation", "impact": "doubt after success", "persistence": "until the basket is cleared" },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Empty the basket on confirmation.",
+      "tags": ["feedback", "state"]
+    }
+  ]
+}

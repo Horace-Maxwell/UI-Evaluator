@@ -1,0 +1,182 @@
+{
+  "name": "tool-library",
+  "product": "Fernhill Tool Library reservations",
+  "description": "A volunteer-run community tool library's online reservation: find a tool, pick a collection day and loan length, hold it in a basket, choose a session and confirm. The seeded problems show in rendering, interaction and time (phone-width reordering, truncation, a silent search, dark-theme contrast, overflow at 320 px, a closed day accepted and refused three steps later, a brief toast, a sticky bar over focused controls, a keyboard trap, an invisible hold, right-to-left focus order, a double submit, a Change link that drops a choice), so reading the source and the product document is not enough to be sure of them (EVALUATION-PLAN §3, claims C2 and C3; a harder companion to journey-app). The basket lives in sessionStorage; ?items=&day= on any page seeds it so each route opens on its own (the find and tool routes open with a ladder already held, so the header reads the same on every page).",
+  "routes": [
+    {
+      "path": "/?items=ladder-3m",
+      "surface": "find",
+      "mode": "operate",
+      "states": [
+        {
+          "name": "default",
+          "actions": []
+        },
+        {
+          "name": "filters-open",
+          "actions": [
+            {
+              "action": "click",
+              "target": "#filters-toggle"
+            },
+            {
+              "action": "expect",
+              "target": "#from",
+              "state": "visible"
+            }
+          ]
+        },
+        {
+          "name": "no-results",
+          "actions": [
+            {
+              "action": "fill",
+              "target": "#q",
+              "value": "sewing machine"
+            },
+            {
+              "action": "click",
+              "target": "role=button[name=\"Search\"]"
+            },
+            {
+              "action": "expect",
+              "target": "#results li",
+              "state": "visible"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "surface": "tool",
+      "mode": "operate",
+      "states": [
+        {
+          "name": "default",
+          "actions": []
+        },
+        {
+          "name": "day-chosen",
+          "actions": [
+            {
+              "action": "click",
+              "target": ".day[data-day=\"2026-10-12\"]"
+            },
+            {
+              "action": "expect",
+              "text": "Pick-up day: Monday 12 October"
+            }
+          ]
+        },
+        {
+          "name": "loan-open",
+          "actions": [
+            {
+              "action": "click",
+              "target": "#loan-button"
+            },
+            {
+              "action": "expect",
+              "target": "#loan-list",
+              "state": "visible"
+            }
+          ]
+        },
+        {
+          "name": "added",
+          "actions": [
+            {
+              "action": "click",
+              "target": ".day[data-day=\"2026-10-17\"]"
+            },
+            {
+              "action": "click",
+              "target": "role=button[name=\"Reserve this tool\"]"
+            },
+            {
+              "action": "expect",
+              "target": "#basket-link",
+              "text": "Basket (2)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "surface": "basket",
+      "mode": "operate",
+      "states": [
+        {
+          "name": "default",
+          "actions": []
+        },
+        {
+          "name": "errors",
+          "actions": [
+            {
+              "action": "click",
+              "target": "role=button[name=\"Continue\"]"
+            },
+            {
+              "action": "expect",
+              "target": "role=alert",
+              "state": "focused"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "surface": "confirm",
+      "mode": "operate",
+      "states": [
+        {
+          "name": "default",
+          "actions": []
+        },
+        {
+          "name": "errors",
+          "actions": [
+            {
+              "action": "click",
+              "target": "role=button[name=\"Confirm reservation\"]"
+            },
+            {
+              "action": "expect",
+              "target": "role=alert",
+              "state": "focused"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "surface": "done",
+      "mode": "read",
+      "states": [
+        {
+          "name": "default",
+          "actions": []
+        }
+      ]
+    }
+  ],
+  "journeys": [
+    "reserve-tool-for-saturday",
+    "change-pickup-session"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "locales": {
+    "list": [
+      "en-GB"
+    ],
+    "default": "en-GB"
+  }
+}

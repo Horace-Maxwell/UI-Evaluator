@@ -90,7 +90,9 @@ async function runOne(p) {
   const out = fs.openSync(path.join(dir, 'transcript.jsonl'), 'w');
   const err = fs.openSync(path.join(dir, 'stderr.log'), 'w');
   const code = await new Promise((resolve) => {
-    const child = spawn(CLAUDE, args, { cwd: p.workspace, stdio: ['ignore', out, err], env: { ...process.env, CI: '1' } });
+    // Print mode stops waiting for background subagents after 600 s and ends the session; an audit's lead may wait
+    // longer than that for a verifier it ran in the background, so the ceiling is lifted (round 3, 2026-10-08).
+    const child = spawn(CLAUDE, args, { cwd: p.workspace, stdio: ['ignore', out, err], env: { ...process.env, CI: '1', CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0' } });
     child.on('exit', (c) => resolve(c));
     child.on('error', (e) => {
       fs.writeSync(err, `spawn failed: ${e.message}\n`);

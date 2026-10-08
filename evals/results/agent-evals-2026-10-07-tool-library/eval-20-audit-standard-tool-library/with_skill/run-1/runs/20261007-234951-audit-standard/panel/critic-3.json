@@ -1,0 +1,413 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261007-234951-audit-standard",
+  "agent": "critic-3",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "b09d32000431a519",
+  "verdict_at": "2026-10-08T00:00:00Z",
+  "unsealed_at": "2026-10-08T04:06:22.634Z",
+  "inventory": [
+    {
+      "surface": "find (/?items=ladder-3m)",
+      "widths_seen": ["1280 light", "1280 dark", "375 light", "filters-open 1280", "no-results 1280"],
+      "on_screen": "White masthead with small wrench glyph and 'Fernhill Tool Library' in bold body-size sans; nav 'Find a tool / Basket (1) / Opening times'. Pale green-grey ground. H1 'Find a tool', grey intro paragraph, 'Search tools' label, full-width input, filled green 'Search' button, outlined filter icon button. 'Tools' heading, 2-column grid (1 column at 375) of 10 white bordered cards: identical pale-green tile with a wrench, underlined bold title, grey 'category · deposit £N' line, tinted chip 'Available from Sat 10 Oct' (green text) or grey chip for later dates. Then 'Opening times' heading + paragraph, one-line footer.",
+      "first_three_fixations": "1 the H1 'Find a tool'; 2 the filled green Search button; 3 the first row of cards (the repeated wrench tiles pull the eye as a column of identical blocks)",
+      "primary_action": "open a tool (card title link); Search is the only filled element",
+      "type_voices": "one humanist geometric sans; bold for headings/titles/labels, regular for body; hierarchy by size and weight only",
+      "colour": "pale neutral ground, white cards, one forest green for button, chips and icons; dark theme keeps roles with mint green",
+      "shape_depth": "4 px radius, 1 px borders, no shadows",
+      "imagery": "none; the same wrench line icon in every card tile",
+      "copy": "'Members can reserve up to three tools at a time and collect them at an opening session.' 'Each tool has a deposit, returned when it comes back clean and working.' 'call the desk on 01632 960552 during opening hours'",
+      "signature": "none on this page; the availability chip is the most product-specific element",
+      "conventions": "standard masthead, search, card grid, footer",
+      "narrow": "At 375 the search block moves below all ten cards, card titles are truncated with ellipses, nav links wrap to two lines.",
+      "states": "filters-open shows a bordered panel with a browser-default date input (yyyy/mm/dd) and a native select; no-results capture shows 'sewing machine' typed but the full list still displayed (no empty state visible)."
+    },
+    {
+      "surface": "tool (/tool.html?id=drill-18v-two)",
+      "on_screen": "'Back to all tools' link, H1 tool name, short description, 'Details' definition list (two sub-lists with different label column widths), 'Loan length' select, 'Pick-up day' heading with hint and 'Pick-up day: not chosen yet', a month grid of day buttons Su–Sa with 'Open' under Wed/Sat (green dot at 375). Sticky white action bar with filled 'Reserve this tool'. Added state shows dark toast 'Added to your basket' over the calendar header.",
+      "first_three_fixations": "1 H1 tool name; 2 the filled 'Reserve this tool' in the bar; 3 the calendar grid",
+      "signature": "the session calendar: days marked Open for library sessions; it is the one device born from this product's mechanism",
+      "narrow": "Calendar tightens to square day buttons with green dots; the action bar covers the Pick-up day hint in the full-page capture.",
+      "not_in_stills": "toast fade, button hover, focus behaviour"
+    },
+    {
+      "surface": "basket (/basket.html)",
+      "on_screen": "H1 'Your basket', intro, 'Tools' with one card (title, 'Pick up Saturday 17 October · one week · deposit £20', 'Remove' link), 'Pick-up session' heading + hint, radio cards for sessions listed latest-first: 28 Oct alone on a full-width row, then five narrow tiles whose text wraps to three lines, then filled 'Continue'.",
+      "first_three_fixations": "1 H1; 2 the tool card title; 3 the irregular row of session tiles",
+      "errors_state": "red-bordered 'There is a problem' summary with link, inline red message above sessions; at 375 sessions stack as full-width radio cards."
+    },
+    {
+      "surface": "confirm (/confirm.html)",
+      "on_screen": "H1 'Check and confirm', white summary card (Tools, Pick-up session with 'Change', Deposit), 'Your details' with three labelled inputs and hints, a note 'Nothing is paid online...', filled 'Confirm reservation'.",
+      "first_three_fixations": "1 H1; 2 summary card; 3 Confirm button",
+      "errors_state": "error summary with three links, inline red messages, red input borders (the Name input in the dark capture shows a light border instead, probably focus)."
+    },
+    {
+      "surface": "done (/done.html)",
+      "on_screen": "H1 'Reservation confirmed', summary card (Reservation number FT-4471, Tools, Pick-up session, Deposit to bring), half-width 'What happens next' card, outlined 'Reserve another tool'. Masthead still reads 'Basket (1)'. At 1280 the footer ends mid-viewport with an empty band below.",
+      "first_three_fixations": "1 H1; 2 reservation number row; 3 What happens next card"
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": "Swapped products: a council bulky-waste collection booking and a small bike-repair shop's parts catalogue. Surviving unchanged: masthead (glyph + name in bold body text), H1 + grey intro, search row, 2-column bordered card grid with an icon tile per card, tinted status chip, single green accent, error summary, radio-card list, one-line footer. Bound to this product: the session calendar marking 'Open' days, 'Available from <date>' (one copy of each tool), deposit in every meta line, 'Deposit to bring' and the volunteer copy. With the name and copy hidden, the find page could be any catalogue; the calendar alone hints at sessions."
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": "Predicted default for a community/charity booking service: off-white ground, one calm green or teal accent, system-like humanist sans, bordered cards with a generic line icon, GOV.UK-style forms and error summary. Predicted opposite: warm, hand-drawn, craft-fair look with kraft-paper texture and illustrated tools. The design matches the default on ground, accent, type voice, card kit and icon tile; it avoids the folksy opposite. Only the session calendar is not predicted by either."
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": "Similar brief: 'online booking for a volunteer-run repair café, members book a slot at a monthly session, accessible, works on phones'. Predicted choices: pale ground, single green accent, bold sans headings, card list with an icon tile, chip for availability, calendar of session days, radio cards, filled primary in a sticky bar. Overlap is near total, including the calendar-of-sessions device, which the similar brief would also produce; the specific contribution is the content (deposits, one-of-each availability), not the visual decisions."
+    }
+  },
+  "verdict": {
+    "value": "partly_specific",
+    "evidence": [
+      "Product-bound: session calendar with 'Open' days (tool page), 'Available from' chip on every card, deposit on every card and in basket/confirm/done, 'Deposit to bring' and 'What happens next' copy in the desk volunteer's voice.",
+      "Portable: masthead, card kit with identical wrench tile, single green accent, type voice, form patterns; all three tests fail for the identity-carrying visual elements (see tests).",
+      "The first viewport (find page) is portable; the nearest thing to a signature (the calendar) is product-shaped but also predicted by a similar brief, so this is closer to the 2 anchor than to 'specific'."
+    ]
+  },
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "All ten find cards carry the same placeholder wrench tile where a picture of the tool would go; it reads as an image slot never filled (items-ladder-3m/default/1280-light).",
+      "Browser-default date input ('yyyy/mm/dd' with native calendar glyph) and a native select with a different chevron from the Loan length select in the filter panel (items-ladder-3m/filters-open/1280-light).",
+      "Basket session tiles at 1280 wrap 'Saturday 24 / October, 10:00 to / 13:00' into three ragged lines with the time stranded, while one session (28 Oct) sits alone on a full-width row above five narrow tiles (basket/default/1280-light).",
+      "'Opening times' on the find page is only a heading and a paragraph; the footer is one line of grey text.",
+      "Short pages (basket, done at 1280) end with the footer floating mid-viewport and an empty grey band below it.",
+      "Hierarchy is carried only by bold size steps of the same sans; there is no typographic moment, imagery or colour block anywhere in the flow.",
+      "At 375 the card titles are truncated with ellipses ('Cordless drill 18 V, co...') and the three nav links each wrap to two lines.",
+      "Tool details list uses two different label column widths (Category/Deposit/Available vs Chuck/Batteries/Weight/Case), so values do not line up."
+    ],
+    "evidence": [
+      "First viewport of / at 1280: a large bold 'Find a tool', a grey paragraph, an empty search box and a grid of identical cards. Tidy and legible, but nothing to look at except text and one repeated icon. A volunteer library would find it usable and respectable, but not distinctive or warm.",
+      "Colour and type are consistent and calm in both themes, the green primary buttons are confident, and the error summary is well formed. That is clean, not appealing: finished as a form, not as a place.",
+      "After scrolling: more identical cards, then a text-only Opening times section and a single-line footer, with no change in rhythm."
+    ]
+  },
+  "mode_fit": {
+    "judgement": "appropriate",
+    "evidence": "All five surfaces are Operate/Read; the design keeps conventional navigation, forms, radio cards and a calendar, with no hero moments or motion beyond a toast. Convention is correct here and is not counted against the design. The shortfall is identity (the floor), not expressiveness: the masthead, ground and tool imagery carry nothing of the library on any surface."
+  },
+  "brand_fit": {
+    "attributes": [
+      {
+        "is": "practical",
+        "not": "corporate",
+        "x_evidence": "Deposit on every card, availability date on every card, plain labels ('Pick-up session', 'Deposit to bring'), concrete specs (13 mm keyless, 1.7 kg), 'Nothing is paid online', phone number for the desk in the footer; no marketing chrome.",
+        "y_evidence": "Nothing pulls toward corporate; the masthead is modest.",
+        "judgement": "reflected"
+      },
+      {
+        "is": "neighbourly",
+        "not": "folksy",
+        "x_evidence": "Copy: 'A volunteer will check the tool with you', 'we will hold the tool for the next one', 'Enough for a day of fixing shelves and a fence'.",
+        "y_evidence": "Folksy avoided entirely, but the visuals carry nothing neighbourly: no sense of the community centre, the desk, the people or the real tools; the identity is the name in bold body text with a stock wrench glyph. Neighbourly lives in the copy only.",
+        "judgement": "partly"
+      },
+      {
+        "is": "careful",
+        "not": "fussy",
+        "x_evidence": "Consistent 4 px radius and borders, well-formed error summary with links and inline messages, deposit and session repeated at each step, one filled button per page.",
+        "y_evidence": "Care lapses visible in the render: misaligned two-column details list, browser-default date input in en-GB product showing yyyy/mm/dd, basket session tiles wrapping into ragged three-line blocks, truncated titles at 375 that hide the 'two batteries'/'one battery' difference. Not fussy anywhere.",
+        "judgement": "partly"
+      }
+    ],
+    "overall": "partly",
+    "weakest_pair": "neighbourly, not folksy: reflected in copy only, absent from the visuals",
+    "met": "1 of 3 fully reflected, 2 partly"
+  },
+  "rubric": {
+    "specificity": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Some choices trace to the brief (green from the membership card per DESIGN.md, deposit/availability made visible, session calendar), but the first viewport is portable and all three tests fail for identity-carrying visuals."
+    },
+    "hierarchy": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "At 1280 every page reads H1 > one filled action > content within two seconds and survives a squint; one filled button per page. Named lapse: at 375 the find page moves search below all ten cards, so the page's job (find a tool) loses its tool for a long scroll."
+    },
+    "coherence": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "One type family, one green, one radius, borders not shadows across all routes and both themes; dark theme composed with lighter greens, not inverted. Minor lapses: native date input and native select in the filter panel differ from the styled Loan length select; in dark mode the 'available now' chip drops its tint while later-date chips keep a grey tint."
+    },
+    "restraint": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Nothing competes and nothing is decorative, but there is no signature move on the first viewport; per the anchor, a page without focal identity is capped at 2. The repeated wrench tile is the only decoration and it carries no information."
+    },
+    "brand_fit": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "practical reflected; neighbourly and careful partly (neighbourly only in copy, careful undercut by visible execution lapses). None contradicted."
+    },
+    "execution": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Clean at 1280 light on find, confirm and done; rough at the edges: misaligned details list, basket session tiles wrapping and irregular row at 1280, truncated titles and two-line nav at 375, browser-default date input, toast placed over the calendar header, footer floating mid-viewport on short pages, no month label on the calendar."
+    },
+    "appeal": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Clean but plain: identity is only the name; the placeholder icon tiles are on show; no imagery or typographic moment; consistent with the 'plain' verdict."
+    }
+  },
+  "detector_comparison": {
+    "agreements": [
+      "Truncated/clipped card titles at narrow widths (FUN-06, A11Y-08/09 on h2.card titles) match my note of ellipsis-truncated titles at 375.",
+      "Sticky action bar overlapping content (FUN-06 #reserve overlap, A11Y-05 focused element hidden behind div.actionbar) matches the bar covering the Pick-up day hint and calendar rows.",
+      "Availability chip contrast (A11Y-11 'Available from Sat 10 Oct', A11Y-01 colour-contrast) matches my note that the dark-theme 'available now' chip loses its tint and reads weakly.",
+      "Stranded words (TYP-15) partly agree with my note of stranded '13:00' in basket session tiles."
+    ],
+    "detector_only": [
+      "FUN-05 / A11Y-07 horizontal overflow and no reflow at 320 px on the find page: not in my inventory (I judged 375); recorded as a post-unseal finding.",
+      "A11Y-03 keyboard reachability of calendar days and nav, A11Y-03 focus order jump from last card to 'Search tools' (consistent with search moved below the list at narrow width): behaviour, not assessable from stills; left to G1/G5.",
+      "LAY-05 body text closer than 16 px to the viewport edge and LAY-04 cramped card padding at narrow widths.",
+      "COL-14 APCA-weak secondary grey text (intro, hints, meta): advisory; the grey meta does read light at 375."
+    ],
+    "critic_only": [
+      "Identical placeholder wrench tile on every card instead of tool imagery.",
+      "No identity beyond the name in body-weight text; neighbourly attribute absent from visuals.",
+      "Basket session layout: one session alone on a full-width row, five narrow wrapped tiles, latest-first order.",
+      "Browser-default date input with yyyy/mm/dd in an en-GB product; native select styled unlike Loan length select.",
+      "Details definition list split into two sub-lists with different label column widths.",
+      "Find page at 375 places search after all ten cards.",
+      "Toast 'Added to your basket' placed over the calendar weekday header; no month label on the calendar.",
+      "Done page masthead still says 'Basket (1)' after confirming."
+    ],
+    "false_positives": [
+      "TYP-15 on 'Cordless drill 18 V, combi, two batterie' and similar card titles: the text is truncated with an ellipsis, not widowed; the real defect is truncation (FUN-06).",
+      "TYP-15 on two- or three-word values such as 'Saturday 10 October' and 'hard case, 18 bits included' at narrow widths: a short value wrapping one word in a dd cell is not a widow problem worth reporting.",
+      "FUN-06 #reserve overlap in full-page captures is partly a capture artefact of a fixed bar painted mid-page; the A11Y-05 focus-obscured hits are the real version of the problem."
+    ],
+    "post_unseal_notes": "Nothing in the detector output would change the specificity or appeal verdict. The 320 px overflow adds to the Execution rough-edges evidence."
+  },
+  "findings": [
+    {
+      "title": "Every tool card shows the same placeholder wrench tile instead of the tool",
+      "description": "All ten cards on the find page carry an identical pale-green square with the masthead's wrench glyph where a thumbnail would be. DESIGN.md lists 'a thumbnail' as part of the card. The tile reads as an unfilled image slot and is the first thing the eye lands on in each row.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "rule", "id": "SLP-58", "primary": true, "name": "Content stand-ins"},
+        {"kind": "design", "id": "DES-appeal"}
+      ],
+      "impact": "Members describe tools by sight ('the drill with two batteries'); identical tiles may make the grid harder to scan and make the page look unfinished, which costs trust on first use.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [113, 411, 96, 96]},
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png", "detail": "left tile in each of the 10 cards"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the thumbnail is for: real photographs of the library's own items (one of each, so each photo identifies the actual tool) or no thumbnail at all; a repeated glyph does neither job.",
+      "tags": ["appeal", "execution"]
+    },
+    {
+      "title": "No identity beyond the name: the library's world is absent from every surface",
+      "description": "The masthead is a stock wrench glyph and 'Fernhill Tool Library' in bold body-size text; the ground, cards and type are the category default. Nothing on any surface draws on the library's own material (the membership card, the desk, the community centre, the real tools). The neighbourly attribute is carried only by copy.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        {"kind": "design", "id": "DES-specificity", "primary": true},
+        {"kind": "design", "id": "DES-brandfit"},
+        {"kind": "rule", "id": "SLP-64", "name": "Sterile default"}
+      ],
+      "impact": "First-time members arriving from the library's notice or a neighbour get no sense that this is their local library's service; the page may read as a generic booking template, weakening trust and the 'neighbourly' brand attribute.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 20, 200, 30]},
+        {"route": "/done.html", "state": "default", "viewport": {"width": 1280}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png", "detail": "masthead and first viewport"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what carries 'neighbourly' visually on an Operate surface without a hero moment: the name set as a designed mark, a signature taken from the library's own mechanism (sessions, the desk, one-of-each stock) that recurs quietly across pages.",
+      "tags": ["specificity", "brand_fit", "appeal"]
+    },
+    {
+      "title": "Basket session choices are laid out irregularly and wrap into ragged blocks",
+      "description": "At 1280 the six sessions render as one full-width row (Wednesday 28 October) followed by five narrow tiles whose labels wrap over three lines ('Saturday 24 / October, 10:00 to / 13:00'), leaving the time stranded. The list also runs latest-first, so the nearest session (Sat 10 Oct) is last.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "design", "id": "DES-hierarchy"}
+      ],
+      "impact": "Choosing a session is the basket's single job; the uneven grid and broken date-time strings may make sessions slower to compare and suggest the 28 October row is special when it is not.",
+      "locations": [
+        {"route": "/basket.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 474, 1088, 166]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one layout for the session list whose cells fit a full date and time on one or two clean lines at every width, and an order that matches how members think about it (soonest first, or the chosen pick-up day first).",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Filter panel uses a browser-default date input and an unstyled native select",
+      "description": "The 'Available from' field shows the browser's 'yyyy/mm/dd' placeholder and native calendar glyph, and the Category select uses the native chevron and a different height/label baseline from the styled Loan length select on the tool page. The Category label sits lower than 'Available from', so the two fields do not align.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true},
+        {"kind": "design", "id": "DES-execution"}
+      ],
+      "impact": "Browser defaults are a visible sign of unfinish, and yyyy/mm/dd contradicts the product's en-GB date format ('Saturday 17 October'); older members may hesitate over the format.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "filters-open", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 330, 1088, 135]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether the date filter should reuse the product's own session-day picker or a themed input showing en-GB dates, and bring both filter controls onto the same input component and baseline as the rest of the forms.",
+      "tags": ["coherence", "appeal"]
+    },
+    {
+      "title": "Tool details list is split into two misaligned label columns",
+      "description": "On the tool page the Details list renders Category/Deposit/Available from with values starting at about x=224, then Chuck/Batteries/Weight/Case with values at about x=180, with an extra gap between the groups. Same misalignment at 375.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true}
+      ],
+      "impact": "Members compare specs (batteries, weight) to choose between near-identical drills; a ragged value column may make the list harder to scan and undercuts the 'careful' attribute.",
+      "locations": [
+        {"route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 296, 460, 205]},
+        {"route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": {"width": 375}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether the general facts and the specs are one list (one label column) or two clearly separated groups, each with its own heading.",
+      "tags": ["execution", "brand_fit"]
+    },
+    {
+      "title": "Card titles are truncated at phone width, hiding the detail that tells tools apart",
+      "description": "At 375 every card title is cut with an ellipsis: 'Cordless drill 18 V, co...' appears twice for two different drills, 'Extension ladder 3 m ...', 'Pressure washer, 130 ...'. Detectors corroborate (FUN-06 clipped text, A11Y-08/09 on h2.card titles).",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "rule", "id": "FUN-06"}
+      ],
+      "impact": "Most members reserve on a phone; the two drill cards become indistinguishable ('two batteries' vs 'one battery' is cut), which may lead to opening or reserving the wrong tool.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [145, 405, 200, 25]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png"},
+        {"type": "tool", "detail": "FUN-06 / A11Y-08 / A11Y-09 clipped h2.card titles (sealed detectors)"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide that tool names wrap rather than truncate at narrow widths, and give the card a narrow-width composition that leaves the title room.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "At phone width the search box is moved below all ten tool cards",
+      "description": "At 375 the find page order is H1, intro, Tools heading, ten cards, then 'Search tools' with the input, Search and filter buttons. At 1280 search sits above the grid. The detector's focus-order jump from the last card back to 'Search tools' is consistent with this reordering.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-hierarchy", "primary": true}
+      ],
+      "impact": "The page's job is to find a tool and most members are on phones; with search a long scroll away, members with a specific tool in mind may not discover search or filters at all.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 2090, 343, 110]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one content order for the find page that holds across widths, with the means of finding before the results.",
+      "tags": ["hierarchy"]
+    },
+    {
+      "title": "Dark theme inverts the availability emphasis on find cards",
+      "description": "In dark mode the 'Available from Sat 10 Oct' (available now) chips lose their tinted background and show only mid-green text, while later-date chips ('Available from Sat 17 Oct', 'Wed 21 Oct', 'Sat 24 Oct') keep a grey filled chip, so the not-yet-available items look more emphasised. Detectors report the chip text below 4.5:1 (A11Y-11, A11Y-01).",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true},
+        {"kind": "rule", "id": "A11Y-11"}
+      ],
+      "impact": "Many members use dark mode in the evening; the chip that should signal 'you can have this' recedes and the later dates stand out, which may mislead a quick scan for what can be collected this Saturday.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "dark", "bbox": [225, 469, 214, 32]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/1280-dark.png"},
+        {"type": "tool", "detail": "A11Y-11 text contrast below 4.5:1 on 'Available from Sat 10 Oct' (sealed detectors)"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide the dark-theme rendering of the badge-available role so that 'available now' keeps the stronger treatment in both themes.",
+      "tags": ["coherence"]
+    },
+    {
+      "title": "Pick-up calendar lacks a month label and the toast lands on its header",
+      "description": "The calendar grid starts at Friday 9 with weekday initials but no month or year heading ('Pick-up day: not chosen yet' sits directly above Su–Sa). In the added state the dark 'Added to your basket' toast is placed over the weekday header row, covering 'We'.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true}
+      ],
+      "impact": "Members choose a day in a few minutes while doing something else; without a month label they must infer October from the chip dates, and a toast covering the calendar may hide the grid at the moment they check what they picked.",
+      "locations": [
+        {"route": "/tool.html?id=drill-18v-two", "state": "added", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 735, 1088, 80]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/added/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide how the calendar names its month, and where feedback appears so it does not sit on the control just used.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Find page overflows horizontally at 320 px",
+      "description": "Detectors report horizontal page overflow and failed reflow at 320 px on the find page (FUN-05, A11Y-07), along with body text closer than 16 px to the viewport edge in card meta lines (LAY-05). Not in my pre-unseal inventory, which used 375.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "rule", "id": "FUN-05", "primary": true},
+        {"kind": "design", "id": "DES-execution"}
+      ],
+      "impact": "Members using 200% zoom or very small phones may have to scroll sideways through the card grid.",
+      "locations": [
+        {"route": "/?items=ladder-3m", "state": "default", "viewport": {"width": 320}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "tool", "detail": "FUN-05 horizontal page overflow; A11Y-07 no reflow at 320 px (sealed detectors)"},
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-1/workspace/.ui-evaluator/runs/20261007-234951-audit-standard/evidence/screens/items-ladder-3m/default/320-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "post_unseal": true,
+      "recommendation": "Decide the narrowest card composition so the grid fits 320 px without sideways scroll.",
+      "tags": ["execution"]
+    }
+  ],
+  "strengths": [
+    "Copy in the desk volunteer's voice, concrete and kind ('A volunteer will check the tool with you and note the return date'), with the deposit stated at every step.",
+    "One filled button per page and a consistent, calm system of borders, radius and a single green across routes and both themes.",
+    "The session calendar marking 'Open' days is the one device born from how the library actually works.",
+    "Well-formed error states: summary with links plus inline messages at the field."
+  ],
+  "keep": "Keep the plain, practical voice, the deposit-everywhere rule and the one-filled-button discipline; add identity on top of them rather than replacing them.",
+  "pairwise": null,
+  "not_assessable": [
+    "Toast and button fade timing, hover and focus styles, keyboard behaviour of the calendar (detectors report reachability problems; not judgeable from stills).",
+    "The no-results state: the capture shows the query typed but the full list still displayed; the empty state itself is not visible."
+  ],
+  "notes": "Isolated subagent. Did not read source code, builder notes or other critics' files. Verdicts written to critic-3.verdict.json before unsealing. No baseline screenshots in the packet, so pairwise was not run (new work). Done page masthead still shows 'Basket (1)' after confirmation (state issue, noted for G5 rather than as a design finding). The dark 375 day-chosen capture shows Monday 12 October selected, a non-session day; that is a flow question for G5."
+}

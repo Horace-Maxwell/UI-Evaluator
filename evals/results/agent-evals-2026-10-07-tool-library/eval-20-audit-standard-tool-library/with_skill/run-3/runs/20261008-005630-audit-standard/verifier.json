@@ -1,0 +1,205 @@
+{
+  "schema": "verifier",
+  "run": "20261008-005630-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "8c047975137b0edb",
+  "iteration": 1,
+  "_notes": "Iteration 1: no confidence ceiling applies. Dismissal ledger is empty. Several candidates (F-0141..F-0143, F-0052, F-0056) carry source-code evidence refs (app.js, styles.css, tool.html); per role rules I did not open source and verified only through probes and DOM/ARIA selectors. Probe dirs are under .ui-evaluator/runs/20261008-005630-audit-standard/probes/. Many candidates carry copied impact text and location lists from neighbouring candidates in their merge group (F-0142/F-0143 impact from F-0141; F-0144/F-0145 share all three locations; F-0148/F-0149 share locations and use capture slugs as routes; F-0150/F-0151 impact refers to truncated tool names); the lead should trim locations and impact per candidate.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0141",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light: focused 'One week' trigger, Enter opened the list; 5 Tabs left focus on 'Two weeks' with the list still open; Escape did not close it; Shift+Tab moved focus back to 'One week' inside the list. Focus never left the widget without choosing an option.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/97/screenshots/open.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/97/screenshots/after5tabs.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/97/screenshots/afteresc.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/97/screenshots/shifttab.png"
+      ],
+      "note": "Verified by behaviour only; code evidence (app.js) not read. Description could add that Escape also fails to close (observed)."
+    },
+    {
+      "candidate_id": "F-0142",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light: opened the list by click, clicked the 'Details' heading outside it, and the list stayed open; then moved focus programmatically to 'Back to all tools' and it still stayed open.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/98/screenshots/clickopen.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/98/screenshots/outsideclick.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/98/screenshots/focusout.png"
+      ],
+      "note": "Criterion fit: WCAG 2.1.2 (keyboard trap) does not describe an outside click; keep A11Y-25 (custom-widget pattern) and drop 2.1.2. Impact text is copied from F-0141 and should be rewritten (e.g. an open list overlaps the pick-up section until an option is chosen)."
+    },
+    {
+      "candidate_id": "F-0143",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light: with focus on the closed 'One week' trigger, ArrowDown and ArrowUp did not open the list; the page scrolled instead. Enter does open it (probe 97).",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/99/screenshots/arrowdown.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/99/screenshots/arrowup.png"
+      ],
+      "note": "Criterion fit: WCAG 2.1.2 does not apply (the trigger is operable by Enter); this is a departure from the listbox/select keyboard convention, so A11Y-25 only. Impact text copied from F-0141; rewrite."
+    },
+    {
+      "candidate_id": "F-0052",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Partially observed: the status region is absent from the ARIA tree before Reserve (hidden), appears as 'status: Added to your basket' after Reserve, disappears again within ~6 s, and reappears with the same text on a second Reserve. Whether screen readers actually announce it cannot be settled by probing.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/96/aria.yml",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/100/screenshots/added.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/100/screenshots/after6s.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/100/aria.yml"
+      ],
+      "note": "Question for owner: with VoiceOver/NVDA, is 'Added to your basket' announced on the first and on a repeated Reserve? Wording already hedged ('may not'); keep it hedged unless tested with AT."
+    },
+    {
+      "candidate_id": "F-0056",
+      "verdict": "split_required",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Both parts exist but are separate problems. DOM selectors resolved: #opening with inline margin-top 48px on /?items=ladder-3m, #specs with inline margin-top 8px on the tool page, and #basket-list h2.h3 on the basket. Visibly, the basket item name 'Cordless drill 18 V, combi, two batteries' renders at least as large as the section headings 'Tools' and 'Pick-up session'. The inline margins have no visible effect; they are code hygiene only.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/102/probe.json",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/102/screenshots/basket.png"
+      ],
+      "split_into": [
+        {
+          "title": "Basket item names render as large as section headings",
+          "description": "On the basket page the item name (h2.h3) is drawn at section-heading size or larger, so it competes with 'Tools' and 'Pick-up session' instead of reading as a card title."
+        },
+        {
+          "title": "Hard-coded inline margins on #opening and #specs",
+          "description": "The opening-times section and the tool specs list carry inline margin-top values instead of shared spacing classes or tokens; no visible defect today, a maintainability issue only."
+        }
+      ],
+      "note": "The 'no .h3 rule in styles.css' claim is code-based and was not checked (source not read); the visible effect was reproduced."
+    },
+    {
+      "candidate_id": "F-0144",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375x900 dark: after opening the loan-length list from the initial scroll position, the fixed Reserve bar covers 'Two weeks'; only 'One week' is visible. Pressing ArrowDown moved focus to 'Two weeks' and it stayed hidden behind the bar (only its focus ring edge visible).",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/101/screenshots/open375.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/101/screenshots/open375-down.png"
+      ],
+      "note": "Wording: there are only two options, so 'covers every option except One week' means 'covers Two weeks'. Narrow locations to the loan-open 375 location; the day-chosen 1280 actionbar and #toast locations belong to other candidates. A11Y-05 / WCAG 2.4.11 fits the focused-option-obscured part. Judged at viewport height, not from the full-page capture."
+    },
+    {
+      "candidate_id": "F-0145",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280x900 light: after choosing Saturday 17 and pressing Reserve, the 'Added to your basket' toast is drawn over the bottom calendar row, covering most of the '28 Open' cell and edges of 27 and 29; it is gone after ~6 s.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/100/screenshots/added.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/100/screenshots/after6s.png"
+      ],
+      "note": "Narrow: the overlap is transient (a few seconds) and depends on scroll position. Locations should be only the 'added' #toast location; impact text about loan options is copied from F-0144."
+    },
+    {
+      "candidate_id": "F-0146",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light on done.html: Reservation number FT-4471, pick-up session and deposit are regular-weight body text in the same key-value box as Tools, with no size or weight emphasis.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png"
+      ],
+      "note": "F-0153 is a narrower duplicate (reservation number only); merge. Location selector 'header basket link' belongs to F-0147; drop it. Impact clause about the basket count belongs to F-0147."
+    },
+    {
+      "candidate_id": "F-0147",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The captured done.html (reached by URL with items=drill-18v-two) does show 'Basket (1)' in the masthead (probe 103). But the basket count appears to follow the URL's items parameter, and I was told not to submit a reservation, so I could not check whether the real Confirm flow lands on done.html with the basket cleared.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png"
+      ],
+      "note": "Question for owner: after a real Confirm reservation, does the done page still show 'Basket (1)'? Criterion fit: DES-hierarchy is wrong; this is system-status/feedback (visibility of state). References to F-0080/F-0132 are not in the dismissal ledger."
+    },
+    {
+      "candidate_id": "F-0148",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light on done and confirm: the summary card spans the full 1088 px content width while the 'What happens next' box (done) and the form (confirm) sit in a ~610 px column with empty space to the right. Not reproduced on the tool page: its calendar spans the full width, so 'right half blank' does not hold there.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/confirm.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/96/final.png"
+      ],
+      "note": "Narrowed to confirm and done; drop the tool page. Locations use capture slugs instead of routes and include the basket footer band (F-0149's problem); fix. F-0152 is a duplicate of this; merge. A ~610 px measure for forms and text is a common deliberate choice, so raters should weigh it as an appeal issue, not a defect."
+    },
+    {
+      "candidate_id": "F-0149",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280x900 light: on basket the footer ends at about y=806 and on done at about y=700, leaving an empty page-background band below the footer to the bottom of the viewport.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/102/screenshots/basket.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png"
+      ],
+      "note": "Locations should be the basket (0,806,1280,94) and done (0,700,1280,200) bands only; the other bboxes belong to F-0148. Impact text copied from F-0148."
+    },
+    {
+      "candidate_id": "F-0150",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375 light on /?items=ladder-3m: every availability badge wraps as 'Available from Sat 10 / Oct' (likewise Wed 14, Sat 17), leaving the month alone on a second line.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/104/screenshots/index375.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/104/screenshots/index375-scrolled.png"
+      ],
+      "note": "Impact text ('cannot tell two batteries from one battery') describes the truncated tool names, a different problem; rewrite."
+    },
+    {
+      "candidate_id": "F-0151",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375: 'Find a tool', 'Basket (1)' and 'Opening times' each wrap onto two lines in the masthead, on the index (light) and the tool page (dark).",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/104/screenshots/index375.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/101/screenshots/open375.png"
+      ],
+      "note": "Impact text copied from F-0150's group; rewrite."
+    },
+    {
+      "candidate_id": "F-0152",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light: on confirm the form, and on done the 'What happens next' box, sit in a ~610 px column beside empty space while the summary card above spans full width.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png",
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/confirm.png"
+      ],
+      "note": "Duplicate of F-0148 (same pages, same mechanism); merge. Its impact clause about number/session/deposit emphasis belongs to F-0146."
+    },
+    {
+      "candidate_id": "F-0153",
+      "verdict": "confirmed",
+      "step": "confidence_ceiling",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 light on done.html: 'FT-4471' is regular-weight body text, same style as the other values in the box.",
+      "evidence": [
+        ".ui-evaluator/runs/20261008-005630-audit-standard/probes/103/screenshots/done.png"
+      ],
+      "note": "Duplicate subset of F-0146; merge. The /confirm.html location does not apply (confirm shows no reservation number). DES-hierarchy fits better than DES-appeal as primary."
+    }
+  ]
+}

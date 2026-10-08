@@ -21,7 +21,7 @@ The material for testing UI-Evaluator itself (EVALUATION-PLAN): seeded fixtures 
 
 ```
 evals/
-├── evals.json                  # skill-creator prompts and assertions (18)
+├── evals.json                  # skill-creator prompts and assertions (20)
 ├── ground-truth.schema.json    # JSON Schema 2020-12 for every ground-truth.json
 ├── fixtures/
 │   ├── slop-landing/           # each web fixture: pages, fixture.json, journeys/, PRODUCT.md, ground-truth.json
@@ -46,12 +46,13 @@ Every web fixture is plain HTML, CSS and vanilla JavaScript with no build step a
 | `dashboard` | Lower Mill Growers, a hydroponics bay monitor | Operate | 1 | 15 (13 + 2) | `switch-dosing-to-manual` | C1, C2, C6 |
 | `zh-reader` | 临川陶瓷博物馆, a museum audio guide (text, zh-CN) | Operate + Read | 2 | 12 (9 + 3) | `find-exhibit-by-number` | C1, C2 |
 | `journey-app` | Saltmarsh Quay, a tidal harbour's visitor-berth booking | Operate | 5 | 11 (0 + 11) | `book-visitor-berth`, `change-arrival-date` | C2, C3 |
+| `tool-library` | Fernhill Tool Library, a community tool library's reservations | Operate | 5 | 13 (4 + 9) | `reserve-tool-for-saturday`, `change-pickup-session` | C2, C3 |
 | `clean-control` | Hollin Lane Seed Library, a community seed-lending desk | Read + Operate | 2 | 0 | `request-seed-packets` | C1, C2 false positives |
 | `feedback-set` | feedback about `journey-app` | — | — | 120 labelled items | — | C7 |
 
 The products appear nowhere under `skills/` or `docs/framework/` (checked with grep, and by `tools/validate-skill.mjs`, which fails when a fixture's `product` string appears in a skill file), so the skill cannot be taught to the test (EVALUATION-PLAN §8). They also avoid the skill's own example rotation (AUTHORING §6).
 
-Each defect is seeded once. Where a fixture has several routes, no route carries two defects with the same criterion, so a criterion-plus-route match is unambiguous. Everything that is not a seeded defect is built to the floor (contrast computed with `lib/util/color.mjs`, visible focus, labels, 44 px primary targets, a 4 px spacing scale, a reduced-motion path), so any other detection counts as a false positive. `journey-app` keeps every deterministic check clean on purpose: its defects are all analytical, and its ground truth carries a `cw` field (journey, step, question, failure story) for the cognitive walkthrough.
+Each defect is seeded once. Where a fixture has several routes, no route carries two defects with the same criterion, so a criterion-plus-route match is unambiguous. Everything that is not a seeded defect is built to the floor (contrast computed with `lib/util/color.mjs`, visible focus, labels, 44 px primary targets, a 4 px spacing scale, a reduced-motion path), so any other detection counts as a false positive. `journey-app` keeps every deterministic check clean on purpose: its defects are all analytical, and its ground truth carries a `cw` field (journey, step, question, failure story) for the cognitive walkthrough. `tool-library` is its harder companion: the four deterministic defects need the browser (dark-theme contrast, overflow at 320 px, a fixed bar over focused controls, a keyboard trap), and the nine judged ones show in rendering, interaction or time rather than in the markup (a date filter behind an icon below the list on phones, a silent empty search, names cut to the same prefix, a closed day accepted and refused three steps later, a 1.2-second toast, an invisible basket hold, sessions laid out against reading order, a double submit, a Change link that drops the chosen session), so reading the source is not enough to be sure of them. Where a deterministic check also fires on a judged defect's construction (an ellipsis read as clipped text, a CSS reorder read as a focus-order jump), the check's criterion is listed in the defect's `also_criteria`, so the detection counts for the defect rather than as a false positive.
 
 ## Serving a fixture
 
@@ -60,7 +61,7 @@ python3 -m http.server --directory evals/fixtures/<name> 8123
 # then open http://127.0.0.1:8123/
 ```
 
-Routes are paths under that folder (`/`, `/listing.html`). `journey-app` passes stay details in the query string, so open its routes exactly as `fixture.json` lists them, for example `http://127.0.0.1:8123/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14`. `clean-control` shows its loading and error states at `/?state=loading` and `/?state=error`. The skill's own `serveStatic` (`skills/ui-evaluator/scripts/lib/browser/static-server.mjs`) serves the same way on a free port. The browser layer opens only local hosts.
+Routes are paths under that folder (`/`, `/listing.html`). `journey-app` passes stay details in the query string, so open its routes exactly as `fixture.json` lists them, for example `http://127.0.0.1:8123/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14`. `clean-control` shows its loading and error states at `/?state=loading` and `/?state=error`. `tool-library` keeps its basket in `sessionStorage` and seeds it from the query string (`?items=drill-18v-two&day=2026-10-17`), so open its routes as `fixture.json` lists them as well. The skill's own `serveStatic` (`skills/ui-evaluator/scripts/lib/browser/static-server.mjs`) serves the same way on a free port. The browser layer opens only local hosts.
 
 ## From fixture.json to .ui-evaluator/config.json
 
@@ -119,7 +120,7 @@ Planted personal data, all fictional: 26 email addresses on reserved domains (ex
 
 ## Skill-behaviour evals (evals.json)
 
-`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 18 prompts cover build (English and Chinese: two one-page sites, a sign-up page and a front-desk tool), audit at quick, standard and rigorous depth on different fixtures, a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
+`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 20 prompts cover build (English and Chinese: two one-page sites, a sign-up page and a front-desk tool), audit at quick, standard and rigorous depth on different fixtures (standard twice: `journey-app` and the harder `tool-library`), a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
 
 Run them through the skill-creator loop (EVALUATION-PLAN §5.1):
 
@@ -179,7 +180,7 @@ EVALUATION-PLAN §6 sets the bars a release should meet. Measured on 2026-10-04 
 | Unit, integration, packaging | 100% passing | core 77, lint 119 and browser 62 tests pass (2026-10-06); `npm run validate` passes; `skills-ref validate` was not run | met, except `skills-ref` |
 | Hard-tell detectors | each rule precision ≥ 0.9, recall ≥ 0.8 on fixtures | 1.00 and 1.00 for the 13 hard tells with a seeded defect | met for 13 of 15; 2 have no seeded case |
 | Scripted accessibility checks | recall ≥ 0.9 of seeded WCAG defects; 0 false positives on `clean-control` | recall 1.00 (11 of 11); 0 false positives | met |
-| Standard audit | recall ≥ 0.6 of seeded analytical defects, precision ≥ 0.8 after verification | two runs (2026-10-06 and 2026-10-07): recall 10 of 11 and 9 of 11; precision of judged findings 0.82 (49 of 60) and 0.72 (26 of 36). The same model without the skill, two runs: recall 10 of 11 and 9 of 11, precision 0.78 and 0.88 | recall met in both runs; precision met in one of two; the fixture does not separate the skill from the control |
+| Standard audit | recall ≥ 0.6 of seeded analytical defects, precision ≥ 0.8 after verification | `journey-app`, two runs (2026-10-06 and 2026-10-07): recall 10 of 11 and 9 of 11; precision of judged findings 0.82 (49 of 60) and 0.72 (26 of 36); the same model without the skill, two runs: recall 10 of 11 and 9 of 11, precision 0.78 and 0.88. `tool-library`, two complete runs (2026-10-08): recall 12 of 13 and 13 of 13 by meaning (13 of 13 by criterion, the four deterministic defects included); precision of judged findings 0.83 (64 of 77) and 0.66 (53 of 80); the control, which had a browser, two runs: recall 13 of 13 and 13 of 13, precision 1.00 and 1.00 | recall met in all four runs; precision met in two of four; neither fixture separates the skill from the control on recall |
 | Build outcomes | 0 hard tells and no G3 failure in ≥ 80% of runs with the skill; blind preference for the skill ≥ 70%, with the 95% CI excluding 50% | 0 hard tells in 14 of 14 runs, but 0 hard tells and no G3 failure in only 5 of 14 (36%); the person judged the skill's page more beautiful in 3 of 12 pairs (2 of 8 in the latest round) | **not met** |
 | Variety | lower cross-brief similarity with the skill, CI of the difference excluding 0 | — | not measured |
 | Fix loop | ≥ 90% of seeded P0 and P1 defects verified fixed; 0 regressions left unflagged | two runs: 2 of the 3 seeded defects whose band reaches P1 verified fixed each time. The third (no loading, empty or error state) was never found in the first run and was found in the second but left `blocked` on the owner's answer about stale readings. The fix reviewer flagged one regression in each run, both fixed; none left unflagged | **not met** |
@@ -223,6 +224,23 @@ The same five tasks and the same control run again with the 2.2.0 plugin, to ver
 - **The audit's precision fell below the bar** (26 of 36 judged findings, 0.72, against 0.82 in round 1): nine design and typography findings the graders judged matters of taste. Recall was 9 of 11, and the control found 9 of 11 as well. Over two runs per arm the two still cannot be told apart on recall.
 - **Instrument changes made after seeing results are recorded in the plan:** the overclaim check's negation list, the severity-band check (now by the graders' mapping), and three trace checks.
 
+### Agent-level evals, round 3, 2026-10-07 to 08: a harder fixture
+
+Eval 20, the standard audit of `tool-library`, whose 13 seeded problems show only in rendering, interaction or time, run twice with the 2.2.0 plugin and twice without it (a third skill run replaced one the harness terminated while its lead waited for a background verifier). The plan written before the runs, the report in the lecture's format, the graders' work and the trace measures are in [results/agent-evals-2026-10-07-tool-library/](results/agent-evals-2026-10-07-tool-library/REPORT.md).
+
+| Eval | Assertions | Time | Cost |
+|---|---|---|---|
+| 20 standard audit of tool-library, with the skill (run 1) | 9 of 9 | 65 min | $30.74 |
+| 20 with the skill (run 2, terminated by the harness at 34 min) | 4 of 7 | 34 min | $22.18 |
+| 20 with the skill (run 3) | 8 of 9 | 68 min | $31.86 |
+| 20 the same request without the skill (control, run 1) | 2 of 2 | 4 min | $1.25 |
+| 20 without the skill (control, run 2) | 2 of 2 | 3 min | $1.09 |
+
+- **Recall did not separate the arms, again.** By the adjudicated mapping the skill found 12 of 13 and 13 of 13 seeded defects (13 of 13 by criterion and route in both runs); the control found 13 of 13 in both. The control could, because this machine has Python Playwright installed: both control sessions found it, wrote a script that drove Chromium at phone width in dark mode, and read the screenshots back. In rounds 1 and 2 the control had not used a browser.
+- **Precision split the skill's two runs:** 0.83 (64 of 77 judged findings) and 0.66 (53 of 80), the second below the bar on design-critic taste items and accessibility best-practice nits; the control's 21 and 20 problems were all judged seeded or real. The skill reports five times as many items at about 27 times the cost.
+- **Process held:** rater agreement α 0.83 and 0.86; 10 of 12 and 13 of 13 found defects rated within their band; every black-box subagent read no source; no heuristic packet carried the walkthrough's answer key; no level claimed above the computed one (none, target L3); 0 report-lint violations. Both arms found seven to ten genuine problems the fixture did not seed, which the ground truth now needs.
+- **Seven skill problems are listed in the report,** two with a clear fix: the lead waiting on a background verifier by ending its turn, and a deterministic phase that takes 15 of 65 minutes.
+
 ### Detector calibration, 2026-10-01
 
 `node tools/score-fixtures.mjs --widths 320,768,1280 --parallel 2` after the fixes listed under calibration notes; the full output is in [results/detectors-2026-10-01.json](results/detectors-2026-10-01.json).
@@ -235,8 +253,11 @@ The same five tasks and the same control run again with the 2.2.0 plugin, to ver
 | `zh-reader` | 9 | 9 | 0 | 0 |
 | `journey-app` | 0 (11 judged) | — | — | 0 |
 | `clean-control` | 0 | — | — | 0 |
+| `tool-library` (2026-10-07) | 4 (+ 9 judged) | 4 | 0 | 0 |
 
 Every hard-tell detector that has a seeded defect (13 of 15) reaches precision 1.00 and recall 1.00, scripted accessibility recall is 1.00 (11 of 11), and `clean-control` has no false positive, so the deterministic part of EVALUATION-PLAN §6 passes on this set.
+
+`tool-library` was scored on 2026-10-07 with the same command (`--fixtures tool-library`; output in [results/detectors-2026-10-07-tool-library.json](results/detectors-2026-10-07-tool-library.json)): its four deterministic defects are detected (dark-theme contrast, overflow at 320 px, the fixed bar over focused controls, the keyboard trap) with no false positive, and both journeys replay. The first scoring of the fixture, before its floor work, had 39 false positives; what it took to bring them to zero (a spacing step the stylesheet used but DESIGN.md did not declare, content rendered after the first paint, a link whose name changed with the basket count, hover and pressed states, text under a fixed bar and under an open listbox) is a fair picture of how many of the deterministic checks a plain static site trips without meaning to.
 
 Read these numbers with the threats in EVALUATION-PLAN §8 in mind. The fixtures and the detectors were built in the same project on the same day, several detectors were corrected against these very fixtures, seeded defects are cleaner than real ones, and there is no held-out set yet. They show that each detector fires on its canonical case and stays quiet on a page built to the floor; they are not an estimate of precision on real products. That estimate needs labelled real pages in `labels/` (EVALUATION-PLAN §7). The judged defects (journey-app and the `judged` entries elsewhere) are measured by the skill-behaviour evals, not by this scorer.
 
