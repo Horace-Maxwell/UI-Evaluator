@@ -1,0 +1,831 @@
+{
+  "labeller": "second",
+  "method": "Blind second labelling, using only the labelling folder. I read PRODUCT.md, DESIGN.md, both journeys, routes.json and the whole source (five HTML pages, app.js, styles.css). I checked and reused the earlier attempt's probe.js, measurements.json and shots/, and re-ran every claim I rely on with my own Playwright scripts (probe2-*.js; results in measurements2-*.json and shots2/). Browser: headless Chromium through Node Playwright 1.63. One keyboard-focus check was repeated in an older installed WebKit build. Every route and state in routes.json was rendered at 320, 375, 768 and 1280 px in light and dark, with screenshots and horizontal-overflow checks. Keyboard focus against the fixed action bar was tested at 375x667, 320x568, 375x812, 768x1024, 1280x800 and 320x256. Text size was set to 200% (root font-size, as a browser text-size setting does) at 320, 375, 768 and 1280 px. Automated and measured checks: axe-core 4.13 (WCAG 2.0-2.2 A/AA plus best practice) on every route x state x theme at 375 and 1280; contrast from computed colours; Tab and Shift+Tab sequences recording how much of each focused element is visible; listbox keys (Tab, Escape, arrows, tap outside); DOM order against visual order; heading outline. Time and history: toast lifetime, the 1.2 s Continue and 1.5 s Confirm waits, double presses on Reserve, Remove, Continue and Confirm, browser Back from the tool, confirm and done pages, and a pause past the 10-minute basket hold (simulated by back-dating the stored hold start by 11 minutes). Recovery paths for a closed day, a day before the tool is back, more than three tools, and a day and session that disagree were all taken through the real UI. I walked both journeys at 375 px as their personas and asked the four cognitive-walkthrough questions at each step; cw.step is the 1-based index into the journey's correct_actions. I also did a heuristic pass (H1-H10) over every page. No real screen reader was used. Points about what a screen reader announces are inferred from the code and the DOM, and each one says so. Severity bands use 0-4 (0 not a problem, 1 cosmetic, 2 minor, 3 major, 4 catastrophe).",
+  "defects": [
+    {
+      "id": "L01",
+      "title": "On phones the search box and filters come after all ten tools, and their results change off-screen",
+      "description": "Below 481 px a media query reverses the CSS order so the results sit above the search form. At 375x667 the 'Search tools' field starts at y=2115 of a 2593 px page, 3.2 screens down, after ten 172 px cards; at 320 it starts at y=2141. A member who comes to find 'the drill with two batteries' sees a long list and no search. When she does search from the bottom, the change happens above the viewport. After searching 'drill' at 375x667 only the tail of one card is in view (no tool name). After setting 'Available from' to 14 October the list drops to 7 tools entirely off-screen, while the viewport shows the filter panel and the opening times. The 'N tools found' status is screen-reader-only. Same cause as L02: the form comes after the results in the DOM.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".finder__form",
+      "also_locations": [
+        {"route": "/?items=ladder-3m", "state": "filters-open", "selector": "#filters"}
+      ],
+      "criterion": "CW-Q2",
+      "also_criteria": ["H7", "H1", "H6"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "measured; reproduced in the browser (viewport screenshots after searching and filtering at 375x667)",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 2,
+        "question": "CW-Q2",
+        "story": "On her phone at 375 px the member lands on Find a tool and sees an intro and a column of tool cards; no search field is in sight. She has to scroll past all ten cards, more than three screens, before she meets 'Search tools'. When she types 'drill' and presses Search, the two matching cards appear above the field, out of view. She sees only the bottom of a card and the opening times, and may think the search did nothing."
+      }
+    },
+    {
+      "id": "L02",
+      "title": "On tablet and desktop, Tab visits all ten tools before the search field shown above them",
+      "description": "From 481 px up, CSS order puts the search form above the results, but the DOM has the results first. At 1280x800 it takes 15 Tab presses (library name, three nav links, ten tool links) to reach 'Search tools' at y=285, which sits above the first card at y=394. A keyboard user who sees the search field first has to tab through every tool, or Shift+Tab backwards, to reach it. After a search, focus order runs back up the page into the results.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": "#results",
+      "criterion": "2.4.3",
+      "also_criteria": ["1.3.2"],
+      "kind": "deterministic",
+      "severity_band": [2, 2],
+      "evidence": "measured (Tab sequence and element positions at 768 and 1280)"
+    },
+    {
+      "id": "L03",
+      "title": "Card names are cut to one line on phones, so the two drills look identical",
+      "description": ".card__name a is white-space: nowrap with overflow hidden and an ellipsis. A 96 px thumbnail, the same wrench icon on every card, takes a third of the card, so the name gets 197 px at 375 and 184 px at 320, and 9 of 10 names are cut. Both drills read 'Cordless drill 18 V, com...' at 375 ('...co...' at 320). Their meta line ('Drills and drivers · deposit £20'), badge ('Available from Sat 10 Oct') and picture are identical, so 'two batteries' versus 'one battery' cannot be seen. There is no second line, no tooltip and no other way to see the full name. With text at 200% the names are cut even at 1280 px (9 of 10) and at 768 px (3 of 10).",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".card__name a",
+      "criterion": "CW-Q3",
+      "also_criteria": ["1.4.10", "1.4.4", "H6"],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (scrollWidth > clientWidth for 9 of 10 links at 320 and 375; at 200% text at 768 and 1280); reproduced in the browser",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 4,
+        "question": "CW-Q3",
+        "story": "After searching 'drill' the member sees two cards that both say 'Cordless drill 18 V, com...', with the same category, deposit, date and picture. Nothing tells her which is the one with two batteries. She taps one and only finds out from the next page's heading whether she guessed right. If she guessed wrong, the way back loses her search (L12)."
+      }
+    },
+    {
+      "id": "L04",
+      "title": "Search only matches an exact run of characters, so the member's own words find nothing",
+      "description": "matches() tests whether (name + ' ' + category) contains the typed text as one exact substring. 'drill with two batteries' finds nothing, though PRODUCT.md lists 'the drill with two batteries' as the members' own words. So do 'Drill 18V' (the catalogue writes '18 V') and 'drill two batteries'. Only exact fragments such as 'drill', 'two batteries' or 'cordless drill' work. There is no word-by-word matching and no tolerance for word order or spacing.",
+      "route": "/?items=ladder-3m",
+      "state": "no-results",
+      "selector": "#q",
+      "criterion": "H2",
+      "also_criteria": ["H5", "H7"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser; read in the code",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 2,
+        "question": "CW-Q3",
+        "story": "The member types what she would say at the desk, 'drill with two batteries'. The search needs a fragment of the catalogue name, so this finds nothing, and the page does not say so (L05). She does not connect 'type one word like drill' with finding her tool."
+      }
+    },
+    {
+      "id": "L05",
+      "title": "When a search or filter finds nothing, the list silently keeps the previous results",
+      "description": "search() re-renders only when the filtered list is non-empty, and it never says 'no tools found'. In the browser: on first load, 'drill with two batteries' leaves all ten tools listed. After a search for 'ladder', searching 'drill with two batteries' still shows the ladder, while the box reads 'drill with two batteries' and the screen-reader status still says '1 tool found'. Category Garden with Available from 10 October keeps the hedge trimmer listed, though it is only available from Wed 14 October. Available from 9 October, the earliest the field allows, leaves all ten tools, including ones not back until 24 October. So the page gives no feedback on an empty search, answers 'which tools can I collect on this day?' (top task 3) wrongly, and leaves the screen-reader status stale.",
+      "route": "/?items=ladder-3m",
+      "state": "no-results",
+      "selector": "#results",
+      "also_locations": [
+        {"route": "/?items=ladder-3m", "state": "filters-open", "selector": "#from"},
+        {"route": "/?items=ladder-3m", "state": "no-results", "selector": "#results-status"}
+      ],
+      "criterion": "H1",
+      "also_criteria": ["H9", "4.1.3"],
+      "kind": "judged",
+      "severity_band": [3, 3],
+      "evidence": "reproduced in the browser (screenshot of 'drill with two batteries' over a ladder-only list); read in the code",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 3,
+        "question": "CW-Q4",
+        "story": "She presses Search after typing 'drill with two batteries' and nothing visibly changes: the same ten tools, or whatever the last search left, are still there. She cannot tell whether the search ran, failed or matched everything."
+      }
+    },
+    {
+      "id": "L06",
+      "title": "The date filter is hidden behind an unlabelled icon button",
+      "description": "The 'Available from' date and the Category filters can only be reached through a 44x44 px icon of three stacked lines, with no visible text, beside the Search button. The panel is closed by default. Its accessible name, 'Filters', is invisible to sighted users. PRODUCT.md says members do not know where the date filter is, and 'see which tools can be collected on a given day' is top task 3. Many people read three lines as a menu or sort icon. On phones the icon is also below all ten cards (L01).",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": "#filters-toggle",
+      "criterion": "H6",
+      "also_criteria": ["H4"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "measured (44x44, no visible text, aria-label only); reasoned"
+    },
+    {
+      "id": "L07",
+      "title": "The 'Available from' filter's label and hint describe a different filter from the one applied",
+      "description": "The filter keeps tools whose available-from date is on or before the chosen day. Its label, 'Available from', uses the same words as each tool's badge, so it reads as 'tools that become available from this date'. The hint says 'Show tools you could pick up on or after this day'. Yet a tool available from 17 October, which could be picked up after 14 October, disappears when 14 October is chosen. What the filter really answers is 'can be collected on this day', and neither the label nor the hint says that.",
+      "route": "/?items=ladder-3m",
+      "state": "filters-open",
+      "selector": "#from",
+      "criterion": "H2",
+      "also_criteria": ["2.4.6", "3.3.2"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reproduced in the browser (14 October gives 7 tools, the 17, 21 and 24 October tools hidden); read in the code"
+    },
+    {
+      "id": "L08",
+      "title": "The find page scrolls sideways at 320 px",
+      "description": ".results uses grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)). At 320 px the content box is 288 px, so every card is 330 px and the page is 346 px wide (scrollWidth 346 against 320), in all three find states and both themes. The right edge of each card, part of the badge and the card borders are cut off, and the member has to scroll sideways. 320 px is also what a 1280 px screen gives at 400% zoom. No other page overflows at 320 px with default text.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".results",
+      "also_locations": [
+        {"route": "/?items=ladder-3m", "state": "filters-open", "selector": ".results"},
+        {"route": "/?items=ladder-3m", "state": "no-results", "selector": ".results"}
+      ],
+      "criterion": "1.4.10",
+      "also_criteria": [],
+      "kind": "deterministic",
+      "severity_band": [2, 2],
+      "evidence": "measured (light and dark, re-checked with my own script)"
+    },
+    {
+      "id": "L09",
+      "title": "Dark mode: the 'Available from' badge on soon-available tools fails text contrast",
+      "description": "In dark mode the green badge text is #2f7d4a on the card's #1d2622, 3.07:1 at 16 px bold, where 4.5:1 is needed. It affects 7 of the 10 cards at every width (axe color-contrast, serious). The dark token --color-ok is #2f7d4a rather than DESIGN.md's dark success colour #8fd1a8, and --color-ok-tint equals the card surface, so the pill also loses its background. This date answers 'is it back yet', and members often use the site in dark mode in the evening. Light mode passes at 6.9:1.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".badge--ok",
+      "also_locations": [
+        {"route": "/?items=ladder-3m", "state": "filters-open", "selector": ".badge--ok"},
+        {"route": "/?items=ladder-3m", "state": "no-results", "selector": ".badge--ok"}
+      ],
+      "criterion": "1.4.3",
+      "also_criteria": [],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (axe-core 4.13 and computed colours, dark theme, 375 and 1280)"
+    },
+    {
+      "id": "L10",
+      "title": "Only the name text opens a tool; tapping the picture, meta or badge does nothing",
+      "description": "Each card looks like one tappable tile, but only the truncated name is a link. Tapping the 96 px thumbnail, which on a phone is the largest thing on the card, did nothing in the browser, and neither does the meta line or the badge. Together with L03, the target that works is the part that is hardest to read.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".card__thumb",
+      "criterion": "H4",
+      "also_criteria": ["H7"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L11",
+      "title": "Tool names are marked up at the same heading level as the section that contains them",
+      "description": "On the find page each card name is an h2, a sibling of the 'Tools' h2 that contains it. The outline reads: h1 Find a tool, h2 Tools, ten h2 tool names, h2 Search, h2 Opening times. In the basket each tool name is an <h2 class='h3'>, but there is no .h3 rule, so it renders at 22 px bold like the 'Tools' and 'Pick-up session' section headings. Neither heading navigation nor the visual hierarchy shows that the tools sit inside 'Tools'.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".card__name",
+      "also_locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "selector": ".basket-list h2.h3"}
+      ],
+      "criterion": "1.3.1",
+      "also_criteria": [],
+      "kind": "deterministic",
+      "severity_band": [1, 1],
+      "evidence": "measured (heading outline and computed font sizes); read in the code"
+    },
+    {
+      "id": "L12",
+      "title": "Going back to the list loses the search",
+      "description": "After searching 'drill' and opening a tool, both browser Back and 'Back to all tools' show all ten tools again with an empty search box. The page always renders the full list on load, and autocomplete='off' on #q stops the browser restoring the typed text. A member who opened the one-battery drill by mistake (L03) has to scroll down past ten cards on a phone and search again.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": "#q",
+      "criterion": "H7",
+      "also_criteria": ["H3", "H6"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reproduced in the browser (Back gives navigation type back_forward, empty box, 10 cards); read in the code"
+    },
+    {
+      "id": "L13",
+      "title": "Badges abbreviate dates against the stated house format",
+      "description": "The badges say 'Available from Sat 10 Oct', while the tool page, the basket and PRODUCT.md's stated format use 'Saturday 10 October'. It is understandable, so the effect on the task is small. I include it at [0, 1] only because it departs from a format the product commits to.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".badge",
+      "criterion": "H4",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [0, 1],
+      "evidence": "measured (badge text)"
+    },
+    {
+      "id": "L14",
+      "title": "'Reserve this tool' does not reserve, and nothing says the reservation still has to be confirmed",
+      "description": "The filled button says 'Reserve this tool'. Pressing it only puts the tool in a basket held for ten minutes and shows 'Added to your basket' for about a second. The button keeps its label. No step indicator or text says that three more steps follow (basket, session, confirm), and the button does not mention the basket. A first-time member, who per the persona does not know how the basket works, can reasonably believe the drill is now reserved and put the phone down. The hold then lapses with nothing reserved, and she finds out at the desk on Saturday.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "added",
+      "selector": "#reserve",
+      "criterion": "CW-Q1",
+      "also_criteria": ["H2", "H1"],
+      "kind": "judged",
+      "severity_band": [3, 4],
+      "evidence": "reasoned from the walkthrough; reproduced in the browser (label unchanged after adding; toast only)",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 9,
+        "question": "CW-Q1",
+        "story": "Having pressed 'Reserve this tool' and seen 'Added to your basket' flash, the member thinks the job is done: she has reserved the drill. Nothing on the page asks her to choose a session or confirm, so she has no reason to go looking for the basket. She closes the tab and nothing is reserved."
+      }
+    },
+    {
+      "id": "L15",
+      "title": "After adding a tool, the only way forward is off-screen",
+      "description": "The next step is the 'Basket (1)' link in the masthead, and the masthead is not sticky. When the member presses the bar's button she is down at the calendar (scrollY 645 at 375x667), so the link is far above the viewport. The action bar still offers only 'Reserve this tool', and there is no 'Go to basket' or 'Continue' anywhere on the page. The only change near her thumb is a toast that is gone after about 1.2 s.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "added",
+      "selector": "#basket-link",
+      "criterion": "CW-Q2",
+      "also_criteria": ["H1", "H7"],
+      "kind": "judged",
+      "severity_band": [3, 3],
+      "evidence": "measured (basket link out of view, action bar contents); reproduced in the browser",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 9,
+        "question": "CW-Q2",
+        "story": "Even if she suspects there is more to do, the only control in sight is the same 'Reserve this tool' button. The link with the new count is at the top of the page, scrolled away. She has to scroll back up and recognise 'Basket (1)' in the header as the next step."
+      }
+    },
+    {
+      "id": "L16",
+      "title": "The 'Added to your basket' toast is the only feedback, and it vanishes after about a second",
+      "description": "The toast is fully visible for about 1.2 s and gone by 1.4 s (measured 1405 ms). After that nothing on the page shows the tool was added, apart from the off-screen masthead count. A member who glances away, or who uses larger text or a magnifier, misses it. While visible it covers most of the bottom calendar row (days 27-29 and part of 26 at 375x667) and catches taps meant for those days. It is a role=status region that stays hidden until its text is set in the same task, which several screen readers do not announce (read in the code, not tested with a screen reader).",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "added",
+      "selector": "#toast",
+      "criterion": "H1",
+      "also_criteria": ["2.2.1", "4.1.3"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "measured (opacity sampled every 50 ms); read in the code",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 7,
+        "question": "CW-Q4",
+        "story": "She presses 'Reserve this tool' while glancing at her tea. When she looks back the page is unchanged: same button, same calendar, and the basket count is out of sight at the top. She cannot tell whether the press worked and may press again or give up."
+      }
+    },
+    {
+      "id": "L17",
+      "title": "Closed days can be chosen like session days, and the problem only surfaces at the last step",
+      "description": "All 21 days are enabled buttons, though only six are sessions. Choosing Friday 16 October is accepted ('Pick-up day: Friday 16 October'), and the basket repeats 'Pick up Friday 16 October'. Only after 'Confirm reservation', about 1.5 s later, does the page say 'The library is closed on Friday 16 October, so this pick-up day is not possible. Choose another day.' On phones the only difference between open and closed days is an 8 px dot (L23). Pressing Reserve with no day chosen even moves focus to Friday 9 October, a closed day (L22).",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "day-chosen",
+      "selector": ".day[data-day='2026-10-16']",
+      "also_locations": [
+        {"route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "errors", "selector": "#error-list"}
+      ],
+      "criterion": "H5",
+      "also_criteria": ["CW-Q3", "H9"],
+      "kind": "judged",
+      "severity_band": [3, 3],
+      "evidence": "reproduced in the browser (Friday 16 through tool, basket and confirm; error after 1540 ms)",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 6,
+        "question": "CW-Q3",
+        "story": "The member does not know that only 'Open' days are sessions, and on her phone the only marker is a small dot. Planning Saturday's job, she could easily tap Friday 16 to collect the evening before. The calendar accepts it without a word, and she goes through the basket and the confirm form before she is told the library is closed that day."
+      }
+    },
+    {
+      "id": "L18",
+      "title": "Days before the tool is back can be chosen, and the reservation is confirmed anyway",
+      "description": "The calendar neither marks nor disables days before the tool's 'Available from' date. The basket offers every session ('You can collect at any of these sessions'), and confirm does not check. The electric wet tile saw, available from Saturday 24 October, reserved for Saturday 10 October ends on 'Reservation confirmed ... Saturday 10 October, 10:00 to 13:00'. On the examined route, Friday 9 October is selectable for the drill that is available from Saturday 10 October. The member is told a tool will be waiting when it cannot be, which breaks the 'honest about the stock' commitment, and she finds out at the desk.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": ".day[data-day='2026-10-09']",
+      "also_locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "selector": "#sessions"},
+        {"route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "selector": "#c-slot"}
+      ],
+      "criterion": "H5",
+      "also_criteria": ["H1"],
+      "kind": "judged",
+      "severity_band": [3, 4],
+      "evidence": "reproduced in the browser (wet tile saw confirmed for 10 October; sander for 10 October in the earlier probe)"
+    },
+    {
+      "id": "L19",
+      "title": "Keyboard focus is hidden behind the fixed action bar on the tool page",
+      "description": "The 72 px bar is position: fixed and the page has no scroll-padding. When Tab brings a day into view, the browser lines it up with the bottom edge of the viewport, which is under the bar. Tabbing from the top in Chromium: at 375x667, days 11-24 (14 buttons, including Saturday 17) are entirely hidden when they get focus; at 320x568, days 11-17; at 768x1024, days 25-29 in both directions, with days 18-24 two-thirds hidden; at 1280x800, days 9-10. WebKit hid days 11-24 at 375x667 in the same way. The keyboard user cannot see which day has focus, and pressing Enter chooses a day she never saw.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": ".actionbar",
+      "criterion": "2.4.11",
+      "also_criteria": ["2.4.12"],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (visible height of every focus stop, six viewport sizes, Chromium and WebKit); screenshot of focus on Saturday 17 at 375x667 showing nothing"
+    },
+    {
+      "id": "L20",
+      "title": "The loan-length list captures Tab and cannot be dismissed",
+      "description": "Once the list is open, Tab and Shift+Tab are intercepted (preventDefault) and just cycle between 'One week' and 'Two weeks'. Escape does nothing, and a tap or click outside leaves the list open. The only way out is to pick an option with Enter, Space or a tap, and nothing tells keyboard users that. ArrowDown on the closed button does not open the list either, which departs from the listbox pattern.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "loan-open",
+      "selector": "#loan-list",
+      "criterion": "2.1.2",
+      "also_criteria": ["H3", "2.1.1"],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (key sequence Tab, Tab, Tab, Escape, Shift+Tab: still open; tap outside: still open); reproduced in the browser"
+    },
+    {
+      "id": "L21",
+      "title": "The loan-length button's accessible name is only its current value",
+      "description": "The button with aria-haspopup='listbox' has no aria-label or aria-labelledby, so its accessible name is just 'One week'. The 'Loan length' heading labels only the hidden listbox. A screen-reader user tabbing to it hears 'One week, button, collapsed' and is not told what is being chosen.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": "#loan-button",
+      "criterion": "4.1.2",
+      "also_criteria": ["1.3.1", "2.4.6"],
+      "kind": "deterministic",
+      "severity_band": [1, 2],
+      "evidence": "measured (no aria-label or aria-labelledby; name from content)"
+    },
+    {
+      "id": "L22",
+      "title": "The 'Choose a pick-up day first' error is not announced, and focus lands on a closed day",
+      "description": "Pressing Reserve with no day chosen shows 'Choose a pick-up day first.' in a paragraph with no role or aria-live, which the calendar group does not reference. Focus moves to the first day button, 'Friday 9 October'. That is a closed day, and it is before the drill's available-from date. A screen-reader user hears only 'Friday 9 October, toggle button, not pressed'. From the code, the message also stays visible after a day is chosen, until Reserve is pressed again.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": "#day-error",
+      "criterion": "4.1.3",
+      "also_criteria": ["3.3.1", "H5"],
+      "kind": "deterministic",
+      "severity_band": [2, 2],
+      "evidence": "measured (no role or live attributes, no aria-describedby; focused element); reproduced in the browser; read in the code"
+    },
+    {
+      "id": "L23",
+      "title": "On phones, open days are marked only by an 8 px dot",
+      "description": "Below 480 px the word 'Open' is hidden and an 8 px dot takes its place. What the dot means is only in the hint above the calendar ('Days marked Open (a green dot on a small screen) are library sessions'). The phone is the main device and many members are older, so the dot is easy to miss or to not connect with the hint. This feeds L17.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": ".day__mark",
+      "criterion": "H6",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "measured (8 px; '.day__open' display none below 480 px); screenshots at 320 and 375"
+    },
+    {
+      "id": "L24",
+      "title": "The calendar starts on Sunday, against en-GB convention",
+      "description": "The weekday headings run Su Mo Tu We Th Fr Sa, but en-GB calendars start on Monday. A member scanning by column for Saturday, or for the weekend, finds the weekend split across both edges of the grid, which raises the chance of tapping the wrong day. The grid also has no month name.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": "#calendar",
+      "criterion": "H4",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "measured (rendered weekday header); read in the code"
+    },
+    {
+      "id": "L25",
+      "title": "Every day in the calendar is its own Tab stop",
+      "description": "The 21 day buttons are 21 Tab stops, so reaching 'Reserve this tool' takes 28 Tab presses from the top of the page. There is no arrow-key navigation inside the grid, and the action bar comes after the calendar in the Tab order.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": "#calendar",
+      "criterion": "H7",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "measured (Tab sequence)"
+    },
+    {
+      "id": "L26",
+      "title": "The fixed action bar permanently hides the footer and the desk's phone number on the tool page",
+      "description": ".page--bar leaves only 8 px below the content and the footer has no bottom margin, so the 72 px bar covers the last 72 px of the page at every scroll position. At 768 and 1280 px the whole footer text ('...call the desk on 01632 960552 during opening hours') is hidden. At 375 only 'Fernhill Tool Library is run by volunteers.' shows, with its lower edge clipped, and the lines with the phone number are hidden. The help line cannot be read on the very page where members choose days and might want to ask.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": ".actionbar",
+      "criterion": "H10",
+      "also_criteria": ["1.4.10", "3.2.6"],
+      "kind": "deterministic",
+      "severity_band": [2, 2],
+      "evidence": "measured (footer line boxes against the bar's top at 375, 768 and 1280); screenshots"
+    },
+    {
+      "id": "L27",
+      "title": "At 320 px the focus ring on a day is drawn under the neighbouring days",
+      "description": "At 374 px and below the calendar has no gap, so the 3 px outline (offset 2 px) of a focused day is overdrawn by the next day and by the row below. Only the top and left edges of the ring show. For days in the Sunday column the left edge is also off-screen, because the calendar runs edge to edge. At 375 px (4 px gap) the ring is complete.",
+      "route": "/tool.html?id=drill-18v-two&items=ladder-3m",
+      "state": "default",
+      "selector": ".day:focus-visible",
+      "criterion": "2.4.7",
+      "also_criteria": ["2.4.13"],
+      "kind": "deterministic",
+      "severity_band": [1, 1],
+      "evidence": "measured (3x screenshots of day 15 focused by keyboard at 320 and 375)"
+    },
+    {
+      "id": "L28",
+      "title": "Pick-up sessions are shown in reverse order",
+      "description": ".sessions uses flex-direction: row-reverse with wrap-reverse, which turns the chronological DOM list upside down. At 375 the list reads Wed 28, Sat 24, Wed 21, Sat 17, Wed 14, Sat 10 from the top. At 1280, Wed 28 sits alone on the first row and the second row runs from Sat 24 on the left to Sat 10 on the right. Keyboard and screen-reader order is still chronological, so ArrowDown moves the selection up the screen (Sat 17, then Wed 21, then Sat 24). Tab from the error-summary link lands on Saturday 10, at the bottom. A member looking for 'Saturday 17', or for the first Saturday, can easily pick the wrong one.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "#sessions",
+      "criterion": "1.3.2",
+      "also_criteria": ["2.4.3", "H4"],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (DOM index against rendered position at 375, 768 and 1280; arrow-key sequence)"
+    },
+    {
+      "id": "L29",
+      "title": "The session is not preselected from the day already chosen, so members choose the date again",
+      "description": "The tool page asked for a pick-up day (Saturday 17 October), and the basket line repeats it ('Pick up Saturday 17 October · one week · deposit £20'). Yet no session radio is selected, and pressing Continue gives 'There is a problem: Choose a pick-up session'. The member enters the same date a second time, in a different form, from a reversed list (L28).",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "input[name='slot']",
+      "also_locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "errors", "selector": "#error-summary"}
+      ],
+      "criterion": "CW-Q1",
+      "also_criteria": ["3.3.7", "H7"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 11,
+        "question": "CW-Q1",
+        "story": "She already chose Saturday 17 on the tool page, and the basket line says 'Pick up Saturday 17 October'. She does not expect to pick the date again, presses Continue and gets an error. Then she has to find the same date in a list that starts at Wednesday 28."
+      }
+    },
+    {
+      "id": "L30",
+      "title": "The ten-minute basket hold is never stated, shown, warned about or extendable",
+      "description": "The hold starts when the first tool is added, or when a step is opened with ?items=, and lasts ten minutes (PRODUCT.md). The basket says only 'Items are held for you while you finish'. There is no time, no countdown, no warning before it ends and no way to extend it, and it is checked only when Continue is pressed. The use scene is a phone in the evening, a few minutes at a time, tea going cold. Ten minutes between adding the drill and pressing Continue is easy to pass. So is the time between reaching confirm and coming back through 'Change' in the change-session journey.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": ".intro",
+      "criterion": "2.2.1",
+      "also_criteria": ["H1", "H10"],
+      "kind": "judged",
+      "severity_band": [3, 4],
+      "evidence": "read in the code; reproduced in the browser with the clock simulated (stored hold start back-dated 11 minutes)",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 12,
+        "question": "CW-Q4",
+        "story": "She added the drill, answered a message and came back to the basket twelve minutes later. Pressing Continue gives a pause and then 'Something went wrong. Try again.' Nothing she saw had told her the basket had a time limit."
+      }
+    },
+    {
+      "id": "L31",
+      "title": "When the hold expires the error just says 'Something went wrong. Try again.', and trying again never works",
+      "description": "With the hold expired, Continue waits 1.2 s and then shows 'There is a problem: Something went wrong. Try again.' It does not say what went wrong (the hold), whether the tool is still held (the basket still lists it and the header says 'Basket (1)'), or what to do. Trying again gives the same message. Removing the tool and adding it again does too, because the hold start is only reset by 'Reserve another tool' on a done page. From then on the member cannot reserve anything in that browser tab: a dead end, with a new tab or a phone call to the desk as the only ways out.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "errors",
+      "selector": "#error-list",
+      "criterion": "H9",
+      "also_criteria": ["3.3.3", "3.3.1"],
+      "kind": "judged",
+      "severity_band": [3, 4],
+      "evidence": "reproduced in the browser (retry, and remove then re-add, both give the same error)"
+    },
+    {
+      "id": "L32",
+      "title": "Continue and Confirm reservation show no visible progress while they wait",
+      "description": "Continue waits 1.2 s (1245 ms measured) and Confirm reservation 1.5 s (1834 ms to the done page) before anything happens. Meanwhile the buttons keep their labels, are not disabled and show no spinner. Only aria-busy changes, which most screen readers do not announce. On a phone, a tap that seems to do nothing for 1.5 s invites a second tap (L40).",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "#continue",
+      "also_locations": [
+        {"route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "default", "selector": "#confirm"}
+      ],
+      "criterion": "H1",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "measured (button state 400-500 ms after the press; time to navigation); screenshots",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 12,
+        "question": "CW-Q4",
+        "story": "She taps Continue and for over a second nothing changes: same page, same button. She cannot tell whether the tap registered until the next page suddenly appears."
+      }
+    },
+    {
+      "id": "L33",
+      "title": "A double tap on Remove removes two tools",
+      "description": "With three tools in the basket, two clicks 120 ms apart on the first 'Remove' removed the drill and then the ladder. When the list re-rendered, the ladder's Remove button moved up under the pointer. Only the jigsaw was left. There is no confirmation and no undo, so the member has to find the tool again and re-add it with its day and loan length, while the hold keeps running.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "button[data-remove]",
+      "criterion": "H5",
+      "also_criteria": ["H3"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L34",
+      "title": "Removing a tool gives no message",
+      "description": "After Remove, focus jumps to the 'Your basket' heading, and the page's only live region (the error summary) stays hidden. A screen-reader user hears 'Your basket, heading level 1' and is not told what was removed or how many tools are left. The masthead count changes silently.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "button[data-remove]",
+      "criterion": "4.1.3",
+      "also_criteria": ["H1"],
+      "kind": "deterministic",
+      "severity_band": [1, 2],
+      "evidence": "measured (focused element and live regions after Remove)"
+    },
+    {
+      "id": "L35",
+      "title": "The error-summary link drops focus on the page body and scrolls the question out of view",
+      "description": "'Choose a pick-up session' links to #sessions, a div without tabindex. Activating it leaves focus on body and scrolls #sessions to the top edge. At 375 px the 'Pick-up session' legend (at -114 px) and the inline error 'Choose a pick-up session' (at -26 px) are then above the viewport. The next Tab goes to 'Saturday 10 October', the last session on screen (L28).",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "errors",
+      "selector": "#error-list a[href='#sessions']",
+      "criterion": "2.4.3",
+      "also_criteria": ["H9"],
+      "kind": "deterministic",
+      "severity_band": [1, 2],
+      "evidence": "measured (activeElement, element positions and next Tab stop after activating the link)"
+    },
+    {
+      "id": "L36",
+      "title": "The basket cannot change a tool's pick-up day or loan length",
+      "description": "Each basket line shows 'Pick up Saturday 17 October · one week · deposit £20' with only a Remove button. The tool name is not a link back to its page, and confirm's only 'Change' link goes to the session. To fix a closed or wrong day (L17, L44) or a loan length, the member has to find the tool again in the list, choose again and re-add it. The tool page does not show what is already in the basket either ('Pick-up day: not chosen yet' for a tool already held for Friday 16).",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": ".basket-list li",
+      "criterion": "H3",
+      "also_criteria": ["H7"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L37",
+      "title": "More than three tools are accepted although members may reserve up to three",
+      "description": "The rule 'up to three tools at a time' appears only in the find page's intro. Four tools added through the tool pages gave 'Basket (4)' with no warning in the basket or on confirm, and ended on 'Reservation confirmed' for four tools. A seeded basket of five reached confirm with a £100 deposit. The desk would have to turn the member away from some of the tools at collection.",
+      "route": "/basket.html?items=drill-18v-two&day=2026-10-17",
+      "state": "default",
+      "selector": "#basket-list",
+      "criterion": "H5",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L38",
+      "title": "The membership number must be typed exactly as 'FT-' and five digits",
+      "description": "The check is /^FT-\\d{5}$/, which is case-sensitive and needs the hyphen. 'Ft-01234' is rejected; that is what an iPhone's default sentence capitalisation makes of 'ft-01234', since the field has no autocapitalize='characters'. So are 'ft-01234' and 'FT 01234'. Each gets 'Enter your membership number, like FT-01234', which looks like what the member typed. The input is not normalised (upper-casing, adding the hyphen). Also, autocomplete='off' stops a returning member's browser from offering the number typed last time.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "errors",
+      "selector": "#member",
+      "criterion": "H5",
+      "also_criteria": ["H9", "3.3.3"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser (the variants above); iOS capitalisation reasoned, not tested on a device",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 17,
+        "question": "CW-Q4",
+        "story": "She types her number from the card; the phone capitalises only the F. After Confirm she is told to 'Enter your membership number, like FT-01234', which she believes she just did. She cannot see what is wrong."
+      }
+    },
+    {
+      "id": "L39",
+      "title": "The mobile number must match one exact pattern",
+      "description": "The check is /^0\\d{4}\\s?\\d{6}$/, so it accepts only '07700 900123' or '07700900123'. '07700 900 123', '07700-900123' and '+44 7700 900123' are all rejected with 'Enter a UK mobile number, like 07700 900123'. The +44 form is what phone autofill often supplies for autocomplete='tel'. The expected format only appears after the error; the hint explains why the number is needed, not how to write it.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "errors",
+      "selector": "#phone",
+      "criterion": "H5",
+      "also_criteria": ["3.3.2", "H9"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L40",
+      "title": "Pressing Confirm twice makes two reservations",
+      "description": "The reservation is allocated the moment Confirm is pressed, and the button stays active through the 1.5 s wait (L32). A second press 400 ms later created a second reservation: the done page says 'Reservation numbers FT-4471 and FT-4472' for one drill, with no explanation. The desk's list gets a duplicate, and the member does not know which number counts or whether the drill is reserved twice.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "default",
+      "selector": "#confirm",
+      "also_locations": [
+        {"route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "selector": "#c-ref"}
+      ],
+      "criterion": "H5",
+      "also_criteria": ["H1"],
+      "kind": "judged",
+      "severity_band": [3, 3],
+      "evidence": "reproduced in the browser (clean session: FT-4471 and FT-4472)",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 17,
+        "question": "CW-Q4",
+        "story": "She taps Confirm reservation, nothing seems to happen for a second and a half, so she taps again. The confirmation then shows two reservation numbers for one drill, and she does not know whether she has booked it twice."
+      }
+    },
+    {
+      "id": "L41",
+      "title": "Details typed on the confirm page are lost when the session is changed",
+      "description": "With the membership number, name and mobile filled in, Change, then the basket, then Continue brings the member back to confirm with all three fields empty. The details are kept nowhere, not even in sessionStorage, which the site already uses for the basket. She has to type them again on a phone. The same happens after Back from the done page.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "default",
+      "selector": "#confirm-form",
+      "criterion": "3.3.7",
+      "also_criteria": ["H3", "CW-Q4"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser",
+      "cw": {
+        "journey": "change-pickup-session",
+        "step": 6,
+        "question": "CW-Q4",
+        "story": "She had already typed her membership number, name and mobile before deciding on Wednesday. Back on Check and confirm the fields are blank, which suggests the change may have reset more than the session, and she has to retype everything."
+      }
+    },
+    {
+      "id": "L42",
+      "title": "'Change' opens the basket with no session selected and no sign of the current one",
+      "description": "The Change link is a plain 'basket.html' with no slot, so the page titled 'Your basket' opens with none of the six sessions selected and no sign of the one chosen a moment ago. The list is reversed, and at 375x667 Wednesday 21 sits below the fold (y=866). The page does not look like 'change your session', and it does not tell the member whether the rest of the reservation was kept, which is exactly what the persona does not know.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "default",
+      "selector": ".summary a[href='basket.html']",
+      "also_locations": [
+        {"route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "selector": "#sessions"}
+      ],
+      "criterion": "CW-Q4",
+      "also_criteria": ["H6", "H1"],
+      "kind": "judged",
+      "severity_band": [2, 2],
+      "evidence": "reproduced in the browser (checked radio is null after Change)",
+      "cw": {
+        "journey": "change-pickup-session",
+        "step": 2,
+        "question": "CW-Q4",
+        "story": "She taps Change next to 'Saturday 17 October' and lands on 'Your basket': the drill and a list of sessions with nothing selected, starting at Wednesday 28. Her Saturday choice has vanished, and she cannot tell whether she is still mid-reservation or starting over."
+      }
+    },
+    {
+      "id": "L43",
+      "title": "The tool's pick-up day and the pick-up session can contradict each other, and nothing reconciles them",
+      "description": "Each tool keeps the day chosen on its tool page, the session is chosen separately in the basket, and confirm only checks that the tool's day is an open day. After changing to Wednesday 21, the summary shows 'Cordless drill 18 V, combi, two batteries, one week, pick up Saturday 17 October' above 'Pick-up session: Wednesday 21 October, 18:00 to 20:00'. Choosing Wednesday 14 for a drill picked up on Saturday 17 is confirmed without a word, and the done page then shows only the session. It is unclear which date the desk will set the tool aside for.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "default",
+      "selector": "#summary-tools",
+      "also_locations": [
+        {"route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "selector": "#c-slot"}
+      ],
+      "criterion": "H5",
+      "also_criteria": ["H4", "CW-Q4", "H1"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser (Saturday 17 with Wednesday 21, and Saturday 17 with Wednesday 14 confirmed)",
+      "cw": {
+        "journey": "change-pickup-session",
+        "step": 7,
+        "question": "CW-Q4",
+        "story": "Back on Check and confirm, the session says Wednesday 21, but the tool line still says 'pick up Saturday 17 October'. She cannot tell which the library will go by, so she cannot be sure the change worked or that it kept the rest of her reservation."
+      }
+    },
+    {
+      "id": "L44",
+      "title": "The closed-day error on the confirm page offers no way to fix it",
+      "description": "'The library is closed on Friday 16 October, so this pick-up day is not possible. Choose another day.' has no link. The page's only link, 'Change', goes to the basket, which cannot change a day (L36). To recover, the member has to go to Find a tool, find the drill again, choose a new day, press Reserve, open the basket, choose the session again, press Continue (if the hold allows), retype her membership number, name and mobile, and confirm.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "errors",
+      "selector": "#error-list",
+      "criterion": "H9",
+      "also_criteria": ["3.3.3"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser (no links in the error list; the only main link is Change pointing to basket.html)"
+    },
+    {
+      "id": "L45",
+      "title": "The basket is not emptied after confirming, and going back reserves the same tool again",
+      "description": "'Reservation confirmed' sits under 'Basket (1)', and the basket page still lists the drill as held. Browser Back from the done page shows Check and confirm again as if nothing had happened, and confirming again added another number ('FT-4471 and FT-4472 and FT-4473'). Adding another tool without using 'Reserve another tool' puts it in a basket that still holds the drill, so the drill would be reserved twice.",
+      "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "state": "default",
+      "selector": "#basket-link",
+      "criterion": "H1",
+      "also_criteria": ["H5", "H4"],
+      "kind": "judged",
+      "severity_band": [2, 3],
+      "evidence": "reproduced in the browser",
+      "cw": {
+        "journey": "reserve-tool-for-saturday",
+        "step": 18,
+        "question": "CW-Q4",
+        "story": "On the confirmation page the header still says 'Basket (1)'. She wonders whether the drill is really reserved or still waiting in the basket, goes back to check, and may confirm it again."
+      }
+    },
+    {
+      "id": "L46",
+      "title": "The done page lists every reservation number for the session but only the latest tools and deposit",
+      "description": "The done page collects every reservation made in the tab for that session, but shows the tools and deposit of the last one only. After reserving the drill and then, through 'Reserve another tool', the jigsaw for the same Saturday, it shows 'Reservation numbers FT-4471 and FT-4472 · Tools: Jigsaw, corded, with 8 blades · Deposit to bring £15'. It reads as if both numbers were for the jigsaw, and the drill's £20 is missing from what to bring.",
+      "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "state": "default",
+      "selector": "#c-ref",
+      "criterion": "H1",
+      "also_criteria": ["H8"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L47",
+      "title": "Reservation numbers look like membership numbers",
+      "description": "The reservation 'FT-4471' uses the same 'FT-' prefix as the membership number 'FT-01234', just one digit shorter. Asked for 'your number' at the desk or on the phone, a member can easily give the wrong one, and the done page shows only the reservation number.",
+      "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "state": "default",
+      "selector": "#c-ref",
+      "criterion": "H4",
+      "also_criteria": ["H2"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reasoned"
+    },
+    {
+      "id": "L48",
+      "title": "The done page reports a reservation it does not have",
+      "description": "Opened in a fresh tab at the real flow's address (done.html?slot=sat-2026-10-17), the page says 'Reservation confirmed', 'Reservation number FT-4471' (a hard-coded fallback), Tools 'See your confirmation text' and deposit £0. No text message is ever sent; the mobile number is only for late returns. Confirming an empty basket gives the same result: remove the last tool, go Back to confirm (which still shows the form beside 'Your basket is empty.'), press Confirm, and the page says 'Reservation confirmed' for nothing.",
+      "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "state": "default",
+      "selector": "#c-ref",
+      "also_locations": [
+        {"route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "default", "selector": "#confirm"}
+      ],
+      "criterion": "H1",
+      "also_criteria": ["H5"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L49",
+      "title": "Screen readers read the reserved tool's name twice on the done page",
+      "description": "The Tools entry holds the visible list item and a visually hidden <span id='c-tool'> with the same name, so its text is 'Cordless drill 18 V, combi, two batteries' twice. A screen-reader user hears the tool twice; next to two reservation numbers (L40, L46) this can sound like two tools.",
+      "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471",
+      "state": "default",
+      "selector": "#c-tool",
+      "criterion": "H8",
+      "also_criteria": ["1.3.1"],
+      "kind": "judged",
+      "severity_band": [1, 1],
+      "evidence": "measured (text content of the dd); read in the code"
+    },
+    {
+      "id": "L50",
+      "title": "With larger text the navigation row does not wrap, so every page scrolls sideways",
+      "description": "With the text size at 200% (root font-size, as a browser or phone text-size setting does), the three nav links stay on one flex row with no wrap. At 375 and 320 px every page becomes 414 px wide, with 'Opening times' and part of 'Basket (1)' off-screen. Larger text is common among members. At 768 and 1280 px the row fits.",
+      "route": "*",
+      "state": "default",
+      "selector": ".masthead nav ul",
+      "criterion": "1.4.4",
+      "also_criteria": ["1.4.10"],
+      "kind": "deterministic",
+      "severity_band": [2, 3],
+      "evidence": "measured (scrollWidth and overflowing elements on all five routes at 200% text); screenshots"
+    },
+    {
+      "id": "L51",
+      "title": "With larger text the two-column summaries overflow the screen",
+      "description": "The summary and spec lists use grid-template-columns: max-content 1fr. At 200% text the label column ('Reservation number', 'Pick-up session') takes most of the width and the values are pushed past the card: the confirm page is 428 px wide at 375, the done page 498 px, with the reservation number FT-4471 off-screen to the right, and the tool page's Details reach 392 px. The values that remain wrap one word per line.",
+      "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17",
+      "state": "default",
+      "selector": ".summary dl",
+      "also_locations": [
+        {"route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "selector": ".summary dl"},
+        {"route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "default", "selector": ".specs"}
+      ],
+      "criterion": "1.4.4",
+      "also_criteria": ["1.4.10"],
+      "kind": "deterministic",
+      "severity_band": [2, 2],
+      "evidence": "measured (scrollWidth and overflowing elements at 200% text, 375 and 320); screenshots"
+    },
+    {
+      "id": "L52",
+      "title": "Every tool card shows the same wrench picture",
+      "description": "All ten cards carry the same 96 px wrench icon on a tinted square, which is also the library's logo. It tells the member nothing about the tool, so it cannot help her recognise a drill, a ladder or a sander at a glance. On a 375 px phone it takes 112 of the card's 343 px (96 px plus a 16 px gap), and that space is what the cut-off names (L03) are missing.",
+      "route": "/?items=ladder-3m",
+      "state": "default",
+      "selector": ".card__thumb",
+      "criterion": "H8",
+      "also_criteria": ["H6"],
+      "kind": "judged",
+      "severity_band": [1, 2],
+      "evidence": "measured (identical markup on all ten cards; card and thumbnail widths); screenshots"
+    }
+  ]
+}

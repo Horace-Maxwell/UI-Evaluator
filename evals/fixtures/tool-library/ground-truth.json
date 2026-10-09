@@ -1,7 +1,7 @@
 {
   "fixture": "tool-library",
   "clean": false,
-  "provenance": "Seeded by construction on 2026-10-07 as a harder companion to journey-app: every problem shows in rendering, interaction or time rather than in the markup alone, and PRODUCT.md states facts about the library but no rule that a seeded problem breaks. Four defects are deterministic and need the browser (dark-theme contrast, overflow at 320 px, a sticky bar over focused controls and a keyboard trap are caught by uie audit); nine are judged. Every page otherwise meets the deterministic floor in both themes, so deterministic detections that match no defect here are false positives. EVALUATION-PLAN §3 asks for two independent labellers on analytical defects; that review has not happened yet, so the cw stories and severity bands are the seeder's analytical judgement.",
+  "provenance": "Seeded by construction on 2026-10-07 as a harder companion to journey-app: every problem shows in rendering, interaction or time rather than in the markup alone, and PRODUCT.md states facts about the library but no rule that a seeded problem breaks. Four defects are deterministic and need the browser (dark-theme contrast, overflow at 320 px, a sticky bar over focused controls and a keyboard trap are caught by uie audit); nine are judged. Every page otherwise meets the deterministic floor in both themes, so deterministic detections that match no defect here are false positives. EVALUATION-PLAN §3 asks for two independent labellers on analytical defects; that review has not happened yet, so the cw stories and severity bands are the seeder's analytical judgement. Two-labeller review, 2026-10-08: a second labeller, blind to this file, listed 52 problems (51 reproduced or measured in a browser) and found all 13 seeded defects, with every severity band overlapping the seeder's; each band is now the union of the two (D09 and D10 widened to [2, 4]). Thirteen problems the fixture did not seed were added as found defects, D14 to D26: each was reproduced by the second labeller and reported independently by at least two round-3 reviews that the graders judged real, and its band is the second labeller's alone. D26 refines D07 (the same press, a different harm), and recall against the seeded set counts it toward D07. The second labeller's other problems stay out until a second source reports them; the full list is in evals/results/agent-evals-2026-10-08-tool-library-r4/second-labeller.json.",
   "_design": "One defect per criterion per route. Where a deterministic check could also report a judged defect (CSS order against the DOM, an ellipsis as clipped text or as text that runs to the card's edge), the check's criterion is listed under also_criteria so that detection matches the defect instead of counting as a false positive.",
   "defects": [
     {
@@ -202,7 +202,7 @@
       "file": "app.js",
       "description": "The loan-length list opens as a custom listbox. Inside it, Tab moves to the next option and wraps around, and Escape does nothing, so a keyboard user cannot leave the list except by choosing an option with Enter.",
       "expected_severity_band": [
-        3,
+        2,
         4
       ],
       "expected_check": "keyboard",
@@ -223,7 +223,7 @@
       "description": "The basket says 'Items are held for you while you finish' but shows no time; the hold is ten minutes from the first item and is kept only in the browser. When it has lapsed, Continue waits 1.2 seconds and then says 'Something went wrong. Try again.', which is not what happened and does not say what to do.",
       "expected_severity_band": [
         2,
-        3
+        4
       ],
       "expected_check": null,
       "seeded_from": "added",
@@ -293,6 +293,272 @@
       ],
       "expected_check": null,
       "seeded_from": "added"
+    },
+    {
+      "id": "tool-library-D14",
+      "criterion": "H5",
+      "also_criteria": [
+        "H1"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "day-chosen",
+      "selector": ".day",
+      "file": "app.js",
+      "description": "The calendar neither marks nor disables the days before the tool's 'Available from' date, the basket offers every session, and confirm does not check: a wet tile saw available from Saturday 24 October reserved for Saturday 10 October ends on 'Reservation confirmed'. The member is told a tool will be waiting when it cannot be, and finds out at the desk.",
+      "expected_severity_band": [
+        3,
+        4
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L18 (reproduced in the browser); round 3: skill runs C4 (F-0142, F-0066) and K2 (F-0071), control run D9 (R3)."
+    },
+    {
+      "id": "tool-library-D15",
+      "criterion": "H5",
+      "also_criteria": [
+        "H4",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": "#summary-tools",
+      "file": "app.js",
+      "description": "Each tool keeps the pick-up day chosen on its tool page, the session is chosen separately in the basket, and nothing reconciles them: a drill to be picked up on Saturday 17 October can be confirmed for the Wednesday 21 session, the confirm page shows both dates and the done page only the session, so it is unclear which day the desk sets the tool aside for.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L43 (reproduced); round 3: C4 (F-0038, F-0068), D9 (R4), K2 (F-0072), X1 (R3)."
+    },
+    {
+      "id": "tool-library-D16",
+      "criterion": "4.1.2",
+      "also_criteria": [
+        "1.3.1",
+        "2.4.6"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "default",
+      "selector": "#loan-button",
+      "file": "tool.html",
+      "description": "The loan-length button has no aria-label or aria-labelledby, so its accessible name is only its current value: a screen-reader user hears 'One week, button, collapsed' and is not told what is being chosen.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L21 (measured); round 3: C4 (F-0036), D9 (R11), K2 (F-0029)."
+    },
+    {
+      "id": "tool-library-D17",
+      "criterion": "H5",
+      "also_criteria": [
+        "3.3.3",
+        "H9"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "errors",
+      "selector": "#member, #phone",
+      "file": "app.js",
+      "description": "The membership number must match /^FT-\\d{5}$/ and the mobile number /^0\\d{4}\\s?\\d{6}$/, with no normalising: 'ft-01234', 'Ft-01234' (what a phone's sentence capitalisation makes of it) and 'FT 01234' are rejected, and so are '07700 900 123' and '+44 7700 900123', the form phone autofill often supplies. Each gets an error whose example looks like what the member typed.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L38 and L39 (reproduced); round 3: C4 (F-0051, F-0098), D9 (R17), K2 (F-0048), X1 (R15)."
+    },
+    {
+      "id": "tool-library-D18",
+      "criterion": "H1",
+      "also_criteria": [
+        "H5",
+        "H4"
+      ],
+      "kind": "judged",
+      "route": "/done.html",
+      "state": "default",
+      "selector": "#basket-link",
+      "file": "app.js",
+      "description": "After 'Reservation confirmed' the basket is not emptied: the header still reads 'Basket (1)' and the basket still lists the tool as held, and going back to the confirm page and confirming again reserves the same tool a second time under a new number.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L45 (reproduced); round 3: C4 (F-0064, F-0116), D9 (R18), K2 (F-0080, F-0132), X1 (R6)."
+    },
+    {
+      "id": "tool-library-D19",
+      "criterion": "4.1.3",
+      "also_criteria": [
+        "3.3.1",
+        "H5"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "default",
+      "selector": "#day-error",
+      "file": "tool.html",
+      "description": "Pressing 'Reserve this tool' with no day chosen shows 'Choose a pick-up day first.' in a paragraph with no role or live region that the calendar does not reference, so it is not announced, and focus moves to the first day button, a closed day before the tool is available. The message stays on screen after a day is chosen.",
+      "expected_severity_band": [
+        2,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L22 (measured and reproduced); round 3: C4 (F-0049, F-0060), D9 (R19)."
+    },
+    {
+      "id": "tool-library-D20",
+      "criterion": "H6",
+      "also_criteria": [],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "default",
+      "selector": ".day__mark",
+      "file": "styles.css",
+      "description": "Below 480 px the word 'Open' on session days is hidden and an 8 px dot takes its place; what the dot means is only in the hint above the calendar. On the phone, the members' main device, which days the library opens is easy to miss. The seeder chose the dot to fit the calendar at phone widths; the second labeller and two reviews judged it a minor problem.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L23 (measured at 320 and 375 px); round 3: C4 (F-0087), D9 (R20); K2 (F-0031) found the dot gone in forced colours."
+    },
+    {
+      "id": "tool-library-D21",
+      "criterion": "H5",
+      "also_criteria": [],
+      "kind": "judged",
+      "route": "/basket.html",
+      "state": "default",
+      "selector": "#basket-list",
+      "file": "app.js",
+      "description": "The find page says members may reserve up to three tools at a time, but the basket takes a fourth tool without a warning and the reservation is confirmed for four, so the desk has to turn the member away from some of them at collection.",
+      "expected_severity_band": [
+        2,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L37 (reproduced); round 3: C4 (F-0050), K2 (F-0047), X1 (R20)."
+    },
+    {
+      "id": "tool-library-D22",
+      "criterion": "3.3.7",
+      "also_criteria": [
+        "H3",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": "#confirm-form",
+      "file": "app.js",
+      "description": "With the membership number, name and mobile filled in, 'Change', the basket and Continue bring the member back to the confirm page with all three fields empty; the details are kept nowhere, so she types them again on a phone.",
+      "expected_severity_band": [
+        2,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L41 (reproduced); round 3: C4 (F-0069), K2 (F-0075), X1 (R21)."
+    },
+    {
+      "id": "tool-library-D23",
+      "criterion": "CW-Q1",
+      "also_criteria": [
+        "3.3.7",
+        "H7"
+      ],
+      "kind": "judged",
+      "route": "/basket.html",
+      "state": "default",
+      "selector": "input[name='slot']",
+      "file": "app.js",
+      "description": "The tool page asked for a pick-up day and the basket line repeats it, yet no pick-up session is selected and Continue answers 'Choose a pick-up session', so the member enters the same date a second time, in another form, and can choose a different one.",
+      "expected_severity_band": [
+        2,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L29 (reproduced); round 3: C4 (F-0029, F-0061), K2 (F-0062)."
+    },
+    {
+      "id": "tool-library-D24",
+      "criterion": "H8",
+      "also_criteria": [
+        "1.3.1"
+      ],
+      "kind": "judged",
+      "route": "/done.html",
+      "state": "default",
+      "selector": "#c-tool",
+      "file": "done.html",
+      "description": "On the done page the Tools entry holds the visible list item and a visually hidden span with the same name, so screen readers read the reserved tool's name twice; next to two reservation numbers this can sound like two tools.",
+      "expected_severity_band": [
+        1,
+        1
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L49 (measured); round 3: C4 (F-0053), X1 (R18)."
+    },
+    {
+      "id": "tool-library-D25",
+      "criterion": "H2",
+      "also_criteria": [
+        "2.4.6",
+        "3.3.2"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "filters-open",
+      "selector": "#from",
+      "file": "index.html",
+      "description": "The 'Available from' filter keeps the tools that can be collected on the chosen day, but its label uses the badges' words and its hint says 'Show tools you could pick up on or after this day': choosing 14 October hides a tool available from 17 October, which could be picked up after the 14th.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "found_evidence": "Second labeller L07 (reproduced and read in the code); round 3: C4 (F-0085), K2 (F-0069)."
+    },
+    {
+      "id": "tool-library-D26",
+      "criterion": "CW-Q1",
+      "also_criteria": [
+        "H2",
+        "H1"
+      ],
+      "kind": "judged",
+      "route": "/tool.html",
+      "state": "added",
+      "selector": "#reserve",
+      "file": "tool.html",
+      "description": "'Reserve this tool' does not reserve: it puts the tool in a basket held for ten minutes, the button keeps its label, and nothing says that a basket, a session and a confirmation still follow. A first-time member can believe the tool is reserved and put the phone down, and the hold lapses with nothing reserved. It is the press D07 describes, read for a different harm: D07 is the brief feedback, this is the misleading action.",
+      "expected_severity_band": [
+        3,
+        4
+      ],
+      "expected_check": null,
+      "seeded_from": "found",
+      "refines": "tool-library-D07",
+      "found_evidence": "Second labeller L14 (reasoned from the walkthrough and reproduced: the label stays and only a toast appears); round 3 graded two findings that describe the unfinished reservation as D07, C4 (F-0055) and K2 (F-0061), rated 3.7 and 4.0."
     }
   ]
 }

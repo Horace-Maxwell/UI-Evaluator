@@ -62,3 +62,15 @@ replaced, as in round 3; instrument changes after seeing results are logged belo
 - 2026-10-08. The second blind labeller was cut off by the same limit before it wrote its list. It was started again
   on the same instructions, told that the earlier attempt's working files (a Playwright script, measurements and
   screenshots) are in its folder and may be reused or redone.
+- 2026-10-08, 20:41. The first start of the replacements was refused at once by the same weekly limit: the
+  headless binary is signed in to the account that hit it. No tokens were used, and the attempt's files were removed
+  so the runs can start cleanly. The replacements wait until the binary runs on an account with quota.
+- 2026-10-08, before any round-4 run was graded. The second labeller's list (52 problems, 51 reproduced or measured in
+  a browser; `second-labeller.json` here) found all 13 seeded defects, and every severity band overlapped the
+  seeder's. As this plan allows, the ground truth of `tool-library` was revised before grading. Each seeded band is
+  now the union of the two labellers' (D09 and D10 widened to [2, 4]). Thirteen problems the fixture did not seed were
+  added as found defects, D14 to D26: each was reproduced by the second labeller and reported independently by at
+  least two round-3 reviews that the graders judged real. D26 ("Reserve this tool" does not reserve) refines D07 and
+  counts toward it in recall against the seeded 13. The grader reports recall against the 13 seeded defects, which
+  stays comparable with round 3 (two round-3 runs re-graded with the revised file reproduced their recorded figures
+  exactly), and against all 26. The mapping instructions gained the rule that separates D07 from D26.

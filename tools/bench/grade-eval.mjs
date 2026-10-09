@@ -131,6 +131,20 @@ function matchDefects(defects, findings) {
   return matched;
 }
 
+// A ground truth can hold found defects: problems the fixture did not seed, added after a second labeller
+// (seeded_from "found"). Recall against the seeded set counts a found defect that refines a seeded one toward that
+// defect, so rounds graded before and after the found defects were added stay comparable; recall against every defect
+// is reported beside it.
+const isSeeded = (d) => d.seeded_from !== 'found';
+function seededOf(truth, id) {
+  const d = truth.defects.find((x) => x.id === id);
+  if (!d) return null;
+  if (isSeeded(d)) return d.id;
+  const base = d.refines && truth.defects.find((x) => x.id === d.refines);
+  return base && isSeeded(base) ? base.id : null;
+}
+const truthForGraders = (truth) => truth.defects.map((d) => ({ id: d.id, origin: isSeeded(d) ? 'seeded' : 'found', ...(d.refines ? { refines: d.refines } : {}), route: d.route, criterion: d.criterion, description: d.description }));
+
 // --- per-eval checks ------------------------------------------------------------------------------------------------
 
 const checks = {};
@@ -167,16 +181,20 @@ async function auditChecks(depth, minHe) {
   const pool = (register.findings.length ? register.findings : merged.findings).filter((f) => CONFIRMED.has(f.status));
   const judged = pool.filter((f) => !(f.found_by || []).every((b) => b.method === 'tool'));
   const matched = matchDefects(truth.defects, pool);
-  metrics.recall_by_criterion = matched.length / truth.defects.length;
+  const seededDefs = truth.defects.filter(isSeeded);
+  const seededHit = new Set(matched.map((x) => seededOf(truth, x.defect)).filter(Boolean));
+  metrics.recall_by_criterion = seededHit.size / seededDefs.length;
+  if (seededDefs.length < truth.defects.length) metrics.recall_by_criterion_all = matched.length / truth.defects.length;
   metrics.matched = matched;
   metrics.confirmed_findings = pool.length;
   metrics.confirmed_judged_findings = judged.length;
   // A fixture with deterministic defects (tool-library) reports the judged and deterministic counts beside the total.
-  const kinds = [...new Set(truth.defects.map((d) => d.kind).filter(Boolean))];
-  const byKind = kinds.length > 1 ? `; ${kinds.map((k) => `${k} ${matched.filter((x) => truth.defects.find((d) => d.id === x.defect)?.kind === k).length} of ${truth.defects.filter((d) => d.kind === k).length}`).join(', ')}` : '';
+  const kinds = [...new Set(seededDefs.map((d) => d.kind).filter(Boolean))];
+  const byKind = kinds.length > 1 ? `; ${kinds.map((k) => `${k} ${seededDefs.filter((d) => d.kind === k && seededHit.has(d.id)).length} of ${seededDefs.filter((d) => d.kind === k).length}`).join(', ')}` : '';
+  const withFound = seededDefs.length < truth.defects.length ? `; ${matched.length} of ${truth.defects.length} counting the found defects` : '';
   checks['Recall of the seeded analytical defects is at least 0.6'] = () => ({
-    passed: matched.length / truth.defects.length >= 0.6,
-    evidence: `${matched.length} of ${truth.defects.length} seeded defects matched by criterion and route (${matched.map((x) => `${x.defect.replace(`${truth.fixture}-`, '')}→${x.finding}`).join(', ')})${byKind}; ${pool.length} confirmed finding(s), ${judged.length} judged`,
+    passed: seededHit.size / seededDefs.length >= 0.6,
+    evidence: `${seededHit.size} of ${seededDefs.length} seeded defects matched by criterion and route (${matched.map((x) => `${x.defect.replace(`${truth.fixture}-`, '')}→${x.finding}`).join(', ')})${byKind}${withFound}; ${pool.length} confirmed finding(s), ${judged.length} judged`,
   });
   checks['Recall of the seeded defects is at least 0.6'] = checks['Recall of the seeded analytical defects is at least 0.6'];
   checks['At least 7 of the 11 judged defects are reported as confirmed findings'] = () => ({ passed: matched.length >= 7, evidence: `${matched.length} matched` });
@@ -200,7 +218,7 @@ async function auditChecks(depth, minHe) {
   // Grader material: every confirmed finding (judged, then tool) and the ground truth, without the run's own matching.
   // The precision assertion counts the judged ones; the comparison with the control arm counts all of them.
   graderPacket.material.findings = [...judged, ...pool.filter((f) => !judged.includes(f))].map((f) => ({ id: f.id, method: judged.includes(f) ? 'judged' : 'tool', title: f.title, description: f.description, criteria: [...criteriaOf(f)], routes: [...routesOf(f)], states: [...new Set((f.locations || []).map((l) => l.state || 'default'))], severity: f.severity?.mean ?? null }));
-  graderPacket.material.ground_truth = truth.defects.map((d) => ({ id: d.id, route: d.route, criterion: d.criterion, description: d.description }));
+  graderPacket.material.ground_truth = truthForGraders(truth);
   graderPacket.material.reply = replyText.trim().slice(0, 12000);
 }
 
@@ -226,15 +244,18 @@ function controlAudit() {
   const docs = documentsWritten();
   metrics.documents_written = docs;
   graderPacket.material.report = [`--- final reply ---\n${replyText.trim()}`, ...docs.map((f) => `--- ${f} ---\n${read(path.join(ws, f), '')}`)].join('\n\n').slice(0, 60000);
-  graderPacket.material.ground_truth = truth.defects.map((d) => ({ id: d.id, route: d.route, criterion: d.criterion, description: d.description }));
+  graderPacket.material.ground_truth = truthForGraders(truth);
 }
 
 /** Precision and recall by meaning from a grader's mapping, each with its adjusted-Wald 95% interval. */
 function mappingMetrics(mapping, truth, keep = () => true) {
   const items = mapping.filter(keep);
+  // `seeded` counts the items mapped to any ground-truth defect, seeded or found (the name predates found defects).
   const seeded = items.filter((m) => truth.defects.some((d) => d.id === m.maps_to));
   const real = items.filter((m) => m.maps_to === 'real-unseeded');
   const found = [...new Set(seeded.map((m) => m.maps_to))].sort();
+  const seededFound = [...new Set(seeded.map((m) => seededOf(truth, m.maps_to)).filter(Boolean))].sort();
+  const seededTotal = truth.defects.filter(isSeeded).length;
   const rate = (x, n) => (n ? (({ low, high }) => ({ x, n, value: x / n, ci95: [low, high] }))(adjustedWald(x, n)) : null);
   return {
     items: items.length,
@@ -243,8 +264,10 @@ function mappingMetrics(mapping, truth, keep = () => true) {
     not_a_problem: items.length - seeded.length - real.length,
     precision: rate(seeded.length + real.length, items.length),
     precision_strict: rate(seeded.length, items.length),
-    recall_by_meaning: rate(found.length, truth.defects.length),
+    recall_by_meaning: rate(seededFound.length, seededTotal),
+    ...(seededTotal < truth.defects.length ? { recall_by_meaning_all: rate(found.length, truth.defects.length) } : {}),
     defects_found: found,
+    seeded_defects_found: seededFound,
   };
 }
 
@@ -474,7 +497,7 @@ if (answers?.mapping && [5, 19, 20].includes(ev.id)) {
     metrics.mapped_judged = mappingMetrics(answers.mapping, truth, (m) => methodOf.get(m.item) === 'judged');
     const p = metrics.mapped_judged.precision;
     const e = expectations.find((x) => x.text === 'Precision after verification is at least 0.8');
-    if (e && p) Object.assign(e, { passed: p.value >= 0.8, evidence: `${p.x} of ${p.n} confirmed judged findings are a seeded defect or a real problem (strict: ${metrics.mapped_judged.precision_strict.x} of ${p.n}); recall by meaning ${metrics.mapped_all.recall_by_meaning.x} of ${truth.defects.length}. Grader: ${e.evidence}` });
+    if (e && p) Object.assign(e, { passed: p.value >= 0.8, evidence: `${p.x} of ${p.n} confirmed judged findings are a seeded defect or a real problem (strict: ${metrics.mapped_judged.precision_strict.x} of ${p.n}); recall by meaning ${metrics.mapped_all.recall_by_meaning.x} of ${metrics.mapped_all.recall_by_meaning.n} seeded defects${metrics.mapped_all.recall_by_meaning_all ? ` (${metrics.mapped_all.recall_by_meaning_all.x} of ${metrics.mapped_all.recall_by_meaning_all.n} with the found ones)` : ''}. Grader: ${e.evidence}` });
   }
 }
 const timing = json(path.join(runDir, 'timing.json'), null);
