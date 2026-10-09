@@ -34,7 +34,7 @@ function copy(src, dest) {
 // Every run folder of the round: <eval-dir>/<arm>/run-<n>, the skill's arm first.
 const runDirs = [];
 for (const evalDir of fs.readdirSync(round).filter((d) => d.startsWith('eval-')).sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]))) {
-  for (const arm of ['with_skill', 'without_skill']) {
+  for (const arm of ['with_skill', 'without_skill', 'without_skill_nobrowser']) {
     const base = path.join(round, evalDir, arm);
     if (!fs.existsSync(base)) continue;
     for (const runName of fs.readdirSync(base).filter((r) => /^run-\d+$/.test(r))) runDirs.push({ evalDir, arm, runName, runDir: path.join(base, runName) });

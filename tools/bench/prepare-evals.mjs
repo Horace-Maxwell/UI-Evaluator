@@ -3,7 +3,7 @@
 // a frozen copy of the plugin, one workspace per run built from the eval's fixtures as evals/README.md describes,
 // the eval's setup steps run against the frozen CLI, and one prompt per run for a top-level session.
 //
-//   node tools/bench/prepare-evals.mjs <round-dir> --evals 9,11,12,14,19 [--runs 1] [--port 4601] [--baseline]
+//   node tools/bench/prepare-evals.mjs <round-dir> --evals 9,11,12,14,19 [--runs 1] [--port 4601] [--baseline [--no-browser]]
 //
 // Writes <round>/plugin-snapshot (the plugin as it is now: .claude-plugin, agents, commands, hooks, skills),
 // <round>/<eval-dir>/with_skill/run-<n>/workspace and <round>/eval-prompts.json. The workspaces are git repositories
@@ -14,6 +14,9 @@
 // --baseline prepares the control arm instead, in <eval-dir>/without_skill/: the same site, PRODUCT.md, DESIGN.md,
 // attachments and journey files (in journeys/, as the user's own documents), no .ui-evaluator/, and the same prompt
 // without the plugin lines. Only evals without setup steps have a baseline, since their setup runs the skill.
+// --baseline --no-browser prepares a second control arm, without_skill_nobrowser: the same, run by run-headless.mjs
+// with a PATH that holds only the system tools, so no Playwright, Node or npx is reachable (round 3 showed the control
+// finding Python Playwright on the machine and driving the site with it).
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -24,11 +27,12 @@ import { ROOT, SKILL_DIR, evalDirName, loadEvals, parseArgs, usage, writeJson } 
 const { pos, opts } = parseArgs(process.argv.slice(2));
 const round = pos[0] && path.resolve(pos[0]);
 const ids = String(opts.evals || '').split(',').filter(Boolean).map(Number);
-if (!round || !ids.length) usage('usage: node tools/bench/prepare-evals.mjs <round-dir> --evals 9,11,12,14,19 [--runs 1] [--port 4601] [--baseline]', opts.help);
+if (!round || !ids.length) usage('usage: node tools/bench/prepare-evals.mjs <round-dir> --evals 9,11,12,14,19 [--runs 1] [--port 4601] [--baseline [--no-browser]]', opts.help);
 if (round.startsWith(`${ROOT}${path.sep}`)) usage('put the round outside the repository, so runs cannot read the ground truth');
 const runs = Number(opts.runs || 1);
 const baseline = !!opts.baseline;
-const arm = baseline ? 'without_skill' : 'with_skill';
+const noBrowser = baseline && !!opts['no-browser'];
+const arm = baseline ? (noBrowser ? 'without_skill_nobrowser' : 'without_skill') : 'with_skill';
 const evals = loadEvals();
 const chosen = ids.map((id) => evals.find((e) => e.id === id) || usage(`eval ${id} is not in evals/evals.json`));
 const builds = chosen.filter((e) => e.name.startsWith('build-'));
@@ -214,7 +218,7 @@ for (const e of chosen) {
     const reply = path.join(ws, '.eval/reply.md');
     const run = path.relative(round, dir);
     const write = baseline ? baselinePrompt : prompt;
-    byRun.set(run, { run, eval: e.id, name: e.name, arm, workspace: ws, port, prompt: write({ ws, base: info.base, attachments: info.attachments, reply, request: e.prompt }) });
+    byRun.set(run, { run, eval: e.id, name: e.name, arm, no_browser: noBrowser || undefined, workspace: ws, port, prompt: write({ ws, base: info.base, attachments: info.attachments, reply, request: e.prompt }) });
     port += 1;
   }
 }

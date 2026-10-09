@@ -12,6 +12,7 @@ import { isoNow } from '../util/time.mjs';
 import { productSections } from '../tokens/product.mjs';
 import { stripComments } from '../util/markdown.mjs';
 import { primaryCriterion } from '../findings/core.mjs';
+import { partitionCandidates } from '../findings/merge.mjs';
 import { validate, loadSchema, SCHEMA_DIR } from '../schema.mjs';
 
 export const argSpec = { boolean: ['json', 'quiet', 'unseal', 'only-changed'] };
@@ -28,6 +29,8 @@ Options:
   --baseline <run>            design-critic pairwise / fix-reviewer: the baseline run
   --phase review|locate       code-reviewer phase (default review)
   --only-changed              severity-rater: only findings flagged for re-rating
+  --parts <n>                 finding-verifier: split the candidates into n packets (finding-verifier-1..n), one per
+                              parallel verifier, each writing verifier-p<k>.json; apply-verdicts reads every part
   --directions <dir>          direction-designer: the directions/<dir-id> folder with a roll file
   --unseal --agent <critic-n> design-critic: unseal detector output once that critic's verdict file exists
 
@@ -292,23 +295,31 @@ export async function run(args, ctx) {
       break;
     }
     case 'finding-verifier': {
-      const agent = 'verifier';
-      const out = path.join(r.dir, 'verifier.json');
       const merged = readJson(path.join(r.dir, 'merged.json'), null);
       if (!merged) throw new UsageError('run `uie findings merge` before building the verifier packet');
+      // Advisory observations (tool hits of rules that gate nothing) are measurements, not candidates (ADR-038).
       const cands = merged.findings
-        .filter((f) => f.status === 'candidate')
+        .filter((f) => f.status === 'candidate' && !(f.advisory && (f.found_by || []).every((b) => b.role === 'tool')))
         .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
-      const files = {
-        'candidates.json': cands,
-        'dismissals.json': readDismissals(ctx.root),
-        'scope.json': { routes: cfg.routes.map((x) => ({ path: x.path, states: (x.states || []).map((s) => s.name) })), matrix: cfg.matrix, iteration },
-        'screens.json': screens,
-        'aria.json': aria,
-      };
-      const hash = writePacket(path.join(pdir, 'finding-verifier-1'), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, base }));
-      record({ role, agent, packet: path.join(pdir, 'finding-verifier-1'), output: out, hash, model, isolation });
-      ctx.info(`${cands.length} candidate(s) to verify`);
+      // With many candidates the lead splits them between parallel verifiers (--parts n); each part keeps a route's
+      // candidates together and writes its own verdict file, which apply-verdicts reads with the others.
+      const parts = args.parts ? intOpt(args.parts, 'parts', { min: 1, max: 9 }) : 1;
+      const groups = parts > 1 ? partitionCandidates(cands, parts) : [cands];
+      groups.forEach((group, i) => {
+        const k = i + 1;
+        const agent = parts > 1 ? `verifier-p${k}` : 'verifier';
+        const out = path.join(r.dir, parts > 1 ? `verifier-p${k}.json` : 'verifier.json');
+        const files = {
+          'candidates.json': group,
+          'dismissals.json': readDismissals(ctx.root),
+          'scope.json': { routes: cfg.routes.map((x) => ({ path: x.path, states: (x.states || []).map((s) => s.name) })), matrix: cfg.matrix, iteration },
+          'screens.json': screens,
+          'aria.json': aria,
+        };
+        const hash = writePacket(path.join(pdir, `finding-verifier-${k}`), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, base }));
+        record({ role, agent, packet: path.join(pdir, `finding-verifier-${k}`), output: out, hash, model, isolation });
+      });
+      ctx.info(`${cands.length} candidate(s) to verify${parts > 1 ? ` in ${groups.length} packet(s) (${groups.map((g) => g.length).join(', ')})` : ''}`);
       break;
     }
     case 'severity-rater': {

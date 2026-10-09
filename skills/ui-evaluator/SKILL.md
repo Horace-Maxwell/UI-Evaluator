@@ -136,6 +136,7 @@ Several steps need roles that must not share your context. Build each role's inp
   - In Claude Code with the UI-Evaluator plugin, use the agents `ui-evaluator:<role>`.
   - Otherwise, spawn a general-purpose subagent with: "Read `<skill-dir>/references/evaluators/<role>.md` and follow it. Your packet is `<packet-dir>`."
   - Run independent roles in parallel. Each writes a validated file and replies in a few lines.
+  - Never end your turn while a subagent you spawned is still running: in a non-interactive session the end of the turn ends the session. Wait inside the turn, or keep working and act on each completion notice.
 - **If you cannot:** perform the role yourself. Read only that role's packet, finish and save its output before reading the next packet, and start the output with `DEGRADED: single-context`. Affected gates become `degraded`.
 
 | Role | File | Used in |

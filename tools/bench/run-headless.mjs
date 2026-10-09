@@ -81,7 +81,9 @@ async function runOne(p) {
   const srv = await serveStatic(p.workspace, { port: p.port });
   const started = Date.now();
   // The control arm runs without the plugin and cannot read the snapshot.
-  const plugin = p.arm === 'without_skill' ? [] : ['--plugin-dir', snapshot, '--add-dir', snapshot];
+  const plugin = String(p.arm || '').startsWith('without_skill') ? [] : ['--plugin-dir', snapshot, '--add-dir', snapshot];
+  // The no-browser control arm sees only the system tools: no Playwright, Node or npx on its PATH.
+  const env = { ...process.env, CI: '1', CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0', ...(p.no_browser ? { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', PYTHONNOUSERSITE: '1' } : {}) };
   const args = ['-p', p.prompt, ...plugin, '--model', String(opts.model || 'claude-opus-5-5'),
     '--output-format', 'stream-json', '--verbose', '--permission-mode', 'acceptEdits', '--allowedTools', TOOLS.join(' '),
     '--disallowedTools', 'WebFetch WebSearch', '--setting-sources', 'project,local', '--strict-mcp-config',
@@ -92,7 +94,7 @@ async function runOne(p) {
   const code = await new Promise((resolve) => {
     // Print mode stops waiting for background subagents after 600 s and ends the session; an audit's lead may wait
     // longer than that for a verifier it ran in the background, so the ceiling is lifted (round 3, 2026-10-08).
-    const child = spawn(CLAUDE, args, { cwd: p.workspace, stdio: ['ignore', out, err], env: { ...process.env, CI: '1', CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0' } });
+    const child = spawn(CLAUDE, args, { cwd: p.workspace, stdio: ['ignore', out, err], env });
     child.on('exit', (c) => resolve(c));
     child.on('error', (e) => {
       fs.writeSync(err, `spawn failed: ${e.message}\n`);

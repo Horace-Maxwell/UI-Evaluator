@@ -4,7 +4,7 @@ import { readJson, writeJson, exists, listDir, readJsonl, isDir } from '../util/
 import { list, intOpt, UsageError } from '../util/args.mjs';
 import { validate, loadSchema, guessSchema } from '../schema.mjs';
 import { paths, resolveRun, readRegister, writeRegister, readDismissals, appendIndex, updateManifest } from '../project.mjs';
-import { mergeRun, acceptProposals, readJudgedOutputs } from '../findings/merge.mjs';
+import { mergeRun, acceptProposals, readJudgedOutputs, sameCauseProposals } from '../findings/merge.mjs';
 import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits } from '../findings/register.mjs';
 import { setStatus, buildQueue, primaryCriterion, STATUSES, applyPriorityPolicy } from '../findings/core.mjs';
 import { anyTwoAgreement, discoveryEstimate } from '../study/stats.mjs';
@@ -21,11 +21,13 @@ export const help = `uie findings <subcommand> [options]
 
   validate <file...> [--schema <name>]   validate JSON files against their schema (guessed from shape)
   merge [--run <id>]                      merge tool findings and judged candidates → runs/<id>/merged.json
-        [--accept P1,P3]                  apply merge proposals (true duplicates only)
-        [--apply-locate]                  attach code-reviewer source locations and ease-of-fix estimates
+        [--accept P1,S2]                  apply merge proposals (true duplicates and same-cause groups only)
+        [--apply-locate]                  attach code-reviewer source locations and ease-of-fix estimates, then list
+                                          same-cause proposals: findings located at one source line (ADR-039)
   split <id> --into <parts.json> [--run <id>]   replace a candidate or confirmed finding with ≥ 2 parts, which go
                                           back through verification (ADR-037); recorded in runs/<id>/splits.json
-  apply-verdicts [--run <id>]             apply runs/<id>/verifier.json to merged findings
+  apply-verdicts [--run <id>]             apply runs/<id>/verifier.json, or verifier-p<k>.json from parallel
+                                          verifiers (uie packet --role finding-verifier --parts n), to merged findings
         [--fix-review]                    apply runs/<id>/fix-review.json to the register instead
   rate [--run <id>] [--iteration <n>]     aggregate blind ratings from runs/<id>/ratings/*.json
   agreement [--run <id>]                  any-two agreement, detection counts, undiscovered-problem estimate
@@ -112,9 +114,15 @@ export async function run(args, ctx) {
       if (args['apply-locate']) {
         const doc = loadMerged(r.dir);
         const n = applyLocate(r.dir, doc);
+        const same = sameCauseProposals(doc.findings, doc.proposals || []);
+        doc.proposals = [...(doc.proposals || []), ...same];
         saveMerged(r.dir, doc);
-        ctx.result(n);
+        ctx.result({ ...n, same_cause_proposals: same.map((p) => ({ id: p.id, members: p.members, reason: p.reason })) });
         ctx.print(`attached ${n.locations} source location(s) and ${n.ease} ease-of-fix estimate(s).`);
+        if (same.length) {
+          ctx.print(`${same.length} same-cause proposal(s): findings located at one source line describe one cause from different angles (ADR-039). Accept the true ones before rating, so one cause is rated and reported once: uie findings merge --accept ${same.map((p) => p.id).join(',')}`);
+          for (const p of same) ctx.print(`  ${p.id}: ${p.members.join(' + ')} — ${p.reason}`);
+        }
         return 0;
       }
       // Invalid judged output never enters the merge silently (EVD-01): fix it, or skip it explicitly with --force.
@@ -198,20 +206,23 @@ export async function run(args, ctx) {
         if (out.regressions.length) ctx.print(`regressions: ${out.regressions.map((x) => x.title || x).join('; ')}`);
         return out.disposition === 'ship' ? 0 : 2;
       }
-      const vPath = path.join(r.dir, 'verifier.json');
-      if (!exists(vPath)) throw new UsageError(`no verifier.json in ${r.dir}`);
+      // One verifier writes verifier.json; parallel verifiers (uie packet --role finding-verifier --parts n) write
+      // verifier-p1.json … verifier-pn.json, and every part's verdicts are applied together.
+      const vFiles = ['verifier.json', ...listDir(r.dir).filter((n) => /^verifier-p\d+\.json$/.test(n)).sort()].filter((n) => exists(path.join(r.dir, n)));
+      if (!vFiles.length) throw new UsageError(`no verifier.json (or verifier-p<k>.json) in ${r.dir}`);
       const doc = loadMerged(r.dir);
       const blind = readJson(path.join(r.dir, 'packets', '.blind-map-verifier.json'), {});
-      const vdoc = readJson(vPath);
-      for (const v of vdoc.verdicts || []) {
+      const vdocs = vFiles.map((n) => readJson(path.join(r.dir, n)));
+      const vdoc = { ...vdocs[0], verdicts: vdocs.flatMap((d) => d.verdicts || []) };
+      for (const v of vdoc.verdicts) {
         const key = v.candidate_id || v.finding_id || v.id;
         if (blind[key]) v.candidate_id = blind[key];
       }
       const counts = applyVerifierVerdicts(doc.findings, vdoc, { dismissals: readDismissals(ctx.root) });
       saveMerged(r.dir, doc);
-      recordSelfReport(r.dir, { role: 'finding-verifier', agent: vdoc.agent, model: vdoc.model, isolation: vdoc.isolation });
-      ctx.result(counts);
-      ctx.print(`verifier verdicts applied: ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+      for (const d of vdocs) recordSelfReport(r.dir, { role: 'finding-verifier', agent: d.agent, model: d.model, isolation: d.isolation });
+      ctx.result({ ...counts, files: vFiles });
+      ctx.print(`verifier verdicts applied from ${vFiles.join(', ')}: ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(', ')}`);
       return 0;
     }
 

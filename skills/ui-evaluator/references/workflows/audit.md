@@ -70,6 +70,8 @@ Tell the owner the depth and its approximate cost before starting. Record the de
    - `uie audit` runs axe, the keyboard walk with focus visibility and obscuring, the dialog contract, reflow, text spacing, text resize, targets, contrast, forms, live regions, language, cross-page consistency, style census, DOM tell detection, motion inspection and vitals.
    - `uie lint` runs the static source rules (when source is present).
    - At every depth, run the full `uie audit`. L1 needs every G1–G3 check, so a check you skip leaves its criteria `not_run`, and `not_run` never passes. `uie audit --quick` is the build loop's fast self-check (routes, console, axe, keyboard, layout, contrast, census, tells, copy). It cannot reach a level on its own.
+   - On a site of several pages the full audit takes ten to fifteen minutes. Run it in the background (your shell tool's background mode) and, while it runs, replay the journeys (step 4), build the packets of the roles that do not read tool findings (heuristic evaluators, walkthrough evaluators, design critics; step 5) and spawn them (step 6). The accessibility auditor and the code reviewer read `tool-findings.jsonl`, so their packets are built when the audit has finished. The merge (step 7) waits for everything.
+   - Hits of advisory rules (rules that gate nothing: APCA, stranded last words, FUN-08) are observations, not findings: the merge keeps them as candidates flagged `advisory`, the verifier never sees them, the report lists them apart and nothing counts them (ADR-038). They become findings only when an inspector reports the same problem.
 
    Results go to `tool-findings.jsonl` with E1 evidence and rule-declared severity [ADR-010].
 
@@ -91,11 +93,13 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 
    Give each agent its packet path and output path. Each validates its own output with `uie findings validate <file>` and returns at most about ten lines. Never ask an evaluator for a fixed number of findings. "No problems found" is a valid result [HCI-025].
 
+   **Keep the turn while subagents run.** Never end your turn to wait for a subagent: in a non-interactive session (`claude -p`, a harness, CI) the end of the turn ends the session, and the round of 2026-10-08 lost an audit that way. If your agent tool returns when a foreground subagent finishes, spawn the parallel roles in one message and wait for them inside the turn. If it runs them in the background, keep working on what does not need their output (the deterministic summary for your own use, the merge and verification methods) and act on each completion notice; the last thing you do before the turn ends is write the reply.
+
 7. **Merge.** `uie findings merge` merges tool findings, evaluator candidates, walkthrough failures and critic design findings on a deterministic key (same locator + same failure mechanism + same state). It keeps every label and piece of evidence, and lists text-similarity merge *proposals* separately. Review the proposals and accept only true duplicates with `uie findings merge --accept <proposal-ids>` [EVAL C5].
 
 ### Verification and rating
 
-8. **Verify.** Run `uie packet --role finding-verifier`, spawn the verifier (`../evaluators/finding-verifier.md`), then run `uie findings apply-verdicts`. The verifier re-checks every judged candidate:
+8. **Verify.** Run `uie packet --role finding-verifier`, spawn the verifier (`../evaluators/finding-verifier.md`), then run `uie findings apply-verdicts`. With more than about thirty candidates, split them between parallel verifiers: `uie packet --role finding-verifier --parts 3` writes `finding-verifier-1..3`, each with a route's candidates kept together and its own output file `verifier-p<k>.json`; spawn one verifier per packet in the same message and `apply-verdicts` reads every part. One verifier re-checking eighty candidates took twenty minutes in the round of 2026-10-08; three took seven. The verifier re-checks every judged candidate:
    1. evidence resolution;
    2. harness filter;
    3. scope;
@@ -108,10 +112,10 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 
 9. **Locate and estimate ease of fix.** Confirmed findings from black-box roles still lack source locations and ease-of-fix estimates.
    - Run `uie packet --role code-reviewer --phase locate`, and spawn the code reviewer again for a short second pass. It attaches file:line to the confirmed element-level findings and estimates ease of fix (1–4) for every confirmed finding.
-   - Then run `uie findings merge --apply-locate`.
+   - Then run `uie findings merge --apply-locate`. Besides attaching the locations, it lists **same-cause proposals** (`S1`, `S2`, …): confirmed findings the code reviewer located at one source line, which describe one cause from the angles of different checks and roles (a fixed bar reported as an obscured focus, a focus-order jump, a target too close to a button and overlapping text is one cause). Accept the true ones with `uie findings merge --accept S1,S2` before rating, so one cause is rated and reported once (ADR-039). A proposal whose members are different problems that happen to share a line is left alone.
    - Without a code-reviewer run, the white-box role is you: set ease with `uie findings set <id> --ease <1-4>`. Without any source, leave ease empty; it is estimated when someone with the source fixes the finding.
 
-10. **Rate blind.** Run `uie packet --role severity-rater --n 3` and spawn three raters (`../evaluators/severity-rater.md`) in parallel. Then run `uie findings rate`. It computes the mean of the problem and trade-off values (not-a-problem votes carry no value), the spread and the priority; flags divergent findings (spread ≥ 2, or a not-a-problem vote against a mean ≥ 2.5) and sends them to `disputed`, as it does findings where more than half of the raters vote not a problem, or more than half vote trade-off (ADR-029); holds flagged single-pass findings whose mean is below 2.5 in iteration ≥ 2 [HCI-029]; and applies the criticality clamp and the G1/G2 floor. Read `../methods/severity-rating.md`.
+10. **Rate blind.** Run `uie packet --role severity-rater --n 3` and spawn three raters (`../evaluators/severity-rater.md`) in parallel, in one message, and wait for them inside the turn. Then run `uie findings rate`. It computes the mean of the problem and trade-off values (not-a-problem votes carry no value), the spread and the priority; flags divergent findings (spread ≥ 2, or a not-a-problem vote against a mean ≥ 2.5) and sends them to `disputed`, as it does findings where more than half of the raters vote not a problem, or more than half vote trade-off (ADR-029); holds flagged single-pass findings whose mean is below 2.5 in iteration ≥ 2 [HCI-029]; and applies the criticality clamp and the G1/G2 floor. Read `../methods/severity-rating.md`.
 
 11. **Agreement.** `uie findings agreement` reports any-two agreement between passes, detection counts, and the estimate of undiscovered problems (labelled as an estimate).
 
@@ -122,7 +126,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
     2. detector-only findings;
     3. judge-only findings;
     4. detector false positives;
-    5. strengths to preserve;
+    5. strengths to preserve, each one seen at a width and theme the audit ran, with the capture that shows it (a strength seen at 1280 px is not a strength on the phone the product document puts first);
     6. divergent findings, as questions for user research;
     7. only then, fix ideas.
 
@@ -176,3 +180,7 @@ Then ask 2–4 targeted questions tied to specific findings [IMP-042]: priority 
 | Severity copied from the detector or from the evaluator who found it | blind raters; rule-declared severity only for deterministic findings |
 | A 150-item list that buries what matters | P0/P1 and quick P2 wins go to the fix queue; the rest go to the debt register [HCI-077] |
 | Re-raising a finding a human dismissed | the dismissal ledger check in verification |
+| Ending the turn to wait for a background verifier or rater (the session ends in non-interactive use) | keep the turn: wait inside it, or keep working and act on completion notices (step 6) |
+| Reporting advisory observations (APCA, stranded words) as confirmed findings | they stay candidates flagged `advisory`, listed apart and never counted (ADR-038) |
+| One cause reported five times from different checks' angles | same-cause proposals after `--apply-locate`, accepted before rating (ADR-039) |
+| A strength claimed at a width the members do not use | strengths cite the capture at a width the audit ran (step 12) |

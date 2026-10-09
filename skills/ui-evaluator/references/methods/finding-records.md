@@ -230,6 +230,7 @@ Bad candidates, and what to do instead:
 | `locations[].source`, `ease_of_fix` | the code reviewer, or source mapping |
 | `evidence_level` | E0 at candidate; raised by tools, the verifier, k ≥ 2, humans and users (§3.6) |
 | `validity` | `needs_verification` at candidate; `confirmed` by the verifier; `trade_off` or `not_a_problem` through rating or the owner |
+| `advisory` | `true` on a deterministic observation against an advisory rule (one that gates nothing: APCA, stranded last words, FUN-08). It stays a candidate, is listed apart in the report, is never verified, rated, promoted or counted, and loses the flag when an inspector's finding merges with it (ADR-038) |
 | `severity`, `priority`, `criticality` | `uie findings rate`, from the rater files (`severity-rating.md`) |
 | `status`, `status_history` | the transitions in §3.8 |
 | `verification` | the fix and verify workflows |

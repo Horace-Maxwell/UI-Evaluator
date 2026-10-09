@@ -37,7 +37,8 @@ const { serveStatic } = await lib('browser/static-server.mjs');
 const { adjustedWald } = await lib('study/stats.mjs');
 
 // with_skill, or without_skill for the control arm.
-const control = path.basename(path.dirname(runDir)) === 'without_skill';
+const armName = path.basename(path.dirname(runDir));
+const control = armName.startsWith('without_skill'); // without_skill, or without_skill_nobrowser (system tools only)
 const ws = path.join(runDir, 'workspace');
 const wsUie = path.join(ws, '.ui-evaluator');
 const fixtureDir = (name) => path.join(ROOT, 'evals/fixtures', name);
@@ -478,7 +479,7 @@ if (answers?.mapping && [5, 19, 20].includes(ev.id)) {
 }
 const timing = json(path.join(runDir, 'timing.json'), null);
 const decided = expectations.filter((e) => e.passed !== null);
-writeJson(path.join(runDir, 'grading.json'), { eval: ev.id, name: ev.name, arm: control ? 'without_skill' : 'with_skill', graded_at: new Date().toISOString(), passed: decided.filter((e) => e.passed).length, total: expectations.length, pending: expectations.length - decided.length, expectations, not_applicable: notApplicable, metrics, timing });
+writeJson(path.join(runDir, 'grading.json'), { eval: ev.id, name: ev.name, arm: armName, graded_at: new Date().toISOString(), passed: decided.filter((e) => e.passed).length, total: expectations.length, pending: expectations.length - decided.length, expectations, not_applicable: notApplicable, metrics, timing });
 if (graderPacket.assertions.length) writeJson(path.join(runDir, 'grader-packet.json'), graderPacket);
 console.log(`eval ${ev.id} ${ev.name}: ${decided.filter((e) => e.passed).length} of ${expectations.length} passed, ${expectations.length - decided.length} pending`);
 for (const e of expectations) console.log(`  ${e.passed === null ? '…' : e.passed ? '✓' : '✗'} ${e.text} — ${e.evidence}`);

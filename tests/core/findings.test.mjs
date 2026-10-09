@@ -232,3 +232,62 @@ test('candidates from user feedback merge and get verified, but never count as a
     fs.rmSync(runDir, { recursive: true, force: true });
   }
 });
+
+test('an advisory tool hit is an observation: a candidate flagged advisory, never confirmed (ADR-038)', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-adv-'));
+  const hit = (id, extra) => ({ title: `${id} hit`, criteria: [{ kind: 'rule', id, primary: true }], locations: [{ route: '/', state: 'default', selector: 'p' }], evidence: [], found_by: [{ role: 'tool', method: 'tool', check: 'census' }], severity: { source: 'rule', value: 1 }, ...extra });
+  fs.writeFileSync(path.join(runDir, 'tool-findings.jsonl'), [hit('A11Y-11', { gate: 'G2' }), hit('TYP-15', { gate: null, advisory: true }), hit('COL-14', { gate: null })].map((h) => JSON.stringify(h)).join('\n'));
+  const res = mergeRun(runDir, { rules: { 'A11Y-11': { gate: 'G2' } } });
+  const by = Object.fromEntries(res.findings.map((f) => [C.primaryCriterion(f).id, f]));
+  assert.equal(by['A11Y-11'].status, 'confirmed');
+  assert.equal(by['A11Y-11'].advisory, undefined);
+  assert.equal(by['TYP-15'].status, 'candidate');
+  assert.equal(by['TYP-15'].advisory, true);
+  assert.equal(by['COL-14'].status, 'candidate', 'a rule with no gate is advisory even without the flag');
+  assert.equal(res.proposals.length, 0, 'two tool findings are never proposed as one');
+});
+
+test('an inspector adopting an advisory observation turns it into a finding; same-cause groups come from source lines (ADR-038, ADR-039)', async () => {
+  const { acceptProposals, sameCauseProposals, partitionCandidates } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const doc = {
+    findings: [
+      { id: 'F-0001', status: 'candidate', advisory: true, title: 'One word on the last line', found_by: [{ role: 'tool', agent: 'tool:census' }], locations: [{ route: '/', selector: 'p.intro' }], evidence: [], criteria: [{ kind: 'rule', id: 'TYP-15', primary: true }] },
+      { id: 'F-0002', status: 'candidate', title: 'The intro strands its last word', found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }], locations: [{ route: '/', selector: 'p.intro' }], evidence: [], criteria: [{ kind: 'heuristic', id: 'H8', primary: true }] },
+    ],
+    proposals: [{ id: 'P1', members: ['F-0001', 'F-0002'], reason: 'same element', kind: 'tool+judged' }],
+  };
+  acceptProposals(doc, ['P1']);
+  assert.equal(doc.findings.length, 1);
+  assert.equal(doc.findings[0].advisory, undefined, 'the judged member lifts the advisory flag');
+  assert.equal(doc.findings[0].status, 'candidate', 'it still goes to the verifier');
+  const loc = (file, line) => [{ route: '/tool.html', selector: '.actionbar', source: { file, line } }];
+  const findings = [
+    { id: 'F-0010', status: 'confirmed', locations: loc('styles.css', 636) },
+    { id: 'F-0011', status: 'confirmed', locations: loc('styles.css', 638) },
+    { id: 'F-0012', status: 'confirmed', locations: loc('styles.css', 640) },
+    { id: 'F-0013', status: 'confirmed', locations: loc('styles.css', 700) },
+    { id: 'F-0014', status: 'confirmed', locations: loc('app.js', 10) },
+    { id: 'F-0015', status: 'confirmed', advisory: true, locations: loc('styles.css', 637) },
+    { id: 'F-0016', status: 'rejected', locations: loc('styles.css', 637) },
+  ];
+  const same = sameCauseProposals(findings, []);
+  assert.deepEqual(same.map((p) => p.members), [['F-0010', 'F-0011', 'F-0012']]);
+  assert.equal(same[0].id, 'S1');
+  assert.match(same[0].reason, /styles\.css:636–640/);
+  assert.equal(sameCauseProposals(findings, same).length, 0, 'an existing proposal is not repeated');
+  const cands = ['/a', '/b', '/a', '/c', '/b', '/a', '/c'].map((route, i) => ({ candidate_id: `F-${i}`, locations: [{ route }] }));
+  const parts = partitionCandidates(cands, 3);
+  assert.equal(parts.length, 3);
+  assert.equal(parts.flat().length, 7);
+  const routesOf = (p) => [...new Set(p.map((c) => c.locations[0].route))];
+  assert.deepEqual(parts.map(routesOf), [['/a'], ['/b'], ['/c']], 'each route stays in one packet');
+  assert.deepEqual(partitionCandidates(cands, 3), parts, 'the split is deterministic');
+  assert.equal(partitionCandidates(cands, 1).length, 1);
+  // A route larger than a packet is cut, and the packets stay near equal.
+  const one = Array.from({ length: 9 }, (_, i) => ({ candidate_id: `G-${i}`, locations: [{ route: '/big' }] }));
+  assert.deepEqual(partitionCandidates(one, 3).map((p) => p.length), [3, 3, 3]);
+  const mixed = [...one, ...['/x', '/y'].map((route, i) => ({ candidate_id: `H-${i}`, locations: [{ route }] }))];
+  const sizes = partitionCandidates(mixed, 3).map((p) => p.length);
+  assert.equal(sizes.reduce((a, b) => a + b, 0), 11);
+  assert.ok(Math.max(...sizes) - Math.min(...sizes) <= 2, `near equal: ${sizes}`);
+});

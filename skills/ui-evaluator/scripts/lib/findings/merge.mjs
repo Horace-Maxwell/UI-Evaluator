@@ -138,11 +138,16 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
     const key = `${c.id}|${route}`;
     if (!toolGroups.has(key)) {
       const ruleDef = rules[c.id] || {};
+      // A hit of an advisory rule (one that gates nothing) is an observation, not a finding: it stays a candidate
+      // flagged `advisory`, is listed in the report and is never counted or verified unless an inspector reports
+      // the same problem (ADR-038).
+      const advisory = hit.advisory === true || !(hit.gate || ruleDef.gate);
       toolGroups.set(key, {
         ...hit,
         problem_type: hit.problem_type || 'single_location',
         evidence_level: 'E1',
-        status: 'confirmed',
+        status: advisory ? 'candidate' : 'confirmed',
+        ...(advisory ? { advisory: true } : {}),
         gate: hit.gate || ruleDef.gate || null,
         severity: {
           source: 'rule',
@@ -257,7 +262,7 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
     for (let j = i + 1; j < all.length; j += 1) {
       const a = all[i];
       const b = all[j];
-      if (a.status === 'confirmed' && b.status === 'confirmed' && a.severity?.source === 'rule' && b.severity?.source === 'rule') continue;
+      if (a.severity?.source === 'rule' && b.severity?.source === 'rule') continue; // two tool findings are never one
       const pa = pagesOf(a);
       const pb = pagesOf(b);
       if (!(pa.size === 0 && pb.size === 0) && ![...pb].some((x) => pa.has(x))) continue;
@@ -304,8 +309,65 @@ export function acceptProposals(doc, ids) {
       removed.add(r.id);
     }
     first.detection = { ...(first.detection || {}), k: evaluatorAgents(first).size };
+    // An inspector who reports what an advisory check measured turns the observation into a finding (ADR-038).
+    if (first.advisory && [first, ...rest].some((m) => !m.advisory)) delete first.advisory;
     p.applied = true;
   }
   doc.findings = doc.findings.filter((f) => !removed.has(f.id));
   return { removed: [...removed] };
+}
+
+/**
+ * Same-cause proposals (ADR-039): findings the code reviewer located at one source line (the same file, within three
+ * lines) describe one cause from the angles of different checks and roles. They are proposed after `--apply-locate`
+ * and the lead accepts the true ones before rating, so one cause is rated and reported once. Advisory observations
+ * and closed findings are left out; a proposal that already exists (same members) is not repeated.
+ */
+export function sameCauseProposals(findings, existing = []) {
+  const src = (f) => (f.locations || []).map((l) => l.source).find((s) => s && s.file && Number.isFinite(Number(s.line)));
+  const items = findings
+    .filter((f) => !['rejected', 'dismissed', 'split', 'stale'].includes(f.status) && !f.advisory && src(f))
+    .map((f) => ({ f, s: src(f) }))
+    .sort((a, b) => a.s.file.localeCompare(b.s.file) || Number(a.s.line) - Number(b.s.line));
+  const groups = [];
+  for (const it of items) {
+    const g = groups.at(-1);
+    if (g && g.file === it.s.file && Number(it.s.line) - g.last <= 3) {
+      g.members.push(it.f);
+      g.last = Number(it.s.line);
+    } else groups.push({ file: it.s.file, line: Number(it.s.line), last: Number(it.s.line), members: [it.f] });
+  }
+  const taken = new Set(existing.map((p) => [...p.members].sort().join('|')));
+  let n = existing.filter((p) => /^S\d+$/.test(String(p.id))).length;
+  const out = [];
+  for (const g of groups) {
+    if (g.members.length < 2) continue;
+    const members = g.members.map((f) => f.id);
+    if (taken.has([...members].sort().join('|'))) continue;
+    n += 1;
+    out.push({ id: `S${n}`, members, reason: `same cause: the code reviewer located them at ${g.file}:${g.line}${g.last !== g.line ? `–${g.last}` : ''}`, kind: 'same-cause' });
+  }
+  return out;
+}
+
+/**
+ * Split verifier candidates into at most n packets of near-equal size. A route's candidates stay together, so each
+ * verifier loads a page once; only a route with more candidates than one packet holds is cut into packet-sized pieces.
+ * Pieces are placed largest first on the packet that holds the fewest, and the order is deterministic.
+ */
+export function partitionCandidates(cands, n) {
+  const parts = Math.max(1, Math.min(Number(n) || 1, cands.length || 1));
+  const size = Math.ceil(cands.length / parts);
+  const byRoute = new Map();
+  for (const c of [...cands].sort((a, b) => String(a.candidate_id || a.id).localeCompare(String(b.candidate_id || b.id)))) {
+    const route = String((c.locations || [])[0]?.route || '');
+    if (!byRoute.has(route)) byRoute.set(route, []);
+    byRoute.get(route).push(c);
+  }
+  const pieces = [];
+  for (const group of byRoute.values()) for (let i = 0; i < group.length; i += size) pieces.push(group.slice(i, i + size));
+  pieces.sort((a, b) => b.length - a.length);
+  const out = Array.from({ length: parts }, () => []);
+  for (const piece of pieces) out.reduce((least, p) => (p.length < least.length ? p : least), out[0]).push(...piece);
+  return out.filter((g) => g.length);
 }

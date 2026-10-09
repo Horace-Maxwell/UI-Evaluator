@@ -191,6 +191,14 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
     for (const f of carried) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${f.priority || 'not rated'} | ${primaryCriterion(f).id} | ${f.status} |`);
     push('');
   }
+  // Advisory observations: deterministic hits of rules that gate nothing (ADR-038). Listed, never counted.
+  const advisory = I.runFindings.filter((f) => f.advisory && f.status === 'candidate');
+  if (advisory.length) {
+    push('### Advisory observations (not counted)', '', 'Measured by the deterministic checks against advisory rules, which gate nothing. They are listed for information and are not findings; one becomes a finding only when an inspector reports the same problem (ADR-038).', '');
+    push('| ID | Observation | Rule | Instances | Routes |', '|---|---|---|---|---|');
+    for (const f of advisory) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${primaryCriterion(f).id} | ${(f.locations || []).length} | ${[...new Set((f.locations || []).map((l) => l.route))].slice(0, 4).join(', ')} |`);
+    push('');
+  }
   if (!reported.length && !unrated.length && !carried.length) push('No findings were reported in this run. That is not a claim that none exist (METHODS §10).', '');
   const held = I.runFindings.filter((f) => f.held);
   if (held.length) push(`Held for a second independent pass (HCI-029): ${held.map((f) => `${f.id} ${truncate(f.title, 60)}`).join('; ')}.`, '');

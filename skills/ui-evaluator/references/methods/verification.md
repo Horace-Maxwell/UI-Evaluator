@@ -45,7 +45,7 @@ Gate criteria owned (USE) and supported (EVD), verbatim from QUALITY-BAR:
 ## 2. Inputs
 
 - **Merged candidates**: `runs/<id>/merged.json`, produced by `uie findings merge` (§3.1).
-- **Verifier packet**, built by `uie packet --role finding-verifier`: the candidates without who raised them, the dismissal ledger and the probe instructions. Evaluator identities are excluded so that a verdict cannot lean on who said something.
+- **Verifier packet**, built by `uie packet --role finding-verifier`: the candidates without who raised them, the dismissal ledger and the probe instructions. Evaluator identities are excluded so that a verdict cannot lean on who said something. Advisory observations (hits of rules that gate nothing) are not candidates and are not in the packet (ADR-038). With many candidates, `--parts <n>` splits them between parallel verifiers, each route's candidates kept together; each verifier writes `verifier-p<k>.json`, and `uie findings apply-verdicts` applies every part.
 - **The run's evidence and manifest**: captures, ARIA snapshots and probes; scope (routes, states, personas, matrix); UI version; iteration number.
 - **The live UI**, reached only through `uie probe`.
 

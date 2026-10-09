@@ -49,6 +49,8 @@ Format: **Context** (the forces) · **Decision** · **Consequences** (including 
 | [ADR-035](#adr-035--appeal-is-judged-and-gates-g6) | Appeal is judged, and gates G6 | accepted |
 | [ADR-036](#adr-036--a-finding-can-wait-on-a-named-persons-decision) | A finding can wait on a named person's decision | accepted |
 | [ADR-037](#adr-037--splitting-a-finding-is-a-recorded-command) | Splitting a finding is a recorded command | accepted |
+| [ADR-038](#adr-038--an-advisory-rules-hit-is-an-observation-not-a-finding) | An advisory rule's hit is an observation, not a finding | accepted |
+| [ADR-039](#adr-039--findings-with-one-cause-are-grouped-before-rating) | Findings with one cause are grouped before rating | accepted |
 
 ---
 
@@ -315,3 +317,28 @@ The MOT-04, CMP-03 and CMP-06 numbers are UI-Evaluator proposals and are marked 
 **Consequences.** The finding schema gains the `split` status, `split_from` and `split_into`. `methods/verification.md`, `evaluators/finding-verifier.md`, `methods/finding-records.md` §3.8, FRAMEWORK §8.2 and ARCHITECTURE §7.2 describe the command. The parts inherit the original's evaluators, so detection k of N does not change; each part's evidence is the original's until its own verification adds more.
 **Alternatives rejected.** Having the verifier write the parts (the verifier judges and the lead edits, which keeps the roles apart). Splitting by editing the evaluators' outputs (it changes another role's record). Allowing a split at any status (it would split a severity the raters gave to the whole).
 **Sources.** Agent-level round 2026-10-06, eval 11 and the round's report §8; `methods/verification.md` (one problem per record); METHODS §5.
+
+## ADR-038 — An advisory rule's hit is an observation, not a finding
+
+**Context.** Some deterministic rules gate nothing: APCA contrast (COL-14), a stranded last word (TYP-15), the lab vitals (FUN-08). Their hits are measurements worth showing, and `uie audit` already reports them as "advisory or outside the gates". `uie findings merge` nevertheless gave every tool hit the status `confirmed`, so advisory hits entered the register, the report's finding count and the fix queue's debt like any finding. In round 3 (`evals/results/agent-evals-2026-10-07-tool-library/`) eleven of the 101 and 105 confirmed findings of the two complete audits were advisory tool hits the blind graders judged not problems for the members, which cost the audit its precision bar in one run and part of it in the other.
+
+**Decision.** (1) A tool hit is advisory when the check flags it so or when its rule has no gate. (2) The merge keeps an advisory hit as a `candidate` with `advisory: true` instead of confirming it; the finding schema gains that boolean. (3) The verifier packet leaves advisory tool-only candidates out; rating, promotion and the gates never see them (candidates are not promoted, advisory criteria never gate). (4) The report lists them under "Advisory observations (not counted)" with their rule and instances. (5) When a judged candidate merges with an advisory observation, by the deterministic key or an accepted proposal, the flag is dropped: an inspector reported the problem, so it goes to the verifier like any candidate.
+
+**Consequences.** Audits report fewer findings and the same measurements. Registers written before this change keep their advisory findings; nothing is rewritten. `methods/finding-records.md`, the audit workflow, ARCHITECTURE §7 and the GLOSSARY say the same. The deterministic calibration is unchanged: the scorer reads `tool-findings.jsonl`, which still holds every hit.
+
+**Alternatives rejected.** A new status `advisory` (a status describes a lifecycle position, and these records have none; a flag on a candidate says it). Dropping advisory hits from `tool-findings.jsonl` (the measurement is evidence, and the coverage matrix cites it). Leaving the lead to dismiss them one by one (the round shows the lead confirms what the verifier does not reject).
+
+**Sources.** Round 3 report §5.7 problem 4; `tools/score-fixtures.mjs`; ADR-010; ADR-033.
+
+## ADR-039 — Findings with one cause are grouped before rating
+
+**Context.** The merge joins candidates on a deterministic key (locator, mechanism, state) and proposes text-similar pairs, which round 2 widened. One cause still reaches the report several times when different checks and roles describe it from their own angles: in round 3 a fixed bottom bar arrived as nine confirmed findings (an obscured focus, a focus-order jump, a target too close to the Reserve button, overlapping text, a covered footer), a CSS reorder as eight and an overflowing column as six. Each was rated and listed on its own, and the graders mapped them all to one seeded defect.
+
+**Decision.** (1) After the code reviewer's locate pass, `uie findings merge --apply-locate` proposes same-cause groups: findings whose located source line is in the same file within three lines of one another, excluding rejected, dismissed, split, stale and advisory records. The proposals are listed as `S1`, `S2`, … beside the text-similarity ones, with the file and lines as the reason. (2) The lead accepts the true ones with `uie findings merge --accept S1,…` before rating, so that one cause is rated and reported once; members keep every source, criterion, location and piece of evidence, as any accepted proposal does. (3) A proposal is a proposal: two different problems that share a line are left apart, and the lead's acceptances are recorded in `merged.json`.
+
+**Consequences.** Rating and reporting move after the locate pass for findings that are grouped; the audit workflow's step 9 says so. The code reviewer's locations become load-bearing for grouping, which is one more reason to run the locate pass at standard depth. Runs without a code reviewer (no source) get no same-cause proposals.
+
+**Alternatives rejected.** Grouping by the obscuring element or by the verifier's probe (the verifier reports what it reproduced, not a cause; the locate pass names the cause). Grouping automatically without the lead (a shared line is evidence of one cause, not proof). Asking inspectors to name causes (black-box roles do not see the source).
+
+**Sources.** Round 3 report §5.4 and §5.7 problem 3; ADR-033; the audit workflow step 9.
+
