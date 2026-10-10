@@ -1,0 +1,342 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261009-223245-audit-standard",
+  "agent": "critic-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "e83edd062b18e967",
+  "inventory": [
+    {
+      "surface": "find",
+      "screens": "items-ladder-3m default / filters-open / no-results at 1280 and 375, light and dark",
+      "what": "White masthead (wrench glyph + bold name, three text links), title 'Find a tool', intro paragraph, search field + filled Search + filter icon button, 'Tools' heading, 2-column grid of ten identical bordered white cards (pale-green tile with a wrench glyph, underlined bold tool name, 'Category · deposit £N' meta, green-tinted availability badge), then an 'Opening times' paragraph and a one-line footer.",
+      "fixations": ["'Find a tool' title", "filled green Search button", "first card title and badge column"],
+      "type": "One sans throughout; bold for headings, titles, labels and badges; headings differ from body only by size.",
+      "colour": "Pale grey-green ground, white cards, dark green for the one filled button and badge text; dark theme composed in dark green-grey with mint accents.",
+      "shape": "4px radius, 1px borders, no shadows.",
+      "imagery": "None: the same wrench glyph on every card in place of a thumbnail.",
+      "copy": ["Members can reserve up to three tools at a time and collect them at an opening session.", "Available from Sat 10 Oct", "Fernhill Tool Library is run by volunteers. Questions: call the desk on 01632 960552 during opening hours."],
+      "signature": "none",
+      "conventions": "Standard masthead, search, card list, footer.",
+      "narrow": "At 375 the search moves below all ten cards; tool names truncate with an ellipsis so both cordless drills read 'Cordless drill 18 V, co...'; badges wrap 'Oct' onto a second line.",
+      "states": "filters-open shows a native date input (yyyy/mm/dd) and a native select, unlike the styled Loan length select on the tool page; the no-results capture with 'sewing machine' still shows all ten tools and no empty-state message."
+    },
+    {
+      "surface": "tool",
+      "screens": "tool-html-id-drill-18v-two-items-ladder-3m default / day-chosen / added / loan-open",
+      "what": "Back link, large bold tool name, two-line description, Details key-value list (two sub-lists with values aligned at different x), Loan length select, Pick-up day explanation, a 7-column month grid with sessions tagged 'Open' (green dot on mobile), and a sticky white action bar with 'Reserve this tool' at bottom right.",
+      "fixations": ["tool name", "Reserve this tool in the sticky bar", "calendar grid"],
+      "signature": "The session calendar with 'Open' tags is the nearest thing to one; conventional.",
+      "narrow": "At 375 the sticky bar sits over the Pick-up day instructions; calendar compacts to dots.",
+      "states": "day-chosen accepts a non-session Monday 12 October; added shows a centred 'Added to your basket' toast over the weekday header; the captures show the sticky bar across the second calendar week, hiding the selected day. No month name above the grid."
+    },
+    {
+      "surface": "basket",
+      "screens": "basket-html-items-drill-18v-two-day-2026-10-17 default / errors",
+      "what": "Title, intro, Tools card (name, 'Pick up Saturday 17 October · one week · deposit £20', Remove link), Pick-up session radio cards, Continue, footer.",
+      "fixations": ["'Your basket'", "tool card title", "Continue"],
+      "narrow": "Single column of radio cards, readable; red-bordered error summary with link in the errors state.",
+      "states": "At 1280 the six sessions lay out as one full-width card then five narrow cards that wrap to three lines; listed latest-first; sessions before the chosen pick-up day are offered. Grey band under the footer."
+    },
+    {
+      "surface": "confirm",
+      "screens": "confirm default / errors",
+      "what": "Title, bordered summary list (Tools, Pick-up session with Change link, Deposit), Your details form (membership number with hint, name, mobile with hint), note that nothing is paid online, Confirm reservation button.",
+      "fixations": ["'Check and confirm'", "summary box", "Confirm reservation"],
+      "notes": "Orderly, public-service-style form; inputs half width at 1280."
+    },
+    {
+      "surface": "done",
+      "screens": "done default",
+      "what": "Title 'Reservation confirmed', key-value box with reservation number FT-4471, 'What happens next' box, outline 'Reserve another tool' button.",
+      "fixations": ["title", "reservation number box", "What happens next"],
+      "notes": "Masthead still reads 'Basket (1)' after confirmation; the two paragraphs inside What happens next run together; grey band under the footer at 1280; the reservation number is set like any other value."
+    },
+    {
+      "not_assessable": "Toast fade, focus rings, hover, listbox open and the sticky bar while scrolling cannot be judged from stills; whether the green matches the physical membership card cannot be verified."
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": {
+        "products": ["a parish-hall room booking service", "a school uniform swap shop"],
+        "survive": ["masthead glyph + name", "grey-green ground and white bordered cards", "green filled button and tinted badges", "card grid with identical icon tiles", "summary-list confirm and done pages"],
+        "bound": ["tool names, deposits and specs in the copy", "'Open' session tags in the calendar", "14 Mill Lane and the desk phone number"],
+        "name_hidden": "The frame alone reads as a generic booking list; only the copy says these are tools."
+      }
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": {
+        "predicted_default": "Light neutral ground, one muted green accent for a community/eco organisation, bordered cards with placeholder thumbnails, one plain sans, public-service forms.",
+        "predicted_opposite": "Workshop costume: dark ground, safety-yellow accent, stencil display type, pegboard or kraft textures.",
+        "matches": ["pale grey-green ground with one dark green accent", "bordered card grid with placeholder icon tiles", "single sans, headings by size only", "summary lists and error summary"]
+      }
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": {
+        "brief": "Online reservation for a volunteer-run repair cafe or seed library, collect at an opening session.",
+        "predicted": ["restrained green accent on off-white", "card list with icon placeholders and availability badges", "calendar with open days marked", "check-and-confirm summary list"],
+        "overlap": "Near total: every identity-carrying choice here would come out of that brief too."
+      }
+    }
+  },
+  "verdict": {
+    "value": "generic",
+    "evidence": [
+      "Swap test fails: a toy library, seed swap or community-centre room booking could reuse the frame unchanged; only the copy (tool names, deposits, 14 Mill Lane, 01632 960552) is bound to Fernhill.",
+      "Identity-carrying elements are the category default: pale grey-green ground, white header and footer bands, one dark-green accent, one sans in bold/regular, bordered white cards with 4px radius (items-ladder-3m/default/1280-light.png).",
+      "The only imagery is the same wrench glyph on a pale-green square on all ten tool cards: a placeholder, not a picture of the stock.",
+      "The one product-bound device, the session calendar marking 'Open' days, is conventional and partly hidden by the sticky reserve bar.",
+      "Similar-prompt test fails: a repair-cafe or seed-library brief predicts the same choices."
+    ]
+  },
+  "verdict_at": "2026-10-09T22:50:00Z",
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "identical wrench placeholder tile on every tool card instead of any image or tool-specific mark (find, all widths)",
+      "identity is only the name 'Fernhill Tool Library' set in bold body text beside a small stock wrench icon",
+      "headings differ from body only in size and weight; no typographic moment on any screen",
+      "browser-default date input (yyyy/mm/dd) and native select in the filter panel, unthemed and mismatched with the styled Loan length select",
+      "basket session radios at 1280: one full-width row then five cramped cards wrapping over three lines",
+      "empty grey band below the footer on basket and done at 1280",
+      "sticky 'Reserve this tool' bar sits across the calendar and covers the second week, including the chosen day, at 1280 and 375",
+      "tool titles truncated with ellipsis on mobile so the two cordless drills read identically",
+      "no focal point on find, basket, confirm or done beyond the green button"
+    ],
+    "evidence": [
+      "items-ladder-3m/default/1280-light.png and 375-light.png: ten identical wrench tiles, flat grey-green ground, no imagery",
+      "items-ladder-3m/filters-open/1280-light.png: native date and select controls",
+      "basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png: broken radio grid, empty band below footer",
+      "tool-html-id-drill-18v-two-items-ladder-3m/day-chosen/1280-light.png and 375-light.png: reserve bar overlapping calendar",
+      "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png: two bordered boxes and an outline button, nothing to look at"
+    ]
+  },
+  "unsealed_at": "2026-10-10T02:40:19.135Z",
+  "brand_fit": {
+    "attributes": [
+      {
+        "is": "practical",
+        "not": "corporate",
+        "x_evidence": ["deposit and availability on every card", "concrete specs (13 mm keyless chuck, 1.7 kg with battery)", "'Nothing is paid online. Bring the deposit and your membership card to the session.'", "one filled button per page"],
+        "y_evidence": ["the bordered-card, summary-list frame reads institutional rather than corporate; no corporate gloss"],
+        "judgement": "reflected"
+      },
+      {
+        "is": "neighbourly",
+        "not": "folksy",
+        "x_evidence": ["copy only: 'run by volunteers', 'call the desk', 'A volunteer will check the tool with you', 'we will hold the tool for the next one'"],
+        "y_evidence": ["folksy avoided, but the visuals carry nothing neighbourly: no people, place, stock or room; the identity is a stock wrench glyph and the name in bold body text"],
+        "judgement": "partly"
+      },
+      {
+        "is": "careful",
+        "not": "fussy",
+        "x_evidence": ["restrained palette, 4px radius, borders only", "consistent key-value lists", "clear error summary on basket"],
+        "y_evidence": ["not fussy, but care slips: truncated identical drill names on mobile, sticky bar covering the calendar, misaligned Details sub-lists, basket session grid breaking, 'Basket (1)' after confirmation, native filter controls"],
+        "judgement": "partly"
+      }
+    ],
+    "overall": "partly",
+    "weakest": "neighbourly, not folksy: expressed only in copy, never in type, imagery or colour",
+    "tone": "matter-of-fact, casual-leaning, respectful, not enthusiastic; matches 'the desk volunteer handing over a tool'."
+  },
+  "mode_fit": {
+    "judgement": "fits",
+    "evidence": "All five surfaces are Operate/Read and stay quiet and conventional; no hero moments; motion limited to a toast. The gap is the identity floor (name, ground, referent material), not mode."
+  },
+  "rubric": {
+    "specificity": {"score": 1, "label": "judged", "anchor": "1: product content sits on a frame that fails the swap test", "evidence": "All three tests fail; tool names, deposits and the Open-session calendar are bound to the product, the frame is not. (judged)"},
+    "hierarchy": {"score": 3, "label": "judged", "anchor": "3: as 4 at main widths with one named lapse", "evidence": "Title, filled primary, then content on every page at 1280. Lapse: on the tool page the sticky Reserve bar competes with and covers the calendar that must be used first; on find at 375 search is buried under ten cards. (judged)"},
+    "coherence": {"score": 3, "label": "judged", "anchor": "3: one system with a minor named lapse", "evidence": "One face, one radius, borders-only depth, dark theme composed not inverted. Lapses: native date/select in the filter panel vs styled Loan length select; badges are 4px despite 'pills only for badges'; Details list in two differently aligned columns. (judged)"},
+    "restraint": {"score": 2, "label": "judged", "anchor": "2 cap: no focal point and no signature", "evidence": "No decoration without a job, but no signature or focal point at all; restraint has turned into absence. (judged)"},
+    "brand_fit": {"score": 2, "label": "judged", "anchor": "2: about half reflected, rest weak, none contradicted", "evidence": "practical reflected; neighbourly only in copy; careful undercut by execution slips. (judged)"},
+    "execution": {"score": 2, "label": "judged", "anchor": "2: clean at main widths, rough at the edges", "evidence": "Clean at 1280 light and dark. Rough: mobile title truncation, sticky bar over calendar, basket session grid at 1280, empty band under footer on basket and done, native filter controls, run-together paragraphs on done, stale Basket (1). (judged)"},
+    "appeal": {"score": 2, "label": "judged", "anchor": "2: clean but plain; identity is only the name", "evidence": "Orderly but nothing to look at on any screen; ten identical wrench tiles stand in for the stock; see appeal.unfinished. (judged)"}
+  },
+  "detector_comparison": {
+    "agreements": [],
+    "detector_only": [],
+    "critic_only": ["placeholder wrench tiles (SLP-58)", "sterile default with no signature (SLP-64)", "mobile title truncation", "sticky action bar over calendar", "basket session grid break", "native filter controls", "empty band under footer", "misaligned Details list", "stale basket count on done"],
+    "false_positives": [],
+    "notes": "The detector section held 0 hits, so nothing to compare and every item is critic-only. Zero hits on a page with ten identical placeholder tiles suggests SLP-58 and SLP-64 are not detected for this pattern.",
+    "post_unseal_notes": "None; verdicts unchanged."
+  },
+  "findings": [
+    {
+      "title": "Every tool card shows the same wrench glyph in place of a thumbnail",
+      "description": "All ten cards on the find page carry an identical pale-green tile with a wrench, whether the tool is a ladder, pressure washer or wallpaper steamer. DESIGN.md lists 'a thumbnail' as part of the card, so this reads as a placeholder left on show.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "rule", "id": "SLP-58", "primary": true}, {"kind": "design", "id": "DES-appeal"}],
+      "impact": "The largest visual element on each card carries no information, so members comparing the two-battery and one-battery drills, or scanning for a ladder, get no visual cue; it is also the main reason the page may read as unfinished.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [113, 410, 96, 96], "selector": "tool card thumbnail"},
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png", "detail": "ten identical wrench tiles"},
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png", "detail": "same at 375"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what each card image is for: the actual library item, or a mark specific to each category; if neither exists yet, remove the tile rather than show a stand-in.",
+      "tags": ["appeal", "execution"]
+    },
+    {
+      "title": "No identity beyond the name in bold text and no focal point on any surface",
+      "description": "The brand is a stock wrench glyph beside 'Fernhill Tool Library' in the body face. Ground, type and colour are the category default for a community service; nothing from the library's world (the room, the stock, the membership card, the desk) appears visually on any screen.",
+      "problem_type": "overall_structure",
+      "criteria": [{"kind": "rule", "id": "SLP-64", "primary": true}, {"kind": "design", "id": "DES-specificity"}, {"kind": "design", "id": "DES-brandfit"}],
+      "impact": "'Neighbourly' is carried only by the copy; a first-time member may not tell this from any other booking form, and the design fails the swap, category-guess and similar-prompt tests.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 20, 200, 30], "selector": "header brand"},
+        {"route": "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1", "state": "default", "viewport": {"width": 1280}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png", "detail": "masthead and first viewport"},
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png", "detail": "done page, nothing marks the moment"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide an identity floor drawn from the library itself (the referent the green came from, the stock, the desk) and carry it through the name and one recurring element; Operate mode allows identity without hero moments.",
+      "tags": ["specificity", "appeal"]
+    },
+    {
+      "title": "Tool names truncate to identical strings on phones",
+      "description": "At 375 card titles are cut with an ellipsis; both drills read 'Cordless drill 18 V, co...', and other titles lose the distinguishing spec ('Extension ladder 3 m ...', 'Pressure washer, 130 ...').",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}, {"kind": "heuristic", "id": "H6"}],
+      "impact": "Phones are the main device; the distinguishing words ('two batteries' vs 'one battery') are what members use to pick a tool, and they are hidden.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [145, 400, 200, 190]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png", "detail": "first two cards read identically"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether titles wrap at narrow widths, or which part of the name must always stay visible.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Sticky Reserve bar covers the pick-up calendar, including the chosen day",
+      "description": "In the captures at 1280 and 375 the white action bar sits across the calendar's second week; the selected day (Mon 12 or Sat 17) is hidden under it, and the 'Added to your basket' toast sits over the weekday header.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "design", "id": "DES-execution"}],
+      "impact": "The calendar is the task on this page; the primary button competes with and occludes it, so members may not see which day they picked before reserving. Behaviour while scrolling cannot be confirmed from stills.",
+      "locations": [
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "day-chosen", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 828, 1280, 72], "selector": "action bar"},
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "day-chosen", "viewport": {"width": 375}, "theme": "light", "bbox": [0, 828, 375, 70]},
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "added", "viewport": {"width": 1280}, "theme": "dark", "bbox": [535, 763, 210, 48], "selector": "toast"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/day-chosen/1280-light.png", "detail": "bar over week 2"},
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/day-chosen/375-light.png", "detail": "bar over pick-up instructions"},
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/added/1280-dark.png", "detail": "toast over weekday header"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide where the reserve action sits relative to the calendar so the chosen day stays visible, and check it in the scrolling viewport.",
+      "tags": ["hierarchy"]
+    },
+    {
+      "title": "Basket session cards break into one full-width row and five cramped cards at 1280",
+      "description": "Six session radios render as one full-width card (Wednesday 28 October) then five narrow cards whose labels wrap to three lines.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}],
+      "impact": "The layout implies the first session is special and makes the others harder to read, on the step where the member chooses when to turn up.",
+      "locations": [
+        {"route": "basket-html-items-drill-18v-two-day-2026-10-17", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 474, 1088, 166], "selector": "session radios"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png", "detail": "broken session grid"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one layout for the session list at wide widths in which every option has equal weight and readable labels.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Filter panel uses unthemed browser-default date and select controls",
+      "description": "'Available from' is a native yyyy/mm/dd date input with the browser calendar icon, and Category is a native select with a different border and chevron from the styled Loan length select.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-coherence", "primary": true}, {"kind": "design", "id": "DES-appeal"}],
+      "impact": "The yyyy/mm/dd mask contradicts the declared 'Saturday 17 October' format, and the mismatch signals unfinish in the one place members check what can be collected on a day.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "filters-open", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 330, 1088, 135], "selector": "filters panel"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png", "detail": "native date and select"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether filters follow the same control styling as the tool page and the declared date format.",
+      "tags": ["coherence"]
+    },
+    {
+      "title": "Basket and done pages end with an empty grey band under the footer",
+      "description": "At 1280 the footer stops mid-viewport and the page ground continues below it.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}],
+      "impact": "A visible sign of unfinish on the confirmation moment; low cost but present on every short page.",
+      "locations": [
+        {"route": "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 700, 1280, 200]},
+        {"route": "basket-html-items-drill-18v-two-day-2026-10-17", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 806, 1280, 94]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png", "detail": "band below footer"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide how short pages fill the viewport.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Masthead still says 'Basket (1)' after the reservation is confirmed",
+      "description": "On the done page the navigation shows Basket (1), as if the drill were still held.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "heuristic", "id": "H1", "primary": true}, {"kind": "design", "id": "DES-execution"}],
+      "impact": "Members may wonder whether the reservation went through or whether the tool is still waiting in the basket.",
+      "locations": [
+        {"route": "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [948, 22, 78, 24], "selector": "nav basket link"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png", "detail": "Basket (1) in nav"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the basket count shows once a reservation is made.",
+      "tags": ["execution"]
+    },
+    {
+      "title": "Details list splits into two misaligned columns",
+      "description": "Category, Deposit and Available from align values at about x=224; Chuck, Batteries, Weight and Case align at about x=180, with a different row gap.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}],
+      "impact": "Small, but it undercuts 'careful': the one specification table looks assembled from two parts.",
+      "locations": [
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 300, 450, 200], "selector": "details list"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-5/workspace/.ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png", "detail": "two value columns"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether specs and loan facts are one list or two clearly separate ones.",
+      "tags": ["execution"]
+    }
+  ],
+  "_strengths": [
+    "Copy in the desk volunteer's voice, concrete and in members' words ('Enough for a day of fixing shelves and a fence', 'We text you if a tool is returned late by the previous borrower').",
+    "Dark theme composed rather than inverted: lighter cards on a dark green-grey, mint accent.",
+    "One filled button per page; deposit shown on every tool; clear error summary on basket."
+  ],
+  "_keep": "Keep the concrete volunteer voice and the one-filled-button discipline; add identity, not more buttons or chrome.",
+  "_not_assessable": ["motion and toast fade", "focus ring and hover states", "sticky bar behaviour while scrolling", "whether the green matches the physical membership card"],
+  "pairwise": null,
+  "notes": "Isolated subagent. Read only the packet, the role file, design-panel.md and brand-expression.md (partly), and after unsealing the anti-slop rule list. No baseline in the packet, so pairwise not run (DES-05 not_applicable). Detectors returned 0 hits. Brand fit: 1 of 3 attributes reflected, 2 partly."
+}

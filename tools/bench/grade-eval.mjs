@@ -497,7 +497,7 @@ if (answers?.mapping && [5, 19, 20].includes(ev.id)) {
     metrics.mapped_judged = mappingMetrics(answers.mapping, truth, (m) => methodOf.get(m.item) === 'judged');
     const p = metrics.mapped_judged.precision;
     const e = expectations.find((x) => x.text === 'Precision after verification is at least 0.8');
-    if (e && p) Object.assign(e, { passed: p.value >= 0.8, evidence: `${p.x} of ${p.n} confirmed judged findings are a seeded defect or a real problem (strict: ${metrics.mapped_judged.precision_strict.x} of ${p.n}); recall by meaning ${metrics.mapped_all.recall_by_meaning.x} of ${metrics.mapped_all.recall_by_meaning.n} seeded defects${metrics.mapped_all.recall_by_meaning_all ? ` (${metrics.mapped_all.recall_by_meaning_all.x} of ${metrics.mapped_all.recall_by_meaning_all.n} with the found ones)` : ''}. Grader: ${e.evidence}` });
+    if (e && p) Object.assign(e, { passed: p.value >= 0.8, evidence: `${p.x} of ${p.n} confirmed judged findings are a ground-truth defect or a real problem (strict: ${metrics.mapped_judged.precision_strict.x} of ${p.n}); recall by meaning ${metrics.mapped_all.recall_by_meaning.x} of ${metrics.mapped_all.recall_by_meaning.n} seeded defects${metrics.mapped_all.recall_by_meaning_all ? ` (${metrics.mapped_all.recall_by_meaning_all.x} of ${metrics.mapped_all.recall_by_meaning_all.n} with the found ones)` : ''}. Grader: ${e.evidence}` });
   }
 }
 const timing = json(path.join(runDir, 'timing.json'), null);

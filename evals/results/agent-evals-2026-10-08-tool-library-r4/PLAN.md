@@ -74,3 +74,28 @@ replaced, as in round 3; instrument changes after seeing results are logged belo
   counts toward it in recall against the seeded 13. The grader reports recall against the 13 seeded defects, which
   stays comparable with round 3 (two round-3 runs re-graded with the revised file reproduced their recorded figures
   exactly), and against all 26. The mapping instructions gained the rule that separates D07 from D26.
+- 2026-10-09, 22:32 (America/New_York). The replacements started after the headless binary was signed in to an account
+  with quota: the weekly windows of the two accounts used so far were full. The binary (2.1.288), the model, the
+  plugin snapshot of `cd5583f` and the prompts are unchanged.
+
+- 2026-10-09, 22:40–23:55 (America/New_York), while the replacements ran and after they were graded. Instrument
+  notes, all applied to every run they concern:
+  - Questions 4 and 5 are read from the transcripts by a phase script written for this round. A turn end is a
+    `result` event; `claude -p` writes the results of earlier turns only at the end of the stream, so every result
+    before the last is a turn the lead ended while work was running. Run on round 3's transcripts, the script gives
+    round 3's recorded phase times (14 minutes to the first inspector, verifiers of 16 and 23 minutes). After seeing
+    that the time from the first verifier to the last includes the lead's split work in between, the verifier measure
+    was split into a first pass and a second pass over split parts, for both rounds.
+  - The controls' source reads count files read through `cat` and leave out Read calls the harness refused. Round 3's
+    table had counted Read calls only (6 and 0 files); it is corrected in that report, with the date.
+  - Question 2 counts the advisory tool observations, as planned. The accessibility auditor also flags some of its own
+    findings `advisory` (two in run 4); those are reported apart.
+  - Question 3's comparison figure, "9 and 8", were round-3 run 1's two largest counts; round 3's per-run maxima were
+    9 and 6, and the report compares with those.
+  - Two analyses were added after the results were seen and are labelled so in the report: judged precision split by
+    the role that reported a finding (the design critics alone, or anyone else), also for round 3's runs; and recall
+    over the ten found defects that a round-3 control had also reported, since all thirteen were in a round-3 skill
+    run's report.
+  - Grading: run 5's two graders agreed on all 80 items and both assertions, so its consensus is their agreed mapping
+    without an adjudicator; runs 4 and 6 had 4 and 1 splits, settled by an adjudicator. The cut-off runs 1 to 3 were
+    graded by script only, as round 3's terminated run was.

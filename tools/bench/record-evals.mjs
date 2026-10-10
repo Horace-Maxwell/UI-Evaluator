@@ -84,10 +84,12 @@ const usd = (c) => (Number.isFinite(c) ? c.toFixed(2) : '—');
 for (const r of rows) md.push(`| ${r.eval} ${r.name} (${r.run}) | ${r.arm} | ${r.passed} of ${r.decided}${r.total > r.decided ? ` (+${r.total - r.decided} pending)` : ''} | ${r.failed.join('; ') || '—'} | ${mtok(r.tokens)} | ${usd(r.cost_usd)} | ${r.minutes ?? '—'} |`);
 const mapped = rows.filter((r) => r.metrics?.mapped_all);
 if (mapped.length) {
-  md.push('', 'Blind mapping of every reported problem to the seeded defects (adjusted-Wald 95% intervals):', '', '| Eval | Arm | Problems reported | Recall by meaning | Precision (seeded or real) | Precision (seeded only) |', '|---|---|---|---|---|---|');
+  // A ground truth with found defects (seeded_from "found") gives recall against the seeded set and against all of it.
+  const all = mapped.some((r) => r.metrics.mapped_all.recall_by_meaning_all);
+  md.push('', 'Blind mapping of every reported problem to the ground truth (adjusted-Wald 95% intervals):', '', `| Eval | Arm | Problems reported | Recall by meaning${all ? ' (seeded) | Recall by meaning (all defects)' : ''} | Precision (in the ground truth or real) | Precision (in the ground truth only) |`, `|---|---|---|---|${all ? '---|' : ''}---|---|`);
   for (const r of mapped) {
     const m = r.metrics.mapped_all;
-    md.push(`| ${r.eval} | ${r.arm} | ${m.items} | ${rate(m.recall_by_meaning)} | ${rate(m.precision)} | ${rate(m.precision_strict)} |`);
+    md.push(`| ${r.eval} | ${r.arm} | ${m.items} | ${rate(m.recall_by_meaning)}${all ? ` | ${rate(m.recall_by_meaning_all)}` : ''} | ${rate(m.precision)} | ${rate(m.precision_strict)} |`);
   }
 }
 fs.writeFileSync(path.join(out, 'summary.md'), `${md.join('\n')}\n`);

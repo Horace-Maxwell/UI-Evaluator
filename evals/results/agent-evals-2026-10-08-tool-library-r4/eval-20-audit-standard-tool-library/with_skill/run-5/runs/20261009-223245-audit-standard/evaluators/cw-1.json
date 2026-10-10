@@ -1,0 +1,188 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261009-223245-audit-standard",
+  "packet_hash": "9ade5d9d5b8a3a7b",
+  "notes": "Cognitive walkthrough (full four-question variant) of reserve-tool-for-saturday at 375 px, light theme. Record: cw/reserve-tool-for-saturday.json. Journey verdict would_not (step 7). Evidence paths are relative to .ui-evaluator/runs/20261009-223245-audit-standard/. All candidates are E0 hypotheses; no severity rated.",
+  "coverage": {
+    "routes": ["/", "/tool.html?id=drill-18v-two", "/basket.html", "/confirm.html?slot=sat-2026-10-17", "/done.html"],
+    "states": ["find default", "find searched", "tool default", "tool day-chosen", "tool added", "basket default", "basket session-chosen", "confirm filled", "done"]
+  },
+  "task_suitability": [
+    { "task": "reserve-tool-for-saturday", "completable": true, "evidence": "probes/19/probe.json: full correct sequence replayed, 'Reservation confirmed' shown; completion with the known path is not predicted user success" }
+  ],
+  "candidates": [
+    {
+      "id": "cw-1-01",
+      "title": "'Reserve this tool' only adds to a basket; nothing tells a first-time member the reservation is unfinished",
+      "description": "Journey reserve-tool-for-saturday, steps 6-7. The persona taps 'Reserve this tool' expecting the drill to be reserved. The only response is a toast 'Added to your basket' that overlays the calendar and is gone within 5 s, plus the header count changing to 'Basket (1)'. The button label is unchanged and the toast has no link onward. The persona has every reason to believe the job is done and close the page (CW-Q1 fails at step 7: the basket checkout is a hidden prerequisite). The feedback also names a different effect from the one the button promised (CW-Q4 fails at step 6). Missing knowledge: that 'Reserve' means 'hold in basket' and two more screens remain. Missing feedback: a lasting message that the reservation is not complete and a direct way to continue. Step verdicts: step 6 would_with_effort, step 7 would_not.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "cw", "id": "CW-Q4" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two", "state": "added", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "role=button[name=\"Reserve this tool\"]", "journey": "reserve-tool-for-saturday", "step": 6 },
+        { "route": "/tool.html?id=drill-18v-two", "state": "added (after toast timeout)", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "#basket-link", "journey": "reserve-tool-for-saturday", "step": 7 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/5/final.png", "detail": "Toast 'Added to your basket' over the calendar immediately after the tap" },
+        { "type": "screenshot", "ref": "probes/10/final.png", "detail": "Same page 5 s later: toast gone, only 'Basket (1)' in header changed" },
+        { "type": "aria", "ref": "probes/5/aria.yml", "detail": "status 'Added to your basket'; button still 'Reserve this tool'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "impact": "Step 7 verdict would_not: the persona may leave believing the drill is reserved and arrive on Saturday with no reservation.", "frequency": "Every first-time reservation passes this point." },
+      "evidence_level": "E0",
+      "recommendation": "Either make the button do what it says, or rename it to match the effect and keep a persistent 'Held in your basket - finish your reservation' message with a link to the basket."
+    },
+    {
+      "id": "cw-1-02",
+      "title": "Basket asks for a pick-up session again and does not carry over the pick-up day just chosen",
+      "description": "Journey reserve-tool-for-saturday, step 8. The persona chose Saturday 17 October on the tool page, and the basket card repeats 'Pick up Saturday 17 October'. Below it, 'Pick-up session' lists six sessions with none selected. To the persona this is the same question again; the likely action is to press Continue straight away and hit an error. Missing knowledge: that the day and the session are separate choices and the session is not set from the day. Step verdict would_with_effort.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "locations": [
+        { "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "group 'Pick-up session'", "journey": "reserve-tool-for-saturday", "step": 8 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/11/final.png" },
+        { "type": "aria", "ref": "probes/11/aria.yml", "detail": "paragraph 'Pick up Saturday 17 October · one week · deposit £20'; no radio checked" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "impact": "Redundant decision; likely an error round-trip before continuing." },
+      "evidence_level": "E0",
+      "recommendation": "Preselect the session matching the chosen pick-up day, or ask only once."
+    },
+    {
+      "id": "cw-1-03",
+      "title": "Pick-up sessions are shown latest first, opposite to the calendar just used",
+      "description": "Journey reserve-tool-for-saturday, step 8. On screen the sessions run Wednesday 28, Saturday 24, Wednesday 21, Saturday 17, Wednesday 14, Saturday 10 October, while the calendar on the previous screen ran forward in time (and the accessibility tree order is ascending, so visual and reading order disagree). Looking for 'this Saturday' at the top, the persona finds the end of the month. Missing knowledge: that the list is in reverse date order. Step verdict would_with_effort.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "locations": [
+        { "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "group 'Pick-up session'", "journey": "reserve-tool-for-saturday", "step": 8 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/11/final.png", "detail": "visual order Wed 28 ... Sat 10" },
+        { "type": "aria", "ref": "probes/11/aria.yml", "detail": "DOM order Sat 10 ... Wed 28" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "List sessions soonest first, in the same order visually and in the DOM."
+    },
+    {
+      "id": "cw-1-04",
+      "title": "The two cordless drills are truncated to identical names in the tool list on phones",
+      "description": "Journey reserve-tool-for-saturday, step 4. At 375 px both result cards read 'Cordless drill 18 V, co...' with identical category, deposit, availability and icon. The words that distinguish them ('two batteries' / 'one battery') are cut off. The persona specifically wants the two-battery drill and cannot tell which card it is. Missing knowledge: which card is which. Step verdict would_with_effort (recoverable by opening one and going back).",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q3", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "locations": [
+        { "route": "/", "state": "searched 'drill'", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "#results article h2 a", "journey": "reserve-tool-for-saturday", "step": 4 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/2/final.png" },
+        { "type": "aria", "ref": "probes/2/aria.yml", "detail": "links 'Cordless drill 18 V, combi, two batteries' and 'Cordless drill 18 V, combi, one battery'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Let tool names wrap on small screens, or surface the distinguishing detail on the card."
+    },
+    {
+      "id": "cw-1-05",
+      "title": "On phones the search box sits below the entire tool list",
+      "description": "Journey reserve-tool-for-saturday, step 2. At 375 px the 'Search tools' field comes after all ten tool cards, around 2100 px down a 2593 px page on a 900 px viewport. A first-time member who wants one tool sees only cards and has no cue that search exists; most likely they scroll and pick from the list (which then exposes them to cw-1-04). Missing knowledge: that a search is available further down. Step verdict would_with_effort.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true }
+      ],
+      "locations": [
+        { "route": "/", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "role=searchbox[name=\"Search tools\"]", "journey": "reserve-tool-for-saturday", "step": 2 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/1/final.png", "detail": "full page; search region after the tool list" },
+        { "type": "aria", "ref": "probes/1/aria.yml", "detail": "region 'Search' follows region 'Tools'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Place search (and filters) above the list."
+    },
+    {
+      "id": "cw-1-06",
+      "title": "Sticky 'Reserve this tool' bar hides the explanation of which days are sessions",
+      "description": "Journey reserve-tool-for-saturday, step 5. On arrival at the tool page at 375 px, the sticky action bar lies over the sentence 'Choose the day you will collect the tool. Days marked Open (a green dot on a small screen) are library sessions.' The persona (who does not know that only some days are sessions) sees a grid with unexplained green dots and no month label; the word 'Open' itself is not shown at this width. This persona still picks 17 because they know the date, but the meaning of the dots is hidden. Missing knowledge: which days are sessions. Step verdict would_with_effort.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "region 'Pick-up day' > p", "journey": "reserve-tool-for-saturday", "step": 5 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/3/final.png", "detail": "sticky bar covers text below 'Pick-up day' heading" },
+        { "type": "screenshot", "ref": "probes/4/final.png", "detail": "text readable only when scrolled" },
+        { "type": "aria", "ref": "probes/3/aria.yml", "detail": "paragraph present in tree" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Keep the sticky bar from covering content (reserve space for it), and label session days in text at every width."
+    },
+    {
+      "id": "cw-1-07",
+      "title": "No immediate feedback after 'Continue' and 'Confirm reservation' while the next page loads",
+      "description": "Journey reserve-tool-for-saturday, steps 9 and 13. After tapping 'Continue' the basket page stays unchanged for about 1.2 s, and after 'Confirm reservation' the confirm page stays unchanged for about 1.5 s: no pressed or busy state, no disabled button. On a phone the persona may think the tap missed and tap again, which on the commit step risks a duplicate submission. Missing feedback: immediate acknowledgement that the tap registered. Step verdicts would_with_effort.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "locations": [
+        { "route": "/basket.html", "state": "session chosen, Continue tapped", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "role=button[name=\"Continue\"]", "journey": "reserve-tool-for-saturday", "step": 9 },
+        { "route": "/confirm.html?slot=sat-2026-10-17", "state": "filled, Confirm tapped", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "role=button[name=\"Confirm reservation\"]", "journey": "reserve-tool-for-saturday", "step": 13 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/16/step-08.png", "detail": "unchanged after Continue tap" },
+        { "type": "probe", "ref": "probes/16/probe.json", "detail": "step 9 expect /confirm.html took 1211 ms" },
+        { "type": "screenshot", "ref": "probes/19/step-13.png", "detail": "unchanged after Confirm tap" },
+        { "type": "probe", "ref": "probes/19/probe.json", "detail": "step 14 expect 'Reservation confirmed' took 1538 ms" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Show a busy state on the button at once and ignore repeat taps until the next page loads."
+    },
+    {
+      "id": "cw-1-08",
+      "title": "Header still shows 'Basket (1)' on the 'Reservation confirmed' page",
+      "description": "Journey reserve-tool-for-saturday, step 13. The confirmation page is otherwise clear (reference FT-4471, the drill, Saturday 17 October 10:00 to 13:00, £20 to bring, what happens next), but the header still reads 'Basket (1)'. A first-time member, already unsure what the basket means after step 6, may read this as the drill still sitting unreserved in the basket. Missing feedback: a basket state consistent with the completed reservation. Step verdict would_with_effort.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "locations": [
+        { "route": "/done.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light", "selector": "#basket-link", "journey": "reserve-tool-for-saturday", "step": 13 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/19/final.png" },
+        { "type": "aria", "ref": "probes/19/aria.yml", "detail": "nav link 'Basket (1)' alongside heading 'Reservation confirmed'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "evidence_level": "E0",
+      "recommendation": "Empty the basket once the reservation is confirmed."
+    }
+  ]
+}

@@ -90,8 +90,10 @@ Every control run mapped one item to each defect (two for D12 in control run 1, 
 
 | Control run | Source files read | Browser script written | Script runs (succeeded) | Screenshots read back | Shell commands (refused by the sandbox) |
 |---|---|---|---|---|---|
-| control, run 1 | 6: PRODUCT.md, DESIGN.md, reserve-tool-for-saturday.json, change-pickup-session.json, app.js, styles.css | check.py | 2 (1) | 5 | 13 (7) |
-| control, run 2 | 0:  | check.py | 3 (1) | 2 | 9 (6) |
+| control, run 1 | 11, through `cat` | check.py | 2 (1) | 5 | 13 (7) |
+| control, run 2 | 11, through `cat` | check.py | 3 (1) | 2 | 9 (6) |
+
+Corrected on 2026-10-09: the first version of this column counted calls of the Read tool, six of which the harness refused in run 1, and showed 6 and 0 files; both runs read all eleven files (the two documents, the two journeys, five pages, the script and the stylesheet) through `cat`, as the paragraph below says.
 
 Neither control run stopped at the source. Both probed the machine for a browser (`npx playwright` was refused by the sandbox; `python3 -c "import playwright"` succeeded), wrote `check.py` with Playwright, ran it against the served site at 375 px in dark mode (and 320 px, 200% text), measured the clipped names, the page width, the toast's timing, the keyboard trap and the double submit, took screenshots and read them back. Control run 1 read all nine source and document files first; control run 2 read them in one command and then only the screenshots and its own output. In rounds 1 and 2 the control did not use a browser; nothing in the prompt changed between rounds, only the fixture, whose product document says members use phones in dark mode and whose problems do not read off the source.
 

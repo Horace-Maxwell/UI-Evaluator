@@ -1,0 +1,443 @@
+{
+  "schema": "evaluator-output",
+  "role": "heuristic-evaluator",
+  "agent": "he-1",
+  "lens": "novice first-time user",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261009-223253-audit-standard",
+  "packet_hash": "c9fd2cd01c01f0ec",
+  "notes": "Worked only from the packet, the named method/knowledge files and uie probe. No source, DESIGN.md, detector output or other evaluators' files were read. One probe (probes/14) navigated slower than its 500 ms wait; it was re-run with longer waits (probes/18) before judging. Probe 22 failed on a driver step (the second click toggled the list closed); behaviour was re-checked in probes/28 and probes/31. Probe directories are relative to runs/20261009-223253-audit-standard/.",
+  "passes": [
+    { "pass": 1, "summary": "Learned the flow find -> tool -> basket -> confirm -> done at 375 px by walking the reserve-tool and change-session journeys with probes; no findings recorded.", "elements_inspected": 63 },
+    { "pass": 2, "summary": "Element-by-element inspection of every route/state in routes.json against H1-H10, with adversarial probes (empty submit, invalid input, no-match search, non-session day, pre-availability day, Escape, Change round trip, Remove, post-confirm basket).", "elements_inspected": 63 },
+    { "pass": 3, "summary": "Cross-screen consistency pass over navigation, terminology (pick-up day vs pick-up session, reference prefixes), error pattern, list ordering, search/filter placement across widths, and basket state across screens." }
+  ],
+  "cross_screen_pass": true,
+  "coverage": {
+    "routes": ["/?items=ladder-3m", "/tool.html?id=drill-18v-two&items=ladder-3m", "/basket.html?items=drill-18v-two&day=2026-10-17", "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471"],
+    "states": ["find/default", "find/filters-open", "find/no-results", "tool/default", "tool/day-chosen", "tool/loan-open", "tool/added", "basket/default", "basket/errors", "basket/empty (probes/37)", "confirm/default", "confirm/errors", "done/default"],
+    "controls_exercised": 29,
+    "controls_total": 63,
+    "out_of_scope": [
+      "9 further tool-card links on /: same card component as the drill link exercised in probes/44; pressure-washer page reached by URL in probes/34",
+      "18 further calendar day buttons: same component; days 10, 12 and 17 exercised (probes/5, 34, 39) covering session, non-session and pre-availability cases",
+      "5 further pick-up session radios: same component; Wednesday 21 exercised in probes/17 and 18",
+      "Loan option 'One week': default value, shown selected; 'Two weeks' exercised in probes/31",
+      "Confirm error-summary link 2 ('Enter your name'): same component as links 1 and 3 exercised in probes/48"
+    ],
+    "per_heuristic": "H1-H10 considered on each of the five routes. Nothing found: H7 (low-frequency use, no accelerator need beyond what exists), H8 (no irrelevant content competing with the task), H10 on tool/confirm/done (contextual hints present). Findings cluster in H1, H3, H4, H5, H6, H9.",
+    "probes": ["probes/3", "probes/4", "probes/5", "probes/9", "probes/10", "probes/14", "probes/17", "probes/18", "probes/21", "probes/22", "probes/28", "probes/31", "probes/34", "probes/37", "probes/39", "probes/43", "probes/44", "probes/48", "probes/49"]
+  },
+  "task_suitability": [
+    { "task": "Reserve a tool to collect at a session", "completable": true, "evidence": "probes/17 (basket -> confirm) and probes/21 (confirm -> done.html, 'Reservation confirmed', reference FT-4471)." },
+    { "task": "Change the collection session while reserving", "completable": true, "evidence": "probes/18: Change -> basket -> Wednesday 21 -> Continue -> confirm shows Wednesday 21 October; entered details are lost on the way (see candidate on Change)." },
+    { "task": "See which tools can be collected on a given day", "completable": true, "evidence": "probes/4: Filters -> Available from 2026-10-17 narrows the list; status region reports the count." },
+    { "task": "Check the opening times and the deposit", "completable": true, "evidence": "Opening times section on / (aria, probes/3); deposit on each card, tool details and confirm summary; header link reaches index.html#opening from the tool page (probes/43)." }
+  ],
+  "not_assessable": [
+    "Loading/progress feedback on slow connections: the local server answers in under 100 ms, so no wait over 1 s could be observed.",
+    "Whether the three-tools-at-a-time limit stated on / is enforced or explained when exceeded: not probed.",
+    "Whether a late-return SMS is actually sent to the mobile number: outside the UI.",
+    "Screen-reader announcement of the 'Added to your basket' status and of the error summary: ARIA shows role=status / alert, but announcements were not heard; left to the accessibility auditor.",
+    "Browser Back mid-flow (confirm -> back to basket) keeping the session choice: not probed separately from the Change link.",
+    "Whether the yyyy/mm/dd placeholder in the 'Available from' date field follows the user's locale on real en-GB devices: the probe browser locale is unknown, so not judged."
+  ],
+  "strengths": [
+    { "title": "Error summaries link to the field and move focus there", "evidence": "probes/48: clicking 'Enter your membership number, like FT-01234' focuses #member; the third link focuses #phone. Each message repeats an example of the expected value. Helps first-time members recover on a phone." },
+    { "title": "Entered values are kept after a validation error", "evidence": "probes/10: after submitting '01234' and a landline, both values remain in their fields with the error above them." },
+    { "title": "Confirm and done pages say plainly that nothing is paid online and what to bring", "evidence": "confirm default 375-light: 'Nothing is paid online. Bring the deposit and your membership card to the session.'; done page 'What happens next' gives address, what to bring and the desk phone number for missed sessions." },
+    { "title": "Empty basket tells the member what to do next", "evidence": "probes/37 final.png: 'Your basket is empty. Find a tool to reserve.' with a link." },
+    { "title": "Search reports its result count in a status region", "evidence": "probes/4 aria.yml: 'status: 2 tools found' after searching 'drill'." },
+    { "title": "Membership-number hint shows the format before entry", "evidence": "confirm default: 'On your membership card, like FT-01234.' under the label, so the novice knows where to find it." }
+  ],
+  "candidates": [
+    {
+      "title": "Search with no matches leaves the full tool list showing and says nothing",
+      "description": "A search that finds nothing should say so and suggest what to try. Searching 'sewing machine' leaves all ten tools listed under 'Tools'; the status region is empty and no 'no tools found' message appears. A matching search ('drill') does filter and announces '2 tools found', so the unchanged list looks like a set of results.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "A first-time member searching for a tool the library does not stock may read the unchanged list as results and browse it looking for their tool, or think the search did not run.",
+      "scope": { "persona": "first-time member on a phone", "task": "find a tool", "route": "/", "state": "no-results", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/?items=ladder-3m", "state": "no-results", "viewport": { "width": 375, "height": 900 }, "selector": "region \"Tools\" > status", "snippet": "status (empty)" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/3/", "detail": "fill #q 'sewing machine', click Search, wait 800 ms: aria.yml lists all 10 tool articles and an empty status node" },
+        { "type": "probe", "ref": "probes/4/", "detail": "contrast: 'drill' yields 'status: 2 tools found' and two items" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/no-results/375-light.png" }
+      ],
+      "factor_notes": { "frequency": "Any search for an unstocked tool or a misspelling.", "impact": "Misleading rather than blocking; the member may scan ten cards before giving up.", "persistence": "Every no-match search." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Show an explicit no-results message naming the term, with a way to clear the search.",
+      "tags": ["search", "empty-state"]
+    },
+    {
+      "title": "Both cordless drill names are cut to the same text on narrow screens",
+      "description": "Members told to get 'the drill with two batteries' need to tell the two drills apart in the list. At 375 px both card titles are truncated to 'Cordless drill 18 V, co…'; the distinguishing words 'two batteries' / 'one battery' are hidden, and the category and deposit lines below are identical. The full names exist only in the accessible name.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "On a phone, the persona may open the wrong drill or have to open both to find the one with two batteries.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday", "route": "/", "state": "default", "viewport": { "width": 375, "height": 2593 }, "theme": "light" },
+      "locations": [
+        { "route": "/?items=ladder-3m", "state": "default", "viewport": { "width": 375, "height": 2593 }, "selector": "li:nth-of-type(1) > article.card > div.card__body > h2.card__name > a", "snippet": "Cordless drill 18 V, combi, two batteries" },
+        { "route": "/?items=ladder-3m", "state": "default", "viewport": { "width": 375, "height": 2593 }, "selector": "li:nth-of-type(2) > article.card > div.card__body > h2.card__name > a", "snippet": "Cordless drill 18 V, combi, one battery" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png", "detail": "first two cards both read 'Cordless drill 18 V, co…'" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png", "detail": "at 1280 the full names show" },
+        { "type": "aria", "ref": "probes/3/aria.yml", "detail": "link names 'Cordless drill 18 V, combi, two batteries' and '... one battery'" }
+      ],
+      "factor_notes": { "frequency": "Every phone visit to the list; most members use phones. Other long names (ladder, trimmer, jigsaw) are also truncated.", "impact": "Recoverable by opening the card, but an extra round trip and a chance of reserving the wrong drill.", "persistence": "Every visit." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Let card titles wrap instead of truncating.",
+      "tags": ["mobile", "truncation"]
+    },
+    {
+      "title": "On phones the search and date filter sit below all ten tool cards",
+      "description": "The persona does not know where the date filter is and wants to check what can be collected on a day. At 375 px the 'Search tools' field, Search button and Filters button come after the full list of ten cards (about 2,000 px down), just above Opening times. At 1280 px the same controls sit above the list.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "A member on a phone may not discover search or the date filter at all and scroll the list by eye, which makes top task 3 slower and error-prone.",
+      "scope": { "persona": "first-time member on a phone", "task": "see which tools can be collected on a given day", "route": "/", "state": "default", "viewport": { "width": 375, "height": 2593 }, "theme": "light" },
+      "locations": [
+        { "route": "/?items=ladder-3m", "state": "default", "viewport": { "width": 375, "height": 2593 }, "selector": "#q", "snippet": "Search tools" },
+        { "route": "/?items=ladder-3m", "state": "filters-open", "viewport": { "width": 1280, "height": 1530 }, "selector": "#q", "snippet": "Search tools" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png", "detail": "search block after the tenth card" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png", "detail": "search block above the list on desktop" },
+        { "type": "aria", "ref": "probes/3/aria.yml", "detail": "region 'Search' follows region 'Tools' in the reading order" }
+      ],
+      "factor_notes": { "frequency": "Every phone visit to the find page.", "impact": "Not blocking (the list is short) but hides the only way to filter by day.", "persistence": "Every visit; grows as stock grows." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Place search and filters before the list at every width.",
+      "tags": ["mobile", "search", "filter"]
+    },
+    {
+      "title": "Date filter is behind an icon-only Filters button",
+      "description": "The 'Available from' date filter only appears after pressing a button that shows a three-line filter icon with no visible text. A novice looking for 'a date' needs a visible label or the field itself; the word 'Filters' exists only as the accessible name.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H6", "primary": true },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "Members who do not recognise the icon may never find the filter needed for top task 3; the journey persona explicitly does not know where the date filter is.",
+      "scope": { "persona": "first-time member", "task": "see which tools can be collected on a given day", "route": "/", "state": "default", "viewport": { "width": 375, "height": 2593 }, "theme": "light" },
+      "locations": [
+        { "route": "/?items=ladder-3m", "state": "default", "viewport": { "width": 375, "height": 2593 }, "selector": "#filters-toggle", "snippet": "button \"Filters\"" },
+        { "route": "/?items=ladder-3m", "state": "filters-open", "viewport": { "width": 1280, "height": 1530 }, "selector": "#filters-toggle", "snippet": "button \"Filters\"" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/items-ladder-3m/default/375-light.png", "detail": "icon-only square button next to Search" },
+        { "type": "probe", "ref": "probes/4/", "detail": "Filters reveals 'Available from' and 'Category' only after the click" }
+      ],
+      "factor_notes": { "frequency": "Anyone wanting to filter by day or category.", "impact": "Hidden rather than broken; the member can still scan dates on cards.", "persistence": "Every visit." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Give the button a visible text label, or show the date field without a toggle.",
+      "tags": ["filter", "icon"]
+    },
+    {
+      "title": "Pick-up calendar accepts days when the library is closed",
+      "description": "Collection is only possible at sessions (Wednesdays and Saturdays). The calendar lets the member choose Monday 12 October, 'Reserve this tool' accepts it with 'Added to your basket', and the basket then shows 'Pick up Monday 12 October'. No message says the library is closed that day.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "First-time members, who by declaration do not know which days are sessions, may plan around a day they cannot collect on.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday", "route": "/tool.html", "state": "day-chosen", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "day-chosen", "viewport": { "width": 375, "height": 900 }, "selector": "#calendar > button.day:nth-of-type(4)", "snippet": "Monday 12 October" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/5/", "detail": "click Monday 12, Reserve this tool -> 'Added to your basket'; basket aria: 'Pick up Monday 12 October · one week · deposit £20'" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/day-chosen/375-light.png" }
+      ],
+      "factor_notes": { "frequency": "Five of seven days in each week are non-session days and look equally selectable apart from the absent dot.", "impact": "Leads to a reservation day that cannot happen; caught only if the member notices later.", "persistence": "Every reservation." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Make only session days choosable, or refuse other days with a message naming the next session.",
+      "tags": ["calendar", "validation"]
+    },
+    {
+      "title": "Pick-up calendar accepts days before the tool is available",
+      "description": "The pressure washer is 'Available from Sat 17 Oct', yet choosing Saturday 10 October and pressing 'Reserve this tool' adds it to the basket with no warning.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true }
+      ],
+      "impact": "A member may arrive at a session for a tool that is still out with the previous borrower.",
+      "scope": { "persona": "returning member", "task": "reserve a tool", "route": "/tool.html", "state": "day-chosen", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/tool.html?id=pressure-washer", "state": "day-chosen", "viewport": { "width": 375, "height": 900 }, "selector": ".day[data-day=\"2026-10-10\"]", "snippet": "Saturday 10 October, open" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/34/", "detail": "click 10 Oct, Reserve -> 'status: Added to your basket', Basket (1), 'Pick-up day: Saturday 10 October'" },
+        { "type": "aria", "ref": "probes/3/aria.yml", "detail": "Pressure washer card: 'Available from Sat 17 Oct'" }
+      ],
+      "factor_notes": { "frequency": "Any tool whose availability date is later than the first calendar day (4 of 10 in the list).", "impact": "Wasted trip to the desk if not caught.", "persistence": "Every such reservation." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Disable or refuse days before the tool's available date.",
+      "tags": ["calendar", "validation"]
+    },
+    {
+      "title": "Pick-up day and pick-up session are chosen separately and can contradict each other",
+      "description": "The member chooses a 'Pick-up day' on the tool page and then a 'Pick-up session' in the basket. The basket does not preselect the session matching the chosen day, and nothing reconciles the two: choosing Saturday 17 on the tool page and Wednesday 21 in the basket yields a confirm page that says 'pick up Saturday 17 October' under Tools and 'Wednesday 21 October, 18:00 to 20:00' under Pick-up session.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        { "kind": "heuristic", "id": "H5", "primary": true },
+        { "kind": "heuristic", "id": "H4" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "First-time members, who do not know how the basket works, may not know which date counts and may turn up on the wrong day; asking for the same decision twice also adds effort on a phone.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday / change-pickup-session", "route": "/basket.html -> /confirm.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "day-chosen", "selector": "#calendar" },
+        { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "selector": "group \"Pick-up session\"", "snippet": "Pick up Saturday 17 October · one week · deposit £20" },
+        { "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "default", "selector": "region \"Your reservation\"", "snippet": "pick up Saturday 17 October" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/17/", "detail": "basket with day=2026-10-17, choose Wednesday 21, Continue -> confirm aria: Tools '... pick up Saturday 17 October'; Pick-up session 'Wednesday 21 October, 18:00 to 20:00'" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/375-light.png", "detail": "no session preselected although the tool shows 'Pick up Saturday 17 October'" }
+      ],
+      "factor_notes": { "frequency": "Every reservation passes both choices; the contradiction arises whenever the session differs from the day, as in the change-session journey.", "impact": "Ambiguous commitment on the final review screen.", "persistence": "Every reservation." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Ask for the collection session once, or carry the chosen day into the basket and keep both in step.",
+      "tags": ["flow", "consistency"]
+    },
+    {
+      "title": "Pick-up sessions are listed latest first, opposite to the reading order",
+      "description": "Dates are expected in time order. The basket shows sessions from Wednesday 28 October at the top down to Saturday 10 October at the bottom, while the accessibility tree and keyboard order run 10 October to 28 October.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H2", "primary": true },
+        { "kind": "heuristic", "id": "H4" },
+        { "kind": "wcag", "id": "1.3.2" }
+      ],
+      "impact": "A member scanning for 'this Saturday' meets the furthest date first and may pick the wrong Saturday; keyboard users move through the list in the opposite direction to what they see.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday", "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 1410 }, "theme": "light" },
+      "locations": [
+        { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 1410 }, "selector": "group \"Pick-up session\"", "snippet": "Wednesday 28 October, 18:00 to 20:00" },
+        { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "errors", "viewport": { "width": 375, "height": 1560 }, "selector": "group \"Pick-up session\"" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/375-light.png", "detail": "visual order 28, 24, 21, 17, 14, 10 October" },
+        { "type": "aria", "ref": "probes/5/aria.yml", "detail": "radio order Saturday 10 ... Wednesday 28" }
+      ],
+      "factor_notes": { "frequency": "Every reservation.", "impact": "Slows choice and invites picking the wrong week.", "persistence": "Every visit to the basket." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "List sessions earliest first, in the same order visually and in the DOM.",
+      "tags": ["ordering", "basket"]
+    },
+    {
+      "title": "Changing the session from the confirm page clears the details already typed",
+      "description": "On the confirm page the member typed a membership number and name, then used 'Change' next to the session. Changing to Wednesday 21 and pressing Continue returns to the confirm page with Membership number and Your name empty. The previous session is also not preselected in the basket.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "In the change-session journey on a phone, the member has to retype their details and may not notice until they press Confirm and get errors.",
+      "scope": { "persona": "member mid-reservation on a phone", "task": "change-pickup-session", "journey": "change-pickup-session", "route": "/confirm.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "dd:nth-of-type(2) > a", "snippet": "Change" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/18/", "detail": "fill #member FT-01234, #name Sam Test; Change -> basket.html (no radio checked) -> Wednesday 21 -> Continue -> confirm aria: textbox 'Membership number' and 'Your name' empty" },
+        { "type": "probe", "ref": "probes/9/", "detail": "Change lands on basket.html with no session selected" }
+      ],
+      "factor_notes": { "frequency": "Every member who changes the session after starting to fill details.", "impact": "Retyping three fields; recoverable.", "persistence": "Every round trip." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Keep typed details and the current session when going to Change and back.",
+      "tags": ["state-loss", "journey"]
+    },
+    {
+      "title": "Basket still holds the tool after the reservation is confirmed",
+      "description": "After 'Reservation confirmed', the header still reads 'Basket (1)' and opening the basket shows the same drill with 'Choose when you will collect them, then continue to confirm', as if nothing had been reserved.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "impact": "A first-time member may doubt the reservation went through and confirm again, creating a duplicate the desk must sort out.",
+      "scope": { "persona": "first-time member", "task": "reserve-tool-for-saturday", "route": "/done.html -> /basket.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "selector": "#basket-link", "snippet": "Basket (1)" },
+        { "route": "/basket.html", "state": "default", "selector": "region \"Tools\"", "snippet": "Cordless drill 18 V, combi, two batteries" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/21/", "detail": "confirm with valid details -> done.html 'Reservation confirmed' (step-06.png shows Basket (1)); click Basket -> aria lists the drill and the six session radios" }
+      ],
+      "factor_notes": { "frequency": "Every completed reservation.", "impact": "Confusing end state at the peak-end moment; risk of double reservation.", "persistence": "Until the member removes it." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Empty the basket once a reservation is confirmed.",
+      "tags": ["status", "basket"]
+    },
+    {
+      "title": "Reservation number looks like a membership number",
+      "description": "The membership number has the form 'FT-01234' (confirm hint and error text). The done page gives the reservation number as 'FT-4471', with the same 'FT-' prefix. Two different identifiers share one format.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H4", "primary": true },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "Members may quote or write down the wrong number at the desk or by phone, slowing the volunteer's lookup.",
+      "scope": { "persona": "first-time member", "task": "know the reservation is made and what to bring", "route": "/done.html", "state": "default", "viewport": { "width": 375, "height": 1070 }, "theme": "light" },
+      "locations": [ { "route": "/done.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17&ref=FT-4471", "state": "default", "viewport": { "width": 375, "height": 1070 }, "selector": "text=FT-4471", "snippet": "Reservation number FT-4471" } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/375-light.png" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202/default/375-light.png", "detail": "'On your membership card, like FT-01234.'" }
+      ],
+      "factor_notes": { "frequency": "Every reservation.", "impact": "Mix-ups are recoverable at the desk but cost time during short sessions.", "persistence": "Every reservation." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Use a visibly different format or prefix for reservation numbers.",
+      "tags": ["terminology", "identifiers"]
+    },
+    {
+      "title": "Membership-number error does not say what is wrong with the number entered",
+      "description": "After entering '01234' (missing the FT- prefix), the error reads 'Enter your membership number, like FT-01234', the same text shown when the field is empty. It does not say the prefix is missing or that the format is wrong.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H9", "primary": true }
+      ],
+      "impact": "A member who did type their number is told to 'enter' it and may think the field was not read; the example helps but the diagnosis is left to them.",
+      "scope": { "persona": "first-time member", "task": "reserve-tool-for-saturday", "route": "/confirm.html", "state": "errors", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/confirm.html?items=drill-18v-two&day=2026-10-17&slot=sat-2026-10-17", "state": "errors", "viewport": { "width": 375, "height": 900 }, "selector": "#error-list > li:nth-of-type(1) > a", "snippet": "Enter your membership number, like FT-01234" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/10/", "detail": "#member '01234', #phone '0161 496 0000' -> errors 'Enter your membership number, like FT-01234' and 'Enter a UK mobile number, like 07700 900123'; values kept" }
+      ],
+      "factor_notes": { "frequency": "Members who type only the digits on their card.", "impact": "Small; the example shows the fix if read closely.", "persistence": "Each wrong-format attempt." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Use a format-specific message, e.g. that the number should start with FT-, or accept the digits alone.",
+      "tags": ["validation", "error-message"]
+    },
+    {
+      "title": "Escape does not close the loan-length list",
+      "description": "The loan-length control opens a custom list of options. Pressing Escape leaves the list open; it closes only by choosing an option or pressing the button again.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "Keyboard users, declared among members, have no conventional way out of the open list.",
+      "scope": { "persona": "keyboard-only member", "task": "choose loan length", "route": "/tool.html", "state": "loan-open", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "loan-open", "viewport": { "width": 375, "height": 900 }, "selector": "#loan-list", "snippet": "listbox \"Loan length\"" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/28/", "detail": "click #loan-button, press Escape, expect #loan-list hidden -> 'expectation failed: css #loan-list is not hidden'" },
+        { "type": "probe", "ref": "probes/22/step-05.png", "detail": "list still open after Escape" }
+      ],
+      "factor_notes": { "frequency": "Each time the list is opened and dismissed without choosing.", "impact": "Workaround exists (click the button again).", "persistence": "Every time." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Close the list on Escape and return focus to the button.",
+      "tags": ["keyboard", "listbox"]
+    },
+    {
+      "title": "After 'Reserve this tool' the page keeps no sign that the tool is in the basket",
+      "description": "Pressing 'Reserve this tool' shows a short 'Added to your basket' toast that disappears within six seconds. Afterwards the tool page looks as it did before: the button still reads 'Reserve this tool' and there is no link onward to the basket on the page; only the header count changes, off-screen at the top.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "First-time members, who do not know how the basket works, may not know the next step is the basket and may press Reserve again or leave thinking the tool is reserved.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday", "route": "/tool.html", "state": "added", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/tool.html?id=drill-18v-two&items=ladder-3m", "state": "added", "viewport": { "width": 375, "height": 900 }, "selector": "#reserve", "snippet": "Reserve this tool" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/39/", "detail": "choose 17, Reserve, wait 6 s: step-04.png shows no toast and an unchanged Reserve button; a second press re-shows the toast" },
+        { "type": "screenshot", "ref": "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/added/375-light.png", "detail": "toast is the only change" }
+      ],
+      "factor_notes": { "frequency": "Every tool added.", "impact": "Uncertainty about the next step; recoverable through the header link.", "persistence": "Each add." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "After adding, show a lasting in-page state with a link to the basket.",
+      "tags": ["feedback", "basket"]
+    },
+    {
+      "title": "Basket does not say how long tools are held",
+      "description": "The basket says 'Items are held for you while you finish.' The persona does not know how long the basket holds a tool. No time limit or expiry is shown, and 'while you finish' does not say what happens if the member leaves and comes back later.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H1", "primary": true },
+        { "kind": "heuristic", "id": "H10" }
+      ],
+      "impact": "Members who plan in short bursts while doing something else may leave a tool in the basket believing it is reserved, when only confirming reserves it.",
+      "scope": { "persona": "first-time member on a phone", "task": "reserve-tool-for-saturday", "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 1410 }, "theme": "light" },
+      "locations": [ { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 1410 }, "selector": "text=Items are held for you while you finish.", "snippet": "Items are held for you while you finish." } ],
+      "evidence": [
+        { "type": "aria", "ref": "probes/5/aria.yml", "detail": "paragraph: 'Items are held for you while you finish. Choose when you will collect them, then continue to confirm.'" },
+        { "type": "absence", "detail": "Searched find, tool, basket (default, errors, empty), confirm and done ARIA snapshots for 'held', 'hold', 'expire', 'minutes': no hold duration stated anywhere." }
+      ],
+      "factor_notes": { "frequency": "Every member who pauses mid-reservation, which the context of use says is common.", "impact": "Possible lost reservation of a one-of-a-kind tool.", "persistence": "Every reservation." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "State the hold period, and that the tool is not reserved until confirmed.",
+      "tags": ["basket", "status"]
+    },
+    {
+      "title": "Remove takes the tool out of the basket at once with no undo",
+      "description": "Pressing 'Remove' on a basket item empties it immediately; the page shows 'Your basket is empty' with no undo and no confirmation. Getting the tool back means finding it again and re-choosing loan length and pick-up day.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "heuristic", "id": "H3", "primary": true }
+      ],
+      "impact": "A mis-tap on a phone (the Remove link sits just above the session list) costs the member the whole tool selection.",
+      "scope": { "persona": "member on a phone", "task": "reserve a tool", "route": "/basket.html", "state": "default", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [ { "route": "/basket.html?items=drill-18v-two&day=2026-10-17", "state": "default", "viewport": { "width": 375, "height": 900 }, "selector": "li > button.button--quiet", "snippet": "Remove" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/37/", "detail": "click Remove -> final.png 'Your basket is empty. Find a tool to reserve.'; Basket (0); no undo control in aria" }
+      ],
+      "factor_notes": { "frequency": "Only on accidental removal.", "impact": "Rework of three steps; one-of-a-kind stock could be taken by someone else meanwhile.", "persistence": "Each accidental removal." },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "validity": "needs_verification",
+      "status": "candidate",
+      "recommendation": "Offer an undo after removal.",
+      "tags": ["undo", "basket"]
+    }
+  ]
+}

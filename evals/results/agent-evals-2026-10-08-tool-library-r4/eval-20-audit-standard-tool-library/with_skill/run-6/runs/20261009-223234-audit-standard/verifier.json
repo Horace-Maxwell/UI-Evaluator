@@ -1,0 +1,219 @@
+{
+  "schema": "verifier",
+  "run": "20261009-223234-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "e8c3737c439b46eb",
+  "iteration": 1,
+  "_notes": "Dismissal ledger consulted: empty. Iteration 1, so no confidence-ceiling flags. Probes 94-105 are the verifier's own. Side observation (not a candidate): on basket.html, clicking Continue after choosing a session left the URL unchanged after 1 s in probes 97, 98, 99 and 102, even for a valid drill/17 Oct basket; confirm.html's 'Confirm reservation' also needed more than 800 ms to navigate (probe 100 vs 104). Either navigation is deliberately delayed or Continue is broken; the lead may want a dedicated probe. F-0135 cites source code as evidence; I did not open it and verified only against the running UI.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0131",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced at 375 px and 1280 px. At 375 px, after focusing #loan-button, pressing Enter and ArrowDown, then Escape and waiting 300 ms, the listbox is still rendered and the ARIA tree still shows button 'One week' [expanded] with listbox 'Loan length'. At 1280 px, clicking the button and pressing Escape also leaves the list open.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/94/screenshots/v-after-esc.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/94/aria.yml",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/95/screenshots/v1280-esc.png"
+      ],
+      "note": "The impact text also describes the Tab trap, which is F-0132; keep the two records separate. The 320 px location was not re-probed; I verified 375 px and 1280 px."
+    },
+    {
+      "candidate_id": "F-0132",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced. With the list open at 375 px, three Tab presses alternate focus between 'Two weeks' and 'One week' (v-tab1..3). At 1280 px, five Tab presses end on 'Two weeks' and three Shift+Tab presses end on 'One week'. Focus never leaves the listbox, so the calendar and 'Reserve this tool' cannot be reached.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/94/screenshots/v-tab2.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/94/screenshots/v-tab3.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/95/screenshots/v1280-tab5.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/95/screenshots/v1280-shifttab3.png"
+      ],
+      "note": "WCAG 2.1.2 (No keyboard trap) may fit better than 2.1.1 as the WCAG reference, because Tab and Shift+Tab cannot leave the widget. Enter or Space does release it, which arguably counts as a 'standard exit method', so the rater should decide."
+    },
+    {
+      "candidate_id": "F-0029",
+      "verdict": "needs_human",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "The observation is real. In the default 1280 light capture, badges for Sat 10 and Wed 14 Oct have a green tint, while those for Sat 17, Wed 21 and Sat 24 Oct are grey. Under the deuteranopia capture the two styles look alike. Every badge, however, carries the full 'Available from <date>' text, and probing cannot tell whether the colour encodes anything the date does not.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/default/1280-light-cvd-deuteranopia.png"
+      ],
+      "note": "Question for the owner: does the green versus grey badge mean something the date text does not state, such as 'available at the next session' versus 'out on loan'? If yes, this is a 1.4.1 failure. If the colour only restates the date, it is decorative and 1.4.1 is not failed. The candidate's 'filters-open' evidence screenshot is a different state from its stated location 'default'; the default capture shows the same thing."
+    },
+    {
+      "candidate_id": "F-0135",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced live, without relying on the cited code. On /tool.html?id=drill-18v-two at 375x812, scrolling to y=5000 leaves the page at maximum scroll, and only the footer's first line ('Fernhill Tool Library is run by volunteers.') shows above the fixed bar. The second line, with the desk phone number, stays under the 'Reserve this tool' bar.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/105/screenshots/v-bottom.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/105/aria.yml"
+      ],
+      "note": "This is a duplicate of F-0134 (same element, mechanism and state); the lead should merge them. The criterion is wrong: 2.4.11 covers focused components, and the footer contains only plain text with no focusable element. Suggest a content-obscured or visibility criterion (e.g. H1 or DES-execution) instead. The impact sentence about 'the focused day' belongs to F-0136. Its only evidence is source code, which the verifier must not read; reproduction evidence is attached here."
+    },
+    {
+      "candidate_id": "F-0136",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "not_reproduced: at 375x812 on /tool.html?id=drill-18v-two, Tab from 'Wednesday 21 October' moves focus to 'Sunday 25 October' and then 'Monday 26 October' in the bottom calendar row. In both cases the focused day and its outline are fully visible above the fixed bar, with the footer's first line between them. The claim rested only on code reading ('can sit under').",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/105/screenshots/v-tab-to-25.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/105/screenshots/v-tab-to-26.png"
+      ],
+      "note": "Other viewport heights were not tested. A focused loan-length option is obscured by the bar, but that is F-0133."
+    },
+    {
+      "candidate_id": "F-0137",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced. At 375 px on /tool.html?id=drill-18v-two, clicking 'Monday 12 October' (not a session) sets 'Pick-up day: Monday 12 October', and Reserve shows 'Added to your basket'. The basket then lists 'Pick up Monday 12 October · one week · deposit £20'. Only on confirm.html does submitting show 'There is a problem: The library is closed on Monday 12 October'.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/96/screenshots/v-mon-reserved.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/96/aria.yml",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/103/screenshots/v-drill-mon-confirm.png"
+      ],
+      "note": "The locations for sander and pressure-washer, Saturday 10 October, belong to F-0138 (before availability), not to this closed-day mechanism; the lead should trim them. Primary H5 (error prevention) fits."
+    },
+    {
+      "candidate_id": "F-0138",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced for the pressure washer ('Available from Saturday 17 October'). At 375 px, choosing Saturday 10 October and pressing Reserve shows 'Added to your basket'. The basket then shows 'Pick up Saturday 10 October'. confirm.html?items=pressure-washer&day=2026-10-10&slot=sat-2026-10-10 lists the reservation without any warning, and submitting valid details reaches 'Reservation confirmed' (FT-4471), with 'Pressure washer, 130 bar' and 'Saturday 10 October, 10:00 to 13:00'.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/97/screenshots/v-pw-reserved.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/97/aria.yml",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/104/screenshots/v-pw-confirm-retry.png"
+      ],
+      "note": "I reached confirm.html by URL in the same parameter shape the basket produces, because basket Continue did not navigate within 1 s in my probes (see _notes). The confirm page performs no availability check, so the claim holds. I did not re-probe the sander part. Its Monday 12 October locations belong to F-0137."
+    },
+    {
+      "candidate_id": "F-0133",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced at 375x900 with the page at the top. After opening the Loan length list, 'One week' is visible, and 'Two weeks' sits under the fixed 'Reserve this tool' bar. When ArrowDown focuses 'Two weeks', only the top edge of its focus outline shows above the bar.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/94/screenshots/v-after-down.png"
+      ],
+      "note": "Because a sliver of the outline is visible, 2.4.11 (minimum, 'not entirely hidden') is borderline; 2.4.12 (enhanced) clearly fails. H6 as primary is a stretch; H1 or A11Y-05 (focus obscured) fits better. The third location (role=contentinfo, scrolled to end) belongs to F-0134; the lead should remove it here."
+    },
+    {
+      "candidate_id": "F-0134",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced at 375x812 on /tool.html?id=drill-18v-two. At maximum scroll, the footer's second line ('Questions: call the desk on 01632 960552 during opening hours.') stays under the fixed bar and cannot be scrolled into view.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/105/screenshots/v-bottom.png"
+      ],
+      "note": "F-0135 duplicates this record; merge them. The impact text ('A member wanting two weeks may not see that option') belongs to F-0133; rewrite it. Its first two locations (#loan-list) also belong to F-0133. 2.4.11 does not apply because the footer has no focusable content; keep H6 or H1 as primary, or use DES-execution."
+    },
+    {
+      "candidate_id": "F-0143",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it. In the basket capture at 1280 light, 'Wednesday 28 October, 18:00 to 20:00' spans the full width (y≈474–525). The other five sessions sit in a single row of cards about 208 px wide, each label wrapping to three lines.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png"
+      ],
+      "note": "The impact text also mentions reverse order, which is F-0144; trim it to the grid."
+    },
+    {
+      "candidate_id": "F-0144",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Reproduced at 1280 px (capture) and 375 px (probe 96). The sessions appear visually from Wednesday 28 October down to Saturday 10 October. The ARIA snapshot lists them in ascending order (Sat 10 … Wed 28), so the visual order is reversed by layout, not by the DOM.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/96/screenshots/v-mon-basket.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/96/aria.yml"
+      ],
+      "note": "Because DOM order and visual order disagree, screen-reader and keyboard order (ascending) differs from what sighted users see (descending). The rater may add WCAG 1.3.2 or 2.4.3 as corroborating criteria."
+    },
+    {
+      "candidate_id": "F-0139",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it. In the filters-open capture (1440 dark, and also 1280 light), the 'Available from' label sits at y≈357, while the 'Category' label sits at y≈388 and its select is vertically offset from the date field.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/filters-open/1440-dark.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png"
+      ],
+      "note": "F-0142 duplicates this record (same elements and mechanism, other viewport and theme); merge them. The impact text about date format belongs to F-0140; trim it."
+    },
+    {
+      "candidate_id": "F-0140",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "harness_filter",
+      "reason": "harness_artifact (emulation or locale side effect). A native <input type=date> renders its placeholder format from the browser or OS locale of the headless capture, not from the page. 'yyyy/mm/dd' reflects the capture machine's locale. An en-GB member's browser would show dd/mm/yyyy, and the candidate itself says it 'needs re-checking under an en-GB locale'. The probe CLI has no locale option to re-check it.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/filters-open/1440-dark.png"
+      ],
+      "note": "If the owner wants to confirm, capture with locale en-GB. A finding would stand only if the format still mismatches there."
+    },
+    {
+      "candidate_id": "F-0141",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it. In the filters-open captures (1280 light and 1440 dark), the Category select shows a small native system chevron, unlike the themed tool-page Loan length control with its custom chevron (probe 95). This holds in both themes, so it is not a single-capture artefact.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/95/screenshots/v1280-esc.png"
+      ],
+      "note": "The impact text mentions the en-GB date format, which belongs to the rejected F-0140; trim it."
+    },
+    {
+      "candidate_id": "F-0142",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it. In the filters-open 1280 light capture, the 'Category' label sits about 30 px lower than the 'Available from' label.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/items-ladder-3m/filters-open/1280-light.png"
+      ],
+      "note": "This duplicates F-0139; merge them. The impact text about date format and unthemed controls does not describe this problem."
+    },
+    {
+      "candidate_id": "F-0145",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it, and I reproduced it on done.html. At 1280x900 the white footer ends at y≈700 on done and y≈807 on basket, with a band of grey page ground below it. On done this appears in both the capture and live probe 104 (pressure-washer reservation).",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/104/screenshots/v-pw-confirm-retry.png"
+      ],
+      "note": "The confirm-route location (bbox 720,340,464,480) is the empty right column, which is F-0146. On confirm the footer reaches the viewport bottom, so remove that location here."
+    },
+    {
+      "candidate_id": "F-0146",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "confidence_ceiling",
+      "reason": "Evidence plainly shows it. On confirm.html at 1280, the summary box spans 96–1184 px, while the form fields and button occupy only 96–707 px. On done.html, the 'What happens next' panel spans 96–707 px under a full-width summary. I saw the same live in probes 100 and 104.",
+      "evidence": [
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png",
+        ".ui-evaluator/runs/20261009-223234-audit-standard/probes/100/screenshots/v-pw-confirm-page.png"
+      ],
+      "note": "The existence is confirmed; whether a readable measure for a form counts as a defect is a matter for rating. The done and basket bboxes (footer band) belong to F-0145."
+    }
+  ]
+}

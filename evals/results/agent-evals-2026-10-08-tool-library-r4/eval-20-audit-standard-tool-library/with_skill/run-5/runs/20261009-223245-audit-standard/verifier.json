@@ -1,0 +1,156 @@
+{
+  "schema": "verifier",
+  "run": "20261009-223245-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "e4c0188a802f8526",
+  "iteration": 1,
+  "_notes": "Did not read source code. F-0141..F-0143 cite app.js line evidence (code reading); I ignored it and reproduced behaviourally instead. Iteration 1, so no ceiling flags. Pairs F-0139/F-0149 and F-0140/F-0148 describe the same problem at the same place (375 home); the lead should merge them. Several candidates carry location/impact lists copied from a sibling (F-0141..0143, F-0146/0147, F-0137/0138, F-0148..0150); trim each to its own locations.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0144",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280. Focus #loan-button, Enter opens #loan-list, ArrowDown to 'Two weeks', Escape: list stays visible and focus stays on the option (expect hidden failed after 10 s).",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/110/"],
+      "note": "Strictly, 2.1.2 is about not being able to move focus away. Esc not closing is an A11Y-25 (APG listbox/combobox pattern) issue. The 2.1.2 trap is the F-0145 part."
+    },
+    {
+      "candidate_id": "F-0145",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280. With the list open, Tab x3 cycled focus back to 'One week' and Shift+Tab x3 left it on 'Two weeks'. The list stayed open and focus never left the options (expect hidden failed). Enter on an option is the only way out seen.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/111/"],
+      "note": "The description should say what happens instead of only 'duplicates F-0034'. Choosing an option is an exit, so it is a partial trap: the user must commit to a value to leave."
+    },
+    {
+      "candidate_id": "F-0141",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced on the tool page. On drill-18v-two, 'Monday 12 October' (closed, no 'Open' label) can be chosen; 'Pick-up day: Monday 12 October' shows, Reserve gives 'Added to your basket' and nothing warns. On pressure-washer (available from Sat 17 Oct), Sat 10 Oct can be chosen and added the same way. All calendar days are enabled buttons in ARIA.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/113/", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/112/"],
+      "note": "The code-reading evidence was not used; the behaviour was reproduced. Keep only the tool.html locations for this record (the confirm location belongs to F-0143)."
+    },
+    {
+      "candidate_id": "F-0142",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. In the full flow (probe 114), pressure washer + day 10 Oct reaches confirm showing 'pick up Saturday 10 October' with no error. Submitting /confirm.html?items=pressure-washer&day=2026-10-10&slot=sat-2026-10-10 with valid details goes to 'Reservation confirmed', FT-4471, Pressure washer, Saturday 10 October.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/114/", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/116/"],
+      "note": "This is a validation bug letting an impossible booking through. It is closer to an error-prevention/data-integrity defect than H9. Confirm takes more than 800 ms to respond; the 5 s wait was needed."
+    },
+    {
+      "candidate_id": "F-0143",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. Drill + Monday 12 October reaches confirm without objection. Only after 'Confirm reservation' does the alert say 'The library is closed on Monday 12 October, so this pick-up day is not possible. Choose another day.' It is a plain listitem with no link, while the other error items link to their fields. The only 'Change' link goes to basket.html (session choice), not to the day calendar.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/115/", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/117/"],
+      "note": "'Comes late' overlaps F-0141 (no prevention at choice time). The distinct part here is the error with no route back. Consider H9/3.3.3 as primary."
+    },
+    {
+      "candidate_id": "F-0146",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "The evidence plainly shows it. The masthead is a small outline wrench icon plus 'Fernhill Tool Library' in the bold body face. The same wrench glyph is reused as every card's image placeholder. Seen at 1280 and 375 (probes 112, 118).",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/evidence/screens/items-ladder-3m/default/1280-light.png", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/viewport.png"],
+      "note": "This is a design-specificity judgement; existence of the described treatment is verified, but the rating decides its weight. Wording 'fails the swap, category-guess and similar-prompt tests' asserts tests not shown in the evidence. The done-page location belongs to F-0147."
+    },
+    {
+      "candidate_id": "F-0147",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280 (probe 116). The done page has the H1 'Reservation confirmed' and then a plain bordered definition card (reference FT-4471 as an ordinary row). It has no success colour, icon or emphasis on the reference.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/116/final.png"],
+      "note": "Its impact text is copied from F-0146 and does not describe this problem. Keep only the done location."
+    },
+    {
+      "candidate_id": "F-0139",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 (/?items=ladder-3m). Cards 1 and 2 both read 'Cordless drill 18 V, co...' and the subtitle and deposit line are also identical except deposit (both £20), so the two cannot be told apart.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/viewport.png"],
+      "note": "Same problem as F-0149; merge. Truncation affects most titles at 375 (ladder, hedge trimmer, etc.)."
+    },
+    {
+      "candidate_id": "F-0140",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. 'Search tools' field, Search button and filter button come after all ten tool cards, at about y=2090 of a 2593 px page, far below the 900 px first viewport.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/full.png"],
+      "note": "Same problem as F-0148; merge."
+    },
+    {
+      "candidate_id": "F-0135",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280 on basket. Sessions show visually as Wed 28 Oct (full width), then Sat 24, Wed 21, Sat 17, Wed 14 and Sat 10: newest first.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/114/step-06.png"],
+      "note": "The accessibility tree lists the radios oldest-first (10 Oct to 28 Oct), so the visual order is the reverse of the DOM/reading order. That mismatch may also fail WCAG 1.3.2/2.4.3 (keyboard and screen reader order differ from the visual order). Worth adding as a criterion."
+    },
+    {
+      "candidate_id": "F-0136",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280. The first session card (Wed 28 Oct) spans the full 1088 px row and the other five sit in a row of narrow cards whose labels wrap to three lines.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/114/step-06.png"],
+      "note": "Its impact text mixes in F-0135's ('may pick the wrong week')."
+    },
+    {
+      "candidate_id": "F-0137",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280x900 in viewport captures. On basket the footer ends at about y=806 and on done at about y=700, with bare grey page ground below.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/114/step-06.png", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/116/final.png"],
+      "note": "The /confirm.html location (bbox 710,340) does not show this; at 1280 the confirm page is taller than the viewport. That location belongs to F-0138. Drop it here."
+    },
+    {
+      "candidate_id": "F-0138",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280. On confirm the fields and button stop at x of about 707 while the 'Your reservation' card spans 96 to 1184. On done the 'What happens next' card stops at about 707 under a full-width summary card.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/115/final.png", ".ui-evaluator/runs/20261009-223245-audit-standard/probes/116/final.png"],
+      "note": "A narrower measure for form fields is often deliberate, which matters for rating; existence only is confirmed here. Drop the basket location (it belongs to F-0137)."
+    },
+    {
+      "candidate_id": "F-0148",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. Search sits below all ten cards (same observation as F-0140).",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/full.png"],
+      "note": "Duplicate of F-0140; merge."
+    },
+    {
+      "candidate_id": "F-0149",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. Both drill cards truncate to 'Cordless drill 18 V, co...' (same observation as F-0139).",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/viewport.png"],
+      "note": "Duplicate of F-0139; merge."
+    },
+    {
+      "candidate_id": "F-0150",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375. The header nav shows 'Find a / tool', 'Basket / (1)' and 'Opening / times', each wrapped onto two lines.",
+      "evidence": [".ui-evaluator/runs/20261009-223245-audit-standard/probes/118/screenshots/viewport.png"],
+      "note": "Its impact text is copied from F-0148/F-0149 and does not describe nav wrapping."
+    }
+  ]
+}

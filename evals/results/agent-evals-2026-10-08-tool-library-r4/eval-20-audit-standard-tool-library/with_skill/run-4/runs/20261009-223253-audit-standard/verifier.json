@@ -1,0 +1,164 @@
+{
+  "schema": "verifier",
+  "run": "20261009-223253-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "3fce4582994c60fd",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0158",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the Search region (searchbox, Search, Filters) is shown above the Tools grid, but the ARIA tree lists the Tools results before the Search region, and the 5th Tab press (after the brand and 3 nav links) lands on the first result link 'Cordless drill 18 V, combi, two batteries', not on the search field.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/100/step-03.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/100/aria.yml"
+      ],
+      "note": "The candidate's locations and evidence also cover the /basket.html #sessions order, which is F-0159's problem. The lead should keep only the /index.html .finder location here. The code-reading evidence was not used; verification relied on the probe."
+    },
+    {
+      "candidate_id": "F-0159",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: sessions appear as Wed 28 alone on the top row, then Sat 24 to Sat 10 left to right below it. The ARIA/DOM order runs Sat 10 to Wed 28. After clicking Sat 10, pressing ArrowRight twice selected Wed 14 and then Sat 17, so the selection moved leftward on screen.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-07.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/aria.yml"
+      ],
+      "note": "The locations list also includes the /index.html .finder location from F-0158; keep only /basket.html #sessions. F-0160, F-0162 and F-0155 describe the same reversed visual order from the sighted-user side and should be merged with this one."
+    },
+    {
+      "candidate_id": "F-0053",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced after opening Filters at 1280: the hint 'Show tools you could pick up on or after this day.' is shown under the Available from date input. The selector #from:not([aria-describedby]) matched a visible element, and #from[aria-describedby] did not match within 3 s.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/108/probe.json",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/108/step-03.png"
+      ],
+      "note": "Absence check covered aria-describedby only. I did not verify that no other association (such as aria-description) exists."
+    },
+    {
+      "candidate_id": "F-0160",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the session list reads Wed 28, Sat 24, Wed 21, Sat 17, Wed 14, Sat 10, latest first.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Duplicate of F-0162 and F-0155 (same element, same mechanism), and the visual side of F-0159; merge them. The impact text mentions picking a session that contradicts the chosen day, which is F-0161's concern."
+    },
+    {
+      "candidate_id": "F-0161",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: with 'Pick up Saturday 17 October' on the card, Sat 10 and Wed 14 are offered as radios under 'You can collect at any of these sessions'. Choosing Sat 10 and pressing Continue left the page on basket.html with no visible message or new ARIA alert.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/101/final.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/101/probe.json"
+      ],
+      "note": "The silent no-op on Continue is a separate, possibly more serious problem (no error feedback; H1/H9) worth its own candidate. I did not compare it with a valid session because my Sat 17 probe failed on an ambiguous locator (probe 102). The H4 criterion fits poorly; H5 (error prevention) suits offering incompatible sessions better."
+    },
+    {
+      "candidate_id": "F-0152",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375x900 dark (viewport capture): opening Loan length shows the listbox (One week, Two weeks per ARIA), but only 'One week' is visible above the fixed 'Reserve this tool' bar. After ArrowDown, the focused 'Two weeks' option's focus ring is cut off by the bar at about y=828.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/107/screenshots/open.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/107/screenshots/down.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/107/aria.yml"
+      ],
+      "note": "Confirmed for the 375 loan-open location only. The 1280 'day-chosen' evidence ('Monday 12 hidden under the bar') comes from a full-page capture, where fixed bars are misplaced, so it was not verified; drop it or re-probe it with a viewport capture. A focused element being obscured also fits WCAG 2.4.11 (Focus Not Obscured)."
+    },
+    {
+      "candidate_id": "F-0153",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the 'Reserve this tool' button in the fixed bar spans about x=1077 to 1264, while the content column (header nav, calendar grid) ends at about x=1184.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/104/final.png"
+      ],
+      "note": "The impact, the 375 location and the evidence were copied from F-0152 and do not support this alignment claim; keep only the 1280 default location. The candidate itself says it duplicates F-0118."
+    },
+    {
+      "candidate_id": "F-0162",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the sessions are shown latest-first, with Wed 28 on the top row and Sat 10 bottom-right.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Duplicate of F-0160 and F-0155 (and the visual side of F-0159); merge them. The impact text also covers the uneven grid (F-0163/F-0154)."
+    },
+    {
+      "candidate_id": "F-0163",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the Wed 28 card fills the first row alone at full width (96 to 1184). The other five cards sit below it at about 208 px wide, with labels wrapping to three lines.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Verified at 1280 only; the claimed 1024-1440 range was not probed at 1024 or 1440. Duplicate of F-0154; merge them."
+    },
+    {
+      "candidate_id": "F-0154",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: one full-width session card above a row of five narrow cards whose labels wrap onto three lines.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Duplicate of F-0163. The impact text also covers reversed chronology (F-0155)."
+    },
+    {
+      "candidate_id": "F-0155",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: the sessions read from 28 October down to 10 October.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Duplicate of F-0160 and F-0162 (and the visual side of F-0159)."
+    },
+    {
+      "candidate_id": "F-0156",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced in 1280x900 viewport captures: on done.html the footer ends at about y=700 and grey page background fills the space to 900; on basket.html the footer ends at about y=806 with grey below it.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/105/final.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/99/step-01.png"
+      ],
+      "note": "Not a harness artefact: these are viewport-sized captures at the declared 900 px height."
+    },
+    {
+      "candidate_id": "F-0157",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Partly reproduced at 1280: on confirm, the form fields span about x=96 to 707, and on done the 'What happens next' box spans about x=96 to 707, leaving the area to the right (up to 1184) empty beside them.",
+      "evidence": [
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/106/final.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/105/final.png",
+        "<round>/eval-20-audit-standard-tool-library/with_skill/run-4/workspace/.ui-evaluator/runs/20261009-223253-audit-standard/probes/104/final.png"
+      ],
+      "note": "Wording overstates the evidence: on all three pages, the summary cards (confirm, done) and the calendar grid (tool) span the full 1088 px column, so 'the main content sits in a column of about 610 px' is only true of the form, the next-steps box and the description text. The locations and bbox were copied from F-0156 (footer band) and do not point at this problem; re-anchor them to the confirm form and done 'What happens next' box. A narrow measure for forms is a common deliberate choice, so the rater should judge it as taste."
+    }
+  ]
+}

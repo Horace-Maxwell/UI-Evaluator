@@ -1,0 +1,399 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261008-173931-audit-standard",
+  "agent": "critic-3",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "faee88dfc335e68d",
+  "verdict_at": "2026-10-08T17:55:00Z",
+  "unsealed_at": "2026-10-08T21:46:59.497Z",
+  "inventory": [
+    {
+      "surface": "find (items-ladder-3m)",
+      "screens": ["default 1280-light, 1440-dark, 375-light", "no-results 375-light"],
+      "notes": "Masthead: small wrench glyph + 'Fernhill Tool Library' in bold body sans; three text nav links right. Pale grey-green ground. Eye goes 1) 'Find a tool' H1, 2) the green 'Search' button, 3) the two-column grid of ten identical white bordered cards. Each card: pale-green square with the same wrench outline, underlined bold tool name, 'Category · deposit £N' meta, tinted 'Available from Sat 10 Oct' chip (green text when available now, grey when later). Below: 'Opening times' paragraph, footer with desk phone. One sans (Avenir Next-like) in two weights; 4 px radii; borders, no shadows. At 375 px the grid becomes one column, names truncate with ellipsis ('Cordless drill 18 V, co...' twice) and the search field moves below all ten cards. Dark: near-black green ground, lighter card surfaces, mint button; chips lose their tinted fill. no-results 375 shows 'sewing machine' typed but the full list unchanged (behaviour not assessable from a still). Signature: none. Copy voice: 'returned when it comes back clean and working'."
+    },
+    {
+      "surface": "tool",
+      "screens": ["default 1280-light", "day-chosen 375-light", "added 1280-light"],
+      "notes": "Back link, large H1 tool name, two-line plain description ('Enough for a day of fixing shelves and a fence'), 'Details' label/value list in two misaligned column groups, 'Loan length' select, 'Pick-up day' with helper text and a month grid of white day buttons, Wednesdays and Saturdays tagged 'Open' in green (dots at 375). Sticky white bottom bar with right-aligned 'Reserve this this tool' green button that sits at the viewport edge rather than the content column. Eye: 1) H1, 2) Reserve button, 3) calendar. No month name above the calendar. Toast 'Added to your basket' is a black pill over the calendar. The calendar day-with-session is the closest thing to a product-bound device."
+    },
+    {
+      "surface": "basket",
+      "screens": ["default 1280-light", "errors 375-dark"],
+      "notes": "'Your basket' H1, intro, one tool card with 'Remove' link, 'Pick-up session' radio cards listed newest first (Wed 28 Oct ... Sat 10 Oct); at 1280 the first is full width and the other five squeeze into one row wrapping to three lines each. Green 'Continue'. Error state: bordered error summary 'There is a problem' and inline message in salmon on dark. Below the footer at 1280 an empty flat band fills the viewport."
+    },
+    {
+      "surface": "confirm",
+      "screens": ["default 1280-light", "errors 1280-dark"],
+      "notes": "'Check and confirm' H1; a bordered summary box with label/value rows and a 'Change' link; 'Your details' with three stacked inputs (membership number with 'like FT-01234' hint, name, mobile with a reason hint); a reassurance line 'Nothing is paid online'; green 'Confirm reservation'. Errors: summary box plus inline messages; the name input keeps a light neutral border while the other two get the error border."
+    },
+    {
+      "surface": "done",
+      "screens": ["default 1280-light"],
+      "notes": "'Reservation confirmed' H1, label/value box with reservation number FT-4471, a half-width 'What happens next' card, outlined 'Reserve another tool'. Nav still reads 'Basket (1)'. Large empty band under the footer. No moment of completion beyond the heading."
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": "Swapped products: a seed library and a council bulky-waste collection booking. Survive unchanged: the bordered card grid with a square icon thumbnail, the 'Available from' chip, the single green filled button, label/value summary boxes, error summary pattern, the day-grid calendar with 'Open' tags, the radio-card session list, the masthead (glyph + name in bold body sans). Bound to this product: only copy (tool names, deposits, 'clean and working', session hours) and the identical wrench thumbnail (which is itself a stand-in). With the name and copy hidden, a reader could say 'a booking service' but not 'a tool library'."
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": "Predicted default for a volunteer-run community service: pale neutral ground, one civic green, humanist sans, bordered cards, public-service form patterns (error summary, hint text, label/value check page). Predicted opposite: a warm hand-made look with craft textures or a bold poster palette. The render matches the default element for element: ground #f3f5f2-ish, green buttons and chips, Avenir-style sans, 4 px bordered cards, GOV-style error summary. Nothing comes from the library's own world (the room, the shelves, the tool tags, the membership card) beyond the stated card green."
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": "Similar brief: 'reservation pages for a community bike-repair co-op where members book a stand at an open session'. Predicted choices: card grid with icon placeholder thumbnails, availability chip, date grid with open-session tags, slot radios, check-and-confirm page with summary box, confirmation box. Overlap is essentially total; only the nouns change."
+    }
+  },
+  "verdict": {
+    "value": "generic",
+    "evidence": [
+      "All three specificity tests fail on the identity-carrying elements (first viewport grid, thumbnail, colour, type voice).",
+      "Identical wrench placeholder on all ten tool cards (items-ladder-3m/default/1280-light.png).",
+      "Product identity carried by copy only: 'returned when it comes back clean and working', 'We text you if a tool is returned late by the previous borrower' (confirm/default/1280-light.png); content on a portable frame (rubric anchor 1)."
+    ]
+  },
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "Placeholder thumbnails on show: the same wrench icon in a pale-green square on all ten tool cards at every width and theme.",
+      "No focal point or signature on any screen.",
+      "Headings differ from body only in size and weight within one sans; pages read as a default document outline.",
+      "Empty bands at wide widths below the footer on basket and done (1280).",
+      "Basket session cards laid out 1 full-width + 5 cramped with three-line wraps at 1280.",
+      "Tool names truncated at 375 px so both drills read 'Cordless drill 18 V, co...'.",
+      "Dark theme availability chips lose their fill, leaving indented floating green text.",
+      "Tool-page details list uses two different value columns."
+    ],
+    "evidence": [
+      "Clean and orderly: consistent 4 px radius, borders not shadows, one filled action per page, comfortable spacing (all routes 1280-light).",
+      "Nothing on a main screen rewards a look: no imagery of the tools or the room, no typographic moment, colour limited to the button fill and chip text (items-ladder-3m/default/1280-light.png, tool/default/1280-light.png).",
+      "Reads as a well-themed public-service form; trustworthy but not warm, so 'neighbourly' rests on copy alone."
+    ]
+  },
+  "brand_fit": {
+    "attributes": [
+      {
+        "pair": "practical, not corporate",
+        "x_evidence": "Deposit on every card and on every summary; plain functional headings ('Find a tool', 'Check and confirm'); 'Nothing is paid online. Bring the deposit and your membership card'; no marketing hero, no stock imagery; one filled button per page.",
+        "y_evidence": "None seen; no slogans, no brand chrome.",
+        "judgement": "reflected"
+      },
+      {
+        "pair": "neighbourly, not folksy",
+        "x_evidence": "Copy: 'Fernhill Tool Library is run by volunteers. Questions: call the desk on 01632 960552', 'A volunteer will check the tool with you', 'Enough for a day of fixing shelves and a fence'. Membership-card green as the action colour.",
+        "y_evidence": "Not folksy (no hand-drawn or rustic devices). But nothing visual is neighbourly: the frame is institutional public-service; no trace of the community centre room, the people or the physical tools; masthead is a generic glyph plus name.",
+        "judgement": "partly"
+      },
+      {
+        "pair": "careful, not fussy",
+        "x_evidence": "Hint text explaining why the mobile number is asked; error summary with linked messages; 'Open' tags explained in helper text; dates in full ('Saturday 17 October').",
+        "y_evidence": "Not fussy. But care lapses visibly: misaligned details columns on the tool page, truncated tool names at 375, sessions listed newest-first, name field missing its error border, 'Basket (1)' still shown after confirmation.",
+        "judgement": "partly"
+      }
+    ],
+    "overall": "reflected",
+    "weakest": "neighbourly, not folksy: carried by copy only; no pair is absent or contradicted, so the overall rule yields reflected, but only 1 of 3 pairs is fully reflected.",
+    "tone": "Matter-of-fact, casual-leaning, respectful, no exclamation marks; matches the declared 'desk volunteer' voice."
+  },
+  "mode_fit": "All surfaces are Operate (done is Read). Quiet, conventional structure is correct for the mode and is not counted against the design; the issue is that nothing of the product's own carries identity within that conventional frame (thumbnails, masthead, calendar treatment could all do so without breaking the mode).",
+  "rubric": {
+    "specificity": {
+      "score": 1,
+      "label": "(judged)",
+      "evidence": "Anchor 1: product content (tool names, deposits, session copy) sits on a frame that fails swap, category-guess and similar-prompt tests; the only image slot shows an identical placeholder wrench."
+    },
+    "hierarchy": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "Anchor 3: at 1280 every page names primary (H1 / green button), secondary and tertiary quickly and survives a squint; one filled button per page. Named lapse: at 375 the search field drops below all ten cards (items-ladder-3m/default/375-light.png), and the tool page's sticky bar competes with the calendar."
+    },
+    "coherence": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "Anchor 3: one type family, one radius, borders-only depth, one green across all routes and both themes. Minor lapse: in dark the availability chip loses its tinted fill (items-ladder-3m/default/1440-dark.png) and the error border is missing on one confirm input (confirm/errors/1280-dark.png)."
+    },
+    "restraint": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Nothing decorative without a job, no loud moves; but there is no signature or focal moment at all, so the cap of 2 applies (restraint is not emptiness)."
+    },
+    "brand_fit": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "practical/not corporate reflected; neighbourly/not folksy and careful/not fussy only partly (copy carries neighbourly; execution lapses undercut careful). None contradicted."
+    },
+    "execution": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor 2: clean at main widths in light; rough at edges: truncated names at 375, two misaligned value columns on the tool page, basket 1+5 session layout, sticky bar button off the content grid at 1280, empty bands under short pages, dark chip treatment, missing error border on one field."
+    },
+    "appeal": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor 2: clean but plain; identity is the name plus copy; placeholder thumbnails on show on the main screen; matches the 'plain' verdict."
+    }
+  },
+  "detector_comparison": {
+    "hits_total": 0,
+    "agreements": [],
+    "detector_only": [],
+    "critic_only": [
+      "Identical placeholder wrench thumbnail on every tool card (a stock glyph in a default role, close to SLP-24's spirit but not something its dom/src checks catch).",
+      "Tool-name truncation at 375 px making two tools indistinguishable.",
+      "Misaligned label/value columns on the tool page.",
+      "Basket session layout and newest-first order.",
+      "Dark-theme chip fill loss.",
+      "Missing error border on the name field in confirm errors.",
+      "Empty bands below the footer on short pages at 1280.",
+      "No signature / plain appeal overall (not detectable by rule)."
+    ],
+    "false_positives": [],
+    "notes": "Zero detector hits. Possible SLP-28 (sole green accent) correctly not flagged or exempt: DESIGN.md ties the green to the membership card and it also carries success semantics. SLP-07 card kit not applicable: cards are the objects acted on and use 4 px radius with borders. No post-unseal change to my verdicts."
+  },
+  "findings": [
+    {
+      "id": "c3-01",
+      "title": "Every tool card shows the same wrench placeholder instead of the tool",
+      "description": "All ten tool cards on Find carry an identical pale-green square with the same wrench outline, at every width and in both themes. The one image slot on the main screen is a placeholder, so cards can only be told apart by reading, and the page has nothing of its own to look at.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-appeal", "primary": true},
+        {"kind": "design", "id": "DES-specificity"}
+      ],
+      "impact": "Members scanning for 'the drill with two batteries' may get no visual help in recognising tools, and the placeholder makes the page read as unfinished, weakening trust and appeal.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 394, 1088, 714], "snippet": "ten cards, identical wrench thumbnail"},
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light"}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/1280-light.png"},
+        {"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/1440-dark.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the thumbnail slot is for: either real photographs of the library's own items (the actual drill, the actual ladder), a per-category drawn mark that carries meaning, or remove the slot so the card does not advertise a missing image."
+    },
+    {
+      "id": "c3-02",
+      "title": "Tool names truncate at phone width so similar tools become indistinguishable",
+      "description": "At 375 px each tool name is cut with an ellipsis; both cordless drills read 'Cordless drill 18 V, co...', hiding the 'two batteries' / 'one battery' difference that members use to choose.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "heuristic", "id": "H6"}
+      ],
+      "impact": "On phones, the primary device, members may open the wrong drill or have to open both to compare.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [140, 405, 345, 760], "snippet": "Cordless drill 18 V, co..."}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/375-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide that tool names always wrap in full on narrow cards; reclaim width from the thumbnail if needed."
+    },
+    {
+      "id": "c3-03",
+      "title": "Search field drops below the whole tool list on phones",
+      "description": "At 1280 the search sits above the grid, but at 375 it is moved under all ten cards, about 2000 px down, just above Opening times.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-hierarchy", "primary": true}
+      ],
+      "impact": "Phone users looking for a specific tool may not find search at all, and the order of the page changes between widths for no stated reason.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 2090, 360, 2230], "snippet": "Search tools"}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/375-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one position for search relative to the list and keep it at every width."
+    },
+    {
+      "id": "c3-04",
+      "title": "Tool details list uses two different value columns",
+      "description": "On the tool page, values for Category/Deposit/Available from start at x≈224 while Chuck/Batteries/Weight/Case start at x≈180, so one list reads as two misaligned tables.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true}
+      ],
+      "impact": "Looks careless on the page where members check the tool, undercutting 'careful, not fussy' and making the values slightly harder to scan.",
+      "locations": [
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 296, 540, 500]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether the details are one list or two labelled groups, and align values to one column."
+    },
+    {
+      "id": "c3-05",
+      "title": "Reserve bar button sits at the viewport edge, off the content grid",
+      "description": "At 1280 the sticky action bar's 'Reserve this tool' button is right-aligned to about x=1264, outside the 1120 px content column (right edge ≈1184) that every other element on the page respects.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true}
+      ],
+      "impact": "The page's primary action floats apart from the content it acts on on desktop, making it look detached and the composition unresolved.",
+      "locations": [
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [1076, 840, 1264, 888], "snippet": "Reserve this tool"}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether the bar's contents follow the content width at desktop sizes, and align the button to it."
+    },
+    {
+      "id": "c3-06",
+      "title": "Pick-up calendar has no month label",
+      "description": "The calendar grid shows weekday headers and day numbers 9-29 but no month or year; the month only appears once a day is chosen ('Pick-up day: Saturday 17 October').",
+      "problem_type": "missing_element",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "heuristic", "id": "H1"}
+      ],
+      "impact": "Members choosing a collection day may be unsure which month they are looking at, especially near month ends.",
+      "locations": [
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 750, 1184, 1075]}
+      ],
+      "evidence": [
+        {"type": "absence", "ref": "evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png", "detail": "no month heading above the weekday row"},
+        {"type": "screenshot", "ref": "evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/day-chosen/375-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide how the calendar names its month; the calendar is the one product-bound device and could carry it prominently."
+    },
+    {
+      "id": "c3-07",
+      "title": "Basket session cards break into one full-width card plus five cramped ones, newest first",
+      "description": "At 1280 the six session options render as Wed 28 Oct full width, then five narrow cards in a row each wrapping to three lines; they also run in reverse date order (28 Oct down to 10 Oct).",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "design", "id": "DES-hierarchy"}
+      ],
+      "impact": "The layout looks broken and the reversed order puts the least likely session first, so members comparing sessions may misread or mis-pick.",
+      "locations": [
+        {"route": "basket-html-items-drill-18v-two-day-2026-10-17", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 474, 1184, 640]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one layout for the session list at each width and a chronological order starting from the chosen pick-up day."
+    },
+    {
+      "id": "c3-08",
+      "title": "Dark theme availability chips lose their fill",
+      "description": "In dark, 'Available from Sat 10 Oct' chips that are available now show only green text with the chip's padding as an unexplained indent, while 'later' chips keep a grey fill; in light both have a tinted fill.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true}
+      ],
+      "impact": "Dark mode is common among members; the chip reads as misaligned text and the available/later distinction loses its shape cue.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 1440}, "theme": "dark", "bbox": [305, 470, 520, 500], "snippet": "Available from Sat 10 Oct"}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/1440-dark.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Compose the dark chip deliberately so both availability states keep a visible container."
+    },
+    {
+      "id": "c3-09",
+      "title": "Name field lacks the error border its siblings show",
+      "description": "In confirm errors, membership and mobile inputs get the error-coloured border, but 'Your name', which also has an error message, keeps a light neutral border.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "design", "id": "DES-coherence", "primary": true}
+      ],
+      "impact": "Members may not see the name field as one that needs fixing; the inconsistency also reads as unfinished.",
+      "locations": [
+        {"route": "confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202", "state": "errors", "viewport": {"width": 1280}, "theme": "dark", "bbox": [96, 778, 707, 822]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/confirm-html-items-drill-18v-two-day-2026-10-17-slot-sat-202/errors/1280-dark.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Apply one invalid-field treatment to every field in error. (The neutral border may be a focus ring; still not assessable as behaviour.)"
+    },
+    {
+      "id": "c3-10",
+      "title": "Short pages end in an empty band below the footer",
+      "description": "At 1280 the basket and done pages finish with the white footer band and then a flat grey area filling the rest of the viewport.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        {"kind": "design", "id": "DES-execution", "primary": true},
+        {"kind": "design", "id": "DES-appeal"}
+      ],
+      "impact": "The footer appears to float mid-screen, making the final screens look unfinished.",
+      "locations": [
+        {"route": "basket-html-items-drill-18v-two-day-2026-10-17", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 806, 1280, 900]},
+        {"route": "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 700, 1280, 900]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/basket-html-items-drill-18v-two-day-2026-10-17/default/1280-light.png"},
+        {"type": "screenshot", "ref": "evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide how the page ends when content is shorter than the viewport (footer pinned to the bottom or ground continuing)."
+    },
+    {
+      "id": "c3-11",
+      "title": "Done page still shows 'Basket (1)' after the reservation is confirmed",
+      "description": "The masthead on 'Reservation confirmed' reads 'Basket (1)', suggesting the drill is still in the basket.",
+      "problem_type": "single_location",
+      "criteria": [
+        {"kind": "heuristic", "id": "H1", "primary": true},
+        {"kind": "design", "id": "DES-execution"}
+      ],
+      "impact": "Members may wonder whether the reservation went through or whether something is still pending.",
+      "locations": [
+        {"route": "done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [948, 22, 1026, 46], "snippet": "Basket (1)"}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "evidence/screens/done-html-items-drill-18v-two-day-2026-10-17-slot-sat-2026-1/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the basket shows once its contents become a reservation."
+    },
+    {
+      "id": "c3-12",
+      "title": "No signature or product-bound visual on any screen",
+      "description": "Across five routes the identity is the name in bold body sans beside a stock wrench glyph, one green, and copy. Headings differ from body only by size and weight. The pick-up calendar with 'Open' sessions is the one product-bound device but is rendered as a plain grid of white buttons.",
+      "problem_type": "overall_structure",
+      "criteria": [
+        {"kind": "design", "id": "DES-specificity", "primary": true},
+        {"kind": "design", "id": "DES-brandfit"}
+      ],
+      "impact": "'Neighbourly' reaches members only through words; the pages could belong to any booking service, which gives first-time members nothing to recognise or remember the library by.",
+      "locations": [
+        {"route": "items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 0, 1280, 400]},
+        {"route": "tool-html-id-drill-18v-two-items-ladder-3m", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 640, 1184, 1075]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "evidence/screens/items-ladder-3m/default/1280-light.png"},
+        {"type": "screenshot", "ref": "evidence/screens/tool-html-id-drill-18v-two-items-ladder-3m/default/1280-light.png"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-3", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one element from the library's own world (the membership card, the session board at the desk, the tool tags) to carry 'neighbourly' visually within the quiet Operate frame, and record it in the direction contract."
+    }
+  ],
+  "strengths": [
+    "Copy voice is concrete and kind and matches the desk-volunteer brief ('returned when it comes back clean and working', 'We text you if a tool is returned late').",
+    "One filled button per page and a clear, conventional flow; error summaries and hint text are well structured.",
+    "Consistent system: one family, 4 px radius, borders-only depth across routes and themes."
+  ],
+  "keep": "Keep the plain-language copy and the one-filled-button discipline; any added identity must sit within them.",
+  "pairwise": null,
+  "not_assessable": [
+    "Motion (toast fade, button colour) and focus behaviour cannot be judged from stills.",
+    "Whether no-results filtering works: the 375 no-results capture shows the full list with 'sewing machine' typed, which may be a pre-submit capture.",
+    "Sticky bar overlapping the calendar mid-page in full-page captures is likely a capture artefact of a fixed bar, not judged."
+  ],
+  "notes": "Pairwise not run: no baseline/ folder in the packet. Detector section had 0 hits. No builder material, source or other critic output was read."
+}

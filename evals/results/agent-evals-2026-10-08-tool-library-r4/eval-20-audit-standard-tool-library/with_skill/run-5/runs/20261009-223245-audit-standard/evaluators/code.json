@@ -1,0 +1,465 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261009-223245-audit-standard",
+  "packet_hash": "09a98abbb6a5e401",
+  "notes": "Styling system: one hand-written stylesheet (styles.css) with CSS custom properties in :root and a prefers-color-scheme: dark override; no component library, no build step. Five static HTML pages (index, tool, basket, confirm, done) share app.js (vanilla IIFE, page switch on body[data-page]). Token names differ from design.md role names (--color-ground = surface, --color-surface = surface-container, --color-ok = success) but light values match. census.json and lint.json in the packet were empty ({}), so the drift review was done by reading styles.css by hand. Only inline literals found: style=\"margin-top: 48px\" (index.html) and style=\"margin-top: 8px\" (tool.html); both are on the spacing scale, so not reported. Did not read other evaluators' outputs or builder notes. The Glob listing of the project showed .eval/ paths; none were opened.",
+  "passes": [
+    { "pass": 1, "summary": "Read styles.css, app.js and the five HTML pages in full; checked tokens, states, semantics, keyboard models, IME, motion, layout." }
+  ],
+  "coverage": {
+    "routes": ["/index.html", "/tool.html", "/basket.html", "/confirm.html", "/done.html"],
+    "out_of_scope": ["visual taste", "copy tone"]
+  },
+  "not_assessable": [
+    "Whether the toast's role=status announcement is missed when text is set while the region is hidden: depends on the screen reader; needs a runtime check (tool.html #toast, app.js reserve handler).",
+    "Rendered contrast in forced-colours mode: not captured."
+  ],
+  "strengths": [
+    { "title": "A single global :focus-visible ring (3px, --color-focus, 2px offset) that differs from every hover style, with a light and a dark value", "evidence": "styles.css :focus-visible rule; no outline:none anywhere" },
+    { "title": "Reduced motion removes the only two transitions (button colour, toast fade), matching design.md Motion", "evidence": "styles.css @media (prefers-reduced-motion: reduce)" },
+    { "title": "Error summaries take focus and link to fields; field errors are tied to inputs with aria-describedby and aria-invalid", "evidence": "confirm.html fields; app.js initConfirm submit handler" },
+    { "title": "Removing a basket item moves focus to the page heading, so keyboard focus is not lost when the row disappears", "evidence": "app.js initBasket remove handler; basket.html h1 tabindex=-1" }
+  ],
+  "candidates": [
+    {
+      "id": "code-01",
+      "title": "Results grid column minimum of 330 px is wider than a 320 px viewport",
+      "description": "Content should reflow to a single column without horizontal scrolling at 320 CSS px (WCAG 1.4.10). .results uses grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); at 320 px the page has 288 px of content width after its 16 px side padding, so the single column is forced to 330 px and the cards overflow the viewport by about 42 px.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "1.4.10", "primary": true }, { "kind": "rule", "id": "LAY-01" } ],
+      "impact": "Members on small phones, the declared main context, may have to scroll sideways to read each tool card, and the right edge of every card, including the availability badge, may be cut off.",
+      "locations": [
+        { "route": "/index.html", "state": "default", "viewport": { "width": 320, "height": 640 }, "selector": "#results", "snippet": "<ul id=\"results\" class=\"results\">",
+          "source": { "file": "styles.css", "line": 331, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:329-333", "detail": "minmax(330px, 1fr) with .page padding var(--space-4) each side; 320 - 32 = 288 < 330" } ],
+      "factor_notes": { "frequency": "every visit to the find page below about 362 px wide", "impact": "horizontal scrolling on the main list", "persistence": "no workaround except zooming out" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use minmax(min(100%, 330px), 1fr) so the column can shrink to the container.",
+      "tags": ["layout", "reflow"]
+    },
+    {
+      "id": "code-02",
+      "title": "Search with no matches leaves the previous results and status unchanged",
+      "description": "A search that matches nothing should replace the list with an empty state and announce it (CMP-05). search() only renders and updates #results-status when list.length is non-zero; with zero matches it does nothing, so the old cards stay on screen and the live region keeps its old count. The page has no empty-state markup at all.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "CMP-05", "primary": true }, { "kind": "heuristic", "id": "H1" }, { "kind": "wcag", "id": "4.1.3" } ],
+      "impact": "A member searching for a tool the library does not have may be shown unrelated tools as if they were matches and may not learn that nothing matched; screen-reader users hear nothing.",
+      "locations": [
+        { "route": "/index.html", "state": "no-results", "selector": "#results", "snippet": "<ul id=\"results\" class=\"results\">",
+          "source": { "file": "app.js", "line": 158, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:158-164", "detail": "if (list.length) { render(list); status.textContent = ... } with no else branch" } ],
+      "factor_notes": { "frequency": "every search or filter combination with no match", "impact": "stale results presented as current", "persistence": "until the member changes the query" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Always render; when the list is empty show a message such as 'No tools match' with a way to clear filters, and set the status text to the same.",
+      "tags": ["states", "empty-state"]
+    },
+    {
+      "id": "code-03",
+      "title": "Tab key is captured inside the loan-length list, so keyboard focus cannot leave it",
+      "description": "Keyboard users must be able to move focus away from any component (WCAG 2.1.2). The listbox keydown handler treats Tab like ArrowDown and calls preventDefault, cycling focus among the options; Shift+Tab is caught too because the check is e.key === 'Tab'. Focus only leaves when an option is activated with Enter or Space.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "2.1.2", "primary": true }, { "kind": "rule", "id": "A11Y-17" } ],
+      "impact": "A keyboard or switch user who opens the list to look at the options may be stuck until they guess that choosing an option is the only way out.",
+      "locations": [
+        { "route": "/tool.html", "state": "loan-open", "selector": "#loan-list", "snippet": "<ul id=\"loan-list\" class=\"listbox__list\" role=\"listbox\" aria-labelledby=\"loan-heading\">",
+          "source": { "file": "app.js", "line": 241, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:238-251", "detail": "if (e.key === 'Tab' || e.key === 'ArrowDown') { e.preventDefault(); options[(i + 1) % options.length].focus(); }" } ],
+      "factor_notes": { "frequency": "every time the list is opened by keyboard", "impact": "focus trap", "persistence": "until an option is chosen" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Let Tab close the list and move on; or replace the custom listbox with a native select, which the two options do not need to avoid.",
+      "tags": ["keyboard", "listbox"]
+    },
+    {
+      "id": "code-04",
+      "title": "Loan-length list has no Escape or outside-click dismissal",
+      "description": "An open listbox popup should close on Escape and return focus to its button (APG listbox/select-only combobox). No handler closes #loan-list on Escape, and no document click handler closes it when the member clicks elsewhere; the only ways to close it are choosing an option or pressing the button again.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "A11Y-17", "primary": true }, { "kind": "heuristic", "id": "H3" } ],
+      "impact": "A member who opens the list and decides not to change the loan length may be left with the list open over the calendar, or may pick an option just to close it.",
+      "locations": [
+        { "route": "/tool.html", "state": "loan-open", "selector": "#loan-list", "snippet": "<ul id=\"loan-list\" class=\"listbox__list\" role=\"listbox\"",
+          "source": { "file": "app.js", "line": 238, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:224-251", "detail": "keydown handles Tab, ArrowDown, ArrowUp, Enter, Space only; no Escape; no document-level click listener" } ],
+      "factor_notes": { "frequency": "each time the list is opened and abandoned", "impact": "extra step; list obscures content", "persistence": "until the button is pressed again" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Close on Escape and on focusout or outside click, returning focus to #loan-button on Escape.",
+      "tags": ["keyboard", "listbox"]
+    },
+    {
+      "id": "code-05",
+      "title": "Each press of Confirm reservation creates another reservation while the request is pending",
+      "description": "A submit that creates a record should be guarded against repeat activation. The confirm submit handler allocates a reference (FT-4471 + count) and pushes it into sessionStorage 'reservations' before its 1.5 s wait, and the button is neither disabled nor guarded; a second press during the wait allocates a second reference. The done page then lists both ('FT-4471 and FT-4472', label 'Reservation numbers').",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H5", "primary": true }, { "kind": "rule", "id": "CMP-04" } ],
+      "impact": "A member who taps again because nothing seems to happen may end up with two reservations for the same tools and be unsure which number to quote at the desk.",
+      "locations": [
+        { "route": "/confirm.html", "state": "default", "selector": "#confirm", "snippet": "<button type=\"submit\" id=\"confirm\" class=\"button\">Confirm reservation</button>",
+          "source": { "file": "app.js", "line": 413, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:392-434", "detail": "refs.push(...) and sessionStorage.setItem at 413-417 run on every submit; only aria-busy is set at 419; done page joins multiple refs at app.js:443" } ],
+      "factor_notes": { "frequency": "whenever the member presses twice within 1.5 s", "impact": "duplicate reservations", "persistence": "stored in the session; visible on the done page" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Ignore submits while one is pending (flag or aria-disabled plus early return), and allocate the reference only once.",
+      "tags": ["states", "double-submit"]
+    },
+    {
+      "id": "code-06",
+      "title": "Continue and Confirm reservation show no visible pending state during their 1.2 s and 1.5 s waits",
+      "description": "An action that takes longer than about 1 s should show it is in progress (CMP-04). Both handlers only set aria-busy='true' on the button; styles.css has no [aria-busy] rule, the label does not change and nothing else on the page changes until navigation or the error.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "rule", "id": "CMP-04", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Members may think the tap did not register and tap again (see the duplicate-reservation finding) or leave the page.",
+      "locations": [
+        { "route": "/basket.html", "state": "default", "selector": "#continue", "snippet": "<button type=\"submit\" id=\"continue\" class=\"button\">Continue</button>",
+          "source": { "file": "app.js", "line": 357, "method": "code reading", "confidence": "high" } },
+        { "route": "/confirm.html", "state": "default", "selector": "#confirm", "snippet": "<button type=\"submit\" id=\"confirm\" class=\"button\">Confirm reservation</button>",
+          "source": { "file": "app.js", "line": 419, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:357-367, 419-433; styles.css (no aria-busy selector)", "detail": "setTimeout 1200 and 1500 ms with aria-busy only" } ],
+      "factor_notes": { "frequency": "every pass through the flow, twice", "impact": "no feedback for over a second", "persistence": "each submit" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Add a .button[aria-busy='true'] style with a changed label (e.g. 'Confirming...') and ignore clicks while busy.",
+      "tags": ["states", "loading"]
+    },
+    {
+      "id": "code-07",
+      "title": "Expired basket hold is reported only as 'Something went wrong. Try again.'",
+      "description": "An error message should state what happened and what to do (H9). When the 10-minute hold has passed, Continue shows the generic 'Something went wrong. Try again.' in the error summary. The page never mentions a time limit beyond 'Items are held for you while you finish', and there is no visible countdown.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H9", "primary": true }, { "kind": "wcag", "id": "3.3.3" }, { "kind": "wcag", "id": "2.2.1" } ],
+      "impact": "A member who paused to check their diary may not understand why Continue fails or what to do next.",
+      "locations": [
+        { "route": "/basket.html", "state": "errors", "selector": "#error-summary", "snippet": "Something went wrong. Try again.",
+          "source": { "file": "app.js", "line": 361, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:7, 97-100, 360-364", "detail": "HOLD_MINUTES = 10; holdExpired() -> generic error text" } ],
+      "factor_notes": { "frequency": "any basket session longer than 10 minutes", "impact": "unexplained failure", "persistence": "every retry (see code-08)" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Say the hold ran out and what happens now (e.g. the tools are still in the basket; press Continue to hold them again), and state the time limit on the basket page.",
+      "tags": ["errors", "copy", "timing"]
+    },
+    {
+      "id": "code-08",
+      "title": "Once the hold has expired, Continue fails on every retry",
+      "description": "A recoverable error should be recoverable from the page that shows it. hold_started is set once and only cleared by the 'Reserve another tool' link on the done page; startHoldIfNeeded() never restarts an expired hold, removing items or re-adding tools does not reset it, and holdExpired() stays true. Every later Continue in the same tab shows the same error, although the message says 'Try again.'",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H9", "primary": true }, { "kind": "heuristic", "id": "H3" } ],
+      "impact": "A member whose hold expired may be unable to finish a reservation in that tab at all and may give up or call the desk.",
+      "locations": [
+        { "route": "/basket.html", "state": "errors", "selector": "#continue", "snippet": "<button type=\"submit\" id=\"continue\" class=\"button\">Continue</button>",
+          "source": { "file": "app.js", "line": 94, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:90-100, 269, 288, 452-455", "detail": "startHoldIfNeeded only sets when no value exists; only initDone's 'another' click removes hold_started" } ],
+      "factor_notes": { "frequency": "after any hold expiry", "impact": "task cannot be completed in this tab", "persistence": "for the whole browser session" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Restart the hold when the basket changes or when the member retries after expiry; clear it when the basket becomes empty.",
+      "tags": ["errors", "recovery"]
+    },
+    {
+      "id": "code-09",
+      "title": "Calendar accepts closed days and days before the tool is available; the rejection only comes after Confirm",
+      "description": "Invalid choices should be prevented or flagged where they are made (H5). Every one of the 21 day buttons is selectable; closed days only lack the 'Open' tag, days before tool.from are not marked, and Reserve adds any selected day to the basket. Only the confirm step checks open days, after a 1.5 s wait, and it never checks tool.from. The confirm error item for a closed day has no link back to change the day.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "heuristic", "id": "H5", "primary": true }, { "kind": "wcag", "id": "3.3.4" }, { "kind": "heuristic", "id": "H9" } ],
+      "impact": "A member may pick a day the library is shut, go through basket and details, and only then learn it is not possible, with no direct way to change it; a member may also reserve a tool for a day before it is back.",
+      "locations": [
+        { "route": "/tool.html", "state": "day-chosen", "selector": "#calendar .day", "snippet": "<button type=\"button\" class=\"day\"",
+          "source": { "file": "app.js", "line": 198, "method": "code reading", "confidence": "high" } },
+        { "route": "/tool.html", "state": "added", "selector": "#reserve", "snippet": "<button type=\"button\" id=\"reserve\" class=\"button\">Reserve this tool</button>",
+          "source": { "file": "app.js", "line": 258, "method": "code reading", "confidence": "high" } },
+        { "route": "/confirm.html", "state": "errors", "selector": "#error-list", "snippet": "so this pick-up day is not possible. Choose another day.",
+          "source": { "file": "app.js", "line": 421, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:195-208, 256-268, 420-431", "detail": "no disabled/aria-disabled for closed days or days < tool.from; isOpenDay checked only in initConfirm" } ],
+      "factor_notes": { "frequency": "15 of 21 calendar days are closed days", "impact": "late failure after three steps", "persistence": "member must navigate back manually" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Make only open days on or after the tool's available date selectable (aria-disabled with a visible cue), validate on Reserve, and link the confirm error to the tool page.",
+      "tags": ["validation", "error-prevention"]
+    },
+    {
+      "id": "code-10",
+      "title": "Per-tool pick-up day and the basket's pick-up session are separate choices that are never reconciled",
+      "description": "One flow should collect one pick-up time. The tool page stores a pick-up day per item; the basket then asks for a pick-up session for the whole basket from all six sessions. Nothing checks that the session matches the items' days, so the confirm summary can show 'pick up Saturday 17 October' for a tool and 'Saturday 10 October' as the session, and the reservation goes through.",
+      "problem_type": "overall_structure",
+      "criteria": [ { "kind": "heuristic", "id": "H4", "primary": true }, { "kind": "heuristic", "id": "H5" } ],
+      "impact": "Members may turn up on the wrong day, or be unsure which date the library holds them to.",
+      "locations": [
+        { "route": "/tool.html", "state": "day-chosen", "selector": "#calendar", "snippet": "<div id=\"calendar\" class=\"calendar\" role=\"group\"",
+          "source": { "file": "app.js", "line": 267, "method": "code reading", "confidence": "high" } },
+        { "route": "/basket.html", "state": "default", "selector": "#sessions", "snippet": "<div id=\"sessions\" class=\"sessions\">",
+          "source": { "file": "app.js", "line": 330, "method": "code reading", "confidence": "high" } },
+        { "route": "/confirm.html", "state": "default", "selector": ".summary", "snippet": "<section class=\"summary\" aria-labelledby=\"summary-heading\">",
+          "source": { "file": "app.js", "line": 379, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:267, 330-332, 376-381, 421", "detail": "item.day and slot are independent; confirm validates only item.day" } ],
+      "factor_notes": { "frequency": "every reservation", "impact": "contradictory dates in the summary", "persistence": "stored with the reservation" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Collect the pick-up session once (either on the tool page or in the basket) and derive the other from it.",
+      "tags": ["flow", "consistency"]
+    },
+    {
+      "id": "code-11",
+      "title": "Dark-theme success colour drifts from the declared token and the available badge background matches the card",
+      "description": "Dark mode should use design.md's success #8fd1a8 on selection #24352c. styles.css sets --color-ok: #2f7d4a and --color-ok-tint: #1d2622, which equals the dark --color-surface. 'Available from' text in .badge--ok (16 px bold, not large text) computes to about 3.1:1 on #1d2622, below 4.5:1, and the badge has no visible fill on the card.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "COL-01", "primary": true }, { "kind": "wcag", "id": "1.4.3" } ],
+      "impact": "Members browsing in dark mode in the evening, the declared main scene, may find the availability line hard to read, and it loses its badge shape.",
+      "locations": [
+        { "route": "/index.html", "state": "default", "theme": "dark", "selector": ".badge--ok", "snippet": "<span class=\"badge badge--ok\">",
+          "source": { "file": "styles.css", "line": 60, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "measurement", "ref": "styles.css:60-61", "detail": "computed from hex: #2f7d4a on #1d2622 = 3.07:1 (threshold 4.5:1); design.md dark success #8fd1a8, selection #24352c", "value": 3.07 } ],
+      "factor_notes": { "frequency": "every soon-available tool card in dark mode", "impact": "low-contrast text", "persistence": "always in dark mode" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Set dark --color-ok to #8fd1a8 and --color-ok-tint to #24352c as declared.",
+      "tags": ["tokens", "dark-mode", "contrast"]
+    },
+    {
+      "id": "code-12",
+      "title": "Find page shows the search form above the results but its DOM and tab order put results first",
+      "description": "Focus order should follow the visual order (WCAG 2.4.3, 1.3.2). In the DOM .finder__results precedes .finder__form; above 480 px CSS order puts the form first visually. Keyboard users therefore tab through all ten card links before reaching the search field shown above them. At 480 px and below the visual order matches the DOM, with the search form below all results.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "2.4.3", "primary": true }, { "kind": "wcag", "id": "1.3.2" } ],
+      "impact": "Keyboard users on desktop may tab through every tool card to reach the search field they can see at the top.",
+      "locations": [
+        { "route": "/index.html", "state": "default", "viewport": { "width": 1280, "height": 800 }, "selector": ".finder", "snippet": "<div class=\"finder\">",
+          "source": { "file": "styles.css", "line": 253, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:247-269; index.html:35-82", "detail": ".finder__results order 2 / .finder__form order 1 above 480 px; DOM has results first" } ],
+      "factor_notes": { "frequency": "every keyboard visit on desktop", "impact": "about ten extra tab stops", "persistence": "every visit" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Put the form first in the DOM and avoid CSS order for reordering interactive content.",
+      "tags": ["keyboard", "order"]
+    },
+    {
+      "id": "code-13",
+      "title": "Pick-up sessions are laid out in reverse with row-reverse and wrap-reverse",
+      "description": "Visual order should follow reading and focus order (WCAG 1.3.2, 2.4.3). .sessions uses flex-direction: row-reverse and flex-wrap: wrap-reverse, so the chronological DOM list (10 Oct first) renders right-to-left with wrapped rows stacked upward; the earliest session can appear last, bottom right, and arrow keys move through the radios opposite to their visual order.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "1.3.2", "primary": true }, { "kind": "wcag", "id": "2.4.3" } ],
+      "impact": "Members scanning for the next session may read the dates out of order, and keyboard users see focus jump in the opposite direction to the layout.",
+      "locations": [
+        { "route": "/basket.html", "state": "default", "selector": "#sessions", "snippet": "<div id=\"sessions\" class=\"sessions\">",
+          "source": { "file": "styles.css", "line": 818, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:816-822", "detail": "flex-direction: row-reverse; flex-wrap: wrap-reverse; justify-content: flex-end" } ],
+      "factor_notes": { "frequency": "every basket visit", "impact": "dates out of order", "persistence": "always" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use flex-direction: row and flex-wrap: wrap (or a grid) so the sessions read in date order.",
+      "tags": ["layout", "order"]
+    },
+    {
+      "id": "code-14",
+      "title": "Fixed action bar on the tool page covers the end of the page",
+      "description": "Fixed bars should not hide content or focused controls (WCAG 2.4.11). .actionbar is position: fixed with min-height 72 px, but .page--bar reduces the main bottom padding to 8 px and nothing reserves space for the bar, so the last calendar row and the footer can sit under it at the end of the scroll; a calendar day reached by Tab near the bottom of the viewport can be hidden behind the bar.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "2.4.11", "primary": true }, { "kind": "rule", "id": "LAY-01" } ],
+      "impact": "Members may not see the last days of the calendar or the footer's desk phone number, and keyboard users may lose sight of the focused day.",
+      "locations": [
+        { "route": "/tool.html", "state": "default", "selector": ".actionbar", "snippet": "<div class=\"actionbar\">",
+          "source": { "file": "styles.css", "line": 204, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:204-206, 758-771", "detail": ".page--bar padding-bottom: var(--space-2) (8px) vs fixed bar min-height var(--actionbar) (72px)" } ],
+      "factor_notes": { "frequency": "every tool page at the bottom of the scroll", "impact": "content and focus hidden", "persistence": "always" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Reserve the bar's height: padding-bottom calc(var(--actionbar) + var(--space-4)) on the last scrolling element (body or footer), and scroll-padding-bottom for focus.",
+      "tags": ["layout", "sticky", "focus"]
+    },
+    {
+      "id": "code-15",
+      "title": "'Choose a pick-up day first.' is not announced when Reserve is pressed without a day",
+      "description": "An error should be programmatically tied to the control and announced (WCAG 3.3.1, 4.1.3). #day-error is a plain paragraph that is unhidden with no live region and no aria-describedby from the calendar group or day buttons; focus moves to the first day button, so a screen reader announces that day ('Friday 9 October') and not the error.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "3.3.1", "primary": true }, { "kind": "wcag", "id": "4.1.3" } ],
+      "impact": "Screen-reader users may hear a calendar day after pressing Reserve and not know why nothing was added.",
+      "locations": [
+        { "route": "/tool.html", "state": "default", "selector": "#day-error", "snippet": "<p id=\"day-error\" class=\"error-text\" hidden></p>",
+          "source": { "file": "tool.html", "line": 62, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "tool.html:62-63; app.js:257-262", "detail": "no role=alert/aria-live; calendar group lacks aria-describedby=day-error" } ],
+      "factor_notes": { "frequency": "each Reserve without a day", "impact": "error not perceived", "persistence": "until the user explores the page" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Add aria-describedby='day-error' to the calendar group (and day buttons) or make #day-error role=alert.",
+      "tags": ["a11y", "errors"]
+    },
+    {
+      "id": "code-16",
+      "title": "Tool names are cut to one line, so near-identical names become indistinguishable",
+      "description": "Long labels should wrap rather than truncate where the ending distinguishes items. .card__name a uses white-space: nowrap with text-overflow: ellipsis and no title or other full-name cue. 'Cordless drill 18 V, combi, two batteries' and '... one battery' differ only at the end, which is the part removed on narrow cards.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "rule", "id": "TYP-05", "primary": true }, { "kind": "heuristic", "id": "H6" } ],
+      "impact": "Members comparing the two drills on a phone may not be able to tell which card is which without opening both.",
+      "locations": [
+        { "route": "/index.html", "state": "default", "viewport": { "width": 320, "height": 640 }, "selector": ".card__name a", "snippet": "Cordless drill 18 V, combi",
+          "source": { "file": "styles.css", "line": 377, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "styles.css:372-381; app.js:10-11", "detail": "nowrap + ellipsis on the card link; tool names up to 41 characters" } ],
+      "factor_notes": { "frequency": "long names on narrow cards", "impact": "names indistinguishable", "persistence": "every visit" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Let the name wrap (two lines, or no clamp) and keep the 44 px target via min-height.",
+      "tags": ["typography", "truncation"]
+    },
+    {
+      "id": "code-17",
+      "title": "Tool names in result cards and basket rows are h2 elements nested under an h2 'Tools' heading",
+      "description": "Heading levels should reflect structure (WCAG 1.3.1). Find-page cards render <h2 class=\"card__name\"> inside the section headed by h2 'Tools'; basket rows render <h2 class=\"h3\"> under h2 'Tools', and the .h3 class is not defined in styles.css, so those names take the full 22 px h2 size and margin.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "wcag", "id": "1.3.1", "primary": true }, { "kind": "rule", "id": "TYP-05" } ],
+      "impact": "Screen-reader users navigating by heading get a flat list where tool names sit at the same level as their section; sighted members see basket names as large as section headings.",
+      "locations": [
+        { "route": "/index.html", "state": "default", "selector": ".card__name", "snippet": "<h2 class=\"card__name\">",
+          "source": { "file": "app.js", "line": 151, "method": "code reading", "confidence": "high" } },
+        { "route": "/basket.html", "state": "default", "selector": "#basket-list h2", "snippet": "<h2 class=\"h3\">",
+          "source": { "file": "app.js", "line": 314, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:151, 314; styles.css (no .h3 rule)", "detail": "h2 inside h2 sections; class h3 unstyled" } ],
+      "factor_notes": { "frequency": "every card and basket row", "impact": "heading outline flattened", "persistence": "always" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Render these as h3 and style them with the existing h3 rule.",
+      "tags": ["semantics", "headings"]
+    },
+    {
+      "id": "code-18",
+      "title": "Membership and mobile number checks reject common formats without normalising them",
+      "description": "Inputs should accept reasonable variants and normalise them (H5, CPY). The membership check /^FT-\\d{5}$/ rejects lower-case 'ft-01234' and a missing hyphen; the mobile check /^0\\d{4}\\s?\\d{6}$/ rejects '+44 7700 900123', '07700-900123' and '07700 900 123'. Only the trim is applied. The phone hint does not show the expected format until the error appears.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "heuristic", "id": "H5", "primary": true }, { "kind": "wcag", "id": "3.3.2" } ],
+      "impact": "Members may be told their correct membership or mobile number is wrong and have to guess the accepted layout.",
+      "locations": [
+        { "route": "/confirm.html", "state": "errors", "selector": "#member", "snippet": "<input type=\"text\" id=\"member\" name=\"member\"",
+          "source": { "file": "app.js", "line": 387, "method": "code reading", "confidence": "high" } },
+        { "route": "/confirm.html", "state": "errors", "selector": "#phone", "snippet": "<input type=\"tel\" id=\"phone\" name=\"phone\"",
+          "source": { "file": "app.js", "line": 389, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:387-389", "detail": "strict regexes on v.trim() with no case folding or removal of spaces, hyphens or +44" } ],
+      "factor_notes": { "frequency": "members who type a common variant", "impact": "false validation errors", "persistence": "until they match the hidden format" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Upper-case and strip spaces and hyphens before checking; accept +44 for mobiles.",
+      "tags": ["forms", "validation"]
+    },
+    {
+      "id": "code-19",
+      "title": "Confirmation page shows reservation number FT-4471 when no reservation exists",
+      "description": "A confirmation should only show a reference that was issued. initDone falls back to the literal 'FT-4471' when no stored reservation matches, so opening done.html directly, after the session ends, or with a mismatched slot shows 'Reservation confirmed' with a number that was never allocated.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true }, { "kind": "rule", "id": "CMP-05" } ],
+      "impact": "A member reopening the page later may quote a number the desk has no record of.",
+      "locations": [
+        { "route": "/done.html", "state": "default", "selector": "#c-ref", "snippet": "<dd id=\"c-ref\"></dd>",
+          "source": { "file": "app.js", "line": 443, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:443", "detail": "(mine[0] ? mine[0].ref : 'FT-4471')" } ],
+      "factor_notes": { "frequency": "done page opened without a stored reservation", "impact": "false confirmation", "persistence": "until the member contacts the desk" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Show a 'no reservation found' state with the desk number instead of a fallback reference.",
+      "tags": ["states", "data"]
+    },
+    {
+      "id": "code-20",
+      "title": "The three-tools limit stated on the find page is not enforced when adding to the basket",
+      "description": "A stated constraint should be enforced where it applies (H5). The intro says members can reserve up to three tools at a time, but the Reserve handler adds any number of tools to the basket and neither basket nor confirm checks the count.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H5", "primary": true }, { "kind": "heuristic", "id": "H4" } ],
+      "impact": "A member may reserve four or more tools online and be refused some at the desk.",
+      "locations": [
+        { "route": "/tool.html", "state": "added", "selector": "#reserve", "snippet": "<button type=\"button\" id=\"reserve\" class=\"button\">Reserve this tool</button>",
+          "source": { "file": "app.js", "line": 265, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "index.html:33; app.js:265-268", "detail": "'up to three tools at a time' vs b.items.push with no length check" } ],
+      "factor_notes": { "frequency": "members adding a fourth tool", "impact": "reservation partly refused later", "persistence": "until the desk visit" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Check the count on Reserve and explain the limit at that point.",
+      "tags": ["validation", "error-prevention"]
+    },
+    {
+      "id": "code-21",
+      "title": "Unknown tool id silently shows the first tool's page",
+      "description": "A missing record should show a not-found state. initTool uses toolById(id) || TOOLS[0], so a stale or mistyped link opens the 18 V two-battery drill page, and Reserve adds that drill.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true }, { "kind": "rule", "id": "CMP-05" } ],
+      "impact": "A member following an old link may reserve a drill they did not ask for.",
+      "locations": [
+        { "route": "/tool.html", "state": "default", "selector": "#tool-name", "snippet": "<h1 id=\"tool-name\">",
+          "source": { "file": "app.js", "line": 176, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:176", "detail": "toolById(params().get('id')) || TOOLS[0]" } ],
+      "factor_notes": { "frequency": "stale or mistyped links only", "impact": "wrong tool shown and reservable", "persistence": "until noticed" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Render a 'tool not found' message with a link back to the list.",
+      "tags": ["states"]
+    },
+    {
+      "id": "code-22",
+      "title": "Done page repeats the first tool's name in a hidden span after the tools list",
+      "description": "Hidden text should not duplicate visible content. #c-tool, an sr-only span inside the Tools definition, is filled with the first tool's name, so screen readers read the tools list and then the first tool again.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "wcag", "id": "1.3.1", "primary": true } ],
+      "impact": "Screen-reader users may think the first tool was reserved twice.",
+      "locations": [
+        { "route": "/done.html", "state": "default", "selector": "#c-tool", "snippet": "<span id=\"c-tool\" class=\"sr-only\"></span>",
+          "source": { "file": "done.html", "line": 38, "method": "code reading", "confidence": "high" } }
+      ],
+      "evidence": [ { "type": "code", "ref": "done.html:38; app.js:449-450", "detail": "c-tool textContent = first.name" } ],
+      "factor_notes": { "frequency": "every confirmation", "impact": "confusing duplicate", "persistence": "always" },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Remove the span.",
+      "tags": ["a11y", "semantics"]
+    }
+  ],
+  "source_locations": [],
+  "ease_estimates": [
+    { "finding_id": "code-01", "ease": 1, "layer": "styles.css .results", "note": "One value: wrap the minimum in min(100%, 330px)." },
+    { "finding_id": "code-02", "ease": 2, "layer": "app.js search() plus index.html empty-state markup", "note": "Add an else branch and an empty-state element." },
+    { "finding_id": "code-03", "ease": 2, "layer": "app.js listbox handler", "note": "Drop Tab from the handler; or swap for a native select in tool.html and app.js." },
+    { "finding_id": "code-04", "ease": 2, "layer": "app.js listbox handler", "note": "Add Escape and outside-click/focusout closing." },
+    { "finding_id": "code-05", "ease": 2, "layer": "app.js initConfirm", "note": "Pending flag with early return in one handler." },
+    { "finding_id": "code-06", "ease": 2, "layer": "styles.css .button[aria-busy] plus two handlers", "note": "One style rule and a label change in two handlers." },
+    { "finding_id": "code-07", "ease": 1, "layer": "app.js error string and basket intro copy", "note": "Copy change; a visible limit adds a line in basket.html." },
+    { "finding_id": "code-08", "ease": 2, "layer": "app.js hold helpers", "note": "Restart the hold on basket change or retry." },
+    { "finding_id": "code-09", "ease": 3, "layer": "app.js calendar, reserve and confirm; styles.css disabled day", "note": "Day disabled state, validation on Reserve and a linked error across two pages." },
+    { "finding_id": "code-10", "ease": 4, "layer": "flow and data model", "note": "Decide where the pick-up time is chosen; changes tool, basket and confirm steps." },
+    { "finding_id": "code-11", "ease": 1, "layer": "styles.css dark tokens", "note": "Two token values." },
+    { "finding_id": "code-12", "ease": 2, "layer": "index.html order and styles.css .finder", "note": "Move the form section first in the DOM; drop the order rules." },
+    { "finding_id": "code-13", "ease": 1, "layer": "styles.css .sessions", "note": "Two property values." },
+    { "finding_id": "code-14", "ease": 1, "layer": "styles.css .page--bar / footer", "note": "Reserve the bar height with padding and scroll-padding." },
+    { "finding_id": "code-15", "ease": 1, "layer": "tool.html calendar group", "note": "One aria-describedby or role attribute." },
+    { "finding_id": "code-16", "ease": 1, "layer": "styles.css .card__name a", "note": "Remove nowrap/ellipsis." },
+    { "finding_id": "code-17", "ease": 2, "layer": "app.js render templates", "note": "Change two template tags to h3." },
+    { "finding_id": "code-18", "ease": 2, "layer": "app.js confirm field checks", "note": "Normalise before the regex in two checks." },
+    { "finding_id": "code-19", "ease": 2, "layer": "app.js initDone and done.html", "note": "Add a not-found state." },
+    { "finding_id": "code-20", "ease": 2, "layer": "app.js reserve handler", "note": "Count check and message." },
+    { "finding_id": "code-21", "ease": 2, "layer": "app.js initTool and tool.html", "note": "Not-found branch." },
+    { "finding_id": "code-22", "ease": 1, "layer": "done.html", "note": "Delete one span and its line in app.js." }
+  ]
+}

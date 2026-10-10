@@ -1,0 +1,284 @@
+{
+ "eval": 20,
+ "name": "audit-standard-tool-library",
+ "arm": "without_skill",
+ "graded_at": "2026-10-09T01:42:32.160Z",
+ "passed": 2,
+ "total": 2,
+ "pending": 0,
+ "expectations": [
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "check": "grader",
+   "passed": true,
+   "evidence": "Both graders agree (pass). A: It sorts the problems into 'Fix before launch' (1–5, 'ranked by how likely each problem is to make a member fail'), 'Fix soon after', 'Smaller polish' and a 'Suggested order'. It says 'I didn't test with VoiceOver or TalkBack, and I didn't test real 200% zoom on a device' (the screen-reader notes come from the markup) and asks for the two journeys to be run 'on a real phone in dark mode with VoiceOver before opening reservations'. B: The reply ranks problems under 'Fix before launch' (1-5, ordered by how likely each is to make a member fail on a phone), then 'Fix soon after (important, but members can get through)' (6-12), then 'Smaller polish', with a 'Suggested order'. It names what it could not check ('I didn't test with VoiceOver or TalkBack, and I didn't test real 200% zoom on a device. The screen-reader notes come from reading the markup.') and says the journeys should be run on a real phone with VoiceOver before launch."
+  },
+  {
+   "text": "No fixture source file was modified",
+   "check": "script",
+   "passed": true,
+   "evidence": "11 file(s) unchanged"
+  }
+ ],
+ "not_applicable": [
+  "The run is standard depth with three isolated heuristic evaluators",
+  "The critical journeys were walked and the records validate",
+  "Verification and three blind ratings exist",
+  "Recall of the seeded defects is at least 0.6",
+  "Precision after verification is at least 0.8",
+  "Severity ratings land in the expected bands for most matched defects",
+  "Report language passes the lint and the level is not overstated"
+ ],
+ "metrics": {
+  "documents_written": [],
+  "grader_mapping": [
+   {
+    "item": "R1",
+    "title": "Closed days can be chosen and are refused only at the last step, with no way to change the day",
+    "maps_to": "tool-library-D06",
+    "reason": "Both graders: tool-library-D06. A: The tool page accepts Monday 12 October, a closed day. It is refused only at the last step, after the details are filled in, and the message has no link back to change the day. That is D06. B: The calendar 'lets you pick any day', including closed days; the closed Monday 12 October is caught only at the last step after the details are filled in, and the message has 'no link and no way to change the day'. That is D06: a closed day is selectable, refused three steps later on the confirm page, with only the browser leading back."
+   },
+   {
+    "item": "R2",
+    "title": "Days before the tool's 'Available from' date can be chosen and are never caught",
+    "maps_to": "tool-library-D14",
+    "reason": "Both graders: tool-library-D14. A: The calendar allows days 'before the tool is even back', and 'the tool not available yet case is never caught', so the reservation would be confirmed. That is D14. B: The calendar allows 'days before the tool is even back', and the 'tool not available yet' case is never caught: an open day before 21 October 'would have confirmed'. That is D14 (days before the Available-from date are neither marked nor checked, and the reservation is confirmed)."
+   },
+   {
+    "item": "R3",
+    "title": "The per-tool pick-up day and the basket session can contradict each other, with nothing flagging it",
+    "maps_to": "tool-library-D15",
+    "reason": "Both graders: tool-library-D15. A: The tool had a 12 October pick-up day, the basket accepted the 10 October session, and nothing flagged the clash. The confirm page can show both dates. That is D15: the day and the session are never reconciled. B: Choosing the Saturday 10 October session for a tool set to Monday 12 October raised nothing, and the confirm page can show a per-tool pick-up day and a different session that contradict each other. That is D15: the day chosen on the tool page and the session chosen in the basket are never reconciled."
+   },
+   {
+    "item": "R4",
+    "title": "An 8 px green dot is the only open-day marker on a phone",
+    "maps_to": "tool-library-D20",
+    "reason": "Both graders: tool-library-D20. A: At phone width the only sign of an open day is an 8 px dot, which is hard to see for older eyes. That is D20. B: Raised inside the fix: the 8 px green dot is 'the only sign of an open day at phone width' and hard to see for older eyes. That is D20 (below 480 px the word 'Open' gives way to an 8 px dot, so open days are easy to miss on a phone)."
+   },
+   {
+    "item": "R5",
+    "title": "The 10-minute hold is hidden; once it lapses, Continue only says 'Something went wrong. Try again.'",
+    "maps_to": "tool-library-D10",
+    "reason": "Both graders: tool-library-D10. A: The basket shows no hold time ('Items are held for you while you finish'). After it expires, Continue gives a misleading generic error and offers no way forward. That is D10. The WCAG 2.2.1 point is about the same time limit. B: The hold time is not shown ('Items are held for you while you finish'), and once it lapses Continue says 'Something went wrong. Try again.' every time, with no warning or way to get more time (2.2.1). That is D10; the fix it gives (show the hold, let members extend it, say plainly it expired and offer to hold again) fixes the defect."
+   },
+   {
+    "item": "R6",
+    "title": "Confirm stays active through a silent 1.5 s wait, so a double tap makes two reservations",
+    "maps_to": "tool-library-D12",
+    "reason": "Both graders: tool-library-D12. A: The button stays enabled and nothing visible changes. A double tap gave FT-4471 and FT-4472 for one drill. That is D12. B: Confirm waits 1.5 s with no visible change and stays active; a double tap produced 'FT-4471 and FT-4472' for one drill. That is D12."
+   },
+   {
+    "item": "R7",
+    "title": "Continue on the basket page waits 1.2 s with no visible change",
+    "maps_to": "real-unseeded",
+    "reason": "Both graders: real-unseeded. A: This is not D12, which is another button on another page and causes duplicates, and not D10, which is the hidden hold and the misleading message. A member on a phone who taps Continue sees nothing change for over a second, so she cannot tell whether the tap registered and taps again or gives up. B: A different control from Confirm: Continue on the basket page also shows no visible change for 1.2 s, so a member on a phone cannot tell the tap registered and taps again or thinks the site has stalled. The ground truth has the silent wait only on Confirm (D12) and Continue's wrong error once the hold has lapsed (D10); a busy state on Continue fixes neither."
+   },
+   {
+    "item": "R8",
+    "title": "The basket is not emptied after confirming, so the same tool can be confirmed again",
+    "maps_to": "tool-library-D18",
+    "reason": "Both graders: tool-library-D18. A: After confirming, the masthead still shows 'Basket (1)' and the same tool can be confirmed a second time. That is D18. B: After confirming the masthead still shows 'Basket (1)', 'so the same tool can be confirmed again'; the fix is to clear the basket and hold on success. That is D18."
+   },
+   {
+    "item": "R9",
+    "title": "Truncated card names make the two drills look the same",
+    "maps_to": "tool-library-D03",
+    "reason": "Both graders: tool-library-D03. A: Names are cut to one line with an ellipsis, so at 375 px both drills read 'Cordless drill 18 V, co…'. That is D03. B: Names are cut to one line with an ellipsis, so at 375 px both drills read 'Cordless drill 18 V, co…' and the two-battery and one-battery drills cannot be told apart. That is D03."
+   },
+   {
+    "item": "R10",
+    "title": "On phones, search sits below all ten cards and the filters hide behind an unlabelled three-line icon",
+    "maps_to": "tool-library-D01",
+    "reason": "Both graders: tool-library-D01. A: Below 480 px, search and filters are moved about 2,100 px down, under the cards, and the date filter sits behind an unlabelled icon that reads as a menu. That is D01. B: Below 480 px the search box and filters are moved under all ten cards (about 2,100 px down) and the date filter is behind an unlabelled three-line icon that reads as a menu. Both halves are D01."
+   },
+   {
+    "item": "R11",
+    "title": "The dark-mode 'Available from' badge is too faint (about 3.1:1)",
+    "maps_to": "tool-library-D04",
+    "reason": "Both graders: tool-library-D04. A: In dark mode, #2f7d4a on #1d2622 gives about 3.1:1, below the 4.5:1 needed for 16 px bold text. That is D04. B: In dark mode #2f7d4a on #1d2622 is about 3.1:1 for 16 px bold text against the 4.5:1 needed (1.4.3). That is D04."
+   },
+   {
+    "item": "R12",
+    "title": "The 'Added to your basket' toast lasts 1.2 s with no link, and the basket count has scrolled out of view",
+    "maps_to": "tool-library-D07",
+    "reason": "Both graders: tool-library-D07. A: This is about the feedback after pressing 'Reserve this tool': a brief toast and nothing lasting in view. It does not say members will believe the tool is reserved, so it maps to D07 rather than D26. B: About the feedback after pressing 'Reserve this tool': the toast lasts 1.2 s with no link and the basket count has scrolled out of view. It does not say the member believes the tool is reserved, so it maps to D07, not D26."
+   },
+   {
+    "item": "R13",
+    "title": "A search with no matches leaves the old list and says nothing",
+    "maps_to": "tool-library-D02",
+    "reason": "Both graders: tool-library-D02. A: Searching 'drill with two batteries' leaves the old list of 10 tools on screen, and the status message is never updated. That is D02. B: 'drill with two batteries' leaves the old list of 10 tools on screen and the hidden status message is never updated. That is D02."
+   },
+   {
+    "item": "R14",
+    "title": "Search matches only the exact phrase",
+    "maps_to": "real-unseeded",
+    "reason": "Both graders: real-unseeded. A: This is not in the ground truth; D02 covers only the missing no-match feedback. 'drill with two batteries' finds nothing even though that drill exists, so a member who describes a tool in her own words cannot find it, and this is the very choice the main journey depends on. B: Raised in the fix 'match individual words rather than the exact phrase': a plain-words search for the two-battery drill finds nothing although that drill is listed, so members who search in their own words may decide the library hasn't got the tool. D02 is only the missing no-results message, and fixing it would not make the search find the drill."
+   },
+   {
+    "item": "R15",
+    "title": "Sessions appear in reverse date order, so the visual order and the keyboard and screen-reader order disagree",
+    "maps_to": "tool-library-D11",
+    "reason": "Both graders: tool-library-D11. A: row-reverse with wrap-reverse puts 28 October at the top and 10 October at the bottom, while keyboard and screen-reader order stay chronological. That is D11. B: row-reverse with wrap-reverse shows 28 October at the top and 10 October at the bottom while keyboard and screen-reader order stay chronological. That is D11."
+   },
+   {
+    "item": "R16",
+    "title": "The phone and membership number checks reject normal entries",
+    "maps_to": "tool-library-D17",
+    "reason": "Both graders: tool-library-D17. A: '07700 900 123', '+44 7700 900123' and 'ft-01234' are all rejected because nothing is normalised. That is D17. B: '07700 900 123', '+44 7700 900123' and 'ft-01234' are all rejected; the fix is to strip spaces, accept +44 and uppercase before checking. That is D17."
+   },
+   {
+    "item": "R17",
+    "title": "The loan-length dropdown traps the keyboard",
+    "maps_to": "tool-library-D09",
+    "reason": "Both graders: tool-library-D09. A: Inside the open list Tab loops and Escape does not close it; tapping outside does not close it either. That is the D09 custom-listbox trap. B: Tab loops inside the open list and Escape doesn't close it, which is the keyboard trap in D09. That tapping outside doesn't close it either is the same widget's missing dismissal, and the radio-button fix removes D09."
+   },
+   {
+    "item": "R18",
+    "title": "The three-tool limit is not enforced",
+    "maps_to": "tool-library-D21",
+    "reason": "Both graders: tool-library-D21. A: The 'up to three tools' rule is not enforced and all ten tools can be added. That is D21. B: The 'up to three tools' rule isn't enforced: 'You can add all ten.' That is D21."
+   },
+   {
+    "item": "R19",
+    "title": "'Choose a pick-up day first' is not announced, and focus jumps to 9 October",
+    "maps_to": "tool-library-D19",
+    "reason": "Both graders: tool-library-D19. A: The error is not linked to the calendar, so a screen-reader user hears only the date that focus jumps to. That is D19. B: The error isn't linked to the calendar and focus jumps to the 9 October button, so a screen-reader user hears only the date. That is D19."
+   },
+   {
+    "item": "R20",
+    "title": "The results grid scrolls sideways at 320 px",
+    "maps_to": "tool-library-D05",
+    "reason": "Both graders: tool-library-D05. A: Because of minmax(330px, 1fr), 346 px of content sits in a 320 px window. That is D05. B: At 320 px the grid gives 346 px of content in a 320 px window because of minmax(330px, 1fr) (1.4.10). That is D05."
+   },
+   {
+    "item": "R21",
+    "title": "The fixed Reserve bar covers the footer and desk phone number and can hide focused controls",
+    "maps_to": "tool-library-D08",
+    "reason": "Both graders: tool-library-D08. A: The bar covers the footer, including the desk phone number, and can hide keyboard-focused items (WCAG 2.4.11), because no padding keeps the page clear of it. That is D08. B: The fixed Reserve bar covers most of the footer, including the desk phone number, and can hide focused items when tabbing (2.4.11); the fix is bottom padding. That is D08."
+   },
+   {
+    "item": "R22",
+    "title": "'Change' on the confirm page drops the chosen session",
+    "maps_to": "tool-library-D13",
+    "reason": "Both graders: tool-library-D13. A: The Change link goes back to the basket without the session already chosen. That is D13. B: The 'Change' link on the confirm page 'doesn't keep the session already chosen'. That is D13."
+   },
+   {
+    "item": "R23",
+    "title": "No skip link",
+    "maps_to": "not-a-problem",
+    "reason": "Both graders: not-a-problem. A: This is a bare checklist remark. The review shows no long block that keyboard users must get past on every page (the only masthead content it mentions is the basket count), so it shows no harm to these members. B: A bare checklist remark: the review shows no long block of repeated links, and no missing headings or landmarks, that a keyboard user would have to get past, and members mostly use phones, where a skip link plays no part. No harm to these users is shown."
+   },
+   {
+    "item": "R24",
+    "title": "The calendar does not show the month name",
+    "maps_to": "real-unseeded",
+    "reason": "Both graders: real-unseeded. A: This is not in the ground truth. The calendar is where members choose the pick-up day, and a grid of day numbers with no month leaves them to work out which month they are choosing, which is easy to get wrong when the month changes. B: The calendar is how a member picks the pick-up day; a grid of day numbers with no month leaves an older member on a phone to work out which month they are choosing in, and days become ambiguous if the grid runs past the end of the month. A minor but genuine orientation problem that no ground-truth defect covers."
+   },
+   {
+    "item": "R25",
+    "title": "The done page gives neither the loan length nor a return date",
+    "maps_to": "real-unseeded",
+    "reason": "Both graders: real-unseeded. A: This is not in the ground truth. The done page is the member's record of the reservation. Without the loan length or a return-by date she cannot check which loan she chose or tell when the tool is due back. B: The done page is the member's record of the reservation; without the loan length chosen or when the tool is due back, the member has nothing to check against and may return it late. No ground-truth defect covers it (the done-page defect D24 is the tool name read twice)."
+   }
+  ],
+  "mapped_all": {
+   "items": 25,
+   "seeded": 20,
+   "real_unseeded": 4,
+   "not_a_problem": 1,
+   "precision": {
+    "x": 24,
+    "n": 25,
+    "value": 0.96,
+    "ci95": [
+     0.788630502619673,
+     1
+    ]
+   },
+   "precision_strict": {
+    "x": 20,
+    "n": 25,
+    "value": 0.8,
+    "ci95": [
+     0.6041855519501202,
+     0.9158991001282188
+    ]
+   },
+   "recall_by_meaning": {
+    "x": 13,
+    "n": 13,
+    "value": 1,
+    "ci95": [
+     0.7341401297835,
+     1
+    ]
+   },
+   "recall_by_meaning_all": {
+    "x": 20,
+    "n": 26,
+    "value": 0.7692307692307693,
+    "ci95": [
+     0.5761463854554949,
+     0.8929995820004044
+    ]
+   },
+   "defects_found": [
+    "tool-library-D01",
+    "tool-library-D02",
+    "tool-library-D03",
+    "tool-library-D04",
+    "tool-library-D05",
+    "tool-library-D06",
+    "tool-library-D07",
+    "tool-library-D08",
+    "tool-library-D09",
+    "tool-library-D10",
+    "tool-library-D11",
+    "tool-library-D12",
+    "tool-library-D13",
+    "tool-library-D14",
+    "tool-library-D15",
+    "tool-library-D17",
+    "tool-library-D18",
+    "tool-library-D19",
+    "tool-library-D20",
+    "tool-library-D21"
+   ],
+   "seeded_defects_found": [
+    "tool-library-D01",
+    "tool-library-D02",
+    "tool-library-D03",
+    "tool-library-D04",
+    "tool-library-D05",
+    "tool-library-D06",
+    "tool-library-D07",
+    "tool-library-D08",
+    "tool-library-D09",
+    "tool-library-D10",
+    "tool-library-D11",
+    "tool-library-D12",
+    "tool-library-D13"
+   ]
+  }
+ },
+ "timing": {
+  "total_tokens": 727251,
+  "tokens": {
+   "input_tokens": 22,
+   "output_tokens": 180,
+   "cache_read_input_tokens": 660915,
+   "cache_creation_input_tokens": 66134
+  },
+  "duration_ms": 180155,
+  "total_duration_seconds": 180.2,
+  "total_cost_usd": 0.981263,
+  "num_turns": 22,
+  "is_error": false,
+  "subtype": "success",
+  "subagent_messages": 0,
+  "exit_code": 0,
+  "wall_ms": 182410
+ }
+}

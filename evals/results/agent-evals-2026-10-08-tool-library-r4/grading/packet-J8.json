@@ -1,0 +1,197 @@
+{
+ "eval": 20,
+ "assertions": [
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+  }
+ ],
+ "material": {
+  "report": "--- final reply ---\nI tested the whole reservation flow, from finding a tool to the confirmation page. I used Chromium at phone width (375 px, and 320 px for the narrowest phones) in dark mode. I also read `app.js`, `styles.css` and the five pages. I haven't changed any files.\n\n**Short answer:** fix the first five items before launch. Each one can stop a member from getting their reservation, or give the desk the wrong booking. Fix the rest soon after.\n\n## Fix first: these break reservations\n\n**1. The basket expires after 10 minutes, with no warning and no way back** (`app.js:356-367`)\n- The hold starts when the first tool goes in the basket. Nothing on the site tells the member it lasts ten minutes.\n- After ten minutes, Continue shows \"Something went wrong. Try again.\"\n- Trying again fails every time, because the timer is never reset. I checked: the member stays stuck on the basket page.\n- Your members reserve in the evening, a few minutes at a time, while doing other things. Many will run into this.\n- **Fix:**\n  - Say \"We hold these tools for 10 minutes\" on the basket page.\n  - When the hold runs out, explain what happened and give the member a way to start the hold again.\n  - Offer to extend the hold before it runs out (WCAG 2.2.1).\n\n**2. Two pick-up choices can disagree, and both accept impossible days** (`app.js:195-200`, `app.js:330-332`)\n- The tool page asks for a pick-up **day** on a calendar. Every date can be chosen, including days the library is closed and days before the tool is back.\n- The basket then asks for a pick-up **session**, and doesn't check it against that day.\n- Results I got:\n  - I reserved the pressure washer (available from 17 Oct) for Friday 16 Oct and the 10 Oct session. Both were accepted.\n  - After 1.5 s on the confirm page it said \"The library is closed on Friday 16 October… Choose another day\". There is no link to the place where you change it.\n  - The \"change session\" journey ends with the drill listed as \"pick up Saturday 17 October\" and the session as \"Wednesday 21 October\". The desk can't tell which one is right.\n- **Fix:** ask once. Drop the calendar and have the member choose an opening session. Only offer sessions on or after each tool's \"available from\" date.\n\n**3. Tapping Confirm twice books the tool twice** (`app.js:413-433`)\n- The button gives no visible sign that it's working for 1.5 s, and it isn't disabled.\n- When I tapped it twice, I got \"Reservation numbers FT-4471 and FT-4472\" for the same drill.\n- The basket also isn't emptied after a confirmed booking: the header still showed \"Basket (1)\" on the confirmation page.\n- **Fix:**\n  - Disable the button and show \"Confirming…\" until the request finishes.\n  - Ignore repeat submits.\n  - Empty the basket and reset the hold when the booking succeeds.\n\n**4. Members can't tell the two drills apart on a phone** (`styles.css:373-381`)\n- Tool names are cut to one line with \"…\". At 375 px both drills show as \"Cordless drill 18 V, co…\".\n- The difference (two batteries or one) is exactly what the journey depends on.\n- **Fix:** let the names wrap onto more lines (remove `white-space: nowrap`, `text-overflow` and `overflow: hidden`).\n\n**5. A search with no results quietly keeps the old list** (`app.js:158-164`)\n- Searching \"hammer\" still shows all 10 tools. Screen readers get no announcement.\n- Members will think every tool matched, or that search doesn't work.\n- **Fix:** show \"No tools match 'hammer'\" with a \"Clear search\" link, and update the status message.\n\n## Fix next: accessibility and phone use\n\n**6. Dark mode: the \"Available from\" badge is hard to read** (`styles.css:60`)\n- In dark mode `--color-ok` is `#2f7d4a` on `#1d2622`, a contrast of 3.07:1. Bold 16 px text needs 4.5:1, so this fails WCAG 1.4.3.\n- The screenshot shows it clearly dimmer than the rest of the card.\n- `DESIGN.md` says the dark \"success\" colour should be `#8fd1a8`.\n- **Fix:** set dark `--color-ok: #8fd1a8` (8.8:1).\n- While you're there, two smaller dark-mode points:\n  - The day borders (1.6:1 against the cell) and the selected-day fill (1.2:1) are faint. The selected day is mostly shown by its 2 px border.\n  - The loan-length dropdown's shadow doesn't show on dark backgrounds.\n\n**7. On phones, search is below all ten tools** (`styles.css:261-269`)\n- Below 480 px the stylesheet moves the search form under the results. The search box starts about 2,100 px down the page.\n- The filters button is an icon with no visible word. The journey file notes members don't know where the date filter is.\n- On desktop the order is flipped the other way: the search shows first, but the keyboard reaches the results first (WCAG 1.3.2 / 2.4.3).\n- **Fix:**\n  - Put search first in the page and drop the `order` rules.\n  - Label the button \"Filters\" in visible text.\n\n**8. The session list on the basket page appears in reverse** (`styles.css:816-822`)\n- `row-reverse` with `wrap-reverse` shows Wed 28 Oct at the top and Sat 10 Oct at the bottom on a phone.\n- Screen readers and the keyboard go through them in date order, so the two disagree.\n- **Fix:** use `flex-direction: column` (or a normal wrapping row).\n\n**9. Details on the confirm page reject normal input** (`app.js:387-389`, `confirm.html:661`)\n- \"ft-01234\" is rejected, so are \"FT 01234\" and \"FT01234\".\n- \"+44 7700 900123\" (the format phone autofill often gives) is rejected, and so is \"07700 900 123\".\n- **Fix:**\n  - Accept these and tidy them up yourself: uppercase, remove spaces, accept +44.\n  - Add `autocapitalize=\"characters\"` to the membership field.\n  - Use `autocomplete=\"tel-national\"` or accept the international format.\n\n**10. The loan-length dropdown misbehaves with a keyboard** (`app.js:238-251`)\n- While it's open, Tab cycles through the options instead of leaving the control.\n- Escape doesn't close it. Tapping outside doesn't close it either.\n- **Fix:** replace it with a native `<select>`. Only two options are needed, so a pair of radio buttons would also work, and either works better with VoiceOver and TalkBack.\n\n**11. The bottom bar on the tool page covers the footer** (`styles.css:204`, `.actionbar`)\n- The footer with the desk phone number sits under the fixed \"Reserve this tool\" bar, even when scrolled to the bottom.\n- **Fix:** give the page `padding-bottom: calc(var(--actionbar) + var(--space-4))`.\n\n**12. After \"Added to your basket\" there's no next step**\n- The message disappears after 1.2 s.\n- The only way on is the \"Basket (1)\" link at the top of the page.\n- **Fix:** after adding, show a lasting message with a \"Go to basket\" link, or change the bar's button to \"Go to basket\".\n\n## Smaller issues\n\n- At 320 px wide (smallest phones, or larger text settings) the tool grid scrolls sideways: 346 px of content in 320 px. `minmax(330px, 1fr)` in `styles.css:331` causes it, and it fails WCAG 1.4.10. Use `minmax(min(330px, 100%), 1fr)`.\n- The \"Change\" link on the confirm page goes to the basket without the current session ticked. Coming back to confirm also clears the details the member already typed.\n- The three-tools-per-member rule isn't enforced in the basket.\n- The confirmation page reads the tool name twice to screen readers (the hidden `#c-tool` copy).\n- The \"Choose a pick-up session\" error link goes to a container that can't take focus. Point it at the first radio button.\n- There's no \"Skip to content\" link on any page.\n\n## Suggested order\n\n1. Items 1 to 3: the expiring hold, the single pick-up choice, and double booking. These need the most work, and they decide whether the right tool is waiting at the right session.\n2. Items 4 to 6 (wrapping tool names, the no-results message, the dark badge colour). These are one-line or few-line fixes.\n3. Items 7 to 12, then the smaller issues.\n\n**What I inferred, since I couldn't ask:**\n- I took \"members use phones in the evening\" to mean a 375 px wide screen in dark mode.\n- I tested in Chromium only. I didn't run VoiceOver or TalkBack, which `PRODUCT.md` lists, so the screen-reader points come from reading the markup.\n- Before launch, it's worth one pass on a real iPhone with VoiceOver and larger text turned on.\n\nI can turn this into a shareable page for the volunteers, or start on the top five fixes.",
+  "ground_truth": [
+   {
+    "id": "tool-library-D01",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "CW-Q2",
+    "description": "At 480 px and below the stylesheet reorders the page so the list of tools comes before the search form, and the only way to the 'Available from' date and the category filter is an icon-only button (three lines) that opens a collapsed panel below the list. A member who wants tools for a given Saturday sees ten cards first and no date control, so they are unlikely to notice that filtering by day exists. The document order is form then results, so keyboard focus also runs against the visual order."
+   },
+   {
+    "id": "tool-library-D02",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "H1",
+    "description": "A search with no matching tool (for example 'sewing machine') leaves the previous results on the page and shows no message: the status region stays empty and the list does not change. The member cannot tell whether the search ran, whether nothing matched, or whether the old list is the answer."
+   },
+   {
+    "id": "tool-library-D03",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "CW-Q3",
+    "description": "Tool names are kept on one line and cut with an ellipsis inside the card's text column. At phone widths 'Cordless drill 18 V, combi, two batteries' and 'Cordless drill 18 V, combi, one battery' both read 'Cordless drill 18 V, co…' (at 375 px; a character more or less at other widths), so a member cannot tell which card is the right one without opening each; only from about 480 px does the difference show. The full name is only in the link's hidden overflow."
+   },
+   {
+    "id": "tool-library-D04",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "1.4.3",
+    "description": "In the dark theme the 'Available from' badge is a mid green (#2f7d4a) on the card surface (#1d2622), about 3.1:1 for 16 px bold text, below the 4.5:1 that text of that size needs; the light theme passes. Members who use dark mode on their phones get the availability line as the least legible text on the page."
+   },
+   {
+    "id": "tool-library-D05",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "FUN-05",
+    "description": "The results grid asks for columns at least 330 px wide; at 320 px the content box is 288 px, so the cards run 42 px past it and the page scrolls sideways by 26 px. The same happens at 200% zoom on a 640 px window."
+   },
+   {
+    "id": "tool-library-D06",
+    "origin": "seeded",
+    "route": "/tool.html",
+    "criterion": "H5",
+    "description": "Every day in the calendar can be chosen, including the days the library is closed; only session days carry the word 'Open' (a green dot on a phone). Choosing a closed day highlights it and the page confirms 'Pick-up day: Monday 12 October'. The reservation is refused three steps later, on the confirm page ('The library is closed on Monday 12 October…'), and the only way back to the calendar is the browser."
+   },
+   {
+    "id": "tool-library-D07",
+    "origin": "seeded",
+    "route": "/tool.html",
+    "criterion": "H1",
+    "description": "Pressing 'Reserve this tool' shows 'Added to your basket' for 1.2 seconds and nothing else changes nearby; the only lasting sign is the basket count in the header, which on a phone is above the fold. A member who looked away, or who reads slowly, does not know whether the press worked and presses again."
+   },
+   {
+    "id": "tool-library-D08",
+    "origin": "seeded",
+    "route": "/tool.html",
+    "criterion": "2.4.11",
+    "description": "The 'Reserve this tool' bar is fixed to the bottom of the window and nothing keeps the page clear of it: the page ends 8 px under the calendar and the footer runs under the bar. A day button that sits in the bottom 72 px of the window counts as visible to the browser, so Tab reaches it without scrolling and the bar covers the focused control: at 768 px wide (900 px tall) the first two rows of days, at 1280 px the third row; on a phone the footer and the desk phone number sit under the bar at the end of the page."
+   },
+   {
+    "id": "tool-library-D09",
+    "origin": "seeded",
+    "route": "/tool.html",
+    "criterion": "2.1.2",
+    "description": "The loan-length list opens as a custom listbox. Inside it, Tab moves to the next option and wraps around, and Escape does nothing, so a keyboard user cannot leave the list except by choosing an option with Enter."
+   },
+   {
+    "id": "tool-library-D10",
+    "origin": "seeded",
+    "route": "/basket.html",
+    "criterion": "H1",
+    "description": "The basket says 'Items are held for you while you finish' but shows no time; the hold is ten minutes from the first item and is kept only in the browser. When it has lapsed, Continue waits 1.2 seconds and then says 'Something went wrong. Try again.', which is not what happened and does not say what to do."
+   },
+   {
+    "id": "tool-library-D11",
+    "origin": "seeded",
+    "route": "/basket.html",
+    "criterion": "2.4.3",
+    "description": "The pick-up sessions are laid out in reverse (row-reverse with reversed wrapping), so the earliest session appears last on screen, at the bottom of the stack on a phone and at the end of the row on a desktop, while coming first in the document. Tab moves from the rightmost card leftwards, against reading order, and a screen reader hears the sessions in an order a sighted member does not see."
+   },
+   {
+    "id": "tool-library-D12",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "'Confirm reservation' stays enabled while the request runs for 1.5 seconds, and nothing visible says that anything is happening. A second press, which is what people do when nothing seems to happen, allocates a second reservation number; the confirmation page then lists two reservations for one visit, and the desk holds the tool twice."
+   },
+   {
+    "id": "tool-library-D13",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H3",
+    "description": "The 'Change' link beside the pick-up session returns to the basket without the chosen session, so a member who only wanted to look at the summary comes back to a basket with no session selected and has to choose again. Nothing says the choice was dropped."
+   },
+   {
+    "id": "tool-library-D14",
+    "origin": "found",
+    "route": "/tool.html",
+    "criterion": "H5",
+    "description": "The calendar neither marks nor disables the days before the tool's 'Available from' date, the basket offers every session, and confirm does not check: a wet tile saw available from Saturday 24 October reserved for Saturday 10 October ends on 'Reservation confirmed'. The member is told a tool will be waiting when it cannot be, and finds out at the desk."
+   },
+   {
+    "id": "tool-library-D15",
+    "origin": "found",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "Each tool keeps the pick-up day chosen on its tool page, the session is chosen separately in the basket, and nothing reconciles them: a drill to be picked up on Saturday 17 October can be confirmed for the Wednesday 21 session, the confirm page shows both dates and the done page only the session, so it is unclear which day the desk sets the tool aside for."
+   },
+   {
+    "id": "tool-library-D16",
+    "origin": "found",
+    "route": "/tool.html",
+    "criterion": "4.1.2",
+    "description": "The loan-length button has no aria-label or aria-labelledby, so its accessible name is only its current value: a screen-reader user hears 'One week, button, collapsed' and is not told what is being chosen."
+   },
+   {
+    "id": "tool-library-D17",
+    "origin": "found",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "The membership number must match /^FT-\\d{5}$/ and the mobile number /^0\\d{4}\\s?\\d{6}$/, with no normalising: 'ft-01234', 'Ft-01234' (what a phone's sentence capitalisation makes of it) and 'FT 01234' are rejected, and so are '07700 900 123' and '+44 7700 900123', the form phone autofill often supplies. Each gets an error whose example looks like what the member typed."
+   },
+   {
+    "id": "tool-library-D18",
+    "origin": "found",
+    "route": "/done.html",
+    "criterion": "H1",
+    "description": "After 'Reservation confirmed' the basket is not emptied: the header still reads 'Basket (1)' and the basket still lists the tool as held, and going back to the confirm page and confirming again reserves the same tool a second time under a new number."
+   },
+   {
+    "id": "tool-library-D19",
+    "origin": "found",
+    "route": "/tool.html",
+    "criterion": "4.1.3",
+    "description": "Pressing 'Reserve this tool' with no day chosen shows 'Choose a pick-up day first.' in a paragraph with no role or live region that the calendar does not reference, so it is not announced, and focus moves to the first day button, a closed day before the tool is available. The message stays on screen after a day is chosen."
+   },
+   {
+    "id": "tool-library-D20",
+    "origin": "found",
+    "route": "/tool.html",
+    "criterion": "H6",
+    "description": "Below 480 px the word 'Open' on session days is hidden and an 8 px dot takes its place; what the dot means is only in the hint above the calendar. On the phone, the members' main device, which days the library opens is easy to miss. The seeder chose the dot to fit the calendar at phone widths; the second labeller and two reviews judged it a minor problem."
+   },
+   {
+    "id": "tool-library-D21",
+    "origin": "found",
+    "route": "/basket.html",
+    "criterion": "H5",
+    "description": "The find page says members may reserve up to three tools at a time, but the basket takes a fourth tool without a warning and the reservation is confirmed for four, so the desk has to turn the member away from some of them at collection."
+   },
+   {
+    "id": "tool-library-D22",
+    "origin": "found",
+    "route": "/confirm.html",
+    "criterion": "3.3.7",
+    "description": "With the membership number, name and mobile filled in, 'Change', the basket and Continue bring the member back to the confirm page with all three fields empty; the details are kept nowhere, so she types them again on a phone."
+   },
+   {
+    "id": "tool-library-D23",
+    "origin": "found",
+    "route": "/basket.html",
+    "criterion": "CW-Q1",
+    "description": "The tool page asked for a pick-up day and the basket line repeats it, yet no pick-up session is selected and Continue answers 'Choose a pick-up session', so the member enters the same date a second time, in another form, and can choose a different one."
+   },
+   {
+    "id": "tool-library-D24",
+    "origin": "found",
+    "route": "/done.html",
+    "criterion": "H8",
+    "description": "On the done page the Tools entry holds the visible list item and a visually hidden span with the same name, so screen readers read the reserved tool's name twice; next to two reservation numbers this can sound like two tools."
+   },
+   {
+    "id": "tool-library-D25",
+    "origin": "found",
+    "route": "/",
+    "criterion": "H2",
+    "description": "The 'Available from' filter keeps the tools that can be collected on the chosen day, but its label uses the badges' words and its hint says 'Show tools you could pick up on or after this day': choosing 14 October hides a tool available from 17 October, which could be picked up after the 14th."
+   },
+   {
+    "id": "tool-library-D26",
+    "origin": "found",
+    "refines": "tool-library-D07",
+    "route": "/tool.html",
+    "criterion": "CW-Q1",
+    "description": "'Reserve this tool' does not reserve: it puts the tool in a basket held for ten minutes, the button keeps its label, and nothing says that a basket, a session and a confirmation still follow. A first-time member can believe the tool is reserved and put the phone down, and the hold lapses with nothing reserved. It is the press D07 describes, read for a different harm: D07 is the brief feedback, this is the misleading action."
+   }
+  ]
+ }
+}
