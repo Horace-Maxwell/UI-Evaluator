@@ -244,6 +244,27 @@ test('the detector section stays sealed until the verdict file holds the appeal 
   assert.match(uie('packet', '--role', 'design-critic', '--unseal', '--agent', 'critic-1'), /unsealed detector output for critic-1/);
 });
 
+test('packet screen lists name each screenshot by its route, not its evidence folder', (t) => {
+  const { root, runDir, env } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const cfgPath = path.join(root, '.ui-evaluator', 'config.json');
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+  cfg.routes = [{ path: '/', mode: 'operate', states: [{ name: 'default', actions: [] }] }, { path: '/basket.html?items=drill-18v-two&day=2026-10-17', mode: 'operate', states: [{ name: 'default', actions: [] }] }];
+  fs.writeFileSync(cfgPath, JSON.stringify(cfg));
+  // Folder names as the capture writes them (browser/pages.mjs: slug of the route, 60 characters).
+  for (const folder of ['root', 'basket-html-items-drill-18v-two-day-2026-10-17']) {
+    fs.mkdirSync(path.join(runDir, 'evidence', 'screens', folder, 'default'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'evidence', 'screens', folder, 'default', '375-dark.png'), '');
+  }
+  execFileSync(process.execPath, [UIE, 'packet', '--role', 'design-critic'], { cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const screens = JSON.parse(fs.readFileSync(path.join(runDir, 'packets', 'design-critic-1', 'screens.json'), 'utf8'));
+  const byFolder = Object.fromEntries(screens.map((s) => [s.slug, s]));
+  assert.equal(byFolder.root.route, '/');
+  assert.equal(byFolder['basket-html-items-drill-18v-two-day-2026-10-17'].route, '/basket.html?items=drill-18v-two&day=2026-10-17');
+  assert.equal(byFolder.root.state, 'default');
+  assert.equal(byFolder.root.variant, '375-dark');
+});
+
 test('DES-01: a quick-depth critic is feedback, never a panel; critics without isolation degrade the panel', (t) => {
   const { root, runDir } = workspace();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

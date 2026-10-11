@@ -181,6 +181,9 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
         (b) => ({ ...b, agent: b.agent || out.agent, model: b.model || out.model || undefined }),
       );
       delete f.severity; // severity is never taken from the finder (EVAL C2)
+      // `advisory` marks a deterministic observation against a rule that gates nothing (ADR-038). An inspector's
+      // candidate is a finding to verify and rate whatever the inspector called it, so its own flag is dropped.
+      delete f.advisory;
       judged.push(f);
     }
   }
@@ -294,14 +297,38 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
   };
 }
 
-/** Apply accepted proposals: merge members into the first one. */
+/**
+ * Apply accepted proposals: merge members into the first one. An entry may name part of a proposal, `S14:F-0008+F-0011`,
+ * when the proposal groups more than one problem: those members (two or more) are merged and the others stay apart.
+ * Returns the removed IDs and the entries that could not be applied, with the reason.
+ */
 export function acceptProposals(doc, ids) {
-  const want = new Set(ids);
+  const want = new Map();
+  for (const raw of ids) {
+    const [id, part] = String(raw).split(':');
+    want.set(id.trim(), part ? part.split('+').map((m) => m.trim()).filter(Boolean) : null);
+  }
   const byId = new Map(doc.findings.map((f) => [f.id, f]));
   const removed = new Set();
+  const refused = [];
+  const known = new Set((doc.proposals || []).map((p) => p.id));
+  for (const id of want.keys()) if (!known.has(id)) refused.push({ id, reason: 'no such proposal' });
   for (const p of doc.proposals || []) {
-    if (!want.has(p.id) || p.applied) continue;
-    const [first, ...rest] = p.members.map((m) => byId.get(m)).filter(Boolean);
+    if (!want.has(p.id)) continue;
+    if (p.applied) {
+      refused.push({ id: p.id, reason: 'already applied' });
+      continue;
+    }
+    const part = want.get(p.id);
+    if (part) {
+      const strangers = part.filter((m) => !p.members.includes(m));
+      if (strangers.length || part.length < 2) {
+        refused.push({ id: p.id, reason: strangers.length ? `${strangers.join(', ')} not in ${p.id} (${p.members.join(', ')})` : 'name two or more members' });
+        continue;
+      }
+    }
+    const chosen = part ? p.members.filter((m) => part.includes(m)) : p.members;
+    const [first, ...rest] = chosen.map((m) => byId.get(m)).filter(Boolean);
     if (!first) continue;
     for (const r of rest) {
       if (removed.has(r.id) || r === first) continue;
@@ -312,9 +339,10 @@ export function acceptProposals(doc, ids) {
     // An inspector who reports what an advisory check measured turns the observation into a finding (ADR-038).
     if (first.advisory && [first, ...rest].some((m) => !m.advisory)) delete first.advisory;
     p.applied = true;
+    if (part) p.applied_members = chosen;
   }
   doc.findings = doc.findings.filter((f) => !removed.has(f.id));
-  return { removed: [...removed] };
+  return { removed: [...removed], refused };
 }
 
 /**
@@ -351,8 +379,9 @@ export function sameCauseProposals(findings, existing = []) {
 }
 
 /**
- * Split verifier candidates into at most n packets of near-equal size. A route's candidates stay together, so each
- * verifier loads a page once; only a route with more candidates than one packet holds is cut into packet-sized pieces.
+ * Split verifier candidates into at most n packets of near-equal size. A page's candidates stay together (query
+ * strings and /index.html aside, as in the duplicate proposals), so each verifier loads a page once; only a page with
+ * more candidates than one packet holds is cut into packet-sized pieces.
  * Pieces are placed largest first on the packet that holds the fewest, and the order is deterministic.
  */
 export function partitionCandidates(cands, n) {
@@ -360,7 +389,7 @@ export function partitionCandidates(cands, n) {
   const size = Math.ceil(cands.length / parts);
   const byRoute = new Map();
   for (const c of [...cands].sort((a, b) => String(a.candidate_id || a.id).localeCompare(String(b.candidate_id || b.id)))) {
-    const route = String((c.locations || [])[0]?.route || '');
+    const route = pagePath((c.locations || [])[0]?.route);
     if (!byRoute.has(route)) byRoute.set(route, []);
     byRoute.get(route).push(c);
   }

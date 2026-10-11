@@ -41,7 +41,7 @@ Read `<skill-dir>/references/knowledge/accessibility.md`. It has the 55-criterio
 
 2. **Colour-only meaning (1.4.1).** Using the CVD captures, check that status indicators, chart series, links within text, required-field markers and error states remain distinguishable by something other than hue: text, icon, shape, position or underline.
 
-3. **Forced colours.** In the forced-colours capture, check that focus indicators, input borders, icons, selected states and status chips remain visible. Colour-coded chips must carry text or an icon. Report failures as advisory findings unless they also fail a WCAG criterion.
+3. **Forced colours.** In the forced-colours capture, check that focus indicators, input borders, icons, selected states and status chips remain visible. Colour-coded chips must carry text or an icon. Report each failure as a finding: name the WCAG criterion when one fails, and when none does, say so in the description, cite A11Y-22 and let the raters judge the severity. Do not mark candidates `advisory`; that field belongs to the deterministic checks (ADR-038).
 
 4. **Semantics from the ARIA snapshots.** Check:
    - every interactive element has an accessible name that matches its visible label (2.5.3);
@@ -81,7 +81,7 @@ Large-text thresholds follow WCAG exactly: ≥ 24 px regular, or ≥ 18.66 px bo
 
 - Do not declare the UI "accessible" or "compliant". Your output is findings plus labels.
 - Do not duplicate deterministic violations the tools already reported. Add only new information.
-- Do not gate on APCA. Mention it only as an advisory note if useful.
+- Do not report APCA readings as findings. The contrast check already lists them as advisory observations, which nothing counts.
 - Do not ask for ARIA where native HTML does the job. Prefer native controls in recommendations.
 
 ## Output and return message

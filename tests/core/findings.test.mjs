@@ -290,4 +290,45 @@ test('an inspector adopting an advisory observation turns it into a finding; sam
   const sizes = partitionCandidates(mixed, 3).map((p) => p.length);
   assert.equal(sizes.reduce((a, b) => a + b, 0), 11);
   assert.ok(Math.max(...sizes) - Math.min(...sizes) <= 2, `near equal: ${sizes}`);
+  // A page reached by different query strings, or as /index.html, is one page.
+  const pages = ['/basket.html?items=a', '/basket.html', '/', '/index.html', '/basket.html?items=b&day=1', '/?q=drill'].map((route, i) => ({ candidate_id: `K-${i}`, locations: [{ route }] }));
+  const byPage = partitionCandidates(pages, 2).map((p) => p.map((c) => c.candidate_id).sort());
+  assert.deepEqual(byPage, [['K-0', 'K-1', 'K-4'], ['K-2', 'K-3', 'K-5']], 'each page stays in one packet');
+});
+
+test('part of a same-cause proposal can be accepted; the other members stay apart (ADR-039)', async () => {
+  const { acceptProposals } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const f = (id, title) => ({ id, status: 'confirmed', title, found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }], locations: [{ route: '/tool.html', selector: '#reserve' }], evidence: [{ type: 'screenshot', ref: `${id}.png` }], criteria: [{ kind: 'heuristic', id: 'H1', primary: true }] });
+  const doc = {
+    findings: [f('F-0008', 'Fixed bar covers the focused day'), f('F-0011', 'Text overlaps under the fixed bar'), f('F-0063', "'Reserve this tool' only adds to a basket")],
+    proposals: [{ id: 'S14', members: ['F-0008', 'F-0011', 'F-0063'], reason: 'same cause: the code reviewer located them at tool.html:68–73', kind: 'same-cause' }],
+  };
+  assert.match(acceptProposals(doc, ['S14:F-0008+F-0099']).refused[0].reason, /F-0099 not in S14/);
+  const bad = acceptProposals(doc, ['S14:F-0008', 'S14x']);
+  assert.deepEqual(bad.removed, []);
+  assert.deepEqual(bad.refused.map((r) => `${r.id}: ${r.reason}`).sort(), ['S14: name two or more members', 'S14x: no such proposal']);
+  assert.equal(doc.findings.length, 3, 'nothing was merged by a refused entry');
+  const res = acceptProposals(doc, ['S14:F-0008+F-0011']);
+  assert.deepEqual(res.removed, ['F-0011']);
+  assert.deepEqual(doc.findings.map((x) => x.id), ['F-0008', 'F-0063'], 'the member with another cause stays a finding of its own');
+  assert.deepEqual(doc.proposals[0].applied_members, ['F-0008', 'F-0011']);
+  assert.equal(doc.findings[0].evidence.length, 2, 'the merged finding keeps both members’ evidence');
+  assert.match(acceptProposals(doc, ['S14']).refused[0].reason, /already applied/);
+});
+
+test("an inspector's own advisory flag is dropped: its candidate is verified and rated like any other (ADR-038)", () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-adv-insp-'));
+  try {
+    fs.mkdirSync(path.join(runDir, 'evaluators'));
+    fs.writeFileSync(path.join(runDir, 'evaluators', 'a11y.json'), JSON.stringify({
+      role: 'accessibility-auditor', agent: 'a11y',
+      candidates: [{ title: 'Session dots vanish in forced colours', description: 'In the forced-colours capture the dots under session days disappear.', problem_type: 'single_location', advisory: true, criteria: [{ kind: 'rule', id: 'A11Y-22', primary: true }], locations: [{ route: '/tool.html', state: 'default', selector: '.day__mark' }], evidence: [] }],
+    }));
+    const res = mergeRun(runDir, { rules: {} });
+    assert.equal(res.findings.length, 1);
+    assert.equal(res.findings[0].status, 'candidate');
+    assert.equal(res.findings[0].advisory, undefined);
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
 });

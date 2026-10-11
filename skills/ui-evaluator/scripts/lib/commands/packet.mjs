@@ -8,7 +8,7 @@ import { intOpt, list, UsageError } from '../util/args.mjs';
 import { paths, resolveRun, loadConfig, loadJourneys, readRegister, readDismissals, updateManifest, readManifest } from '../project.mjs';
 import { SKILL_DIR, SCRIPTS_DIR } from '../cli.mjs';
 import { sha256, stableStringify } from '../util/hash.mjs';
-import { isoNow } from '../util/time.mjs';
+import { isoNow, slug } from '../util/time.mjs';
 import { productSections } from '../tokens/product.mjs';
 import { stripComments } from '../util/markdown.mjs';
 import { primaryCriterion } from '../findings/core.mjs';
@@ -55,12 +55,18 @@ function contextMd(root) {
   return parts.join('\n');
 }
 
-function evidenceIndex(runDir, kind) {
+/**
+ * The run's screenshots or ARIA snapshots, one entry per file. Evidence folders are named by a slug of the route
+ * (browser/pages.mjs); each entry gives the route itself, from the configured routes, so a finding written from a
+ * screenshot names the page the way every other role does, and `slug` names the folder.
+ */
+function evidenceIndex(runDir, kind, routes = []) {
   const base = path.join(runDir, 'evidence', kind);
   if (!exists(base)) return [];
+  const bySlug = new Map(routes.map((r) => [slug(r.path === '/' ? 'root' : r.path, 60), r.path]));
   return walkFiles(base, { exts: kind === 'screens' ? new Set(['.png', '.webp', '.jpg']) : new Set(['.yml', '.yaml', '.json']) }).map((f) => {
     const rel = path.relative(base, f).split(path.sep);
-    return { route: rel[0], state: rel[1], variant: rel.slice(2).join('/').replace(/\.[a-z]+$/, ''), path: f };
+    return { route: bySlug.get(rel[0]) ?? null, slug: rel[0], state: rel[1], variant: rel.slice(2).join('/').replace(/\.[a-z]+$/, ''), path: f };
   });
 }
 
@@ -155,8 +161,8 @@ export async function run(args, ctx) {
   const isolation = args.isolation ? String(args.isolation) : 'subagent';
   if (!['subagent', 'process', 'single-context'].includes(isolation)) throw new UsageError('--isolation must be subagent, process or single-context');
   const base = cfg.app.base_url;
-  const screens = evidenceIndex(r.dir, 'screens');
-  const aria = evidenceIndex(r.dir, 'aria');
+  const screens = evidenceIndex(r.dir, 'screens', cfg.routes);
+  const aria = evidenceIndex(r.dir, 'aria', cfg.routes);
   const made = [];
   const record = (entry) => {
     made.push(entry);
@@ -241,7 +247,7 @@ export async function run(args, ctx) {
           'context.md': ctxMd,
           'design.md': design,
           'screens.json': screens,
-          ...(baseline ? { 'baseline-screens.json': evidenceIndex(baseline.dir, 'screens') } : {}),
+          ...(baseline ? { 'baseline-screens.json': evidenceIndex(baseline.dir, 'screens', cfg.routes) } : {}),
         };
         const extra = `\n## Sealed detector output\n\nWrite your specificity and appeal verdicts first, to ${verdictOut} (schema critic-verdict: agent, value, evidence, appeal {value, unfinished, evidence}, written_at).\nThen unseal: ${uieCommand()} packet --role design-critic --unseal --agent ${agent} --run ${r.id}\nThe detector summary then appears in ./sealed/detectors.json. Never open it before your verdict exists.\n${baseline ? `\n## Pairwise comparison\n\nBaseline run ${baseline.id}: compare current vs baseline in both orders (baseline-screens.json).\n` : ''}`;
         const hash = writePacket(path.join(pdir, `design-critic-${i}`), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, extra }));
@@ -395,7 +401,7 @@ export async function run(args, ctx) {
           return { finding_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criterion: primaryCriterion(f).id, original_evidence: absEvidence(f.evidence, firstDir, ctx.root), locations: absLocations(f.locations, firstDir, ctx.root), first_seen_run: f.first_seen_run };
         }),
         'current-screens.json': screens,
-        ...(baseline ? { 'baseline-screens.json': evidenceIndex(baseline.dir, 'screens') } : {}),
+        ...(baseline ? { 'baseline-screens.json': evidenceIndex(baseline.dir, 'screens', cfg.routes) } : {}),
         'diff.json': diffDoc,
         ...(reverified.length ? { 'verified-by-rerun.json': reverified.map((f) => ({ finding_id: f.id, title: f.title, criterion: primaryCriterion(f).id, locations: f.locations })) } : {}),
       };

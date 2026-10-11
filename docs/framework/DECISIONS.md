@@ -51,6 +51,7 @@ Format: **Context** (the forces) · **Decision** · **Consequences** (including 
 | [ADR-037](#adr-037--splitting-a-finding-is-a-recorded-command) | Splitting a finding is a recorded command | accepted |
 | [ADR-038](#adr-038--an-advisory-rules-hit-is-an-observation-not-a-finding) | An advisory rule's hit is an observation, not a finding | accepted |
 | [ADR-039](#adr-039--findings-with-one-cause-are-grouped-before-rating) | Findings with one cause are grouped before rating | accepted |
+| [ADR-040](#adr-040--a-design-critics-remark-is-a-design-note-unless-it-names-a-harm) | A design critic's remark is a design note unless it names a harm | proposed |
 
 ---
 
@@ -330,6 +331,8 @@ The MOT-04, CMP-03 and CMP-06 numbers are UI-Evaluator proposals and are marked 
 
 **Sources.** Round 3 report §5.7 problem 4; `tools/score-fixtures.mjs`; ADR-010; ADR-033.
 
+**Amended 2026-10-10 (round 4).** The flag marks deterministic observations only. The accessibility auditor's instructions, older than this record, said to report forced-colour failures "as advisory findings", and the merge kept an inspector's own flag, so in round 4 two of the auditor's findings were verified, rated (one P1) and promoted while the register marked them advisory; the graders judged both real. The merge now drops `advisory` from every inspector's output, and the auditor reports such failures as findings that cite A11Y-22 and say that no WCAG criterion fails.
+
 ## ADR-039 — Findings with one cause are grouped before rating
 
 **Context.** The merge joins candidates on a deterministic key (locator, mechanism, state) and proposes text-similar pairs, which round 2 widened. One cause still reaches the report several times when different checks and roles describe it from their own angles: in round 3 a fixed bottom bar arrived as nine confirmed findings (an obscured focus, a focus-order jump, a target too close to the Reserve button, overlapping text, a covered footer), a CSS reorder as eight and an overflowing column as six. Each was rated and listed on its own, and the graders mapped them all to one seeded defect.
@@ -342,3 +345,18 @@ The MOT-04, CMP-03 and CMP-06 numbers are UI-Evaluator proposals and are marked 
 
 **Sources.** Round 3 report §5.4 and §5.7 problem 3; ADR-033; the audit workflow step 9.
 
+**Amended 2026-10-10 (round 4).** A proposal groups whatever the code reviewer located within three lines of one file, and a component's markup can hold several problems in that window. In round 4 the leads accepted 4 of 12, 9 of 16 and 5 of 14 proposals and rightly rejected the ones that mixed causes, so their true duplicates stayed apart: in one run a fixed bar reached the report as ten findings, six of them in a rejected group of nine. An entry of `--accept` may now name part of a proposal, `S14:F-0008+F-0011`: the named members (two or more) are merged, the proposal records them as `applied_members`, and the others stay findings of their own.
+
+## ADR-040 — A design critic's remark is a design note unless it names a harm
+
+Status: **proposed** (2026-10-10), waiting for the owner's decision.
+
+**Context.** In rounds 3 and 4 the three design critics wrote 21 to 34 of each standard audit's confirmed judged findings. The blind graders judged 11 of 21, 12 of 29, 11 of 34, 9 of 24 and 11 of 27 of them problems for the site's members, while every other judged finding was a problem in 80 to 100% of cases (round 4: 93 to 100%). Most are remarks on appeal and identity: a placeholder thumbnail on every card, a brand mark in body type, unthemed date and select controls, two misaligned label columns, an empty band under the footer. The verifier confirms that each is on the page, which it is, and the raters give them severity 1 or 2. Together they keep judged precision below the 0.8 bar in four of the five runs, and they are what the report's reader most often has to discount. The critics' verdicts (specificity, brand fit, appeal) feed G6 through DES-02, DES-04 and DES-07 and are not findings; DES-03 counts open design findings of mean severity 3 or more.
+
+**Decision (proposed).** (1) A design critic's candidate becomes a finding only when it names a harm to the product's users (a task slowed or failed, something misread, a trust signal PRODUCT.md asks for that is missing) or a PRODUCT.md or DESIGN.md requirement it breaks; the verifier checks that harm or requirement, not only that the described thing is on the page. (2) Every other critic remark is a design note: listed in the report under "Design notes (not counted)" with its evidence, never rated, counted or promoted, as advisory observations are (ADR-038). (3) The critics' verdicts, the panel and G6 are unchanged.
+
+**Consequences.** Judged precision would move toward the other roles' level without a loss of recall on the evidence so far: in the five runs of rounds 3 and 4 one ground-truth defect was reached only by a critic's finding (D15 in round 4's run 4), and that finding names a harm (members may pick a session that contradicts the day they chose), so it would stay a finding. The verifier's packet and the critic's output gain a field for the harm, the report gains a section, and an owner who wants the critics' taste in the count loses it from the totals, though not from the page. A real design problem whose critic named no harm drops out of the count; it stays visible as a note. DES-03 would count only the critic findings that name a harm, so a severe remark with no harm named would no longer hold G6 back: that is the main trade-off to decide.
+
+**Alternatives rejected.** Leaving the critics out of audits (their verdicts gate G6 and their notes help the owner). Counting their findings but leaving them out of the precision figure (it hides the problem in the metric instead of fixing the report). Asking the raters to vote such findings not a problem (they already rate them 1 or 2; severity is not validity, ADR-029).
+
+**Sources.** Round 4 report §5.8 problem 1 and the analysis by role in its summary; round 3 report §5.7 problem 4; ADR-029; ADR-035; ADR-038.

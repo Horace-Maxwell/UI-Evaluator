@@ -21,7 +21,7 @@ export const help = `uie findings <subcommand> [options]
 
   validate <file...> [--schema <name>]   validate JSON files against their schema (guessed from shape)
   merge [--run <id>]                      merge tool findings and judged candidates → runs/<id>/merged.json
-        [--accept P1,S2]                  apply merge proposals (true duplicates and same-cause groups only)
+        [--accept P1,S2,S3:F-0008+F-0011] apply merge proposals (true duplicates and same-cause groups only; <id>:<members> applies part of one)
         [--apply-locate]                  attach code-reviewer source locations and ease-of-fix estimates, then list
                                           same-cause proposals: findings located at one source line (ADR-039)
   split <id> --into <parts.json> [--run <id>]   replace a candidate or confirmed finding with ≥ 2 parts, which go
@@ -105,9 +105,10 @@ export async function run(args, ctx) {
       const r = resolveRun(ctx.root, args.run);
       if (args.accept) {
         const doc = loadMerged(r.dir);
-        const { removed } = acceptProposals(doc, list(args.accept));
+        const { removed, refused } = acceptProposals(doc, list(args.accept));
         saveMerged(r.dir, doc);
-        ctx.result({ removed });
+        ctx.result({ removed, refused });
+        for (const x of refused) ctx.warn(`${x.id} not applied: ${x.reason}`);
         ctx.print(`merged ${removed.length} duplicate(s) into their first member; ${doc.findings.length} findings remain.`);
         return 0;
       }
@@ -120,7 +121,7 @@ export async function run(args, ctx) {
         ctx.result({ ...n, same_cause_proposals: same.map((p) => ({ id: p.id, members: p.members, reason: p.reason })) });
         ctx.print(`attached ${n.locations} source location(s) and ${n.ease} ease-of-fix estimate(s).`);
         if (same.length) {
-          ctx.print(`${same.length} same-cause proposal(s): findings located at one source line describe one cause from different angles (ADR-039). Accept the true ones before rating, so one cause is rated and reported once: uie findings merge --accept ${same.map((p) => p.id).join(',')}`);
+          ctx.print(`${same.length} same-cause proposal(s): findings located at one source line describe one cause from different angles (ADR-039). Accept the true ones before rating, so one cause is rated and reported once: uie findings merge --accept ${same.map((p) => p.id).join(',')}. When a proposal holds more than one problem, accept the members that share a cause: --accept ${same[0].id}:${same[0].members.slice(0, 2).join('+')}`);
           for (const p of same) ctx.print(`  ${p.id}: ${p.members.join(' + ')} — ${p.reason}`);
         }
         return 0;
