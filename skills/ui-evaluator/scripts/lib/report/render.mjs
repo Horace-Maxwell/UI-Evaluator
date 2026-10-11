@@ -199,6 +199,14 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
     for (const f of advisory) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${primaryCriterion(f).id} | ${(f.locations || []).length} | ${[...new Set((f.locations || []).map((l) => l.route))].slice(0, 4).join(', ')} |`);
     push('');
   }
+  // Design notes: critics' remarks that name no harm to the product's users (ADR-040). Listed, never counted.
+  const notes = I.runFindings.filter((f) => f.design_note && f.status === 'candidate');
+  if (notes.length) {
+    push('### Design notes (not counted)', '', "The design critics' remarks on appeal, identity and finish that name no harm to the product's users and no PRODUCT.md or DESIGN.md line they break. They are for the owner's judgement, were not verified or rated, and count toward nothing; one becomes a finding when an inspector reports the same problem (ADR-040).", '');
+    push('| ID | Note | Critics | Routes |', '|---|---|---|---|');
+    for (const f of notes) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${new Set((f.found_by || []).map((b) => b.agent)).size} | ${[...new Set((f.locations || []).map((l) => l.route).filter(Boolean))].slice(0, 4).join(', ') || '—'} |`);
+    push('');
+  }
   if (!reported.length && !unrated.length && !carried.length) push('No findings were reported in this run. That is not a claim that none exist (METHODS §10).', '');
   const held = I.runFindings.filter((f) => f.held);
   if (held.length) push(`Held for a second independent pass (HCI-029): ${held.map((f) => `${f.id} ${truncate(f.title, 60)}`).join('; ')}.`, '');

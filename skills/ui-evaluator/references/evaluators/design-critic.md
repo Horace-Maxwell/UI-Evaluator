@@ -73,9 +73,10 @@ Read `<skill-dir>/references/methods/design-panel.md` (rubric anchors and exempl
 7. **Design findings.** Record each specific design problem as a finding (`finding-records.md` format), with:
    - criteria: a rule ID where one applies (e.g. `SLP-05`, `TYP-06`, `LAY-03`), otherwise `DES-specificity`, `DES-hierarchy`, `DES-coherence`, `DES-restraint`, `DES-brandfit`, `DES-execution` or `DES-appeal`;
    - the screen, the elements and their evidence;
-   - why it weakens *this* product's design.
+   - why it weakens *this* product's design;
+   - `harm`, only when the problem harms the product's users: `kind` is `task` (a step is slowed or fails), `misread` (users take something for what it is not), `trust` (a trust signal PRODUCT.md asks for is missing or contradicted) or `requirement` (a PRODUCT.md or DESIGN.md line is broken, quoted in `requirement` with its file), and `statement` says who is harmed and how, on this page.
 
-   Taste disagreements are not defects. A finding must say what concretely fails the brief or the craft.
+   Taste disagreements are not defects. A finding must say what concretely fails the brief or the craft. A remark that names no harm (appeal, identity, polish, a layout that could be better) is still worth writing: leave `harm` out and it is kept as a design note, shown to the owner in the report and counted toward nothing (ADR-040). Do not stretch a remark into a harm to make it count; the verifier checks every harm you name.
 
 8. **Pairwise comparison** (only if `baseline/` exists). Compare current vs baseline twice: once with current shown first, once with baseline first, judging each pair on its own. Record both preferences. Only an order-consistent preference counts; otherwise record a tie [HCI-034].
 

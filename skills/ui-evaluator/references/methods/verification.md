@@ -45,7 +45,7 @@ Gate criteria owned (USE) and supported (EVD), verbatim from QUALITY-BAR:
 ## 2. Inputs
 
 - **Merged candidates**: `runs/<id>/merged.json`, produced by `uie findings merge` (§3.1).
-- **Verifier packet**, built by `uie packet --role finding-verifier`: the candidates without who raised them, the dismissal ledger and the probe instructions. Evaluator identities are excluded so that a verdict cannot lean on who said something. Advisory observations (hits of rules that gate nothing) are not candidates and are not in the packet (ADR-038). With many candidates, `--parts <n>` splits them between parallel verifiers, each route's candidates kept together; each verifier writes `verifier-p<k>.json`, and `uie findings apply-verdicts` applies every part.
+- **Verifier packet**, built by `uie packet --role finding-verifier`: the candidates without who raised them, the dismissal ledger and the probe instructions. Evaluator identities are excluded so that a verdict cannot lean on who said something. Advisory observations (hits of rules that gate nothing) and design notes (critics' remarks that name no harm) are not candidates and are not in the packet (ADR-038, ADR-040); a critic's candidate that names a harm carries it, and the verifier checks it. With many candidates, `--parts <n>` splits them between parallel verifiers, each page's candidates kept together; each verifier writes `verifier-p<k>.json`, and `uie findings apply-verdicts` applies every part.
 - **The run's evidence and manifest**: captures, ARIA snapshots and probes; scope (routes, states, personas, matrix); UI version; iteration number.
 - **The live UI**, reached only through `uie probe`.
 
@@ -75,6 +75,7 @@ Take each candidate through the seven steps in order (METHODS §5 step 2) [HCI-0
 | 2. Harness filter | the problem is not an artefact of capture, emulation or tooling | `harness_artifact` |
 | 3. Scope filter | the problem lies within the declared routes, states and personas | `out_of_scope` |
 | 4. Skeptical re-check | you reproduced the problem with `uie probe` | `not_reproduced` |
+| 4, a critic's harm (ADR-040) | the harm a design critic named follows on the page: the task step, the misreading, the trust signal or the quoted requirement | `harm` |
 | 5. Absence rule | an absence claim has positive evidence | `absence_unsupported` |
 | 6. Dismissal ledger | no human dismissed this problem before, or new evidence exists | `previously_dismissed` |
 | 7. Confidence ceiling | the HCI-029 condition is checked and recorded | held after rating, not rejected |

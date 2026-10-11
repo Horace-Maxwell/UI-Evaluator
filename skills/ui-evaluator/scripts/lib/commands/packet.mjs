@@ -303,10 +303,12 @@ export async function run(args, ctx) {
     case 'finding-verifier': {
       const merged = readJson(path.join(r.dir, 'merged.json'), null);
       if (!merged) throw new UsageError('run `uie findings merge` before building the verifier packet');
-      // Advisory observations (tool hits of rules that gate nothing) are measurements, not candidates (ADR-038).
+      // Advisory observations (tool hits of rules that gate nothing) are measurements, not candidates (ADR-038), and
+      // design notes (critics' remarks that name no harm) are listed in the report, not verified (ADR-040). A critic's
+      // candidate that names a harm carries it, so the verifier checks the harm as well as the page.
       const cands = merged.findings
-        .filter((f) => f.status === 'candidate' && !(f.advisory && (f.found_by || []).every((b) => b.role === 'tool')))
-        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
+        .filter((f) => f.status === 'candidate' && !(f.advisory && (f.found_by || []).every((b) => b.role === 'tool')) && !f.design_note)
+        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, ...(f.harm ? { harm: f.harm } : {}), locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
       // With many candidates the lead splits them between parallel verifiers (--parts n); each part keeps a route's
       // candidates together and writes its own verdict file, which apply-verdicts reads with the others.
       const parts = args.parts ? intOpt(args.parts, 'parts', { min: 1, max: 9 }) : 1;

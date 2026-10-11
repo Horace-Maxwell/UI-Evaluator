@@ -632,6 +632,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "harm": {
+          "$ref": "#/$defs/harm"
         }
       },
       "patternProperties": {
@@ -654,6 +657,36 @@
           "locations"
         ]
       }
+    },
+    "harm": {
+      "type": "object",
+      "description": "The harm a design critic's finding does to the product's users, or the PRODUCT.md or DESIGN.md line it breaks. A critic's candidate without it is a design note: listed in the report, never verified, rated or counted (ADR-040).",
+      "required": [
+        "kind",
+        "statement"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "task",
+            "misread",
+            "trust",
+            "requirement"
+          ],
+          "description": "task: a step is slowed or fails; misread: users take something for what it is not; trust: a trust signal PRODUCT.md asks for is missing or contradicted; requirement: a PRODUCT.md or DESIGN.md line is broken"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Who is harmed and how, on this page, in the product's terms"
+        },
+        "requirement": {
+          "type": "string",
+          "minLength": 5,
+          "description": "For kind requirement: the line it breaks, quoted, with its file"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

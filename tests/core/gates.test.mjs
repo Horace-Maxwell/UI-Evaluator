@@ -265,6 +265,28 @@ test('packet screen lists name each screenshot by its route, not its evidence fo
   assert.equal(byFolder.root.variant, '375-dark');
 });
 
+test('design notes stay out of the verifier packet and are listed apart in the report (ADR-040)', (t) => {
+  const { root, runDir, env } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const uie = (...a) => execFileSync(process.execPath, [UIE, ...a], { cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const crit = [{ role: 'design-critic', agent: 'critic-1', method: 'critic' }];
+  const f = (id, title, extra) => ({ id, status: 'candidate', title, description: `${title}, at 375 px.`, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H5', primary: true }], locations: [{ route: '/', state: 'default', selector: `#${id}` }], evidence: [], found_by: crit, ...extra });
+  fs.writeFileSync(path.join(runDir, 'merged.json'), JSON.stringify({ schema: 'merged', run: path.basename(runDir), findings: [
+    f('F-0001', 'Every card shows the same wrench glyph', { design_note: true }),
+    f('F-0002', 'Sessions before the chosen day are offered', { harm: { kind: 'task', statement: 'Members may pick a session that contradicts the day they chose.' } }),
+    f('F-0003', 'An empty search leaves the old results', { found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }] }),
+  ], proposals: [] }));
+  uie('packet', '--role', 'finding-verifier');
+  const cands = JSON.parse(fs.readFileSync(path.join(runDir, 'packets', 'finding-verifier-1', 'candidates.json'), 'utf8'));
+  const list = Array.isArray(cands) ? cands : cands.candidates;
+  assert.deepEqual(list.map((c) => c.candidate_id), ['F-0002', 'F-0003']);
+  assert.equal(list[0].harm.kind, 'task', 'the verifier sees the harm it has to check');
+  uie('report');
+  const md = fs.readFileSync(path.join(runDir, 'report.md'), 'utf8');
+  assert.match(md, /### Design notes \(not counted\)/);
+  assert.match(md, /\| F-0001 \| Every card shows the same wrench glyph \|/);
+});
+
 test('DES-01: a quick-depth critic is feedback, never a panel; critics without isolation degrade the panel', (t) => {
   const { root, runDir } = workspace();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

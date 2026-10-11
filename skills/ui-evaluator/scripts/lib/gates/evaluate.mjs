@@ -422,7 +422,8 @@ const E = {
   },
   verification(I) {
     const judged = I.runFindings.filter((f) => f.severity?.source !== 'rule' && !['rejected', 'candidate', 'split'].includes(f.status));
-    const pending = I.runFindings.filter((f) => f.status === 'candidate' && f.severity?.source !== 'rule');
+    // Design notes are never verified (ADR-040); they do not wait for anyone.
+    const pending = I.runFindings.filter((f) => f.status === 'candidate' && f.severity?.source !== 'rule' && !f.design_note);
     if (!I.verifier && (judged.length || pending.length)) return st('not_run', 'the verifier has not run');
     const unverified = judged.filter((f) => !f.verification_check && f.status !== 'disputed');
     if (unverified.length) return st('fail', `${unverified.length} reported finding(s) skipped verification`, unverified.map((f) => f.id));

@@ -42,6 +42,7 @@ Apply these steps to each candidate, in order. Stop at the first failing step, a
    - Reproduced → continue.
    - Not reproduced after a faithful attempt → `rejected` (`not_reproduced`), with your probe path.
    - The environment prevents reproduction → `needs_human`.
+   - A candidate that carries `harm` (a design critic's, ADR-040) must also show the harm it names, not only the thing it describes: try the task step it says is slowed or blocked; judge whether a member of PRODUCT.md's audience would take it the wrong way, given what else the page says; find the trust signal PRODUCT.md asks for, or the quoted PRODUCT.md or DESIGN.md line. On the page but without that harm → `rejected` (step `harm`), with the reason. A plain or generic design is not by itself a harm.
 
 5. **Absence rule.** If the candidate claims something is *missing* (`missing_element`), check that it states where it looked, and look yourself in the relevant routes and states. Missing evidence of absence → `rejected` (`absence_unsupported`), or confirm it with your own search recorded.
 

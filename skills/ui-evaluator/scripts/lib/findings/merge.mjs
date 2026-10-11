@@ -70,6 +70,13 @@ export function mergeFactorNotes(a, b) {
   return out;
 }
 
+/** A design critic's harm counts when it says how users are harmed, and quotes the line for a broken requirement (ADR-040). */
+export function namesHarm(h) {
+  if (!h || typeof h !== 'object' || !['task', 'misread', 'trust', 'requirement'].includes(h.kind)) return false;
+  if (String(h.statement || '').trim().length < 10) return false;
+  return h.kind !== 'requirement' || String(h.requirement || '').trim().length >= 5;
+}
+
 function mergeInto(target, src) {
   const crit = [...(target.criteria || [])];
   for (const c of src.criteria || []) {
@@ -80,6 +87,9 @@ function mergeInto(target, src) {
   target.evidence = uniqBy([...(target.evidence || []), ...(src.evidence || [])], (e) => `${e.type}|${e.ref || ''}|${e.detail || ''}`);
   target.found_by = uniqBy([...(target.found_by || []), ...(src.found_by || [])], (b) => `${b.role}|${b.agent || ''}|${b.method}|${b.check || ''}`);
   if (src.factor_notes) target.factor_notes = mergeFactorNotes(target.factor_notes, src.factor_notes);
+  // A design note joined by anything that is not a note becomes a finding (ADR-040); a harm named by either is kept.
+  if (target.design_note && !src.design_note) delete target.design_note;
+  if (!target.harm && src.harm) target.harm = src.harm;
   if (!target.recommendation && src.recommendation) target.recommendation = src.recommendation;
   target.merged_from = [...(target.merged_from || []), ...(src.merged_from || [src._tmp])].filter(Boolean);
   if ((target.locations || []).length > 1 && target.problem_type === 'single_location') target.problem_type = 'multiple_locations';
@@ -184,6 +194,10 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
       // `advisory` marks a deterministic observation against a rule that gates nothing (ADR-038). An inspector's
       // candidate is a finding to verify and rate whatever the inspector called it, so its own flag is dropped.
       delete f.advisory;
+      // A design critic's remark that names no harm to the product's users, and no PRODUCT.md or DESIGN.md line it
+      // breaks, is a design note: listed in the report, never verified, rated or counted (ADR-040).
+      delete f.design_note;
+      if (out.role === 'design-critic' && !namesHarm(f.harm)) f.design_note = true;
       judged.push(f);
     }
   }
@@ -348,13 +362,13 @@ export function acceptProposals(doc, ids) {
 /**
  * Same-cause proposals (ADR-039): findings the code reviewer located at one source line (the same file, within three
  * lines) describe one cause from the angles of different checks and roles. They are proposed after `--apply-locate`
- * and the lead accepts the true ones before rating, so one cause is rated and reported once. Advisory observations
- * and closed findings are left out; a proposal that already exists (same members) is not repeated.
+ * and the lead accepts the true ones before rating, so one cause is rated and reported once. Advisory observations,
+ * design notes and closed findings are left out; a proposal that already exists (same members) is not repeated.
  */
 export function sameCauseProposals(findings, existing = []) {
   const src = (f) => (f.locations || []).map((l) => l.source).find((s) => s && s.file && Number.isFinite(Number(s.line)));
   const items = findings
-    .filter((f) => !['rejected', 'dismissed', 'split', 'stale'].includes(f.status) && !f.advisory && src(f))
+    .filter((f) => !['rejected', 'dismissed', 'split', 'stale'].includes(f.status) && !f.advisory && !f.design_note && src(f))
     .map((f) => ({ f, s: src(f) }))
     .sort((a, b) => a.s.file.localeCompare(b.s.file) || Number(a.s.line) - Number(b.s.line));
   const groups = [];

@@ -290,7 +290,8 @@ export async function run(args, ctx) {
       appendIndex(ctx.root, `run ${r.id}: promoted ${out.added} new and ${out.updated} updated finding(s) into the register`);
       ctx.result({ added: out.added, updated: out.updated });
       ctx.print(`register: ${out.added} new, ${out.updated} updated (${out.register.findings.length} total).`);
-      const pending = doc.findings.filter((f) => f.status === 'candidate').length;
+      // Advisory observations and design notes stay out of the register by design (ADR-038, ADR-040).
+      const pending = doc.findings.filter((f) => f.status === 'candidate' && !f.advisory && !f.design_note).length;
       if (pending) ctx.warn(`${pending} candidate(s) were not verified and were left out of the register.`);
       return 0;
     }

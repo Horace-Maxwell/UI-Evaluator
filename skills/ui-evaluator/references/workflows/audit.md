@@ -95,7 +95,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 
    **Keep the turn while subagents run.** Never end your turn to wait for a subagent: in a non-interactive session (`claude -p`, a harness, CI) the end of the turn ends the session, and the round of 2026-10-08 lost an audit that way. If your agent tool returns when a foreground subagent finishes, spawn the parallel roles in one message and wait for them inside the turn. If it runs them in the background, keep working on what does not need their output (the deterministic summary for your own use, the merge and verification methods) and act on each completion notice; the last thing you do before the turn ends is write the reply.
 
-7. **Merge.** `uie findings merge` merges tool findings, evaluator candidates, walkthrough failures and critic design findings on a deterministic key (same locator + same failure mechanism + same state). It keeps every label and piece of evidence, and lists text-similarity merge *proposals* separately. Review the proposals and accept only true duplicates with `uie findings merge --accept <proposal-ids>` [EVAL C5].
+7. **Merge.** `uie findings merge` merges tool findings, evaluator candidates, walkthrough failures and critic design findings on a deterministic key (same locator + same failure mechanism + same state). It keeps every label and piece of evidence, and lists text-similarity merge *proposals* separately. A critic's remark that names no harm to the product's users becomes a design note: the report lists it apart, and nothing verifies, rates or counts it (ADR-040). Review the proposals and accept only true duplicates with `uie findings merge --accept <proposal-ids>` [EVAL C5].
 
 ### Verification and rating
 

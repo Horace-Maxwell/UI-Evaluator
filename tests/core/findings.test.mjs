@@ -316,6 +316,39 @@ test('part of a same-cause proposal can be accepted; the other members stay apar
   assert.match(acceptProposals(doc, ['S14']).refused[0].reason, /already applied/);
 });
 
+test("a design critic's remark that names no harm is a design note; one that names a harm is a candidate (ADR-040)", async () => {
+  const { acceptProposals, namesHarm } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-note-'));
+  try {
+    const item = (title, selector, extra = {}) => ({ title, description: `${title}, seen at 375 px in dark mode.`, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H8', primary: true }], locations: [{ route: '/', state: 'default', selector }], evidence: [], ...extra });
+    fs.mkdirSync(path.join(runDir, 'panel'));
+    fs.writeFileSync(path.join(runDir, 'panel', 'critic-1.json'), JSON.stringify({ role: 'design-critic', agent: 'critic-1', findings: [
+      item('Every card shows the same wrench glyph', '.card__thumb'),
+      item('Sessions before the chosen day are offered', '.sessions', { harm: { kind: 'task', statement: 'Members may pick a session that contradicts the day they chose.' } }),
+      item('The brand mark is set in body type', '.brand', { harm: { kind: 'requirement', statement: 'The identity rule in DESIGN.md is not followed.' } }),
+    ] }));
+    fs.mkdirSync(path.join(runDir, 'evaluators'));
+    fs.writeFileSync(path.join(runDir, 'evaluators', 'he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', candidates: [item('Card thumbnails all look alike', '.card__img')] }));
+    const res = mergeRun(runDir, { rules: {} });
+    const by = Object.fromEntries(res.findings.map((f) => [f.title, f]));
+    assert.equal(by['Every card shows the same wrench glyph'].design_note, true);
+    assert.equal(by['Every card shows the same wrench glyph'].status, 'candidate');
+    assert.equal(by['Sessions before the chosen day are offered'].design_note, undefined, 'a named harm makes it a candidate');
+    assert.equal(by['Sessions before the chosen day are offered'].harm.kind, 'task');
+    assert.equal(by['The brand mark is set in body type'].design_note, true, 'a broken requirement needs the line quoted');
+    assert.equal(by['Card thumbnails all look alike'].design_note, undefined, 'only critics write design notes');
+    // Another inspector reporting the same problem makes the note a finding.
+    const doc = { findings: res.findings, proposals: [{ id: 'P9', members: [by['Every card shows the same wrench glyph'].id, by['Card thumbnails all look alike'].id], reason: 'similar wording', kind: 'judged' }] };
+    acceptProposals(doc, ['P9']);
+    assert.equal(doc.findings.find((f) => f.title === 'Every card shows the same wrench glyph').design_note, undefined);
+    assert.equal(namesHarm({ kind: 'trust', statement: 'too short' }), false);
+    assert.equal(namesHarm({ kind: 'requirement', statement: 'Breaks the one-filled-button rule.', requirement: 'DESIGN.md: "One filled button per screen."' }), true);
+    assert.equal(namesHarm({ kind: 'looks', statement: 'It looks generic and unfinished.' }), false);
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
 test("an inspector's own advisory flag is dropped: its candidate is verified and rated like any other (ADR-038)", () => {
   const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-adv-insp-'));
   try {
