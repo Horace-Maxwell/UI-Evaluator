@@ -50,6 +50,7 @@ Apply these steps to each candidate, in order. Stop at the first failing step, a
 
 4. **Reproduce.** Reproduce the problem yourself with `uie probe` against the running UI, following the candidate's steps or your own equivalent.
    - Behavioural claims (feedback, validation, loading, errors, undo) must be reproduced by performing the interaction.
+   - A check that has to wait (a hold or session that expires, a message that arrives late): start it before the others, in the background where your tools allow, and verify the other candidates while it runs. In round 4 the verifier part that waited out a ten-minute basket hold in line took 13 to 14 minutes, the others 4 to 6.
    - Reproduced → continue.
    - Not reproduced after a faithful attempt → `rejected` (`not_reproduced`), with your probe path.
    - The environment prevents reproduction → `needs_human`.

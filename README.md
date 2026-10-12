@@ -192,6 +192,13 @@ It makes the page meet a floor you can check: accessible, well crafted, free of 
 </details>
 
 <details>
+<summary><b>Does it find more problems than the agent on its own?</b></summary>
+
+Not more of the seeded ones, so far. On two audit fixtures over four rounds, the same model without the skill found about as many seeded problems per run as the skill did (9 to 13), for 2–4% of the cost, with a browser or just by reading the source. What the skill adds is the work around each finding: several isolated inspectors, a verifier who reproduces every judged problem on the live page, three blind severity ratings, a level computed from the gates and stated even when it is "none", and a record you can check. In the fourth round it also found more of the problems nobody had seeded (9 of 10 against 7 to 9), and its judged precision was 0.71 to 0.78, under the 0.8 it aims for, mostly because of design critics' remarks, which are now kept as uncounted design notes (ADR-040). For a quick list of problems the agent alone does well; use the skill when you need the evidence, the ratings and an honest level.
+
+</details>
+
+<details>
 <summary><b>What does it cost?</b></summary>
 
 In the benchmark, a full build with the skill took about 2.7 times the tokens and 2.3 times the time of an unaided build: medians of about 860k tokens and 94 minutes against 315k and 41. Most of it goes to audits, gates and records. An audit costs what its depth asks for, and the skill states the depth and its cost before it starts.
