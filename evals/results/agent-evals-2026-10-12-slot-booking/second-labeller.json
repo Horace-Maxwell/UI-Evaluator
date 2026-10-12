@@ -1,0 +1,751 @@
+{
+  "labeller": "second",
+  "method": "Blind evaluation of the delivered bundle only (index/vehicle/confirm/done HTML, minified app.js and styles.css, PRODUCT.md, DESIGN.md, the two journeys and routes.json). I served the site with python http.server and drove it with Node Playwright 1.63 (Chromium 153) in fresh contexts per route and state, seeding each state from the URL as routes.json describes. Widths 320, 360, 361, 375, 390, 412, 768 and 1280 px, light and dark colour schemes, reduced motion, plus a WCAG text-spacing overlay at 320 px. For every route and state I took full-page screenshots, measured document scrollWidth against the viewport and each element's right edge, read computed colours and worked out WCAG contrast of text, borders and tag fills as rendered, ran axe-core (wcag2a/aa, 2.1, 2.2, best-practice), recorded Playwright accessibility-tree snapshots (a proxy for what a screen reader is told; no live VoiceOver/TalkBack was used), tabbed through pages recording focus order and the focused element's computed outline, and timed the three fixed delays (slot load 900 ms, permit field 1200 ms, booking 1500 ms) with sampled reads. I then walked both journeys at 375 px asking the four walkthrough questions at each action, and exercised the time and interruption cases: pressing Next during a load, double-pressing Book, hold=expired, today's past slots, Back from the vehicle step, Change slot/Change vehicle after typing details, Enter in fields, reopening the done link in a fresh tab, and the masthead anchor from another page. The bundle is small (12 KB) and esbuild-minified without source maps, so I could read all of its logic: the HSL colour tokens set at run time (which differ from DESIGN.md's hex values, so I measured rendered colours rather than trusting the spec), the seeded per-date slot generator, the 5-minute hold, the injected .slot:focus{outline:0} rule, the order:-1 on few-left slots, the <=360 px grid override, the validation patterns and the double-click cancel path. It did not give me component or variable names, comments, or any real backend: booking and availability are simulated by timeouts, so I could not judge server errors, true slot availability, the reminder SMS or what the gate's list contains. Severity bands combine frequency, impact and persistence on the 0-4 scale; the lower number is my floor, the upper the most a reasonable colleague would argue for.",
+  "defects": [
+    {
+      "id": "L01",
+      "title": "A second press on \"Book this slot\" silently turns the booking into a cancellation",
+      "description": "Pressing \"Book this slot\" starts a 1.5 s wait with no visible change (see L02). If the resident presses again during that wait, the bundle sets a cancel flag (f=!0), relabels the button \"Cancel booking\" after the fact, and when the timer fires it stores status \"cancelled\" and navigates to done.html. Reproduced at 375 px: two clicks 250 ms apart produced done.html?ref=DR-265532 with \"Status: cancelled. This booking is not on the gate's list.\" A resident who double-taps an unresponsive button, which is the normal phone reflex, arrives on Saturday with a loaded car and a reference that is not on the gate's list, and is turned away. Nothing asks for confirmation and nothing explains the change.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": "#book",
+      "criterion": "H5",
+      "also_criteria": [
+        "H1",
+        "H3",
+        "3.3.4",
+        "CW-Q4"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        3,
+        4
+      ],
+      "evidence": "reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 16,
+        "question": "CW-Q4",
+        "story": "The resident taps \"Book this slot\". The button looks exactly as before (same label, not greyed, no spinner) so they assume the tap did not register and tap again. The label flips to \"Cancel booking\", which they have no time to read, and a second later the page says \"Booked\" with a reference, followed by a red line saying the booking is cancelled. They either do not read past the big reference or do not understand why it is cancelled; either way the Saturday visit fails at the gate."
+      }
+    },
+    {
+      "id": "L02",
+      "title": "\"Book this slot\" shows no busy state for the 1.5 s it takes to book",
+      "description": "After the click the button gets aria-busy=\"true\" but nothing visible changes: label still \"Book this slot\", background unchanged (rgb(39,104,74); the only change measured was the hover shade under the pointer), not disabled, cursor still pointer, no spinner, no status text, and the toast element is never written to. Measured 1536 ms from click to done.html. On a phone this reads as a dead tap, which invites the double press that causes L01, and even without L01 it leaves the resident unsure whether anything is happening.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": "#book[aria-busy=true]",
+      "criterion": "H1",
+      "also_criteria": [
+        "CW-Q4",
+        "4.1.3"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "measured; reproduced in the browser",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 16,
+        "question": "CW-Q4",
+        "story": "After pressing the only button on the page the resident sees nothing happen for a second and a half. They look for an error, scroll, or press again; they cannot tell that the booking is in progress because the page gives no sign of it."
+      }
+    },
+    {
+      "id": "L03",
+      "title": "The cancelled done page is titled and headed \"Booked\" and still says \"Show this at the gate\"",
+      "description": "In the cancelled state the page title is \"Booked - Dunmore recycling centre\", the h1 is \"Booked\", the reference is shown at 32 px bold, and the paragraph \"Show this at the gate, on your phone or on paper\" and the \"At the centre\" directions follow; the only contrary signal is one red line, \"Status: cancelled. This booking is not on the gate's list.\", placed under the reference. A resident skimming on a phone, or a screen-reader user hearing the heading and the reference first, takes away that the slot is booked. The page also offers no way to rebook that slot other than the generic \"Book another slot\", and does not say why it was cancelled.",
+      "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=cancelled",
+      "state": "cancelled",
+      "selector": "body[data-page=done] h1, #status",
+      "criterion": "H1",
+      "also_criteria": [
+        "H2",
+        "2.4.2",
+        "H9"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        3,
+        4
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L04",
+      "title": "\"Few left\" slots are pulled out of time order to the top of the grid, ahead of the Morning heading",
+      "description": "Every slot tagged \"Few left\" is rendered with an inline style order:-1, so in the CSS grid it is placed before the \"Morning\" heading. On Saturday 17 October the grid reads 08:20, 08:40, 09:00, 09:40, 10:20, 10:40, 13:40, 14:00, 15:00, 16:40, then \"Morning\" 08:00, 09:20, 10:00, 11:00 Full…, then \"Afternoon\" 12:00 Full, 12:20…, so the times are not in sequence and the section headings are wrong for a third of the slots. Measured DOM order is chronological while the visual order is not, so keyboard Tab order and screen-reader order both differ from what a sighted resident sees (Tab goes 08:00, 08:20, 08:40… while the eye starts at 08:20 in the top-left). Residents scanning for \"Saturday morning around nine\" have to search two places, and a slot like 13:40 sits visually in the morning block.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots .slot[style*=\"order\"]",
+      "criterion": "2.4.3",
+      "also_criteria": [
+        "1.3.2",
+        "H4",
+        "H6",
+        "H8",
+        "CW-Q2"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "measured; reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 4,
+        "question": "CW-Q2",
+        "story": "Wanting a Saturday morning slot, the resident looks at the top of the grid and sees 08:20, 08:40, 09:00, 09:40, 10:20, 10:40 and then 13:40, 14:00, 15:00, 16:40 before a heading that says \"Morning\" with 08:00, 09:20 and 10:00 under it. They cannot tell whether the first block is the morning, whether 13:40 is a morning slot, or where the 09:20 they wanted is; some pick the first amber slot because it is first and looks urgent."
+      }
+    },
+    {
+      "id": "L05",
+      "title": "Keyboard focus is invisible on every slot button",
+      "description": "The bundle injects a <style> rule \".slot:focus{outline:0}\" at run time, which beats the stylesheet's \":focus-visible{outline:3px solid var(--c-focus)}\" on specificity. Measured after pressing Tab onto a slot: outline-width 0px, outline-style none, box-shadow none, while the Next button in the same page shows the 3 px ring. A keyboard-only resident tabbing through up to 29 slot buttons has no idea which one is focused and will press Enter on the wrong time; this is the critical choice of the whole flow. The same loss applies after \"Next\" without a slot, which moves focus to the first slot (L22).",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": ".slot:focus",
+      "criterion": "2.4.7",
+      "also_criteria": [
+        "H1",
+        "2.4.11"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "measured; reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L06",
+      "title": "\"Few left\" tag text fails colour contrast in light and dark mode",
+      "description": "The tag is 16 px bold (not large text). Measured as rendered: light #bd7d0f on #fbefda = 3.02:1; dark #ab7c2b on #3c3220 = 3.38:1; both below 4.5:1 (axe-core also flags it, serious). The tag background itself is 1.14:1 (light) and 1.25:1 (dark) against the slot, so the amber label is faint as well as low-contrast. Older residents in the evening, in dark mode, cannot read which slots are nearly gone; the only other cue is the order trick in L04.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": ".slot__tag--few",
+      "criterion": "1.4.3",
+      "also_criteria": [
+        "1.4.11"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        2
+      ],
+      "evidence": "measured"
+    },
+    {
+      "id": "L07",
+      "title": "At widths of 360 px and below the slot grid is wider than the page and the third column is cut off",
+      "description": "A resize handler forces grid-template-columns to repeat(3, floor((innerWidth-16)/3)px) whenever innerWidth <= 360. At 320 px that is three 101 px columns plus two 8 px gaps = 319 px inside a 288 px content column: document scrollWidth 335 > 320, the right-hand slots end at x=335 and are clipped by the viewport; at 360 px scrollWidth is 374 (third column ends at 374). At 361 px the auto-fill grid takes over and fits. 360 px is the most common Android CSS width and 320 px is the iPhone SE, and the same override fires at 200 % zoom in a 720 px window and on a live resize. Residents see half a column, must scroll sideways to tap 09:00, 09:40, 10:40 and so on, and the whole page wobbles horizontally.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots[style*=\"repeat(3\"]",
+      "criterion": "1.4.10",
+      "also_criteria": [
+        "1.4.4",
+        "H8"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "measured; reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L08",
+      "title": "Nothing is shown while slots load (900 ms) and Next silently does nothing meanwhile",
+      "description": "Choosing a day (and the first page load) empties the grid and the status line and renders the slots after a fixed 900 ms timeout. During that time there is no \"Loading\" text, no spinner, no aria-busy, the day heading still shows the previous day (\"Monday 12 October\" measured after tapping Saturday 17), and Next is enabled but its click handler returns without feedback (URL unchanged, no error) because an internal loading flag is set. The persona does not know slots take a moment: a resident taps \"Saturday 17\", sees the list vanish, and either taps Next (nothing), taps the day again (restarting the wait), or concludes there are no slots.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots, #slots-status, #next",
+      "criterion": "H1",
+      "also_criteria": [
+        "CW-Q4",
+        "4.1.3"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "measured; reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 2,
+        "question": "CW-Q4",
+        "story": "The resident taps \"Saturday 17\". The slot list disappears, the \"20 slots free\" line goes blank, the small heading still says \"Monday 12 October\", and the button they tapped looks the same. For almost a second there is no sign the tap worked; they tap Next, nothing happens, so they tap Saturday again, which restarts the wait. When the slots finally appear they are not sure these are Saturday's."
+      }
+    },
+    {
+      "id": "L09",
+      "title": "The chosen day is not shown on the day buttons; only a small grey line under \"Slots\" changes",
+      "description": "\"Tomorrow\", \"Saturday 17\" and \"Sunday 18\" are plain buttons with no aria-pressed, aria-current or selected style: measured identical computed background, border and weight before and after choosing Saturday. The only indications are the 16 px muted line \"Saturday 17 October\" and the status \"22 slots free on Saturday 17 October\" below, both in the muted colour (rgb(78,95,87)). The hidden date field is updated but out of view. Sighted residents glance at the buttons to confirm which day they are booking and get no answer; screen-reader users are told \"button, Saturday 17\" with no pressed state at all.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "[data-quick]",
+      "criterion": "H1",
+      "also_criteria": [
+        "4.1.2",
+        "H6",
+        "CW-Q4"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        2
+      ],
+      "evidence": "measured; reproduced in the browser",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 2,
+        "question": "CW-Q4",
+        "story": "After tapping \"Saturday 17\" the resident looks at the three day buttons to check the right one is selected; they all look the same. The confirmation is a line of small grey text further down that they may not read, so they are not sure the slots they are about to choose from are Saturday's, especially because the list first showed Monday's."
+      }
+    },
+    {
+      "id": "L10",
+      "title": "Today's slots that have already passed, or are inside the 30-minute cut-off, are offered as free",
+      "description": "The page opens on today (Monday 12 October, fixed clock 10:05) and the generator makes slots for 08:00 to 17:20 regardless of the time: 08:00, 08:20 \"Few left\", 09:00, 09:20 \"Few left\", 09:40, 10:00 and 10:20 are enabled and the status says \"20 slots free on Monday 12 October\". Clicking 08:00 sets aria-pressed=true and stores the slot; the resident goes through vehicle and details, waits 1.5 s on Book, and only then reads \"The 09:20 slot today can no longer be booked. Choose another slot or day.\" with no link, while the summary still shows the slot. The brand promise is \"a slot shown as free is free at that moment\"; here the first list every resident sees breaks it, and the error arrives at the very end of the flow.",
+      "route": "/",
+      "state": "default",
+      "selector": ".slot[data-slot=\"08:00\"], .slot[data-slot=\"09:20\"]",
+      "criterion": "H5",
+      "also_criteria": [
+        "H1",
+        "H9",
+        "3.3.1"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L11",
+      "title": "The 5-minute hold on a chosen slot is never mentioned, counted down or warned about",
+      "description": "Choosing a slot starts a 5-minute hold (hold_started in sessionStorage) that runs through the vehicle and details steps, but no page says a slot is held or for how long: a word-boundary search of all four pages finds no \"hold\"/\"held\", no \"5 minutes\", no timer or countdown; the only duration on screen is \"20 minutes\". The persona explicitly does not know how long a slot is held. A resident interrupted at home (the stated context) finishes the four fields, presses Book, waits 1.5 s and loses the slot (L12) with no chance to extend or to hurry.",
+      "route": "*",
+      "state": "default",
+      "selector": "#slots-status, #sum-slot",
+      "criterion": "2.2.1",
+      "also_criteria": [
+        "H1",
+        "H5",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "read in the bundle; reproduced in the browser (hold=expired path)",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 12,
+        "question": "CW-Q4",
+        "story": "Typing registration, name, mobile and postcode on a phone while the kids are being put to bed, the resident has no idea a clock has been running since they tapped 09:20. Nothing on the confirm page shows time remaining, so a pause of a few minutes ends in \"This slot is no longer available\" after they finally press Book."
+      }
+    },
+    {
+      "id": "L12",
+      "title": "An expired hold is only discovered after pressing Book, and the message hides what happened and how to recover",
+      "description": "With hold=expired the confirm page loads exactly like the default state (summary \"09:20 to 09:40\", no warning), although the bundle already knows the hold started more than 5 minutes ago. Only after Book plus the 1.5 s wait does an error summary appear: \"This slot is no longer available.\" with no link, the Slot row changes to \"—\" while the Day row still says \"Saturday 17 October · Change slot\", and the slot is wiped from storage. The wording suggests someone else took it (it may still be free; it is the hold that lapsed), does not say to choose again, and a second press of Book produces a different message, \"Choose a slot\", linking to the When page, which then opens on Monday with nothing selected (L16).",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired",
+      "state": "expired",
+      "selector": "#error-summary, #sum-slot",
+      "criterion": "H9",
+      "also_criteria": [
+        "H1",
+        "H5",
+        "3.3.1",
+        "3.3.3"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L13",
+      "title": "The permit field appears 1.2 s after choosing Van or Car with trailer, with no indication it is coming",
+      "description": "Selecting \"Van\" starts a 1200 ms timeout before #permit-wrap is unhidden: measured hidden at 108, 608 and 1110 ms, visible at 1254 ms. Nothing announces it (no aria-live, no focus move), and in the meantime the page looks complete, so a resident who ticks the waste and taps Next inside 1.2 s leaves with no permit (L14); one who waits sees a field pop in under the vehicle buttons after they have moved on to the checkboxes. Screen-reader users are never told the field exists unless they re-read the page.",
+      "route": "/vehicle.html?date=2026-10-17&slot=09:20",
+      "state": "van",
+      "selector": "#permit-wrap",
+      "criterion": "H1",
+      "also_criteria": [
+        "4.1.3",
+        "CW-Q2",
+        "3.2.2"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        2
+      ],
+      "evidence": "measured; reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L14",
+      "title": "A van or trailer booking passes the vehicle step without a permit; the error comes at the end and is not linked",
+      "description": "Next on the vehicle step validates only the vehicle choice and at least one waste type; the permit is never checked there, even though the hint says \"Starts DRC-, then five digits.\" Reproduced: Van, Garden waste, Next 400 ms later goes to confirm, where the summary reads \"Van, no permit given\" as if that were acceptable; after the details and the 1.5 s wait the error summary says \"A van needs a permit number (DRC- and five digits).\" with no link to the field, which is two pages back behind \"Change vehicle\". The rule that vans are turned away is the one residents fear most, and the service lets them get to the last button before applying it.",
+      "route": "/vehicle.html?date=2026-10-17&slot=09:20",
+      "state": "van",
+      "selector": "#permit, #next",
+      "criterion": "H5",
+      "also_criteria": [
+        "H9",
+        "3.3.1",
+        "3.3.3"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L15",
+      "title": "Where a permit comes from, and that it takes two working days, is hidden behind an unlabelled \"i\" icon",
+      "description": "The only text saying a van or trailer \"needs a free permit from the council… Apply on the council site; it comes by email within two working days\" is in #info-panel, opened by a 44 px icon-only button (aria-label \"About vans and trailers\") that sits after the segmented buttons. The permit hint beside the field says only \"Starts DRC-, then five digits.\" The product brief says van residents do not know where the number comes from, and the design brief says rules sit beside the control they govern; a resident booking a van for tomorrow discovers the two-day wait only if they tap the icon.",
+      "route": "/vehicle.html?date=2026-10-17&slot=09:20",
+      "state": "default",
+      "selector": "#info, #permit-hint",
+      "criterion": "H6",
+      "also_criteria": [
+        "H10",
+        "3.3.2"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L16",
+      "title": "The When step forgets the booking in progress: Back or \"Change slot\" shows today with nothing selected",
+      "description": "The When page always initialises to today and no slot (f=T, a=\"\") even when sessionStorage holds date and slot. Reproduced: after choosing Saturday 09:20 and pressing Next, the browser Back button shows \"Monday 12 October\", 0 pressed slots, and Next answers \"Choose a slot first.\"; from the confirm page \"Change slot\" lands on the same Monday list with the Saturday booking still in storage. The resident cannot see what they had, must re-find the day and re-pick, and nothing says the rest of the booking is kept. A resident who presses Next without noticing is told to choose a slot they already chose.",
+      "route": "/",
+      "state": "default",
+      "selector": "#day-heading, #slots",
+      "criterion": "CW-Q4",
+      "also_criteria": [
+        "H6",
+        "H3",
+        "H1"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "change-slot",
+        "step": 2,
+        "question": "CW-Q4",
+        "story": "The resident taps \"Change slot\" expecting to see Saturday 17 with 09:20 marked and to pick 14:20 instead. The page that opens shows \"Monday 12 October\", a blank grid for a second, then Monday's slots with nothing selected. They wonder whether the booking has been lost and whether the vehicle and waste they entered are gone; some pick a Monday afternoon slot by mistake because it is the list in front of them."
+      }
+    },
+    {
+      "id": "L17",
+      "title": "Details typed on the confirm page are lost when the resident changes the slot or vehicle",
+      "description": "Registration, name, mobile and postcode are saved to storage only when Book is pressed. Reproduced: fill all four fields, tap \"Change slot\", re-pick Saturday 14:20, Next, Next: back on confirm all four inputs are empty (storage has no details). The same happens via \"Change vehicle\" and on a reload. The change-slot persona's open question is whether changing keeps the rest of the booking; the vehicle and waste survive but the typed details do not, so the resident re-enters everything, on a phone, with the 5-minute hold running (L11).",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": "#reg, #name, #phone, #postcode",
+      "criterion": "3.3.7",
+      "also_criteria": [
+        "H6",
+        "H7",
+        "CW-Q4"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "change-slot",
+        "step": 11,
+        "question": "CW-Q4",
+        "story": "Back on the confirm page after moving to 14:20, the resident sees \"14:20 to 14:40\" in the summary and feels done, then notices the registration, name, mobile and postcode they had already typed are blank again and must be re-entered before the hold runs out."
+      }
+    },
+    {
+      "id": "L18",
+      "title": "Changing the slot sends the resident back through the vehicle step before they can book",
+      "description": "\"Change slot\" is a plain link to index.html, and from there the only way forward is Next → vehicle.html → Next → confirm.html; there is no return to the confirm step. In the change-slot journey this adds a page that asks a question already answered (the Car button and the Garden waste/Wood boxes are shown pre-selected, which helps) and a second Next. A resident who only wanted the afternoon has to re-confirm the vehicle to get back.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": ".summary a[href=\"index.html\"]",
+      "criterion": "H7",
+      "also_criteria": [
+        "CW-Q1",
+        "CW-Q3"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "reproduced in the browser",
+      "cw": {
+        "journey": "change-slot",
+        "step": 9,
+        "question": "CW-Q1",
+        "story": "Having picked 14:20 and pressed Next, the resident expects to be back on \"Check and book\" but gets \"Your vehicle and waste\" again. They hesitate: do they need to choose the car again? Is this a new booking? Only after noticing Car is already outlined do they press Next once more."
+      }
+    },
+    {
+      "id": "L19",
+      "title": "The done page never states the day, slot or vehicle that was booked",
+      "description": "done.html shows only the reference, \"Show this at the gate…\", directions and a \"Book another slot\" link. Measured page text contains no \"Saturday\", \"17 October\", \"09:20\" or \"Car\" although all of it is in storage and in the URL. This is the page residents screenshot or print for the gate and reopen on Saturday morning to remember when to leave; it does not tell them, and the attendant \"checks the reference and the vehicle\" against a page that names neither.",
+      "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=booked",
+      "state": "default",
+      "selector": "body[data-page=done] .summary",
+      "criterion": "H6",
+      "also_criteria": [
+        "H1",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "reproduced in the browser; read in the bundle",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 17,
+        "question": "CW-Q4",
+        "story": "The resident reaches \"Booked\" with a reference and feels relieved, then on Saturday morning opens the screenshot to check the time and finds no day or time on it; they have to trust memory or phone the council line, which is closed at the weekend."
+      }
+    },
+    {
+      "id": "L20",
+      "title": "The \"Another day\" field demands DD/MM/YYYY but opens a digits-only keyboard and rejects dates typed without slashes",
+      "description": "#date is type=text with inputmode=\"numeric\", so phones show a 0-9 keypad (iOS has no \"/\" on it), while the parser requires a separator (/ . or -) between the parts: typing 17102026 gives \"Enter a day as DD/MM/YYYY, for example 17/10/2026.\" Reproduced. A resident who needs Friday or next Monday (the quick buttons cover only tomorrow and the weekend) cannot enter the date on an iPhone without switching keyboards, and the error tells them to type a character the keyboard does not offer.",
+      "route": "/",
+      "state": "default",
+      "selector": "#date[inputmode=numeric]",
+      "criterion": "H5",
+      "also_criteria": [
+        "3.3.2",
+        "H7",
+        "H9"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "read in the bundle; reproduced in the browser"
+    },
+    {
+      "id": "L21",
+      "title": "\"No slots on Wednesday 14 October\" gives no reason, whether the centre is closed, the day is past, or it is beyond the 14-day window",
+      "description": "The same status line is produced for a Wednesday (closed), 10/10/2026 (past) and 27/10/2026 (day 15): \"No slots on <day>\". Measured for all three. The reason exists on the page (Opening days) or in the hint (\"up to 14 days ahead\") but the message does not point to it, so a resident who typed next Wednesday assumes the day is fully booked and tries the week after instead of Thursday.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots-status",
+      "criterion": "H9",
+      "also_criteria": [
+        "H1",
+        "3.3.3"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L22",
+      "title": "\"Choose a slot first.\" is not announced and focus jumps to a slot with no visible ring",
+      "description": "Pressing Next without a slot writes the error into #slot-error (a plain <p>, no role, no aria-live, not referenced by the group or any control) at y=55 and moves focus to the first enabled slot in DOM order (08:00, at y=305, outline 0 px because of L05). A screen-reader user hears \"08:00, toggle button, not pressed\" and nothing about an error; a keyboard user sees no focus and no obvious change; a sighted mouse user may be scrolled past the message, which sits above the grid.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slot-error",
+      "criterion": "4.1.3",
+      "also_criteria": [
+        "3.3.1",
+        "2.4.7",
+        "H9"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "measured; reproduced in the browser"
+    },
+    {
+      "id": "L23",
+      "title": "The slot-count status line only becomes a live region after its first update, so the first count is never announced",
+      "description": "#slots-status has no aria-live in the HTML; the bundle sets aria-live=\"polite\" after writing the text (measured: null during the first 900 ms, \"polite\" afterwards). Screen readers announce changes to regions that already exist as live, so the first \"20 slots free on Monday 12 October\" (and the first list after a day change in a fresh load) is silent; later changes are announced. A screen-reader resident lands on the page and hears nothing when the slots arrive.",
+      "route": "/",
+      "state": "default",
+      "selector": "#slots-status",
+      "criterion": "4.1.3",
+      "also_criteria": [
+        "H1"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "measured; read in the bundle"
+    },
+    {
+      "id": "L24",
+      "title": "\"Opening days\" from any other page lands on the slot grid, because the slots render 900 ms later and push the target away",
+      "description": "The masthead link goes to index.html#opening. On a fresh load the browser scrolls to the anchor while the grid is still empty (measured at 200 ms: section top 211 px into the viewport), then the 29 slots render and the section is 1234 px below the viewport (measured at 1400 ms; the viewport now shows the When heading and day buttons). From vehicle, confirm or done the resident who wanted the opening days and the permit rule sees the slot picker instead and may think they have left or restarted their booking.",
+      "route": "*",
+      "state": "default",
+      "selector": "nav a[href=\"index.html#opening\"]",
+      "criterion": "H4",
+      "also_criteria": [
+        "H1",
+        "2.4.4"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "measured; reproduced in the browser"
+    },
+    {
+      "id": "L25",
+      "title": "Slot buttons and cards are outlined at 1.44:1 (light) and 1.87:1 (dark), on a fill 1.09:1 from the page",
+      "description": "Measured borders: .slot #c7d1cc on #f4f6f5 = 1.44:1 and white fill vs ground 1.09:1 in light; #3c4943 on #141a17 = 1.87:1 and #1d2521 fill vs ground 1.13:1 in dark. The border is the only thing that marks where each slot button is (the time text has no other affordance), so for older residents the grid reads as loose times on a pale page; the same rule colour outlines the summary, notice and choice cards, where it is decorative. The chosen slot does get a 2 px accent border and tint.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": ".slot, .choice, .summary, .notice",
+      "criterion": "1.4.11",
+      "also_criteria": [
+        "H8"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "measured"
+    },
+    {
+      "id": "L26",
+      "title": "The registration check rejects older and non-standard UK plates, so some residents cannot book at all",
+      "description": "The only accepted pattern is two letters, two digits, three letters (current format from 2001). Reproduced: \"R123 ABC\" (prefix), \"ABC 123A\" (suffix), \"ABC 1234\" (Northern Ireland) and \"A1 BCD\" (dateless) all get \"Enter the registration, like AB12 CDE\". Residents with an older car, a personalised plate or an NI plate, who are disproportionately the older residents the brief describes, are stopped at the last step with a message that implies their real registration is wrong; the gate checks the vehicle, so they cannot sensibly make one up.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "errors",
+      "selector": "#reg",
+      "criterion": "H5",
+      "also_criteria": [
+        "H9",
+        "3.3.3",
+        "H7"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        2,
+        3
+      ],
+      "evidence": "read in the bundle; reproduced in the browser"
+    },
+    {
+      "id": "L27",
+      "title": "The mobile-number check rejects common spellings (\"07700 900 123\", \"+44 7700 900123\") while accepting a landline",
+      "description": "Pattern ^0\\d{4}\\s?\\d{6}$: reproduced \"07700 900 123\" and both +44 forms rejected with \"Enter a UK mobile number, like 07700 900123\", while \"01632 960771\" (the council's own landline) passes as a \"mobile\". Residents who paste their number from Contacts (often +44) or write it in the usual three groups are told it is wrong and must retype it in the one spacing the page likes; the reminder SMS promised by the hint would also go nowhere for the accepted landline.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "errors",
+      "selector": "#phone",
+      "criterion": "H5",
+      "also_criteria": [
+        "H9",
+        "3.3.3"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "read in the bundle; reproduced in the browser"
+    },
+    {
+      "id": "L28",
+      "title": "Pressing Enter (or the keyboard's Go/Done) in the details fields does nothing",
+      "description": "The inputs are not inside a <form>, so Enter in Registration, Name, Mobile or Postcode neither submits nor moves on (reproduced: URL unchanged, no validation). On the When page Enter in the date field does trigger \"Show slots\", so behaviour is inconsistent within the service; residents who finish the postcode and hit Go/Return must find and tap the button below.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": "#details input",
+      "criterion": "H4",
+      "also_criteria": [
+        "H7",
+        "2.1.1"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L29",
+      "title": "On a phone, Next sits about a screen below the morning slots",
+      "description": "At 375 px the 09:20 slot is at y=1049 and the Next button at y=1640 (591 px apart, with 29 slots and two headings between the day buttons and Next; at 320 px 1105 vs 1696). After choosing a morning slot a resident sees no button and must scroll through the whole afternoon to find Next; nothing floats or follows. Minor because scrolling is natural, but it compounds the uncertainty from L09 and L08 about whether a tap registered.",
+      "route": "/",
+      "state": "slot-chosen",
+      "selector": "#next",
+      "criterion": "CW-Q2",
+      "also_criteria": [
+        "H7"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "measured",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 5,
+        "question": "CW-Q2",
+        "story": "Having tapped 09:20 (now outlined), the resident looks for a way to continue; there is nothing on screen but more slots. They scroll past the afternoon until a green Next appears under 17:20."
+      }
+    },
+    {
+      "id": "L30",
+      "title": "The slot's end time and the \"arrive within your slot\" rule live only in a hover tooltip",
+      "description": "Each slot carries title=\"09:20 to 09:40. Arrive within your slot.\" and nothing else states the end time until the confirm summary; the accessible name is just \"09:20\" (or \"09:20 Few left\"). Phone users never see titles, so the persona who does not know a slot lasts twenty minutes relies on the intro sentence alone; the rule that matters at the gate is in the least visible place.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": ".slot[title]",
+      "criterion": "H6",
+      "also_criteria": [
+        "H10"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "read in the bundle; reproduced in the browser"
+    },
+    {
+      "id": "L31",
+      "title": "The \"Slots\" heading is jammed against the day buttons (0 px gap), so the two sections read as one block",
+      "description": "Measured 0 px between the bottom of \"Another day\" and the top of the h2 \"Slots\" at 375 px and 1280 px, against 16–24 px steps elsewhere (the When section's last visible child is the button row because the date row is hidden). Cosmetic: it makes the day controls look like part of the slot list and the heading look misplaced; it does not stop a task, hence the low band.",
+      "route": "/",
+      "state": "default",
+      "selector": "#slots-heading",
+      "criterion": "H8",
+      "also_criteria": [],
+      "kind": "judged",
+      "severity_band": [
+        0,
+        1
+      ],
+      "evidence": "measured"
+    },
+    {
+      "id": "L32",
+      "title": "The reminder promised by the mobile-number hint is never confirmed",
+      "description": "The confirm page asks for a mobile \"For a reminder the evening before\", but the done page (measured text) says nothing about a reminder, a text message or when it will arrive, so residents do not know whether to expect one or to set their own. Low band: it does not affect getting the slot, only confidence afterwards.",
+      "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=booked",
+      "state": "default",
+      "selector": "body[data-page=done] main",
+      "criterion": "H1",
+      "also_criteria": [
+        "H4"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        0,
+        1
+      ],
+      "evidence": "reproduced in the browser"
+    },
+    {
+      "id": "L33",
+      "title": "A cancelled booking reopened from its link shows \"Booked\" with no status, because the status lives only in this tab's session",
+      "description": "The done URL carries only ref=…; status is kept in sessionStorage. Reproduced: after a double-press cancellation the original tab shows the red cancelled line, while the same URL opened in a fresh tab shows h1 \"Booked\", the reference, and no status at all. A resident who copies the link to a partner, or whose phone reopens the page in a new tab on Saturday, sees a clean \"Booked\" page for a booking the gate will not have.",
+      "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=cancelled",
+      "state": "cancelled",
+      "selector": "#status",
+      "criterion": "H1",
+      "also_criteria": [
+        "H5"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        2
+      ],
+      "evidence": "reproduced in the browser; read in the bundle"
+    },
+    {
+      "id": "L34",
+      "title": "The only way to change the time is a link in the Day row that wraps as \"Change / slot\"; the Slot row has no control",
+      "description": "In the summary, \"Change slot\" follows the day (\"Saturday 17 October · Change slot\") and at 375 px wraps onto two lines (measured link box 236 × 49 px), while the \"Slot 09:20 to 09:40\" row, where a resident wanting a different time looks, has nothing. Residents find it after a moment; a small recognition cost on the change-slot journey's first step.",
+      "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+      "state": "default",
+      "selector": ".summary dd:first-of-type a",
+      "criterion": "CW-Q2",
+      "also_criteria": [
+        "H6",
+        "H4"
+      ],
+      "kind": "judged",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "measured; reproduced in the browser",
+      "cw": {
+        "journey": "change-slot",
+        "step": 1,
+        "question": "CW-Q2",
+        "story": "Wanting the afternoon, the resident reads the summary row \"Slot 09:20 to 09:40\" and sees nothing to tap; they look at the Day row above and find a green \"Change\" with \"slot\" on the next line. Most get there, after a pause, and some tap \"Change vehicle\" first because it is the clearer link."
+      }
+    },
+    {
+      "id": "L35",
+      "title": "Keyboard users must Tab through every open slot (about 22 stops) to reach Next; there is no arrow-key grid",
+      "description": "Measured Tab sequence on Saturday 17: Tomorrow, Saturday 17, Sunday 18, Another day, then 22 enabled slots one by one, then Next. Full slots are disabled and skipped, which also hides them from the keyboard entirely. Combined with L05 (no focus ring) and L04 (visual order differs), a keyboard-only resident counts Tab presses blind. Minor on its own.",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots .slot",
+      "criterion": "H7",
+      "also_criteria": [
+        "2.4.3",
+        "2.1.1"
+      ],
+      "kind": "deterministic",
+      "severity_band": [
+        1,
+        1
+      ],
+      "evidence": "measured"
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+{
+  "fixture": "slot-booking",
+  "clean": false,
+  "provenance": "Seeded by construction on 2026-10-12 as a harder companion to tool-library, whose readable source a session could read and from which a control found nearly every problem. This fixture ships as a production build (one minified bundle, a minified stylesheet; the source is kept in evals/fixtures-src/ and is not part of the fixture), its colours are computed at run time from a hue, and every seeded problem lives in timing, geometry, computed colour, runtime order or state rather than in the markup or the strings: a session that reads the bundle gets the labels and messages, not the behaviour. Five defects are deterministic and need the browser (layout shift when the slots arrive, the amber tag's contrast, the grid sized from the window at 320 px, slot buttons without a focus ring, a status region made live after its text are caught by uie audit); nine are judged. Every page otherwise meets the deterministic floor in both themes, so deterministic detections that match no defect here are false positives. EVALUATION-PLAN §3 asks for two independent labellers on analytical defects. A second labeller, blind to this file and to the source (it saw the bundle, the documents and routes.json), listed 35 problems on 2026-10-12, all reproduced or measured in a browser (evals/results/agent-evals-2026-10-12-slot-booking/second-labeller.json). It found 13 of the 14 seeded defects (D07 and D08 as two or three entries each; D09 as three); it did not list D02, the layout shift, which its method did not measure, though it recorded the shift's effect on the Opening days anchor. Its severity bands agreed with the seeded ones except for D11 (it rated the unannounced count lower) and D14 (higher); both bands were revised towards it. Of its 21 other entries, 13 named genuine problems the seeder had not intended, which were fixed before the round (the chosen day not shown on the day buttons; typed details lost on a slot change; the vehicle step repeated after a slot change; the typed date refused without slashes on a numeric keyboard; no reason when a day has no slots; the slot error not announced; control borders below 3:1; registrations and mobile numbers in common forms refused; Enter doing nothing in the details fields; no space between the day buttons and the Slots heading; the reminder never confirmed; the Change slot link in the wrong row), three described parts or effects of seeded defects (the missing busy state and the 'Booked' title of D09, the anchor effect of D02), and five were left as not seeded (Next a screen below the morning slots; a cancelled booking reopened from its link; the number of Tab stops across the grid; and two it rated 0 to 1). The count of seeded defects stays 14.",
+  "_design": "One defect per criterion per route. Where a deterministic check could also report a judged defect (the runtime order read as a focus-order jump, the window-sized grid read as text at the viewport edge), the check's criterion is listed under also_criteria so that detection matches the defect instead of counting as a false positive.",
+  "defects": [
+    {
+      "id": "slot-booking-D01",
+      "criterion": "H1",
+      "also_criteria": [
+        "CW-Q4",
+        "H9",
+        "CMP-04"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "default",
+      "selector": "#next",
+      "file": "app.js",
+      "description": "The slots for a day arrive about a second after the page opens or a day is chosen, and nothing says they are on their way: the grid is empty, the status line is blank, and Next is enabled. Pressing Next during that time does nothing at all. A resident who taps a day and then Next, as people do, sees no slots and no response, and may try another day or give up.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 2,
+        "question": "CW-Q4",
+        "failure_story": "The resident taps 'Saturday 17' and sees the slot area empty. Nothing says the slots are loading, so they tap Next, which does nothing, then tap 'Saturday 17' again, which starts the wait over."
+      }
+    },
+    {
+      "id": "slot-booking-D02",
+      "criterion": "FUN-07",
+      "also_criteria": [],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": "#slots",
+      "file": "app.js",
+      "description": "When the slots arrive, about a second after the page opens, the empty grid grows by several hundred pixels and everything under it (the Next button, the opening days, the footer) jumps down the page with no input from the resident: a layout shift of well over the 0.1 budget on every width, measured in the lab. A link to #opening from another page lands on the wrong place for the same reason: the slots arrive after the browser has scrolled to the anchor.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": "vitals",
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D03",
+      "criterion": "1.4.3",
+      "also_criteria": [
+        "A11Y-11",
+        "A11Y-01"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": ".slot__tag--few",
+      "file": "app.js",
+      "description": "The 'Few left' tag on a slot is amber text on an amber tint whose values the script computes at run time from the council's hue: about 3.0:1 in the light theme and 3.2:1 in the dark theme for 16 px bold text, below the 4.5:1 that text of that size needs. The stylesheet holds no colour literal, so the failure exists only on a rendered page. The tag is the one thing that tells a resident a slot is about to go.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "contrast",
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D04",
+      "criterion": "FUN-05",
+      "also_criteria": [
+        "1.4.10",
+        "A11Y-07",
+        "LAY-05",
+        "FUN-06",
+        "A11Y-08",
+        "A11Y-09"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": "#slots",
+      "file": "app.js",
+      "description": "At 360 px and below the script sizes the slot grid's three columns from the window's width instead of the page's content box, so the grid runs 14 to 15 px past the right edge and the page scrolls sideways; the last column's slots and their tags are cut at the edge. From 361 px up the stylesheet's own grid applies and nothing overflows.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "layout",
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D05",
+      "criterion": "A11Y-04",
+      "also_criteria": [
+        "2.4.7"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "default",
+      "selector": ".slot",
+      "file": "app.js",
+      "description": "The slot buttons show no focus at all: a style the script injects at run time removes their outline (meant for the pressed look), and nothing replaces it. Every other control on the page keeps the 3 px focus ring. A keyboard user tabbing through 29 slots cannot see which one they are on.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": "keyboard",
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D06",
+      "criterion": "H9",
+      "also_criteria": [
+        "H5",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": "#book",
+      "file": "app.js",
+      "description": "Today's slots that have already started, or start within half an hour, are shown as free and can be chosen (today is Monday 12 October at 10:05, so 08:00 to 10:20 are offered). The refusal comes three steps later, after the details are typed and Book is pressed: 'The 10:20 slot today can no longer be booked. Choose another slot or day.' with no link back to the slots.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D07",
+      "criterion": "H6",
+      "also_criteria": [
+        "CW-Q2",
+        "H5",
+        "CMP-04"
+      ],
+      "kind": "judged",
+      "route": "/vehicle.html",
+      "state": "default",
+      "selector": "#info",
+      "file": "app.js",
+      "description": "That a van, or a car with a trailer, needs a permit is said only behind an icon-only info button. Choosing 'Van' reveals the permit field 1.2 seconds later, under the fold on a phone, with nothing drawing the eye to it, and Next accepts an empty permit. The rule is enforced on the confirm page ('A van needs a permit number'), which has no permit field; the resident has to work out that 'Change vehicle' is the way back.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D08",
+      "criterion": "H1",
+      "also_criteria": [
+        "H9",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "expired",
+      "selector": "#error-summary",
+      "file": "app.js",
+      "description": "A chosen slot is held for five minutes and no page shows the hold or its end. When it has lapsed, Book waits 1.5 seconds and then says 'This slot is no longer available.' while the summary's slot line changes to a dash: the slot is dropped from the booking without saying that the hold ran out, and the only way to another slot is 'Change slot', which forgets the day.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 16,
+        "question": "CW-Q4",
+        "failure_story": "The resident is interrupted while typing the postcode and comes back after a few minutes. Book says the slot is no longer available; nothing says why or what to do, and the slot line now reads '—'."
+      }
+    },
+    {
+      "id": "slot-booking-D09",
+      "criterion": "H5",
+      "also_criteria": [
+        "H1",
+        "3.3.4"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": "#book",
+      "file": "app.js",
+      "description": "'Book this slot' stays enabled while the booking is made (1.5 seconds) and shows no progress: no busy state, no label change. A second press in that time turns the press into 'cancel': the done page still shows a reference, is titled 'Booked' and says 'Show this at the gate', with a small status line saying the booking is cancelled and not on the gate's list. A resident who taps twice, as people do when nothing seems to happen, arrives at the gate with a cancelled booking.",
+      "expected_severity_band": [
+        3,
+        4
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D10",
+      "criterion": "2.4.3",
+      "also_criteria": [
+        "1.3.2",
+        "A11Y-03"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "default",
+      "selector": "#slots",
+      "file": "app.js",
+      "description": "The script moves every 'Few left' slot to the front of the grid at run time (a CSS order it sets per button), so the grid reads 08:20, 09:00, 09:40, 12:00 before 08:00. The document, Tab and a screen reader keep the chronological order, so focus jumps around the visible grid and the morning and afternoon headings no longer sit above their slots.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D11",
+      "criterion": "A11Y-15",
+      "also_criteria": [
+        "4.1.3"
+      ],
+      "kind": "deterministic",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": "#slots-status",
+      "file": "app.js",
+      "description": "The line that says how many slots a day has ('20 slots free on Saturday 17 October') is written into a plain paragraph and only then given aria-live, so a screen reader is never told the slots have arrived or how many there are; the next change would be announced, but the day's count is the one that matters.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": "live-regions",
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D12",
+      "criterion": "H3",
+      "also_criteria": [
+        "H1",
+        "H6"
+      ],
+      "kind": "judged",
+      "route": "/confirm.html",
+      "state": "default",
+      "selector": ".summary a[href=\"index.html\"]",
+      "file": "app.js",
+      "description": "'Change slot' on the confirm page opens the first step on today's date with no slot chosen, whatever day the resident had picked: the day and the slot are forgotten (the vehicle, the waste and the typed details are kept, and Next returns to the confirm page). Nothing says so; a resident who only wanted the afternoon of the same day has to find the day again.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    },
+    {
+      "id": "slot-booking-D13",
+      "criterion": "H6",
+      "also_criteria": [
+        "CW-Q3",
+        "H10"
+      ],
+      "kind": "judged",
+      "route": "/",
+      "state": "date-chosen",
+      "selector": ".slot",
+      "file": "app.js",
+      "description": "A slot button shows only its start time. That a slot lasts 20 minutes, when it ends and that the resident must arrive within it are only in the button's tooltip, which appears on hover and never on a phone. The intro says '20-minute slot' once, above the fold.",
+      "expected_severity_band": [
+        1,
+        2
+      ],
+      "expected_check": null,
+      "seeded_from": "added",
+      "cw": {
+        "journey": "book-a-slot",
+        "step": 4,
+        "question": "CW-Q3",
+        "failure_story": "The resident taps 09:20 thinking it is when the centre opens for them, not a window that closes at 09:40. On Saturday they arrive at 09:50 and are turned away."
+      }
+    },
+    {
+      "id": "slot-booking-D14",
+      "criterion": "H6",
+      "also_criteria": [
+        "H10",
+        "CW-Q4"
+      ],
+      "kind": "judged",
+      "route": "/done.html",
+      "state": "default",
+      "selector": "#ref",
+      "file": "app.js",
+      "description": "The done page gives the reference and what to bring, but not the day, the slot or the vehicle that were booked. A resident who books on Monday for Saturday has nothing to check the time against on Saturday morning except memory, and the gate turns away a vehicle that does not match the booking.",
+      "expected_severity_band": [
+        2,
+        3
+      ],
+      "expected_check": null,
+      "seeded_from": "added"
+    }
+  ]
+}

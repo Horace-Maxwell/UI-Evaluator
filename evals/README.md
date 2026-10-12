@@ -21,7 +21,7 @@ The material for testing UI-Evaluator itself (EVALUATION-PLAN): seeded fixtures 
 
 ```
 evals/
-├── evals.json                  # skill-creator prompts and assertions (20)
+├── evals.json                  # skill-creator prompts and assertions (21)
 ├── ground-truth.schema.json    # JSON Schema 2020-12 for every ground-truth.json
 ├── fixtures/
 │   ├── slop-landing/           # each web fixture: pages, fixture.json, journeys/, PRODUCT.md, ground-truth.json
@@ -35,7 +35,7 @@ evals/
 └── results/                    # detector scores and every build-benchmark round: grading, timing, screenshots, judgements
 ```
 
-Every web fixture is plain HTML, CSS and vanilla JavaScript with no build step and no network request: fonts are named in CSS stacks only, icons are inline SVG, and the favicon is `data:,`.
+Every web fixture is plain HTML, CSS and vanilla JavaScript with no network request: fonts are named in CSS stacks only, icons are inline SVG, and the favicon is `data:,`. One fixture, `slot-booking`, ships as a production build on purpose: its readable source lives in `fixtures-src/slot-booking/src/` and `node tools/build-fixture.mjs slot-booking` bundles and minifies it into the fixture folder with esbuild (a pinned root dev dependency); `npm run validate` fails when the committed bundle is out of date. A session under test gets the fixture folder only, as a council's web team gets an agency's delivery, so its problems have to be found in use: round 4 on `tool-library` showed this model reading a fixture's source and finding nearly every problem from it.
 
 ## Fixtures
 
@@ -47,6 +47,7 @@ Every web fixture is plain HTML, CSS and vanilla JavaScript with no build step a
 | `zh-reader` | 临川陶瓷博物馆, a museum audio guide (text, zh-CN) | Operate + Read | 2 | 12 (9 + 3) | `find-exhibit-by-number` | C1, C2 |
 | `journey-app` | Saltmarsh Quay, a tidal harbour's visitor-berth booking | Operate | 5 | 11 (0 + 11) | `book-visitor-berth`, `change-arrival-date` | C2, C3 |
 | `tool-library` | Fernhill Tool Library, a community tool library's reservations | Operate | 5 | 13 (4 + 9), and 13 found | `reserve-tool-for-saturday`, `change-pickup-session` | C2, C3 |
+| `slot-booking` | Dunmore recycling centre, a council's drop-off slot booking, shipped as a minified bundle | Operate | 4 | 14 (5 + 9) | `book-a-slot`, `change-slot` | C2, C3 |
 | `clean-control` | Hollin Lane Seed Library, a community seed-lending desk | Read + Operate | 2 | 0 | `request-seed-packets` | C1, C2 false positives |
 | `feedback-set` | feedback about `journey-app` | — | — | 120 labelled items | — | C7 |
 
@@ -61,7 +62,7 @@ python3 -m http.server --directory evals/fixtures/<name> 8123
 # then open http://127.0.0.1:8123/
 ```
 
-Routes are paths under that folder (`/`, `/listing.html`). `journey-app` passes stay details in the query string, so open its routes exactly as `fixture.json` lists them, for example `http://127.0.0.1:8123/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14`. `clean-control` shows its loading and error states at `/?state=loading` and `/?state=error`. `tool-library` keeps its basket in `sessionStorage` and seeds it from the query string (`?items=drill-18v-two&day=2026-10-17`), so open its routes as `fixture.json` lists them as well. The skill's own `serveStatic` (`skills/ui-evaluator/scripts/lib/browser/static-server.mjs`) serves the same way on a free port. The browser layer opens only local hosts.
+Routes are paths under that folder (`/`, `/listing.html`). `journey-app` passes stay details in the query string, so open its routes exactly as `fixture.json` lists them, for example `http://127.0.0.1:8123/boat.html?date=2026-10-17&nights=2&arrive=15:00&berth=B14`. `clean-control` shows its loading and error states at `/?state=loading` and `/?state=error`. `tool-library` keeps its basket in `sessionStorage` and seeds it from the query string (`?items=drill-18v-two&day=2026-10-17`), so open its routes as `fixture.json` lists them as well. The skill's own `serveStatic` (`skills/ui-evaluator/scripts/lib/browser/static-server.mjs`) serves the same way on a free port. The browser layer opens only local hosts. `slot-booking` seeds its booking the same way with `?date=&slot=&vehicle=&waste=&hold=&ref=&status=`.
 
 ## From fixture.json to .ui-evaluator/config.json
 
@@ -120,7 +121,7 @@ Planted personal data, all fictional: 26 email addresses on reserved domains (ex
 
 ## Skill-behaviour evals (evals.json)
 
-`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 20 prompts cover build (English and Chinese: two one-page sites, a sign-up page and a front-desk tool), audit at quick, standard and rigorous depth on different fixtures (standard twice: `journey-app` and the harder `tool-library`), a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
+`evals.json` follows the skill-creator format: `skill_name` and `evals`, each with `id`, `name`, `prompt`, `expected_output`, `files` and `assertions` (`text`, `check`: `script` or `grader`, and `how`). Some evals add `setup`, shell steps the harness runs in the workspace before the prompt (for example a baseline audit before `fix` or `verify`). The 21 prompts cover build (English and Chinese: two one-page sites, a sign-up page and a front-desk tool), audit at quick, standard and rigorous depth on different fixtures (standard three times: `journey-app`, the harder `tool-library` and the bundled `slot-booking`), a static-only run, ingest, study, two fixes, verify, report honesty, a backend question the skill must not trigger on, and a request to certify WCAG conformance that the skill must refuse.
 
 Run them through the skill-creator loop (EVALUATION-PLAN §5.1):
 
@@ -272,10 +273,13 @@ Eval 20 again, after the four changes round 3 called for (`cd5583f`: advisory ob
 | `journey-app` | 0 (11 judged) | — | — | 0 |
 | `clean-control` | 0 | — | — | 0 |
 | `tool-library` (2026-10-07) | 4 (+ 9 judged) | 4 | 0 | 0 |
+| `slot-booking` (2026-10-12) | 5 (+ 9 judged) | 5 | 0 | 0 |
 
 Every hard-tell detector that has a seeded defect (13 of 15) reaches precision 1.00 and recall 1.00, scripted accessibility recall is 1.00 (11 of 11), and `clean-control` has no false positive, so the deterministic part of EVALUATION-PLAN §6 passes on this set.
 
 `tool-library` was scored on 2026-10-07 with the same command (`--fixtures tool-library`; output in [results/detectors-2026-10-07-tool-library.json](results/detectors-2026-10-07-tool-library.json)): its four deterministic defects are detected (dark-theme contrast, overflow at 320 px, the fixed bar over focused controls, the keyboard trap) with no false positive, and both journeys replay. The first scoring of the fixture, before its floor work, had 39 false positives; what it took to bring them to zero (a spacing step the stylesheet used but DESIGN.md did not declare, content rendered after the first paint, a link whose name changed with the basket count, hover and pressed states, text under a fixed bar and under an open listbox) is a fair picture of how many of the deterministic checks a plain static site trips without meaning to.
+
+`slot-booking` was scored on 2026-10-12 the same way (output in [results/detectors-2026-10-12-slot-booking.json](results/detectors-2026-10-12-slot-booking.json)): its five deterministic defects are detected (the layout shift when the slots arrive, the amber tag's contrast in both themes, the window-sized grid at 320 px, the slot buttons without a focus ring, the status region made live after its text) with no false positive, and both journeys replay. Its first scoring had four false positives and one miss: a heading that carried a date, checkboxes whose error was not described, two "no progress shown" hits that are the construction of two judged defects (listed in their `also_criteria`), and a layout shift too small to count until the first step was compacted so that more of the page sits under the grid.
 
 Read these numbers with the threats in EVALUATION-PLAN §8 in mind. The fixtures and the detectors were built in the same project on the same day, several detectors were corrected against these very fixtures, seeded defects are cleaner than real ones, and there is no held-out set yet. They show that each detector fires on its canonical case and stays quiet on a page built to the floor; they are not an estimate of precision on real products. That estimate needs labelled real pages in `labels/` (EVALUATION-PLAN §7). The judged defects (journey-app and the `judged` entries elsewhere) are measured by the skill-behaviour evals, not by this scorer.
 

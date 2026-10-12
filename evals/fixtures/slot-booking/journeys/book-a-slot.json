@@ -1,0 +1,63 @@
+{
+  "_comment": "Critical journey for the slot-booking fixture (a council recycling centre's drop-off slot booking). The walkthrough evaluator walks these steps; the analytical CW ground truth is in ground-truth.json (defects with a cw field). Test values only: AB12 CDE is a fixture registration, 07700 900123 is in Ofcom's drama range and DN4 1AA is a fictional postcode.",
+  "schema_version": 1,
+  "id": "book-a-slot",
+  "title": "Book a Saturday morning slot for a car",
+  "criticality": "critical",
+  "frequency": "occasional",
+  "persona": {
+    "group": "Residents booking a drop-off for the first time",
+    "knows": [
+      "the car is loaded with garden waste and some wood",
+      "Saturday morning is when they can go",
+      "their registration, AB12 CDE, and their mobile number"
+    ],
+    "does_not_know": [
+      "that a slot lasts twenty minutes and they must arrive within it",
+      "how long a chosen slot is held while they finish",
+      "that the slots take a moment to appear"
+    ],
+    "context": "On a phone on Monday evening, the car already loaded on the drive"
+  },
+  "goal": "Have a booked slot for Saturday 17 October in the morning, with the reference to show at the gate",
+  "scenario": "Your car is loaded with garden waste and some old fence panels. You want to take it to the recycling centre on Saturday 17 October 2026, in the morning. Your registration is AB12 CDE and you live at DN4 1AA. Book the slot so the gate lets you in.",
+  "avoided_hints": [
+    "Show slots",
+    "Next",
+    "Book this slot",
+    "Saturday 17",
+    "Few left"
+  ],
+  "start_state": {
+    "url": "/",
+    "data": "no booking in progress; today is Monday 12 October 2026, 10:05",
+    "locale": "en-GB",
+    "viewport_width": 375
+  },
+  "success_condition": {
+    "all": [
+      { "url": "^/done\\.html" },
+      { "text": "Booked" },
+      { "text": "Show this at the gate" }
+    ]
+  },
+  "correct_actions": [
+    { "action": "goto", "url": "/" },
+    { "action": "click", "target": "[data-quick=\"2026-10-17\"]" },
+    { "action": "expect", "target": ".slot", "state": "visible" },
+    { "action": "click", "target": ".slot[data-slot=\"09:20\"]" },
+    { "action": "click", "target": "role=button[name=\"Next\"]" },
+    { "action": "expect", "url": "/vehicle\\.html" },
+    { "action": "click", "target": "[data-vehicle=\"car\"]" },
+    { "action": "check", "target": "role=checkbox[name=\"Garden waste\"]" },
+    { "action": "check", "target": "role=checkbox[name=\"Wood\"]" },
+    { "action": "click", "target": "role=button[name=\"Next\"]" },
+    { "action": "expect", "url": "/confirm\\.html" },
+    { "action": "fill", "target": "label=Registration", "value": "AB12 CDE" },
+    { "action": "fill", "target": "label=Your name", "value": "Test Resident" },
+    { "action": "fill", "target": "label=Mobile number", "value": "07700 900123" },
+    { "action": "fill", "target": "label=Postcode", "value": "DN4 1AA" },
+    { "action": "click", "target": "role=button[name=\"Book this slot\"]" },
+    { "action": "expect", "text": "Show this at the gate" }
+  ]
+}

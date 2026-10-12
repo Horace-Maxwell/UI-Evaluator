@@ -438,9 +438,9 @@ async function eval12() {
 // The assertions a control-arm run is graded on: the ones that do not read the skill's files.
 const ARM_NEUTRAL = new Set(['No fixture source file was modified', 'The reply puts the fixes in priority order and says what needs a person']);
 
-if (control && ![5, 19, 20].includes(ev.id)) usage(`no control-arm grading for eval ${ev.id}`);
+if (control && ![5, 19, 20, 21].includes(ev.id)) usage(`no control-arm grading for eval ${ev.id}`);
 if (control) controlAudit();
-else if (ev.id === 19 || ev.id === 20) await auditChecks('standard', 3);
+else if ([19, 20, 21].includes(ev.id)) await auditChecks('standard', 3);
 else if (ev.id === 5) await auditChecks('rigorous', 5);
 else if (ev.id === 14) await eval14();
 else if (ev.id === 9) await eval9();
@@ -476,7 +476,7 @@ for (const a of ev.assertions) {
 }
 if (answers?.mapping) metrics.grader_mapping = answers.mapping;
 if (answers?.metrics) Object.assign(metrics, answers.metrics);
-if (answers?.mapping && [5, 19, 20].includes(ev.id)) {
+if (answers?.mapping && [5, 19, 20, 21].includes(ev.id)) {
   const truth = json(path.join(siteFixture, 'ground-truth.json'));
   const listed = (graderPacket.material.findings || []).map((f) => f.id);
   const unmapped = listed.filter((id) => !answers.mapping.some((m) => m.item === id));

@@ -832,6 +832,62 @@
           "how": "sha256 of every file listed in .eval/source-hashes.json is unchanged"
         }
       ]
+    },
+    {
+      "id": 21,
+      "name": "audit-standard-slot-booking",
+      "prompt": "Residents will have to book a slot online before bringing anything to the recycling centre from next month, and the agency has handed over the booking site as a built bundle. Could you review the booking flow for usability and accessibility problems and tell me what to fix first? Most residents will book on a phone the evening before, and a lot of them use dark mode. The site is served from this folder.",
+      "expected_output": "Runs the audit workflow at standard depth (the default) on a site whose source is a minified bundle: deterministic checks, three isolated heuristic evaluators, a walkthrough of the critical journey, the design critics, the accessibility auditor, the code reviewer (who finds no readable source and says so), a verifier and three blind raters. The deterministic checks catch the five seeded deterministic defects (a layout shift when the slots arrive, the amber tag's contrast in both themes, the grid sized from the window at 320 px, slot buttons without a focus ring, a status region made live after its text). Finds most of the nine judged problems, which live in timing, runtime order and state (slots that arrive late with nothing loading, today's started slots offered and refused at the end, the permit rule behind an info button, a hold that lapses silently, a second press that cancels the booking, few-left slots moved to the front, Change slot that forgets the day, a slot length only in a tooltip, a done page without the booking's day or slot). Reports the confirmed findings in priority order with the level reached and what needs a person; EVALUATION-PLAN §6 asks for recall of at least 0.6 and precision of at least 0.8 after verification.",
+      "files": [
+        "evals/fixtures/slot-booking"
+      ],
+      "assertions": [
+        {
+          "text": "The run is standard depth with three isolated heuristic evaluators",
+          "check": "script",
+          "how": "runs/<id>/manifest.json depth === 'standard' and at least 3 evaluators with role 'heuristic-evaluator', each with an isolation value recorded"
+        },
+        {
+          "text": "The critical journeys were walked and the records validate",
+          "check": "script",
+          "how": "for each journey in .ui-evaluator/journeys with criticality 'critical', runs/<id>/cw/<journey id>.json exists and validates against cw-record.schema.json"
+        },
+        {
+          "text": "Verification and three blind ratings exist",
+          "check": "script",
+          "how": "runs/<id>/verifier.json validates against verifier.schema.json, and runs/<id>/ratings/ holds at least 3 files that validate against rating.schema.json"
+        },
+        {
+          "text": "Recall of the seeded defects is at least 0.6",
+          "check": "script",
+          "how": "for each of the 14 defects in evals/fixtures/slot-booking/ground-truth.json, a confirmed finding (status confirmed, open, in_progress, fixed, verified, disputed or deferred) in .ui-evaluator/findings.json, or else runs/<id>/merged.json, carries defect.criterion or one of defect.also_criteria on defect.route (route * matches any); matched / 14 >= 0.6, with the judged (of 9) and deterministic (of 5) counts reported beside it. The grader's mapping by meaning (next assertion) gives a second recall figure; report both"
+        },
+        {
+          "text": "Precision after verification is at least 0.8",
+          "check": "grader",
+          "how": "a grader who has not seen the run maps each confirmed finding that is not a deterministic tool finding to one seeded defect, to 'real but not seeded' (with the reason it is a genuine problem for these users), or to 'not a problem'; precision = (seeded + real but not seeded) / confirmed judged findings >= 0.8. Also report the strict precision, seeded / confirmed judged findings, and the recall by meaning"
+        },
+        {
+          "text": "Severity ratings land in the expected bands for most matched defects",
+          "check": "script",
+          "how": "for matched defects, the finding's severity.mean lies within expected_severity_band ± 0.5 for at least 70% of them"
+        },
+        {
+          "text": "Report language passes the lint and the level is not overstated",
+          "check": "script",
+          "how": "runs/<id>/report-lint.json violations.length === 0, and runs/<id>/gates.json achieved is not L3 or L4 unless .ui-evaluator/human-checks.json records confirmations"
+        },
+        {
+          "text": "The reply puts the fixes in priority order and says what needs a person",
+          "check": "grader",
+          "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+        },
+        {
+          "text": "No fixture source file was modified",
+          "check": "script",
+          "how": "sha256 of every file listed in .eval/source-hashes.json is unchanged"
+        }
+      ]
     }
   ]
 }
