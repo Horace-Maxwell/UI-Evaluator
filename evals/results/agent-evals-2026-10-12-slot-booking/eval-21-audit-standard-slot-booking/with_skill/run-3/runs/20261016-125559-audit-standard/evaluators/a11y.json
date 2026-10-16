@@ -1,0 +1,706 @@
+{
+ "schema": "evaluator-output",
+ "role": "accessibility-auditor",
+ "agent": "a11y",
+ "model": "claude-opus-5-5",
+ "isolation": "subagent",
+ "run": "20261016-125559-audit-standard",
+ "packet_hash": "90f8f38d4338a332",
+ "notes": "axe recorded 0 incomplete results across all 36 route/state/width/theme scans (evidence/axe/incomplete.json items: [] and per-state files), so there was nothing to resolve. The contrast check found no CJK text (needs_judgment 0), so 1.4.3 is not agent-judged. Tool-reported 1.4.3, 1.4.10, 2.4.3, 2.4.7 and 4.1.3 failures are not duplicated here. Coverage labels are given only for criteria that need judgement or are not applicable. Scripted-only criteria (1.3.5, 1.4.2, 1.4.3, 1.4.4, 1.4.10, 1.4.12, 2.1.2, 2.4.1, 2.4.3, 2.4.7, 2.4.11, 2.5.2, 2.5.8, 3.1.1, 3.1.2, 3.2.1, 3.2.3, 3.2.4, 3.2.6, 3.3.1, 4.1.3) are left to the tools. No builder notes, source or other evaluators' outputs were read.",
+ "coverage": {
+  "routes": [
+   "/",
+   "/vehicle.html?date=2026-10-17&slot=09:20",
+   "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+   "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired",
+   "/done.html (booked)",
+   "/done.html (cancelled)"
+  ],
+  "states": [
+   "default",
+   "date-chosen",
+   "slot-chosen",
+   "another-day-open",
+   "van",
+   "info-open",
+   "errors",
+   "expired",
+   "cancelled",
+   "change-slot journey"
+  ],
+  "out_of_scope": [
+   "real screen readers",
+   "hold timer duration"
+  ]
+ },
+ "not_assessable": [
+  "2.2.1 slot hold time limit: the expired state exists, but the hold length and any warning cannot be observed without real-time waiting (needs-human).",
+  "2.4.2 page titles: not present in the packet's ARIA snapshots or probe output."
+ ],
+ "strengths": [
+  {
+   "title": "Error summaries take focus and their links move focus to the field (vehicle page Tab after link lands on 'Car')",
+   "evidence": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/probes/37/step-09.png"
+  },
+  {
+   "title": "Details, vehicle and waste are kept across 'Change slot' and after an expired hold",
+   "evidence": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/probes/36/final.png"
+  },
+  {
+   "title": "Slot availability carries text ('Few left', 'Full'), so it survives all four CVD simulations and forced colours",
+   "evidence": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/slot-chosen/1280-light-cvd-achromatopsia.png"
+  },
+  {
+   "title": "'Another day' and the vans info control are native buttons with aria-expanded; focus moves into the date field when it opens",
+   "evidence": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/probes/35/step-04.png"
+  }
+ ],
+ "candidates": [
+  {
+   "title": "Current step in the step list is shown only by bold text, not exposed programmatically",
+   "description": "Information conveyed by presentation should also be available in structure (1.3.1). The step list ('1. When', '2. Vehicle and waste', '3. Check and book') marks the current step only with bold weight. In the ARIA snapshots the list items carry no aria-current or other state, so a screen-reader user hears three identical list items and cannot tell which step they are on.",
+   "problem_type": "multiple_locations",
+   "criteria": [
+    {
+     "kind": "wcag",
+     "id": "1.3.1",
+     "primary": true
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-27"
+    },
+    {
+     "kind": "heuristic",
+     "id": "H1"
+    }
+   ],
+   "impact": "Residents using VoiceOver or TalkBack on a phone may not know how far through the three-step booking they are.",
+   "locations": [
+    {
+     "route": "/",
+     "state": "date-chosen",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=list[name=\"Steps\"]",
+     "snippet": "list \"Steps\": 1. When / 2. Vehicle and waste / 3. Check and book"
+    },
+    {
+     "route": "/vehicle.html?date=2026-10-17&slot=09:20",
+     "state": "default",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=list[name=\"Steps\"]",
+     "snippet": "list \"Steps\""
+    },
+    {
+     "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+     "state": "default",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=list[name=\"Steps\"]",
+     "snippet": "list \"Steps\""
+    }
+   ],
+   "evidence": [
+    {
+     "type": "aria",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/aria/root/date-chosen/1280-light.yml",
+     "detail": "list \"Steps\" > listitem: 1. When (no current state); same on vehicle and confirm snapshots"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/van/1280-light.png",
+     "detail": "'2. Vehicle and waste' drawn bold; the others regular"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "every step of both journeys",
+    "impact": "orientation only; the h1 partly compensates",
+    "persistence": "every visit"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Add aria-current=\"step\" to the current list item (or visually hidden 'current step' text) in the shared step component.",
+   "tags": [
+    "semantics",
+    "screen-reader"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  },
+  {
+   "title": "'Few left' slots are moved visually above the Morning heading, away from their programmatic group",
+   "description": "Visual grouping and the programmatic structure should agree (1.3.1). The slot grid uses CSS order:-1 to pull every 'Few left' slot to the top, above the 'Morning' heading, at 320 px and 1280 px. In the DOM and ARIA snapshot these buttons stay under 'Morning' or 'Afternoon' in time order, so afternoon slots such as 13:40, 14:00 and 16:40 appear visually above 'Morning' and outside the 'Afternoon' group. Sighted readers see one order and grouping, screen-reader users hear another. The tool already reported the resulting focus-order jump (2.4.3), so this record covers only the grouping mismatch.",
+   "problem_type": "single_location",
+   "criteria": [
+    {
+     "kind": "wcag",
+     "id": "1.3.1",
+     "primary": true
+    },
+    {
+     "kind": "wcag",
+     "id": "1.3.2"
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-27"
+    },
+    {
+     "kind": "heuristic",
+     "id": "H4"
+    }
+   ],
+   "impact": "A resident with low vision who also uses a screen reader or magnifier may hear '13:40' under 'Afternoon' but find it above 'Morning' on screen. They may also read the top row as the earliest slots and book the wrong time.",
+   "locations": [
+    {
+     "route": "/",
+     "state": "date-chosen",
+     "viewport": {
+      "width": 320,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "#slots > button.slot[data-slot=\"08:20\"]",
+     "bbox": [
+      16,
+      739,
+      101,
+      80
+     ],
+     "snippet": "<button type=\"button\" class=\"slot\" data-slot=\"08:20\" aria-pressed=\"false\" style=\"order:-1\">08:20 Few left"
+    },
+    {
+     "route": "/",
+     "state": "slot-chosen",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "#slots > button.slot[data-slot=\"13:40\"]",
+     "snippet": "button \"13:40 Few left\" (under heading \"Afternoon\" in ARIA)"
+    }
+   ],
+   "evidence": [
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/slot-chosen/1280-light.png",
+     "detail": "10 'Few left' slots (08:20 to 16:40) drawn above the 'Morning' heading"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/date-chosen/320-light.png",
+     "detail": "same reordering at 320 px"
+    },
+    {
+     "type": "aria",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/aria/root/date-chosen/1280-light.yml",
+     "detail": "heading 'Morning' [3] > 08:00, 08:20 Few left, \u2026; heading 'Afternoon' [3] > \u2026 13:40 Few left, 14:00 Few left \u2026"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "every day with any 'Few left' slot, i.e. most days",
+    "impact": "misreading of slot time and group; screen-reader/visual mismatch",
+    "persistence": "every booking"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Keep slots in time order under their heading and mark scarcity with the existing 'Few left' tag. If a 'nearly full' shortlist is wanted, render it as its own labelled group in the DOM rather than by CSS order.",
+   "tags": [
+    "semantics",
+    "reading-order"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  },
+  {
+   "title": "Selected day button differs from unselected days only by a 1 px thicker border and a 1.16:1 tint",
+   "description": "A state indicator needed to identify the selected control should be perceivable, at 3:1 against the adjacent state (1.4.11). The auditor judges state indicators (contrast check note). In the day group the pressed 'Saturday 17' has the same border colour as the other days (rgb 39,104,74) but 2 px wide instead of 1 px. Its fill rgb(227,242,235) against the unselected white is about 1.16:1 (sampled from the 1280 px capture), and the text weight is the same. Under forced colours the only remaining cue is the 1 px border difference. By contrast, the selected slot and vehicle buttons add bold text.",
+   "problem_type": "single_location",
+   "criteria": [
+    {
+     "kind": "wcag",
+     "id": "1.4.11",
+     "primary": true
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-12"
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-22"
+    }
+   ],
+   "impact": "Older residents with low vision may not see which day is chosen, and may book a slot on the wrong day.",
+   "locations": [
+    {
+     "route": "/",
+     "state": "slot-chosen",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=button[name=\"Saturday 17\"]",
+     "snippet": "button \"Saturday 17\" [pressed]"
+    }
+   ],
+   "evidence": [
+    {
+     "type": "measurement",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/slot-chosen/1280-light.png",
+     "value": {
+      "selected_border_px": 2,
+      "unselected_border_px": 1,
+      "border_rgb": [
+       39,
+       104,
+       74
+      ],
+      "selected_fill": [
+       227,
+       242,
+       235
+      ],
+      "unselected_fill": [
+       255,
+       255,
+       255
+      ],
+      "fill_ratio": 1.16,
+      "threshold": 3.0
+     },
+     "detail": "pixel row y=345 across 'Saturday 17' and 'Sunday 18'"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/slot-chosen/1280-light-forced-colors.png",
+     "detail": "forced colours: selected day distinguishable only by border width"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/root/slot-chosen/1280-light-cvd-achromatopsia.png"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "every booking",
+    "impact": "may confirm a wrong day; the slot header 'Saturday 17 October' gives a text cue further down",
+    "persistence": "every visit"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Give the pressed day the same bold-text treatment as pressed slots or a filled dark background with light text, or add a check icon. Keep an outline-based cue that survives forced colours.",
+   "tags": [
+    "state",
+    "non-text-contrast",
+    "forced-colors"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  },
+  {
+   "title": "Cancelled booking page is headed 'Booked' and tells the resident to show the reference at the gate",
+   "description": "Headings should describe the topic or purpose of the content (2.4.6). On the cancelled-status done page, the h1 is still 'Booked'. The 'Your reference' section says 'Status: cancelled. This booking is not on the gate's list.' and then, unchanged, 'Show this at the gate\u2026' and 'A reminder will be sent\u2026'. A screen-reader user moving by headings hears 'Booked' and may never reach the status line. The status itself is red bold text, which is also text, so 1.4.1 is not involved.",
+   "problem_type": "single_location",
+   "criteria": [
+    {
+     "kind": "wcag",
+     "id": "2.4.6",
+     "primary": true
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-27"
+    },
+    {
+     "kind": "heuristic",
+     "id": "H1"
+    }
+   ],
+   "impact": "A resident whose booking was cancelled may drive to the centre and be turned away at the gate, which the product brief names as the costly failure.",
+   "locations": [
+    {
+     "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=cancelled",
+     "state": "cancelled",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=heading[level=1]",
+     "snippet": "heading \"Booked\" [level=1]"
+    }
+   ],
+   "evidence": [
+    {
+     "type": "aria",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/aria/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/cancelled/1280-light.yml",
+     "detail": "heading 'Booked' [1]; paragraph 'Status: cancelled. This booking is not on the gate's list.'; paragraph 'Show this at the gate\u2026'"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/cancelled/1280-light.png"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "every cancelled booking viewed",
+    "impact": "wasted trip; contradictory instructions",
+    "persistence": "until the page template varies by status"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Make the h1 and the instructions follow the status, e.g. 'Booking cancelled', and drop the gate and reminder text when the booking is not on the list.",
+   "tags": [
+    "headings",
+    "status"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  },
+  {
+   "title": "'Change slot' returns to the day picker with 'Today' selected, not the booked day",
+   "description": "Information the user already entered in a process should be auto-populated or offered for selection (3.3.7). From the confirm page for Saturday 17 October 09:20, 'Change slot' links to index.html with no day. The day picker then shows 'Today' pressed and the slot list empty while it loads. Choosing 10:00 and Next produced a booking for Monday 12 October 10:00, not 17 October. Vehicle, waste and personal details were kept. The resident must notice the day change and choose the day again, and must type it again in full if it came from 'Another day'.",
+   "problem_type": "single_location",
+   "criteria": [
+    {
+     "kind": "wcag",
+     "id": "3.3.7",
+     "primary": true
+    },
+    {
+     "kind": "rule",
+     "id": "A11Y-27"
+    },
+    {
+     "kind": "heuristic",
+     "id": "H5"
+    }
+   ],
+   "impact": "Residents changing a booking 'to the afternoon' may move it to a different day without noticing, then arrive on the wrong day and be turned away. Residents with memory or attention difficulties carry the extra re-entry.",
+   "locations": [
+    {
+     "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden",
+     "state": "default",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=link[name=\"Change slot\"]",
+     "snippet": "link \"Change slot\" /url: index.html",
+     "journey": "change-slot"
+    }
+   ],
+   "evidence": [
+    {
+     "type": "probe",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/probes/36/",
+     "detail": "fill details \u2192 click 'Change slot' \u2192 step-07: day 'Today' pressed, no slots; click 10:00 \u2192 Next \u2192 final: 'Day Monday 12 October, Slot 10:00 to 10:20'; details kept"
+    },
+    {
+     "type": "aria",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/default/1280-light.yml",
+     "detail": "link 'Change slot' /url: index.html (no date carried)"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "every use of the core change-slot task",
+    "impact": "silent day change; wrong-day arrival",
+    "persistence": "every change"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Carry the booked date (and slot) in the Change slot link so the day picker opens on that day with it pressed.",
+   "tags": [
+    "redundant-entry",
+    "change-slot"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  },
+  {
+   "title": "Expired-slot message does not say what to do next and blanks the slot",
+   "description": "An error message should say how to recover (H9; CPY-04). When the held slot has gone, the summary reads only 'This slot is no longer available.' It is plain text, not a link. The booking summary replaces the slot time with '\u2014', so the resident no longer sees which slot they lost. The way forward, the small 'Change slot' link in the summary, is not named in the message. Entered details are kept, which helps.",
+   "problem_type": "single_location",
+   "criteria": [
+    {
+     "kind": "heuristic",
+     "id": "H9",
+     "primary": true
+    },
+    {
+     "kind": "rule",
+     "id": "CPY-04"
+    }
+   ],
+   "impact": "A resident whose hold lapsed may press 'Book this slot' again, or give up, instead of choosing another slot.",
+   "locations": [
+    {
+     "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired",
+     "state": "expired",
+     "viewport": {
+      "width": 1280,
+      "height": 900
+     },
+     "theme": "light",
+     "selector": "role=alert[name=\"There is a problem\"]",
+     "snippet": "alert \"There is a problem\" > listitem: This slot is no longer available."
+    }
+   ],
+   "evidence": [
+    {
+     "type": "aria",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/1280-light.yml",
+     "detail": "listitem text without link; definition 'Slot': '\u2014 \u00b7 Change slot'"
+    },
+    {
+     "type": "screenshot",
+     "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-125559-audit-standard/evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/1280-light.png"
+    }
+   ],
+   "factor_notes": {
+    "frequency": "each lapsed hold",
+    "impact": "recovery path not stated",
+    "persistence": "on each occurrence"
+   },
+   "evidence_level": "E0",
+   "recommendation": "Name the lost slot and link to the slot list for the same day, e.g. 'Saturday 17 October 09:20 has just been taken. Choose another slot' linking to the day.",
+   "tags": [
+    "errors",
+    "cognitive"
+   ],
+   "found_by": [
+    {
+     "role": "accessibility-auditor",
+     "agent": "a11y",
+     "model": "claude-opus-5-5",
+     "method": "a11y",
+     "pass": 1
+    }
+   ]
+  }
+ ],
+ "resolved_incompletes": [],
+ "needs_human": [
+  {
+   "sc": "A11Y-21/\u00a713.1",
+   "what": "Screen-reader pass of book-a-slot (critical) and change-slot with VoiceOver on iOS Safari and TalkBack on Android Chrome, as PRODUCT.md asks. Check the slots status is announced after picking a day, the error summaries, the pressed day/slot, and the confirm-to-done transition."
+  },
+  {
+   "sc": "1.3.2",
+   "what": "Read the slot grid with a screen reader and compare with the visual order of 'Few left' slots (CSS order:-1) at 375 px and 1280 px; decide whether the sequence still makes sense."
+  },
+  {
+   "sc": "2.2.1",
+   "what": "Hold a slot on the confirm page and wait: record how long the hold lasts, whether any warning appears before it lapses, and whether it can be extended."
+  },
+  {
+   "sc": "2.4.2",
+   "what": "Read each route's document title (/, vehicle, confirm, done booked/cancelled) and confirm each is descriptive and distinct."
+  },
+  {
+   "sc": "1.3.3",
+   "what": "Confirm no instruction depends on shape, position or colour (spot check of all copy, including the permit info panel)."
+  },
+  {
+   "sc": "3.3.4",
+   "what": "Confirm a booking can be reviewed before submission and cancelled afterwards by the phone route in the done page."
+  },
+  {
+   "sc": "1.4.4/1.4.10",
+   "what": "Real browser zoom to 400% and text-only zoom to 200% on the slot grid (the emulation already shows 15 px overflow at 320 px)."
+  },
+  {
+   "sc": "A11Y-22",
+   "what": "A real Windows contrast theme: check the selected day is still identifiable and the focus indicator on slot buttons is visible."
+  },
+  {
+   "sc": "2.5.3",
+   "what": "Speech control (Voice Control on iOS): activate 'Another day' (a button styled as a link) and the icon-only info button by voice."
+  },
+  {
+   "sc": "keyboard",
+   "what": "Keyboard-only run of the full booking at 200% zoom; the slot grid has about 30 tab stops plus the known missing focus indicators."
+  }
+ ],
+ "coverage_labels": {
+  "1.1.1": {
+   "label": "agent-judged-pass",
+   "reason": "Only images: council logo icon inside a link named by its text; info icon button named 'About vans and trailers'. No informative image left unnamed in the ARIA snapshots."
+  },
+  "1.2.1": {
+   "label": "not-applicable",
+   "reason": "No audio or video on any route (media check: 0 media)."
+  },
+  "1.2.2": {
+   "label": "not-applicable",
+   "reason": "No audio or video on any route (media check: 0 media)."
+  },
+  "1.2.3": {
+   "label": "not-applicable",
+   "reason": "No audio or video on any route (media check: 0 media)."
+  },
+  "1.2.4": {
+   "label": "not-applicable",
+   "reason": "No audio or video on any route (media check: 0 media)."
+  },
+  "1.2.5": {
+   "label": "not-applicable",
+   "reason": "No audio or video on any route (media check: 0 media)."
+  },
+  "1.3.1": {
+   "label": "agent-judged-fail",
+   "reason": "Step indicator current state is visual only; 'Few left' slots are visually regrouped above 'Morning' (two candidates)."
+  },
+  "1.3.2": {
+   "label": "needs-human",
+   "reason": "CSS order:-1 makes the visual order differ from the DOM. The DOM order (chronological) looks meaningful, but a person should confirm the reading experience."
+  },
+  "1.3.3": {
+   "label": "agent-judged-pass",
+   "reason": "Instructions name controls by text ('Choose the vehicle you are bringing', 'Book this slot'); no shape, position or colour-only wording found."
+  },
+  "1.3.4": {
+   "label": "agent-judged-pass",
+   "reason": "Probe at 812x375 landscape renders normally; no orientation lock seen (probes/38)."
+  },
+  "1.4.1": {
+   "label": "agent-judged-pass",
+   "reason": "CVD and achromatopsia captures: 'Few left', 'Full', errors and cancelled status all carry text; links in text are underlined; pressed slot and vehicle use bold and a border."
+  },
+  "1.4.5": {
+   "label": "agent-judged-pass",
+   "reason": "No raster text in captures; the reference DR-204117 is live text."
+  },
+  "1.4.11": {
+   "label": "agent-judged-fail",
+   "reason": "State indicator for the selected day relies on a 1 px border-width change and a 1.16:1 tint (candidate)."
+  },
+  "1.4.13": {
+   "label": "agent-judged-pass",
+   "reason": "The info panel is a click disclosure that persists; slot title tooltips are user-agent tooltips (exempt)."
+  },
+  "2.1.1": {
+   "label": "agent-judged-pass",
+   "reason": "Probes: day buttons, 'Another day', info disclosure and error-summary links all work with Enter/Tab. Scripted walk found 0 unreachable."
+  },
+  "2.1.4": {
+   "label": "not-applicable",
+   "reason": "No character-key shortcuts observed in probes. Source lint is left to the tools."
+  },
+  "2.2.1": {
+   "label": "needs-human",
+   "reason": "A slot hold expires (expired state), but its length and any warning could not be observed without waiting in real time."
+  },
+  "2.2.2": {
+   "label": "agent-judged-pass",
+   "reason": "No auto-moving, blinking or auto-updating content; motion check found 0 running animations."
+  },
+  "2.3.1": {
+   "label": "agent-judged-pass",
+   "reason": "No flashing content, video or infinite animations."
+  },
+  "2.4.2": {
+   "label": "needs-human",
+   "reason": "Document titles were not in the packet; axe document-title only proves presence. Check that each step has a descriptive, unique title."
+  },
+  "2.4.4": {
+   "label": "agent-judged-pass",
+   "reason": "Link texts are specific ('Change slot', 'Change vehicle', 'Back to the slots', 'Book another slot')."
+  },
+  "2.4.5": {
+   "label": "not-applicable",
+   "reason": "Each route is a step in the booking process or its result (process exception)."
+  },
+  "2.4.6": {
+   "label": "agent-judged-fail",
+   "reason": "Cancelled done page keeps the h1 'Booked' (candidate). Other headings and labels are descriptive."
+  },
+  "2.5.1": {
+   "label": "not-applicable",
+   "reason": "No multipoint or path gestures."
+  },
+  "2.5.3": {
+   "label": "agent-judged-pass",
+   "reason": "Accessible names contain the visible text ('08:20 Few left', 'Saturday 17', field labels). The icon-only info button has no visible text."
+  },
+  "2.5.4": {
+   "label": "not-applicable",
+   "reason": "No motion actuation."
+  },
+  "2.5.7": {
+   "label": "not-applicable",
+   "reason": "No dragging interactions."
+  },
+  "3.2.2": {
+   "label": "agent-judged-pass",
+   "reason": "Choosing a day loads slots in place. Toggling vehicle or waste changes no context. Navigation happens only on Next or links."
+  },
+  "3.3.2": {
+   "label": "agent-judged-pass",
+   "reason": "Visible labels with format hints (registration 'like AB12 CDE', permit 'Starts DRC-', date 'DD/MM/YYYY')."
+  },
+  "3.3.3": {
+   "label": "agent-judged-pass",
+   "reason": "Field errors give the fix ('Enter a UK mobile number, like 07700 900123'). The weaker expired-slot message is recorded under H9."
+  },
+  "3.3.4": {
+   "label": "agent-judged-pass",
+   "reason": "Confirm page shows a review of day, slot, vehicle and waste with change links before 'Book this slot'. Not legal or financial."
+  },
+  "3.3.7": {
+   "label": "agent-judged-fail",
+   "reason": "'Change slot' drops the booked day and preselects Today (probe 36)."
+  },
+  "3.3.8": {
+   "label": "not-applicable",
+   "reason": "No authentication step."
+  },
+  "4.1.2": {
+   "label": "agent-judged-pass",
+   "reason": "Toggle buttons expose pressed, disclosures expose expanded, checkboxes expose invalid; probe ARIA diffs show the states change."
+  }
+ }
+}

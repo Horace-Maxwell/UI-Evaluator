@@ -1,0 +1,112 @@
+{
+ "eval": 21,
+ "assertions": [
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+  }
+ ],
+ "material": {
+  "report": "--- final reply ---\nI tested all four steps (When → Vehicle and waste → Check and book → Booked) on a phone-sized screen, in both light and dark mode. Changing a slot works without problems. A few bugs will send residents to the gate with no valid booking, so fix those first.\n\n## Fix before launch\n\n1. **Tapping \"Book this slot\" twice cancels the booking.** The button shows nothing for 1.5 seconds after it's pressed. A second tap in that time changes its label to \"Cancel booking\" and saves the booking as cancelled. The resident still lands on a page headed **\"Booked\"** with a big reference number. The only sign of the problem is a small red line: \"Status: cancelled. This booking is not on the gate's list.\" On a phone, people double-tap a button that doesn't respond all the time.\n   *Fix:* show a busy state on the button (\"Booking…\") and disable it while the booking goes through. Never reuse the same button to cancel. If a booking ever does end up cancelled, don't headline that page \"Booked\".\n\n2. **The 5-minute hold runs out with no warning and no way back.** A slot is held for 5 minutes from the moment it's tapped, but the site never says so. Finding the registration, choosing the waste and typing four fields on a phone can easily take longer. When that happens, the resident sees only \"This slot is no longer available.\" The slot in the summary turns into \"—\", and there's no link back to the slot list. The slot may well still be free, so the message is also misleading.\n   *Fix:* say \"We'll hold this slot for 5 minutes\" when the slot is chosen. Warn before the hold ends and let people extend it (WCAG 2.2.1, timing adjustable). If it does run out, check whether the slot is still free and rebook it quietly. If it isn't, add a \"Choose another slot\" link.\n\n3. **Today's slots that have already gone are shown as free.** The page opens on \"Today\" by default. Slots that have passed, or start within the next 30 minutes, appear as free and can be chosen. The resident only finds out at the very last step (\"The 08:00 slot today can no longer be booked\"), after typing in all their details. That breaks the promise to \"say what is free now\".\n   *Fix:* disable or remove those slots on the first step.\n\n4. **Van and trailer bookings fail only at the end, with no way to fix them.** The \"Permit number\" field shows for every vehicle, including cars, because a CSS rule stops it from hiding. Nothing checks the permit on the vehicle step. The check happens on the last step, and its error (\"A van needs a permit number…\") has no link back to the field, which is one page earlier.\n   *Fix:* show the field only for a van or a car with a trailer, check it when the resident taps Next on that step, and link any error to the field.\n\n5. **On smaller phones the slot grid is wider than the screen.** At 320 px and 360 px wide (older iPhones, many small Android phones) the slot grid pushes the page sideways, so it scrolls left and right and the right-hand column is cut off. A bit of script sizes the grid's columns without allowing for the page margins. This fails WCAG 1.4.10 (reflow).\n   *Fix:* remove that script; the CSS grid already handles narrow screens.\n\n## Fix next (big problems for keyboard, screen reader and dark-mode users)\n\n6. **Slots are out of time order.** Every \"Few left\" slot jumps to the top of the grid, above the \"Morning\" heading, mixing morning and afternoon (on Saturday 17: 08:20, 08:40 … 16:40, then \"Morning 08:00, 09:20…\"). People looking for \"Saturday morning\" are misled. Screen readers and the keyboard go through the slots in a different order from what's on screen (WCAG 1.3.2, 2.4.3).\n   *Fix:* remove the `order:-1` style and keep slots in time order.\n\n7. **Slots show no keyboard focus.** The script adds a `.slot:focus{outline:0}` style that hides the focus ring on every slot button. Keyboard users can't see which slot they're on (WCAG 2.4.7).\n   *Fix:* remove that style.\n\n8. **The \"Few left\" label is hard to read in both themes.** The contrast is 3.0:1 in light mode and 3.4:1 in dark mode, below the 4.5:1 that text this size needs (WCAG 1.4.3). In dark mode it's dull amber on brown and hard to read. Other dark-mode colours pass (body text 8.7:1, buttons 8–9:1).\n   *Fix:* use a darker amber in light mode and a much lighter amber in dark mode.\n\n9. **\"Change slot\" forgets the chosen day.** Going back from the check step opens on \"Today\" with nothing selected. Someone moving their Saturday slot has to pick Saturday again, and for a moment it looks as if the booking has moved to today. The vehicle, waste and details are kept.\n   *Fix:* open on the day and slot already chosen.\n\n10. **The confirmation page doesn't show the day or time.** \"Booked\" shows only the reference. The day, time and vehicle aren't repeated, though the gate has poor signal and that's the screen people will screenshot or print.\n    *Fix:* show the day, the 20-minute slot, the vehicle and registration next to the reference.\n\n## Smaller issues\n\n- **No loading message.** Slots take about a second to appear and nothing shows in the meantime. Tapping Next during that second does nothing.\n- **Hard-to-type date on iPhone.** \"Another day\" asks for DD/MM/YYYY, but the numeric keypad on iPhone has no \"/\" key. Typing 17102026 does work, so say that in the hint, or use a native date input.\n- **Slot length only in a tooltip.** \"Arrive within your slot\" is only in a tooltip, and phones don't show tooltips. Put it under the slot heading.\n- **Mobile number is required.** It's only \"for a reminder\", so residents without a mobile can't book. Check whether that's intended, or make it optional.\n- **First slot count not announced.** The slot count is only marked to be read out after its first update, so screen readers miss it the first time.\n\n## Check with the agency (my inference, not something I could confirm)\n\n- **\"Today\" is fixed to 12 October 2026.** The day buttons (\"Today\", \"Tomorrow\", \"Saturday 17\", \"Sunday 18\") are also hard-coded. From the next day on, they'll point to the wrong dates or to dates that have passed.\n- **Slots and bookings look like placeholders.** Availability is generated by the script. Booking makes no request to any server, and the reference is calculated in the browser.\n- These may be demo stubs, but confirm that the live build reads the real date and sends bookings to the gate's list. Otherwise none of the fixes above matter.\n\n## How I checked\n\n- **Reading the code:** I read the minified script and stylesheet.\n- **Browser:** Chromium at 320, 360 and 375 px wide, in light and dark mode. I worked out contrast from the colours the page actually used.\n- **Steps reproduced:** the booking and change-slot journeys, the double tap, an expired hold, a past slot today, a van with no permit, and keyboard focus on the slots.\n- **Not tested:** real VoiceOver and TalkBack.\n\nAll the fixes are in `app.js` and `styles.css`. The agency only handed over the built bundle, so they'll need to make them in their source.\n\nI can put these findings on a page you can send the agency if that helps.\n\nI tested all four steps (When → Vehicle and waste → Check and book → Booked) on a phone-sized screen, in both light and dark mode. Changing a slot works without problems. A few bugs will send residents to the gate with no valid booking, so fix those first.\n\n## Fix before launch\n\n1. **Tapping \"Book this slot\" twice cancels the booking.** The button shows nothing for 1.5 seconds after it's pressed. A second tap in that time changes its label to \"Cancel booking\" and saves the booking as cancelled. The resident still lands on a page headed **\"Booked\"** with a big reference number. The only sign of the problem is a small red line: \"This booking is not on the gate's list.\"\n   *Fix:* show \"Booking…\" and disable the button while the booking goes through. Never reuse that button to cancel.\n\n2. **The 5-minute hold runs out with no warning and no way back.** A slot is held for 5 minutes from the moment it's tapped, but the site never says so. Filling in the vehicle step and four details on a phone can easily take longer. When it runs out, the resident sees only \"This slot is no longer available.\" The slot in the summary turns into \"—\", and there's no link back to the slots.\n   *Fix:* say how long the slot is held, warn before the time runs out and let people extend it (WCAG 2.2.1). If it does run out, rebook the slot quietly when it's still free, or add a \"Choose another slot\" link.\n\n3. **Today's slots that have already gone are shown as free.** The page opens on \"Today\", and slots that have passed, or start within the next 30 minutes, can be chosen. The resident only finds out at the very last step, after typing in all their details.\n   *Fix:* disable those slots on the first step.\n\n4. **Van and trailer bookings fail only at the end.** The permit field shows for every vehicle, including cars, because a CSS rule stops it from hiding. Nothing checks the permit on the vehicle step. The check happens on the last step, and its error has no link back to the field.\n   *Fix:* show the field only for a van or trailer, check it on that step, and link any error to the field.\n\n5. **On smaller phones the slot grid is wider than the screen.** At 320 px and 360 px wide the page scrolls sideways and the right-hand column of slots is cut off (WCAG 1.4.10).\n   *Fix:* remove the script that sets the column widths.\n\n## Fix next\n\n6. **Slots are out of time order.** Every \"Few left\" slot jumps to the top of the grid, above the \"Morning\" heading, so morning and afternoon slots are mixed. Screen readers and the keyboard go through the slots in a different order from what's on screen (WCAG 1.3.2 and 2.4.3).\n   *Fix:* remove the `order:-1` style.\n\n7. **Slots show no keyboard focus.** An added `.slot:focus{outline:0}` style hides the focus ring on every slot button (WCAG 2.4.7).\n   *Fix:* remove that style.\n\n8. **The \"Few left\" label is hard to read.** Its contrast is 3.0:1 in light mode and 3.4:1 in dark mode, below the 4.5:1 that text this size needs. In dark mode it's dull amber on brown. Every other dark-mode colour I checked passes.\n\n9. **\"Change slot\" forgets the chosen day.** It opens on \"Today\" with nothing selected, so the resident has to pick their day again.\n   *Fix:* open on the day and slot already chosen.\n\n10. **The confirmation page doesn't show the day or time.** It shows only the reference. People will screenshot or print this page for the gate, where signal is poor, so it should show the day, slot, vehicle and registration next to the reference.\n\n## Smaller issues\n\n- **No loading message:** slots take about a second to appear and nothing shows in the meantime.\n- **Hard-to-type date on iPhone:** \"Another day\" asks for DD/MM/YYYY, but the iPhone number keypad has no \"/\" key.\n- **Slot length only in a tooltip:** \"Arrive within your slot\" is only in a tooltip, and phones don't show tooltips.\n- **Mobile number is required:** it's only used for a reminder, so residents without a mobile can't book.\n- **First slot count not announced:** screen readers miss the number of free slots the first time it appears.\n\n## Check with the agency (my inference)\n\n- **\"Today\" is fixed to 12 October 2026.** The \"Today\", \"Tomorrow\", \"Saturday 17\" and \"Sunday 18\" buttons are also fixed dates.\n- **Slots and bookings look like placeholders.** The script makes up the availability, booking never contacts a server, and the reference is calculated on the phone.\n- These may be demo stubs, but confirm that the live build reads the real date and sends bookings to the gate's list. Otherwise none of the fixes above matter.\n\nI read the minified script and stylesheet and reproduced each problem in Chromium. I worked out the contrast figures from the colours the page actually used. I didn't test with real VoiceOver or TalkBack. The agency only handed over the built bundle, so they'll need to make these fixes in their source.\n\nI can put these findings on a page you can send the agency if that helps.",
+  "ground_truth": [
+   {
+    "id": "slot-booking-D01",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "H1",
+    "description": "The slots for a day arrive about a second after the page opens or a day is chosen, and nothing says they are on their way: the grid is empty, the status line is blank, and Next is enabled. Pressing Next during that time does nothing at all. A resident who taps a day and then Next, as people do, sees no slots and no response, and may try another day or give up."
+   },
+   {
+    "id": "slot-booking-D02",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "FUN-07",
+    "description": "When the slots arrive, about a second after the page opens, the empty grid grows by several hundred pixels and everything under it (the Next button, the opening days, the footer) jumps down the page with no input from the resident: a layout shift of well over the 0.1 budget on every width, measured in the lab. A link to #opening from another page lands on the wrong place for the same reason: the slots arrive after the browser has scrolled to the anchor."
+   },
+   {
+    "id": "slot-booking-D03",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "1.4.3",
+    "description": "The 'Few left' tag on a slot is amber text on an amber tint whose values the script computes at run time from the council's hue: about 3.0:1 in the light theme and 3.2:1 in the dark theme for 16 px bold text, below the 4.5:1 that text of that size needs. The stylesheet holds no colour literal, so the failure exists only on a rendered page. The tag is the one thing that tells a resident a slot is about to go."
+   },
+   {
+    "id": "slot-booking-D04",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "FUN-05",
+    "description": "At 360 px and below the script sizes the slot grid's three columns from the window's width instead of the page's content box, so the grid runs 14 to 15 px past the right edge and the page scrolls sideways; the last column's slots and their tags are cut at the edge. From 361 px up the stylesheet's own grid applies and nothing overflows."
+   },
+   {
+    "id": "slot-booking-D05",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "A11Y-04",
+    "description": "The slot buttons show no focus at all: a style the script injects at run time removes their outline (meant for the pressed look), and nothing replaces it. Every other control on the page keeps the 3 px focus ring. A keyboard user tabbing through 29 slots cannot see which one they are on."
+   },
+   {
+    "id": "slot-booking-D06",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H9",
+    "description": "Today's slots that have already started, or start within half an hour, are shown as free and can be chosen (today is Monday 12 October at 10:05, so 08:00 to 10:20 are offered). The refusal comes three steps later, after the details are typed and Book is pressed: 'The 10:20 slot today can no longer be booked. Choose another slot or day.' with no link back to the slots."
+   },
+   {
+    "id": "slot-booking-D07",
+    "origin": "seeded",
+    "route": "/vehicle.html",
+    "criterion": "H6",
+    "description": "That a van, or a car with a trailer, needs a permit is said only behind an icon-only info button. Choosing 'Van' reveals the permit field 1.2 seconds later, under the fold on a phone, with nothing drawing the eye to it, and Next accepts an empty permit. The rule is enforced on the confirm page ('A van needs a permit number'), which has no permit field; the resident has to work out that 'Change vehicle' is the way back."
+   },
+   {
+    "id": "slot-booking-D08",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H1",
+    "description": "A chosen slot is held for five minutes and no page shows the hold or its end. When it has lapsed, Book waits 1.5 seconds and then says 'This slot is no longer available.' while the summary's slot line changes to a dash: the slot is dropped from the booking without saying that the hold ran out, and the only way to another slot is 'Change slot', which forgets the day."
+   },
+   {
+    "id": "slot-booking-D09",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "'Book this slot' stays enabled while the booking is made (1.5 seconds) and shows no progress: no busy state, no label change. A second press in that time turns the press into 'cancel': the done page still shows a reference, is titled 'Booked' and says 'Show this at the gate', with a small status line saying the booking is cancelled and not on the gate's list. A resident who taps twice, as people do when nothing seems to happen, arrives at the gate with a cancelled booking."
+   },
+   {
+    "id": "slot-booking-D10",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "2.4.3",
+    "description": "The script moves every 'Few left' slot to the front of the grid at run time (a CSS order it sets per button), so the grid reads 08:20, 09:00, 09:40, 12:00 before 08:00. The document, Tab and a screen reader keep the chronological order, so focus jumps around the visible grid and the morning and afternoon headings no longer sit above their slots."
+   },
+   {
+    "id": "slot-booking-D11",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "A11Y-15",
+    "description": "The line that says how many slots a day has ('20 slots free on Saturday 17 October') is written into a plain paragraph and only then given aria-live, so a screen reader is never told the slots have arrived or how many there are; the next change would be announced, but the day's count is the one that matters."
+   },
+   {
+    "id": "slot-booking-D12",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H3",
+    "description": "'Change slot' on the confirm page opens the first step on today's date with no slot chosen, whatever day the resident had picked: the day and the slot are forgotten (the vehicle, the waste and the typed details are kept, and Next returns to the confirm page). Nothing says so; a resident who only wanted the afternoon of the same day has to find the day again."
+   },
+   {
+    "id": "slot-booking-D13",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "H6",
+    "description": "A slot button shows only its start time. That a slot lasts 20 minutes, when it ends and that the resident must arrive within it are only in the button's tooltip, which appears on hover and never on a phone. The intro says '20-minute slot' once, above the fold."
+   },
+   {
+    "id": "slot-booking-D14",
+    "origin": "seeded",
+    "route": "/done.html",
+    "criterion": "H6",
+    "description": "The done page gives the reference and what to bring, but not the day, the slot or the vehicle that were booked. A resident who books on Monday for Saturday has nothing to check the time against on Saturday morning except memory, and the gate turns away a vehicle that does not match the booking."
+   }
+  ]
+ }
+}

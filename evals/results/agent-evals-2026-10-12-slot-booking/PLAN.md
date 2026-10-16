@@ -52,4 +52,26 @@ recorded and replaced; instrument changes after seeing results are logged below 
 
 ## Deviations from the plan (recorded as they happened)
 
-(none yet)
+- 2026-10-12, before any run. The second blind labeller finished after this plan was written. It listed 35 problems
+  and found 13 of the 14 seeded defects (not D02, the layout shift, which its method did not measure). The 13
+  problems the fixture had not meant to have were fixed in the fixture, 3 were folded into D02 and D09, 5 are left
+  unseeded, and two severity bands were adjusted to the labeller's; the fixture was calibrated again (5 of 5
+  detected, 0 false positives) and committed as `fffecb5`. Grading uses that ground truth; there is no found-defect
+  set for this fixture, so recall is against the 14 seeded defects only.
+- 2026-10-12, 21:34 to 2026-10-16. The runs were prepared (`prepare-evals.mjs`, plugin snapshot identical to the
+  2.3.0 skill, ports 4701–4703, 4711–4713 and 4721–4723) and set to start once the headless CLI was signed in. The
+  sign-in did not complete and the waiting task ended with its session; no run started and no tokens were used.
+- 2026-10-16. The desktop app's bundled Claude Code is now 2.1.299 (it was 2.1.295 when the runs were prepared); the
+  runs use 2.1.299, with the same model (claude-opus-5-5), budget, plugin snapshot, prompts and workspaces.
+- 2026-10-16, while grading. Instrument notes, applied to every run they concern:
+  - The phase measures come from the transcript script used in round 4 (`phases`, rebuilt exactly from its recorded
+    edits after the machine's temporary-file cleanup removed it). In skill runs 2 and 3 the lead started its capture
+    with a command form the script does not recognise, so "first check to first inspector" is not comparable; the
+    report gives the minute of the session at which the first inspector started instead, for all three runs.
+  - Round 4's transcripts were removed by the same cleanup, so its comparison figures are the ones its report records.
+  - Question 7 was read from the verifiers' calls: whether a probe that waits more than two minutes ran in the
+    background and how early among the verifier's calls it came, and which verdicts used the `hold=expired` state.
+  - Grading: U4, N7, Y1, F3 and P6's two graders agreed on every item and assertion, so their consensus is the agreed
+    mapping; A9, G2 and J8 had one item split each (G2 also its assertion), settled by an adjudicator; K5's graders
+    numbered the same 21 problems differently, and its adjudicator aligned the two lists by meaning (one mapping
+    decision, ten alignment decisions).

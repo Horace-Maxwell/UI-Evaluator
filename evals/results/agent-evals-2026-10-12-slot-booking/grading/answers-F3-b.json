@@ -1,0 +1,51 @@
+{
+  "answers": [
+    {
+      "text": "Precision after verification is at least 0.8",
+      "passed": true,
+      "evidence": "Of 32 judged findings (tool findings F-0015, F-0018, F-0019 excluded), 26 map to seeded defects, 5 are real-unseeded and 1 is not-a-problem (F-0058): precision 31/32 = 0.97, strict precision 26/32 = 0.81. Recall by meaning: 13/14 across all findings (only D13, the slot length in a tooltip, is missed); 11/14 from judged findings alone (D02 and D11 come only from tool findings)."
+    },
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The reply has a numbered 'What to fix first' list that starts with the top-severity double-tap problem, followed by 'Next round, also high priority'. Under 'Some things can't be checked by machine and need a person' it lists VoiceOver/TalkBack in dark mode, real 200% zoom and IME typing, and it says 'Nothing has been tried with residents yet.'"
+    }
+  ],
+  "mapping": [
+    { "item": "F-0001", "title": "Amber tag contrast 3.02:1", "maps_to": "slot-booking-D03", "reason": "Amber text (#bd7d0f) on an amber tint (#fbefda) at 16 px bold measures 3.02:1, below 4.5:1. That is the 'Few left' tag contrast failure." },
+    { "item": "F-0009", "title": "Horizontal page overflow at 320 px", "maps_to": "slot-booking-D04", "reason": "The slot grid runs 15 px past a 320 px viewport and the page scrolls sideways. That is the seeded grid overflow at 360 px and below." },
+    { "item": "F-0016", "title": "No visible focus on slot button 08:00", "maps_to": "slot-booking-D05", "reason": "Tab focus on the 08:00 slot changes no pixels, so the slot buttons show no focus." },
+    { "item": "F-0017", "title": "Focus order jumps back to 08:20 Few left", "maps_to": "slot-booking-D10", "reason": "Focus jumps around the grid because the 'Few left' slots are shown out of document order. That is the reordering defect." },
+    { "item": "F-0021", "title": "Cancelled page keeps heading 'Booked'", "maps_to": "slot-booking-D09", "reason": "The cancelled state comes from the second press on Book. D09 names the harm: the done page still says 'Booked', so the resident goes to the gate with a cancelled booking. This item is a narrower statement of that harm." },
+    { "item": "F-0022", "title": "Cancelled page title reads 'Booked'", "maps_to": "slot-booking-D09", "reason": "Same harm as D09: after the double-press cancellation, the done page is still titled 'Booked'." },
+    { "item": "F-0024", "title": "Expired-slot error gives no recovery and no link", "maps_to": "slot-booking-D08", "reason": "When the hold lapses, the error says only 'This slot is no longer available.' and the slot line becomes a dash, without saying what happened or what to do. That is the expired-hold defect." },
+    { "item": "F-0025", "title": "Selected day nearly invisible under forced colours", "maps_to": "real-unseeded", "reason": "Under forced colours, the chosen day button differs from the others only by a 2 px border instead of 1 px. A low-vision resident using high-contrast mode cannot see which day is selected without reading the heading below. Minor, because the day is also named in text, but measured and not in the ground truth." },
+    { "item": "F-0029", "title": "Second press on Book cancels the booking", "maps_to": "slot-booking-D09", "reason": "A second press during the 1.5 s wait relabels the button 'Cancel booking' and saves the booking as cancelled. This is exactly D09." },
+    { "item": "F-0030", "title": "Book shows no pending state for 1.5 s", "maps_to": "slot-booking-D09", "reason": "Book stays enabled with no busy state or label change. D09 includes 'Book doing nothing visible'." },
+    { "item": "F-0031", "title": "Slots have no loading state; Next does nothing", "maps_to": "slot-booking-D01", "reason": "The grid and status line stay blank for about 0.9 s with nothing marking the wait, and Next silently does nothing. That is the wait itself." },
+    { "item": "F-0032", "title": "Today's past slots offered, refused after Book", "maps_to": "slot-booking-D06", "reason": "Today's slots before the cut-off show as free and are refused only after Book, once the details are entered." },
+    { "item": "F-0033", "title": "Permit checked only after Book, not on vehicle step", "maps_to": "slot-booking-D07", "reason": "Next on the vehicle step accepts a missing or malformed permit, and the rule is enforced only on the confirm page, which has no permit field." },
+    { "item": "F-0034", "title": "Post-Book errors (permit etc.) not linked to fix", "maps_to": "slot-booking-D07", "reason": "Its main example is the permit error on the confirm page (states 'permit-error', 'van, permit 12345'). That page has no permit field and no link back, so the resident has to find the way back alone, which is part of D07." },
+    { "item": "F-0036", "title": "5-minute hold expires without warning", "maps_to": "slot-booking-D08", "reason": "No page announces, shows or extends the five-minute hold, and the slot is dropped when it lapses." },
+    { "item": "F-0039", "title": "Vehicle-step error links target non-focusable divs", "maps_to": "real-unseeded", "reason": "The error-summary links on the vehicle step point at a div role=group and a plain div, so focus does not land on a control. Keyboard and screen-reader residents are not taken to the vehicle buttons or waste checkboxes they need to fix. Not in the ground truth." },
+    { "item": "F-0042", "title": "Permit field shown for Car with no 'vans only' note", "maps_to": "slot-booking-D07", "reason": "The permit rule is not stated at the field and is only behind the icon-only info button. That is the D07 permit-rule problem." },
+    { "item": "F-0044", "title": "Done page omits day, time and vehicle", "maps_to": "slot-booking-D14", "reason": "The done page does not restate the booked day, slot window or vehicle." },
+    { "item": "F-0046", "title": "'Change slot' opens a blank first step", "maps_to": "slot-booking-D12", "reason": "'Change slot' opens the first step on Today with no slot chosen, so the chosen day and slot are forgotten." },
+    { "item": "F-0056", "title": "Permit field labelled the same for every vehicle", "maps_to": "slot-booking-D07", "reason": "The rule that only vans and trailers need a permit is only in the Opening days box and behind the icon-only info button, not at the field. That is D07." },
+    { "item": "F-0104", "title": "Permit rule hidden behind (i) button", "maps_to": "slot-booking-D07", "reason": "This is D07's core: the permit requirement is stated only behind an icon-only info button." },
+    { "item": "F-0105", "title": "Permit help has no link and no timing", "maps_to": "real-unseeded", "reason": "The help says to apply on the council site but gives no link and does not say whether a permit can arrive in time. A van owner booking the evening before cannot act on it. Fixing D07 would not fix this, so it is separate." },
+    { "item": "F-0058", "title": "Vehicle step does not repeat chosen day/slot", "maps_to": "not-a-problem", "reason": "Choosing a vehicle does not depend on the slot, and the confirm page restates the day and slot before anything is booked. The item names no harm to residents." },
+    { "item": "F-0067", "title": "No online way to change or cancel a booking", "maps_to": "real-unseeded", "reason": "Changing or cancelling is possible only by phone, on weekdays 09:00 to 17:00. Residents who book in the evening or at weekends cannot free or move their slot, so it is wasted or they miss their visit. Not in the ground truth." },
+    { "item": "F-0075", "title": "Flow never says how long a slot is held", "maps_to": "slot-booking-D08", "reason": "No screen gives the hold time or a countdown. That is the unseen five-minute hold." },
+    { "item": "F-0076", "title": "No online change or cancel (duplicate)", "maps_to": "real-unseeded", "reason": "Same problem as F-0067: only a weekday phone line, outside the evening and weekend times when residents book or change plans." },
+    { "item": "F-0078", "title": "No indication of hold time", "maps_to": "slot-booking-D08", "reason": "No page states a hold time or time remaining, and the confirm page can fail with 'This slot is no longer available'. That is D08." },
+    { "item": "F-0079", "title": "'Few left' slots pulled into an unlabelled top group", "maps_to": "slot-booking-D10", "reason": "The 'Few left' slots are moved to the front of the grid, out of time order, and the Morning and Afternoon headings no longer sit above their slots." },
+    { "item": "F-0080", "title": "Done page omits day, slot and vehicle", "maps_to": "slot-booking-D14", "reason": "The done page shows only 'Booked', the reference and generic instructions, with no day, slot or vehicle." },
+    { "item": "F-0082", "title": "Expired hold keeps 'Book this slot' as primary", "maps_to": "slot-booking-D08", "reason": "After the hold lapses, the slot shows as a dash and the page gives no way forward. This is the expired-hold harm in D08." },
+    { "item": "F-0083", "title": "Permit field shown before vehicle; rule behind (i)", "maps_to": "slot-booking-D07", "reason": "The permit rule is not stated at the field and sits only behind the (i) button. That is D07." },
+    { "item": "F-0101", "title": "Slot grid wider than page at 320 px", "maps_to": "slot-booking-D04", "reason": "At 320 px the third slot column reaches past the content edge and the capture is 335 px wide. That is the grid overflow." },
+    { "item": "F-0015", "title": "Slot count status not announced", "maps_to": "slot-booking-D11", "reason": "The live region is added together with '20 slots free…', so screen readers are not told the slots or their count." },
+    { "item": "F-0018", "title": "No progress during 1.2 s 'Car with trailer'", "maps_to": "slot-booking-D07", "reason": "Choosing a vehicle that needs a permit starts a 1.2 s wait with no feedback before the permit field appears. That is D07's delayed permit field." },
+    { "item": "F-0019", "title": "Layout shift 0.169 moving #opening", "maps_to": "slot-booking-D02", "reason": "A lab CLS of 0.169, above the 0.1 budget, when the slots arrive and push #opening down. That is the page-moving defect." }
+  ]
+}

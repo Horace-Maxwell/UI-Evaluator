@@ -1,0 +1,131 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The reply is laid out as 'Fix before launch' (items 1-6, the launch blockers), then 'Fix next' (7-12), then 'Smaller fixes', and ends with a 'Suggested order'. It also says what it could not check: 'I didn't drive the site in a real browser, phone or screen reader in this run, so check the top items on an actual phone before launch', and it marks the demo-date guess and the mobile-number rule as unconfirmed, to be checked with a person."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Double tap on 'Book this slot' cancels the booking but the done page still says 'Booked'",
+      "maps_to": "slot-booking-D09",
+      "reason": "Same defect: the button shows no change during the 1.5 s wait, a second press cancels the booking, and the done page is still headed Booked with only a small cancelled status line."
+    },
+    {
+      "item": "R2",
+      "title": "'Today' hard-coded as Monday 12 October 2026 10:05 (quick-day labels, 14-day window, cut-off)",
+      "maps_to": "not-a-problem",
+      "reason": "The packet's ground truth sets the scenario's 'now' as Monday 12 October at 10:05, so a pinned clock is the test setup, not a harm residents meet in the flow. The review itself calls it a guess about a demo setting. The separate point about passed slots being offered is R3."
+    },
+    {
+      "item": "R3",
+      "title": "Today's slots that have passed or start soon still show as free",
+      "maps_to": "slot-booking-D06",
+      "reason": "The review says the slot list ignores the clock, so today's slots that have passed still show as free, and it asks to hide or disable same-day slots that start within 30 minutes. That fix removes the defect of started or imminent slots being offered and then refused at the end."
+    },
+    {
+      "item": "R4",
+      "title": "5-minute slot hold never shown, checked only at Book, misleading 'no longer available' message with no link back",
+      "maps_to": "slot-booking-D08",
+      "reason": "Same defect: the hold is never shown, it runs out unseen, the slot is dropped at Book with 'This slot is no longer available', and there is no direct way back to the slots."
+    },
+    {
+      "item": "R5",
+      "title": "'Few left' slots moved out of time order to the top of the grid",
+      "maps_to": "slot-booking-D10",
+      "reason": "Same defect: the CSS order:-1 puts 'Few left' slots above the Morning heading and out of time order, so the visual order no longer matches the keyboard and screen reader order."
+    },
+    {
+      "item": "R6",
+      "title": "Slot buttons have no keyboard focus indicator",
+      "maps_to": "slot-booking-D05",
+      "reason": "Same defect: an injected `.slot:focus{outline:0}` removes the focus ring on the slot buttons only."
+    },
+    {
+      "item": "R7",
+      "title": "Slot grid overflows the screen at 360 px and below, and when zoomed",
+      "maps_to": "slot-booking-D04",
+      "reason": "Same defect: at 360 px or less the script sizes three columns from the window width rather than the content box, which causes sideways scrolling and cut-off slots. The zoom case also falls under that width."
+    },
+    {
+      "item": "R8",
+      "title": "Van and trailer permit rule hidden behind an icon, field delayed 1.2 s, enforced only at the last step",
+      "maps_to": "slot-booking-D07",
+      "reason": "Same defect: the rule appears only behind an 'i' icon, the permit field appears 1.2 s after Van is picked, the vehicle page does not check it, and the error only comes after Book with no way back to the field."
+    },
+    {
+      "item": "R9",
+      "title": "'Few left' tag fails text contrast in both themes",
+      "maps_to": "slot-booking-D03",
+      "reason": "Same defect: the review measures amber on amber at 3.0:1 (light) and 3.4:1 (dark) for 16 px bold text, which needs 4.5:1."
+    },
+    {
+      "item": "R10",
+      "title": "'Change slot' forgets the chosen day and slot",
+      "maps_to": "slot-booking-D12",
+      "reason": "Same defect: 'Change slot' returns to Today with no slot selected, and nothing says that the vehicle and details are kept."
+    },
+    {
+      "item": "R11",
+      "title": "Page after booking shows only the reference, not the day, time or vehicle",
+      "maps_to": "slot-booking-D14",
+      "reason": "The 'confirmation page' here is the page shown after booking. The review says it lacks the day, slot and vehicle and asks for them next to the reference, which is the done-page defect."
+    },
+    {
+      "item": "R12",
+      "title": "Slots blank for about a second on day change with no loading message; Next silently does nothing",
+      "maps_to": "slot-booking-D01",
+      "reason": "Same defect: there is a 0.9 s empty wait while the slots arrive, nothing says they are loading, and pressing Next during it does nothing."
+    },
+    {
+      "item": "R13",
+      "title": "Slot-count live region switched on only as the first result appears, so screen readers miss it",
+      "maps_to": "slot-booking-D11",
+      "reason": "Same defect: aria-live is added only after the count is written, so a screen reader misses the first announcement of the slots and their count."
+    },
+    {
+      "item": "R14",
+      "title": "'Today' selected by default although most residents book the evening before",
+      "maps_to": "real-unseeded",
+      "reason": "Residents mostly book on a phone the evening before. Opening on a day whose slots have all gone costs them an extra step every time and puts an unusable day in front of them. Defaulting to tomorrow is a different fix from filtering out past slots (D06)."
+    },
+    {
+      "item": "R15",
+      "title": "Arrival rule and slot end time only in a tooltip",
+      "maps_to": "slot-booking-D13",
+      "reason": "Same defect: 'Arrive within your slot' and the end time are only in a `title` tooltip, which phones never show."
+    },
+    {
+      "item": "R16",
+      "title": "'Another day' date field opens a numeric keypad with no '/' while the hint asks for DD/MM/YYYY",
+      "maps_to": "real-unseeded",
+      "reason": "Most residents book on a phone. On iPhone the hint asks for a slash the keypad cannot type, so people trying to pick a later day may get stuck or enter dates wrongly, even though digits alone would work."
+    },
+    {
+      "item": "R17",
+      "title": "Vehicle error summary link points at an unfocusable container and the error is not tied to the buttons",
+      "maps_to": "real-unseeded",
+      "reason": "Keyboard and screen reader users who follow 'Choose the vehicle' from the error summary do not land on the vehicle choice and are not told which control the error belongs to, so recovering from the error is harder."
+    },
+    {
+      "item": "R18",
+      "title": "Waste hint about bag and mattress limits not read by screen readers",
+      "maps_to": "real-unseeded",
+      "reason": "Putting aria-describedby on a non-focusable div means screen reader users never hear the limits. They can then bring loads the gate will refuse."
+    },
+    {
+      "item": "R19",
+      "title": "Registration field should use autocapitalize='characters'",
+      "maps_to": "not-a-problem",
+      "reason": "A polish suggestion with no harm stated or shown; the review does not say lowercase entry is rejected or causes a mismatch."
+    },
+    {
+      "item": "R20",
+      "title": "Mobile number required and only UK mobiles accepted",
+      "maps_to": "real-unseeded",
+      "reason": "A required UK-mobile field on a council service shuts out residents with no mobile, such as those with only a landline, from booking online at all. The review reports the rule from the code and flags that whether it is intended needs checking."
+    }
+  ]
+}

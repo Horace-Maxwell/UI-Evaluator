@@ -1,0 +1,48 @@
+{
+  "schema": "verifier",
+  "run": "20261016-125610-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "0120e53500835bf1",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0037",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Partly reproduced: pressing Enter in #name on /confirm.html submits the form (the error summary appears), so Enter-to-submit on the text fields is real. The claim itself, that an Enter that confirms an IME composition also submits, cannot be reproduced with uie probe: the probe actions cannot start an IME composition or send a keydown with isComposing=true or keyCode 229. The candidate's evidence is source code, which the verifier may not read.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/99/probe.json",
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/99/aria.yml"
+      ],
+      "note": "To settle it, a human can test with a real IME (for example Japanese input in #name on /confirm.html and #date on /index.html), or run a script that sends an Enter keydown with isComposing=true. The site is en-GB, so how often this happens is a question for rating, not for verification."
+    },
+    {
+      "candidate_id": "F-0104",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375 px: after choosing Van, the only visible permit text is 'Permit number' and 'Starts DRC-, then five digits.' The rule that a van or a car with a trailer needs a free council permit appears only after pressing the (i) icon button, which shows no visible text.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/98/screenshots/vf-van.png",
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/98/screenshots/vf-info.png",
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/97/aria.yml"
+      ],
+      "note": "Wording: 'unlabelled' overstates it. The button has the accessible name 'About vans and trailers' and is only visually icon-only. The PRODUCT.md brand-commitment claim was not checked because PRODUCT.md is not in the packet. Not part of this finding: with Van chosen and the permit field empty, Next reported only the waste error (probe 98)."
+    },
+    {
+      "candidate_id": "F-0105",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: the opened panel reads 'A van, or a car with a trailer, needs a free permit from the council. The number starts DRC-. Apply on the council site; it comes by email within two working days.' It contains no link (the ARIA snapshot shows plain text), so the 'no link' part holds.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/98/aria.yml",
+        ".ui-evaluator/runs/20261016-125610-audit-standard/probes/98/screenshots/vf-info.png"
+      ],
+      "note": "Wording: 'no timing' is wrong. The panel says the permit 'comes by email within two working days'. What it does not say outright is that this rules out a slot today or tomorrow. Restate the finding as: the panel gives no link, and does not spell out what two working days means for a near-term slot. The impact text is copied from F-0104 and fits this finding poorly."
+    }
+  ]
+}

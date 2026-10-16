@@ -1,0 +1,123 @@
+{
+  "schema": "verifier",
+  "run": "20261016-125619-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "19ff1dc596dce32c",
+  "iteration": 1,
+  "_notes": "Dismissal ledger consulted: empty. Iteration 1, so ceiling_flag is false for all. Several candidates cite source-file evidence (styles.css, app.js); I did not open source code and judged only from rendered pixels, ARIA and probes. I read DESIGN.md (design spec, not source) to check F-0102's palette claim. Probe dirs are under <tmp>",
+  "verdicts": [
+    {
+      "candidate_id": "F-0101",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Pixel-sampled the rendered 'Few left' tag at 375 px: light theme text rgb(189,125,15) on rgb(251,239,218) = 3.02:1; dark theme text rgb(171,124,43) on rgb(60,50,32) = 3.38:1. Text is 16 px bold, which is not large text, so 4.5:1 applies. Default emulation, page settled; not a compositing artefact (flat fills).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Measured values match the candidate (about 3.0 and 3.4). The state is visible in 'default' (Today) and after choosing a day, not only 'slots-loaded'."
+    },
+    {
+      "candidate_id": "F-0102",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "DESIGN.md declares warning #8a5a00 / on-warning #ffffff and no 'few' roles. The rendered tag uses #bd7d0f text on #fbefda (light) and #ab7c2b on #3c3220 (dark), neither of which is a DESIGN.md colour. The availability tag is a warning-type signal, so the off-palette colours are observable.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "DESIGN.md colors.warning (line 22)"
+      ],
+      "note": "Criterion fit: the criteria (COL-01, A11Y-11, WCAG 1.4.3) and the impact text were copied from F-0101 and describe contrast, not design-system conformance. This candidate's mechanism is a deviation from DESIGN.md colour roles; cite the design-system / token-fidelity criterion instead, and rewrite impact (e.g. inconsistency with the declared warning role). DESIGN.md also notes 'The build sets every colour at run time from the council's hue; the values above are what the design specifies', so the owner may consider derived colours acceptable; rating should weigh that. Keep separate from F-0101 (different mechanism), but fixing one by adopting the warning role would likely fix both.",
+      "suggested_criterion": "design-system conformance (DESIGN.md colour roles), not COL-01 / WCAG 1.4.3"
+    },
+    {
+      "candidate_id": "F-0037",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Reproduced the part I can: pressing Enter in 'Your name' on /confirm.html submits the form (validation summary appears). The claim itself, that Enter during IME composition submits, cannot be exercised with uie probe (no composition events), and the candidate's only evidence for the missing guard is source code, which I may not read.",
+      "evidence": [
+        "<tmp>"
+      ],
+      "note": "Question for the owner: with a composing IME (e.g. Japanese or Chinese input), does pressing Enter to commit a candidate in the date field or a confirm-page field submit the form? Also: is any non-en-GB input method in scope, given the product is en-GB only? Wording: 'risks a second activation' references another finding and is not evidenced here."
+    },
+    {
+      "candidate_id": "F-0103",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Clicked Saturday 17 at 375 px: screenshots at about 0 ms and 400 ms after the click show the Slots heading with an empty area and no loading text; slots appeared about 0.9 s after the click.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Record hygiene: this candidate's locations, evidence and impact also cover the booking submit (/confirm.html, #book), which is F-0104's problem. Narrow F-0103 to the Slots region (role=region[name=\"Slots\"]) after choosing a day; drop the confirm locations. Wording: 'may conclude Saturday has no slots' is plausible but not observed; keep as 'may'. Timing is local-lab and noisy, but the absence of any loading indicator is independent of the exact delay."
+    },
+    {
+      "candidate_id": "F-0104",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Filled valid details on /confirm.html and clicked 'Book this slot': screenshots at about 0, 500 and 1000 ms show the same page and the same button label, with no in-progress text or disabled state; 'Show this at the gate' appeared about 1.35 s after the click.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Record hygiene: drop the Slots-region location and the slot-loading evidence/impact, which belong to F-0103. I did not test whether a second tap creates a duplicate booking; the impact's 'second tap may be made' is a possibility, not an observed double booking."
+    },
+    {
+      "candidate_id": "F-0105",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced on the real flow without the hold=expired parameter: chose Saturday 17 09:20, Car, Garden waste, reached Check and book, then waited about 11 minutes. Screenshots at 0, about 5 and about 11 minutes show the same page with no hold notice, timer or warning; pressing Book this slot after the wait gave 'There is a problem / This slot is no longer available.' So a hold exists and expires silently. Absence check: ARIA snapshots of / (default, Saturday chosen, 09:20 chosen), /vehicle.html and /confirm.html contain no 'hold', 'held', 'reserved', 'expire' or time-left text; the only 'minutes' text is 'Slots last 20 minutes' (slot length).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "I did not measure the exact hold length (it is under about 11 minutes). Record hygiene: this candidate shares its locations and evidence with F-0106; keep the slot-chosen, vehicle and confirm-default locations here and the expired route in F-0106. Wording: 'about to lose it' fits the evidence; 'residents often book while doing something else' is an assumption from PRODUCT context, not observed."
+    },
+    {
+      "candidate_id": "F-0106",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "On the expired route, after filling valid details and clicking 'Book this slot', the page shows 'There is a problem / This slot is no longer available.', the Slot row reads '\u2013 \u00b7 Change slot', and 'Book this slot' is still offered. No reason (e.g. the hold ran out) and no instruction to pick another slot is given. Also reproduced on the real flow after an about 11-minute wait (hold probe), with the same message.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Narrowing: a 'Change slot' link is present in the booking summary below the error, so recovery is possible but not prompted by the message; the description's 'no direct prompt' should acknowledge that link. The expired message only appears after pressing Book (v5 shows the page on load with no error), so the user learns of expiry only after filling every field. Locations: drop the vehicle/home/confirm-default locations and the hold-notice evidence, which belong to F-0105; keep the expired route. Criterion fit: H9 (help users recognise, diagnose and recover from errors) fits better than CW-Q4/H1."
+    },
+    {
+      "candidate_id": "F-0060",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "With Today (Monday 12 October) selected, 08:00 is an enabled button, can be pressed, and Next goes to 'Your vehicle and waste'. The Slots line reads '20 slots free on Monday 12 October' and every morning slot from 08:00 is offered. The app shows no current time; at the journey's stated 10:05 (and at any time after 08:20), slots up to 10:00 have already started.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "The app's 'today' is a fixed fixture date (Monday 12 October) while the probe ran on 16 October, so the 10:05 time-of-day comes from the journey, not from anything the page shows; I confirmed that past-time slots are not filtered at the fixture's stated time. The owner should confirm the app is meant to model the current time. I did not test whether the booking for 08:00 completes or is refused at the confirm step. Wording: 'be turned away at the gate' is not evidenced; 'may' is appropriate. Criterion fit is fine (H5)."
+    }
+  ]
+}

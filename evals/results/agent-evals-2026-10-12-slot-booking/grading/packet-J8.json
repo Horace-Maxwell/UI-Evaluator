@@ -1,0 +1,920 @@
+{
+ "eval": 21,
+ "assertions": [
+  {
+   "text": "Precision after verification is at least 0.8",
+   "how": "a grader who has not seen the run maps each confirmed finding that is not a deterministic tool finding to one seeded defect, to 'real but not seeded' (with the reason it is a genuine problem for these users), or to 'not a problem'; precision = (seeded + real but not seeded) / confirmed judged findings >= 0.8. Also report the strict precision, seeded / confirmed judged findings, and the recall by meaning"
+  },
+  {
+   "text": "The reply puts the fixes in priority order and says what needs a person",
+   "how": "the final reply lists the confirmed problems from most to least severe, or the P0/P1 first, and names what the agent could not check (needs-human WCAG items, real skippers)"
+  }
+ ],
+ "material": {
+  "findings": [
+   {
+    "id": "F-0015",
+    "method": "judged",
+    "title": "Status message not announced: \"20 slots free on Monday 12 October\"",
+    "description": "After Today, the message \"20 slots free on Monday 12 October\" appeared without moving focus, but its live region (#slots-status) was inserted together with the text; screen readers only announce changes to regions that already exist. Screen readers do not announce the outcome.",
+    "criteria": [
+     "A11Y-15",
+     "4.1.3"
+    ],
+    "routes": [
+     "/",
+     "/index.html"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "initial"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0016",
+    "method": "judged",
+    "title": "No visible focus indicator: \"08:00\"",
+    "description": "Tab focus on \"08:00\" changes 0 pixels within its box + 4 px (focused vs blurred crop), so no focus position is visible.",
+    "criteria": [
+     "A11Y-04",
+     "2.4.7",
+     "A11Y-22"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0020",
+    "method": "judged",
+    "title": "Slot grid shows \"Few left\" slots in a separate block above the Morning heading, out of DOM and time order",
+    "description": "Under 1.3.2 the reading order a screen reader or keyboard follows should match the order the page presents visually. In the DOM and the ARIA snapshot every slot sits in time order under the 'Morning' or 'Afternoon' heading (08:00, 08:20 Few left, 08:40 Few left ...). On screen, every 'Few left' slot from both halves of the day is moved into one block above the 'Morning' heading (on Saturday 17: 08:20, 08:40, 09:00, 09:40, 10:20, 10:40, 13:40, 14:00, 15:00, 16:40). Below that block, 'Morning' shows only 08:00, 09:20, 10:00 and the full slots. So the visual grouping (Morning/Afternoon), the time order and the DOM order disagree, at 320 px and at 1280 px. Afternoon slots such as 13:40 appear above the Morning heading. The keyboard check's 08:00 to 08:20 inversion is one symptom; this record covers the meaning: the heading structure the snapshot exposes does not match what sighted users see.",
+    "criteria": [
+     "1.3.2",
+     "1.3.1",
+     "A11Y-03",
+     "2.4.3",
+     "H4",
+     "CW-Q2",
+     "H2"
+    ],
+    "routes": [
+     "/",
+     "/index.html"
+    ],
+    "states": [
+     "date-chosen",
+     "slot-chosen",
+     "default",
+     "slots-loaded",
+     "slots-loaded (Saturday 17)"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0022",
+    "method": "judged",
+    "title": "Selected day button is not distinguishable from the other day buttons under forced colours",
+    "description": "A11Y-22 asks that selected states stay visible under forced-colors: active. In default mode the pressed day ('Saturday 17') has a tinted fill and a darker border. Under forced colours the fill is removed, all day buttons are bold, and the pressed one differs only by a slightly different border hue (navy against black) of similar width. The pressed slot keeps a cue because its time turns bold, but the pressed day does not. No WCAG criterion fails: aria-pressed exposes the state and the 'Saturday 17 October' line under Slots restates the day in text. This is reported against the advisory rule so the raters can judge it.",
+    "criteria": [
+     "A11Y-22"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "date-chosen"
+    ],
+    "severity": 1.33
+   },
+   {
+    "id": "F-0023",
+    "method": "judged",
+    "title": "Done page heading reads \"Booked\" when the booking status is cancelled",
+    "description": "Under 2.4.6 headings must describe their topic. On /done.html with status=cancelled the h1 is still 'Booked'. Only a paragraph under 'Your reference' says 'Status: cancelled. This booking is not on the gate's list.', and the paragraphs after it still say 'Show this at the gate' and 'A reminder will be sent to your mobile the evening before'. The heading and the following text contradict the status.",
+    "criteria": [
+     "2.4.6",
+     "H1",
+     "H4",
+     "H2",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "cancelled"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0024",
+    "method": "judged",
+    "title": "Current step in the \"Steps\" list is marked only by bold text",
+    "description": "Under 1.3.1 information conveyed by presentation must also be available programmatically. On every flow page the 'Steps' list (1. When, 2. Vehicle and waste, 3. Check and book) marks the current step only with bold weight. The ARIA snapshots show plain list items with no aria-current or other state, so assistive technology cannot tell which step is current.",
+    "criteria": [
+     "1.3.1",
+     "H1"
+    ],
+    "routes": [
+     "/",
+     "/vehicle.html",
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0025",
+    "method": "judged",
+    "title": "Expired-hold error says the slot is unavailable but not what to do next",
+    "description": "Under 3.3.3 an error message should suggest a correction when one is known. After 'Book this slot' with an expired hold, the alert says only 'This slot is no longer available.'. The Slot row in 'Your booking' changes to '—' with the 'Change slot' link beside it, but the alert does not link to it and does not say that the resident's details will be kept. The fix is known (choose another slot), and probe 48 shows that Change slot keeps the registration and name, but the message does not tell the user either fact.",
+    "criteria": [
+     "3.3.3",
+     "H9",
+     "CPY-04",
+     "H1",
+     "H4",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "expired"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0026",
+    "method": "judged",
+    "title": "Injected .slot:focus rule removes the keyboard focus indicator on slot buttons",
+    "description": "Every focusable control should show a visible :focus-visible indicator and outline should never be removed without a replacement. On the When page, te() appends a <style> element containing '.slot:focus{outline:0}'. Its specificity (0,2,0) beats the global ':focus-visible{outline:3px solid var(--c-focus)}' (0,1,0) in styles.css, and no other focus style is defined for .slot, so slot buttons get no focus indicator. The first-free slot is also focused programmatically when Next is pressed without a slot.",
+    "criteria": [
+     "A11Y-04",
+     "2.4.7",
+     "CMP-02"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "slots-loaded"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0027",
+    "method": "judged",
+    "title": "Double activation of 'Book this slot' turns the booking into a cancellation",
+    "description": "A submit button should ignore repeat activation while a request is pending. In oe(), a click while the 1500 ms timer is pending sets f=true and relabels the button 'Cancel booking'; when the timer fires the button is relabelled 'Book this slot' and the booking is saved with status 'cancelled' and the user is sent to done.html, whose h1 still reads 'Booked' with a status line saying the booking is not on the gate's list. A double tap or an impatient second tap is enough to trigger it (reproduced by the verifier), and the relabelled button may go unnoticed, because the timer resets the label.",
+    "criteria": [
+     "H5",
+     "CMP-15",
+     "CMP-04"
+    ],
+    "routes": [
+     "/confirm.html",
+     "/done.html"
+    ],
+    "states": [
+     "submitting",
+     "cancelled"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0028",
+    "method": "judged",
+    "title": "Booking wait and slot loading show no visible progress",
+    "description": "An action taking over about 1 s should show visible progress. Booking waits 1500 ms with only aria-busy set on #book and no style for [aria-busy] in styles.css, so the button looks unchanged. Changing day clears the slot grid and status text and waits 900 ms with nothing in its place; during that time the When page's Next button returns silently (if(!h) guard) with no message.",
+    "criteria": [
+     "CMP-10",
+     "CMP-04",
+     "H1"
+    ],
+    "routes": [
+     "/confirm.html",
+     "/index.html"
+    ],
+    "states": [
+     "submitting",
+     "loading"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0030",
+    "method": "judged",
+    "title": "Slot grid at 360 px and below is sized wider than its container",
+    "description": "Content should reflow at 320 px without horizontal scrolling. At innerWidth <= 360, p() sets grid-template-columns to three fixed columns of floor((innerWidth-16)/3) px. With the 8 px gap ×2 the grid is about innerWidth wide, but it sits inside .page with 16 px padding each side, so it is about 32 px wider than its container.",
+    "criteria": [
+     "A11Y-07",
+     "1.4.10"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "slots-loaded"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0031",
+    "method": "judged",
+    "title": "Permit field is visible for every vehicle because .field display overrides hidden",
+    "description": "An element marked hidden should not render. #permit-wrap has class 'field', and '.field{display:flex}' in styles.css overrides the UA [hidden]{display:none}; unlike .date-row and .info__panel, there is no '.field[hidden]' rule. So the permit field shows even for 'Car', and the JS toggling of hidden (with an extra 1200 ms setTimeout before reveal) has no visible effect.",
+    "criteria": [
+     "CMP-09",
+     "H8",
+     "CW-Q4",
+     "H2",
+     "H5",
+     "H6",
+     "DES-brandfit",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/vehicle.html"
+    ],
+    "states": [
+     "default",
+     "vehicle-car",
+     "errors"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0032",
+    "method": "judged",
+    "title": "Today's past slots are offered as free and rejected only at final booking",
+    "description": "A slot should be shown as free only when it can be booked (DESIGN.md: 'Do show a slot as free only when it is'). The slot generator j() marks today's slots from 08:00 as free/few without regard to time, and the When step renders them selectable. Only after the user has completed vehicle, waste and personal details does the booking timeout reject slots before 10:35 (R(a.slot)<635) with an error-summary item that has no link.",
+    "criteria": [
+     "H5",
+     "CMP-18"
+    ],
+    "routes": [
+     "/confirm.html",
+     "/index.html"
+    ],
+    "states": [
+     "error-past-slot",
+     "today"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0033",
+    "method": "judged",
+    "title": "Permit format and closed-day checks run only at final booking, in unlinked errors",
+    "description": "Errors should be detected where the input is made and link to the field. The permit entered on vehicle.html is only trimmed there; the DRC-##### format and the Wednesday-closed check run only in the confirm page's booking timeout, and are shown in the error summary as plain text with no href, so the summary offers no way back to the permit field on the previous page.",
+    "criteria": [
+     "CMP-18",
+     "H9",
+     "3.3.1",
+     "H5",
+     "H4"
+    ],
+    "routes": [
+     "/confirm.html",
+     "/vehicle.html"
+    ],
+    "states": [
+     "error-permit",
+     "van",
+     "default",
+     "errors"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0035",
+    "method": "judged",
+    "title": "Five-minute slot hold expires with no warning or way to extend",
+    "description": "A time limit should be announced and extendable. Choosing a slot stores hold_started; at booking, G() rejects holds older than 5 minutes, clears the slot and shows 'This slot is no longer available.' Nothing on any step states the limit or warns before it runs out.",
+    "criteria": [
+     "2.2.1",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "hold-expired",
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0101",
+    "method": "judged",
+    "title": "'Few left' tag text falls below 4.5:1 contrast",
+    "description": "The 16 px bold 'Few left' text is about 3.0:1 on its fill in light mode, and the candidate reports about 3.4:1 in dark mode, below the 4.5:1 needed for text of this size.",
+    "criteria": [
+     "COL-01",
+     "A11Y-11",
+     "1.4.3"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "slots-loaded"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0102",
+    "method": "judged",
+    "title": "'Few left' colours are not DESIGN.md roles",
+    "description": "The 'few' and 'few-bg' colours are not declared in DESIGN.md and are used where the declared warning role (#8a5a00) would apply.",
+    "criteria": [
+     "COL-01",
+     "A11Y-11",
+     "1.4.3"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "slots-loaded"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0038",
+    "method": "judged",
+    "title": "Slot end time and arrival rule exist only in a title tooltip",
+    "description": "Information should not rely on title tooltips, which are not shown to touch or keyboard users. Each slot's end time and 'Arrive within your slot.' are only in its title attribute; the visible label is the start time.",
+    "criteria": [
+     "A11Y-17",
+     "H6"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "slots-loaded"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0103",
+    "method": "judged",
+    "title": "No loading indication while slots load",
+    "description": "After choosing a day the Slots area is blank, with no loading text, for about 1 s before the slots appear.",
+    "criteria": [
+     "CW-Q4",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/",
+     "/confirm.html"
+    ],
+    "states": [
+     "slots-loading (just after choosing Saturday 17)",
+     "submitting (just after Book this slot)",
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0104",
+    "method": "judged",
+    "title": "No in-progress indication while the booking is submitted",
+    "description": "After 'Book this slot' the page and button stay unchanged for about 1.3 to 1.5 s until the Booked page loads.",
+    "criteria": [
+     "CW-Q4",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/",
+     "/confirm.html"
+    ],
+    "states": [
+     "slots-loading (just after choosing Saturday 17)",
+     "submitting (just after Book this slot)",
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0105",
+    "method": "judged",
+    "title": "No notice that the chosen slot is held or for how long",
+    "description": "After a slot is chosen, no page says the slot is held or when the hold ends, so a resident who pauses cannot know they are about to lose it.",
+    "criteria": [
+     "CW-Q4",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/vehicle.html",
+     "/confirm.html",
+     "/"
+    ],
+    "states": [
+     "default after choosing 09:20",
+     "expired",
+     "slot-chosen",
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0106",
+    "method": "judged",
+    "title": "Expired-slot error does not explain or guide recovery",
+    "description": "When the hold has expired, the confirm page says only 'This slot is no longer available.', shows the slot as '-' and still offers 'Book this slot', with no explanation and no direct prompt to choose a new slot.",
+    "criteria": [
+     "CW-Q4",
+     "H1",
+     "H5"
+    ],
+    "routes": [
+     "/vehicle.html",
+     "/confirm.html",
+     "/"
+    ],
+    "states": [
+     "default after choosing 09:20",
+     "expired",
+     "slot-chosen",
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0044",
+    "method": "judged",
+    "title": "'Booked' page does not show the booked day, slot time or vehicle",
+    "description": "A confirmation meant to be shown at the gate should state what was booked. The done page shows 'Booked', the reference DR-265532, gate instructions and the reminder number, but not 'Saturday 17 October', '09:20 to 09:40' or 'Car'. The 20-minute arrival window is not restated.",
+    "criteria": [
+     "CW-Q4",
+     "H6",
+     "H1",
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "booked",
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0045",
+    "method": "judged",
+    "title": "Change slot opens a fresh 'Book a slot' page with no sign of the booking being changed",
+    "description": "When a resident changes one part of a booking in progress, the next screen should show that this is a change to that booking: the current day and slot selected, and a sign that the vehicle and waste are kept. After tapping 'Change slot' on Check and book (Saturday 17 October, 09:20, car, garden waste and wood), the page shown is the start of a new booking: H1 'Book a slot' with the new-booking intro, 'Today' pressed rather than Saturday 17, no slot selected, an empty Slots area, and no mention of the existing day, slot, vehicle or waste. The URL is /index.html with no parameters.",
+    "criteria": [
+     "CW-Q4",
+     "H1",
+     "H6"
+    ],
+    "routes": [
+     "/index.html"
+    ],
+    "states": [
+     "after Change slot from /confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden,wood",
+     "after Change slot"
+    ],
+    "severity": 2.33
+   },
+   {
+    "id": "F-0047",
+    "method": "judged",
+    "title": "Vehicle step does not show which day and slot were chosen",
+    "description": "A multi-step booking should keep the user's earlier choice visible so they can confirm it is right. On /vehicle.html the page shows only 'Back to the slots', the step list, vehicle buttons and the waste checklist; the chosen day and slot (Saturday 17 October, 09:20) appear nowhere until step 3.",
+    "criteria": [
+     "H6",
+     "H1"
+    ],
+    "routes": [
+     "/vehicle.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0048",
+    "method": "judged",
+    "title": "Change slot and Back to the slots reopen on Today instead of the chosen day",
+    "description": "Returning to change a choice should start from the current choice. Both 'Change slot' on /confirm.html and 'Back to the slots' on /vehicle.html open / with Today (Monday 12 October) pressed and its slots listed; the previously chosen Saturday 17 and 09:20 are not selected or mentioned, so the user must find and re-pick the day.",
+    "criteria": [
+     "H6",
+     "H3",
+     "H5"
+    ],
+    "routes": [
+     "/confirm.html",
+     "/vehicle.html"
+    ],
+    "states": [
+     "default",
+     "expired"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0056",
+    "method": "judged",
+    "title": "No online way to change or cancel a booking once it is made",
+    "description": "Residents changing a booking know their reference and want to move the slot. After booking, the only route offered is 'If you cannot come, call 01632 960771 on a weekday'; there is no way to find a booking by reference, change its slot or cancel it on the site, while the phone line is only open weekdays 09:00 to 17:00 and bookings are usually made in the evening or for weekends.",
+    "criteria": [
+     "H3",
+     "H7",
+     "ISO-9241-110-suitability-for-the-task"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3.33
+   },
+   {
+    "id": "F-0058",
+    "method": "judged",
+    "title": "Slot list goes blank under the previous day's date while new slots load",
+    "description": "While content loads the page should say it is loading and for which day. On first load the Slots area is empty with no indicator for at least 300 ms; after pressing 'Saturday 17' the list empties while the label still reads 'Monday 12 October' and no loading message appears.",
+    "criteria": [
+     "H1"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "date-chosen"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0060",
+    "method": "judged",
+    "title": "Slots that have already started today can be chosen and booked",
+    "description": "A slot whose start has passed should not be offered. With Today (Monday 12 October) chosen at the journey's stated time of 10:05, 08:00 is enabled, can be selected and 'Next' proceeds to the vehicle step; the morning slots up to 10:00 are presented as free ('20 slots free on Monday 12 October').",
+    "criteria": [
+     "H5",
+     "H1"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0061",
+    "method": "judged",
+    "title": "Mobile number is required although it is presented as only for a reminder",
+    "description": "The hint under 'Mobile number' reads 'For a reminder the evening before.', which reads as optional, but leaving it empty or giving a landline (0161 496 0000) blocks booking with 'Enter a UK mobile number, like 07700 900123'. Nothing says it is required or why booking needs it.",
+    "criteria": [
+     "H5",
+     "H2"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "errors"
+    ],
+    "severity": 3.67
+   },
+   {
+    "id": "F-0062",
+    "method": "judged",
+    "title": "Permit help says to apply on the council site but gives no link",
+    "description": "Help should lead straight to the needed action. The 'About vans and trailers' panel says 'Apply on the council site; it comes by email within two working days.' with no link or address for the application.",
+    "criteria": [
+     "H10",
+     "H7"
+    ],
+    "routes": [
+     "/vehicle.html"
+    ],
+    "states": [
+     "info-open"
+    ],
+    "severity": 2
+   },
+   {
+    "id": "F-0067",
+    "method": "judged",
+    "title": "The waste list can only be changed through a link labelled 'Change vehicle'",
+    "description": "On Check and book, Day, Slot and Vehicle rows have change links, but the Waste row has none. Waste is edited on the page reached by 'Change vehicle' (which also holds the waste checkboxes), so the label does not tell the resident where to change the waste.",
+    "criteria": [
+     "H4",
+     "H6"
+    ],
+    "routes": [
+     "/confirm.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1.67
+   },
+   {
+    "id": "F-0068",
+    "method": "judged",
+    "title": "After an invalid date, the slots area still shows the previous day's result",
+    "description": "Entering 31/02/2026 under Another day and pressing Show slots shows a clear inline error, but the Slots area below still says 'Wednesday 14 October' and 'No slots on Wednesday 14 October: the centre is closed on Wednesdays.' from the previous search.",
+    "criteria": [
+     "H1"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 1
+   },
+   {
+    "id": "F-0077",
+    "method": "judged",
+    "title": "'Few left' slots are pulled out of time order into an unlabelled group above Morning and Afternoon",
+    "description": "On 'when', every slot tagged 'Few left' is shown in a separate, unheaded block before the Morning and Afternoon grids. On Saturday the Morning grid reads 08:00, 09:20, 10:00, 11:00... with 08:20, 08:40, 09:00, 09:40, 10:20, 10:40 missing from it, because they sit in the block above. The same split happens at 375 (Monday: Morning starts 08:00, 08:40 Full, 09:00 while 08:20 and 09:20 are above).",
+    "criteria": [
+     "DES-hierarchy"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "slot-chosen",
+     "default",
+     "date-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0078",
+    "method": "judged",
+    "title": "Done page shows the reference but not the day, slot or vehicle booked",
+    "description": "The done page ('Booked') shows DR-204117 and generic instructions, but nowhere repeats the day, the 20-minute slot or the vehicle, although these were confirmed one step earlier and the gate checks the vehicle against the booking.",
+    "criteria": [
+     "DES-hierarchy",
+     "DES-brandfit"
+    ],
+    "routes": [
+     "/done.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0001",
+    "method": "tool",
+    "title": "axe color-contrast: Elements must meet minimum color contrast ratio thresholds",
+    "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (serious impact). Fix any of the following: Element has insufficient color contrast of 3.02 (foreground color: #bd7d0f, background color: #fbefda, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1",
+    "criteria": [
+     "A11Y-01",
+     "1.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0002",
+    "method": "tool",
+    "title": "Text contrast below 4.5:1: \"Few left\"",
+    "description": "Text \"Few left\" (16 px, weight 700) has 3.02:1 against its computed background in the light theme at 1280 px; it needs 4.5:1.",
+    "criteria": [
+     "A11Y-11",
+     "1.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0009",
+    "method": "tool",
+    "title": "Horizontal page overflow on /",
+    "description": "scrollWidth 335 px > clientWidth 320 px at 320 px. Widest offender: #slots > div.slots__head:nth-of-type(1) extends 15 px past the viewport; 10 more.",
+    "criteria": [
+     "FUN-05"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0010",
+    "method": "tool",
+    "title": "Content does not reflow at 320 px on /",
+    "description": "scrollWidth 335 px > clientWidth 320 px at 320 px. Widest offender: #slots > div.slots__head:nth-of-type(1) extends 15 px past the viewport; 10 more.",
+    "criteria": [
+     "A11Y-07",
+     "1.4.10"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0017",
+    "method": "tool",
+    "title": "Focus order jumps back: \"08:00\" → \"08:20 Few left\"",
+    "description": "After \"08:00\", Tab moves to \"08:20 Few left\", which sits 216 px above it in the same column; the focus order does not follow the visual reading order (clear-inversion heuristic).",
+    "criteria": [
+     "A11Y-03",
+     "2.4.3"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 4
+   },
+   {
+    "id": "F-0018",
+    "method": "tool",
+    "title": "No progress shown during a 1.2 s operation: \"Car with trailer\"",
+    "description": "\"Car with trailer\" runs for about 1201 ms; operations over 1 s must show progress, but nothing animated, no progressbar and no aria-busy region appears while it runs.",
+    "criteria": [
+     "CMP-04"
+    ],
+    "routes": [
+     "/vehicle.html"
+    ],
+    "states": [
+     "default"
+    ],
+    "severity": 3
+   },
+   {
+    "id": "F-0019",
+    "method": "tool",
+    "title": "Layout shift above the 0.1 budget on /",
+    "description": "Lab CLS 0.169 at 320 px over load, a full scroll and one click (budget ≤ 0.1). The largest shift moved #opening (0.169). Lab values from one local run on this machine; they vary between runs and are not field data. FUN-08 (LCP, INP) is advisory and never fails the gate.",
+    "criteria": [
+     "FUN-07"
+    ],
+    "routes": [
+     "/"
+    ],
+    "states": [
+     "default",
+     "date-chosen",
+     "slot-chosen"
+    ],
+    "severity": 2
+   }
+  ],
+  "ground_truth": [
+   {
+    "id": "slot-booking-D01",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "H1",
+    "description": "The slots for a day arrive about a second after the page opens or a day is chosen, and nothing says they are on their way: the grid is empty, the status line is blank, and Next is enabled. Pressing Next during that time does nothing at all. A resident who taps a day and then Next, as people do, sees no slots and no response, and may try another day or give up."
+   },
+   {
+    "id": "slot-booking-D02",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "FUN-07",
+    "description": "When the slots arrive, about a second after the page opens, the empty grid grows by several hundred pixels and everything under it (the Next button, the opening days, the footer) jumps down the page with no input from the resident: a layout shift of well over the 0.1 budget on every width, measured in the lab. A link to #opening from another page lands on the wrong place for the same reason: the slots arrive after the browser has scrolled to the anchor."
+   },
+   {
+    "id": "slot-booking-D03",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "1.4.3",
+    "description": "The 'Few left' tag on a slot is amber text on an amber tint whose values the script computes at run time from the council's hue: about 3.0:1 in the light theme and 3.2:1 in the dark theme for 16 px bold text, below the 4.5:1 that text of that size needs. The stylesheet holds no colour literal, so the failure exists only on a rendered page. The tag is the one thing that tells a resident a slot is about to go."
+   },
+   {
+    "id": "slot-booking-D04",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "FUN-05",
+    "description": "At 360 px and below the script sizes the slot grid's three columns from the window's width instead of the page's content box, so the grid runs 14 to 15 px past the right edge and the page scrolls sideways; the last column's slots and their tags are cut at the edge. From 361 px up the stylesheet's own grid applies and nothing overflows."
+   },
+   {
+    "id": "slot-booking-D05",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "A11Y-04",
+    "description": "The slot buttons show no focus at all: a style the script injects at run time removes their outline (meant for the pressed look), and nothing replaces it. Every other control on the page keeps the 3 px focus ring. A keyboard user tabbing through 29 slots cannot see which one they are on."
+   },
+   {
+    "id": "slot-booking-D06",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H9",
+    "description": "Today's slots that have already started, or start within half an hour, are shown as free and can be chosen (today is Monday 12 October at 10:05, so 08:00 to 10:20 are offered). The refusal comes three steps later, after the details are typed and Book is pressed: 'The 10:20 slot today can no longer be booked. Choose another slot or day.' with no link back to the slots."
+   },
+   {
+    "id": "slot-booking-D07",
+    "origin": "seeded",
+    "route": "/vehicle.html",
+    "criterion": "H6",
+    "description": "That a van, or a car with a trailer, needs a permit is said only behind an icon-only info button. Choosing 'Van' reveals the permit field 1.2 seconds later, under the fold on a phone, with nothing drawing the eye to it, and Next accepts an empty permit. The rule is enforced on the confirm page ('A van needs a permit number'), which has no permit field; the resident has to work out that 'Change vehicle' is the way back."
+   },
+   {
+    "id": "slot-booking-D08",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H1",
+    "description": "A chosen slot is held for five minutes and no page shows the hold or its end. When it has lapsed, Book waits 1.5 seconds and then says 'This slot is no longer available.' while the summary's slot line changes to a dash: the slot is dropped from the booking without saying that the hold ran out, and the only way to another slot is 'Change slot', which forgets the day."
+   },
+   {
+    "id": "slot-booking-D09",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H5",
+    "description": "'Book this slot' stays enabled while the booking is made (1.5 seconds) and shows no progress: no busy state, no label change. A second press in that time turns the press into 'cancel': the done page still shows a reference, is titled 'Booked' and says 'Show this at the gate', with a small status line saying the booking is cancelled and not on the gate's list. A resident who taps twice, as people do when nothing seems to happen, arrives at the gate with a cancelled booking."
+   },
+   {
+    "id": "slot-booking-D10",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "2.4.3",
+    "description": "The script moves every 'Few left' slot to the front of the grid at run time (a CSS order it sets per button), so the grid reads 08:20, 09:00, 09:40, 12:00 before 08:00. The document, Tab and a screen reader keep the chronological order, so focus jumps around the visible grid and the morning and afternoon headings no longer sit above their slots."
+   },
+   {
+    "id": "slot-booking-D11",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "A11Y-15",
+    "description": "The line that says how many slots a day has ('20 slots free on Saturday 17 October') is written into a plain paragraph and only then given aria-live, so a screen reader is never told the slots have arrived or how many there are; the next change would be announced, but the day's count is the one that matters."
+   },
+   {
+    "id": "slot-booking-D12",
+    "origin": "seeded",
+    "route": "/confirm.html",
+    "criterion": "H3",
+    "description": "'Change slot' on the confirm page opens the first step on today's date with no slot chosen, whatever day the resident had picked: the day and the slot are forgotten (the vehicle, the waste and the typed details are kept, and Next returns to the confirm page). Nothing says so; a resident who only wanted the afternoon of the same day has to find the day again."
+   },
+   {
+    "id": "slot-booking-D13",
+    "origin": "seeded",
+    "route": "/",
+    "criterion": "H6",
+    "description": "A slot button shows only its start time. That a slot lasts 20 minutes, when it ends and that the resident must arrive within it are only in the button's tooltip, which appears on hover and never on a phone. The intro says '20-minute slot' once, above the fold."
+   },
+   {
+    "id": "slot-booking-D14",
+    "origin": "seeded",
+    "route": "/done.html",
+    "criterion": "H6",
+    "description": "The done page gives the reference and what to bring, but not the day, the slot or the vehicle that were booked. A resident who books on Monday for Saturday has nothing to check the time against on Saturday morning except memory, and the gate turns away a vehicle that does not match the booking."
+   }
+  ],
+  "reply": "I reviewed the whole booking flow at phone and desktop widths, in light and dark mode: choosing a slot, vehicle and waste, check and book, the confirmation, the expired-hold state and the cancelled state. The flow is not ready for launch yet. You can still complete a booking, and dark mode mostly works well, but a few problems could send a resident to the gate with a booking that doesn't stand, and several block keyboard and screen-reader users.\n\n**How I checked:** automated checks first, then 11 independent reviewers who each looked at the live site separately: 3 usability reviewers, 2 step-by-step walkthroughs of booking and changing a slot, 3 visual-design reviewers, an accessibility reviewer and a code reviewer working from the agency's minified files. Every problem was then re-tested on the live site, and three raters scored how serious each one is without knowing who found it. Both booking journeys ran end to end.\n\n**Result:** the site doesn't reach the first quality level (automated accessibility and function checks); your target is level 3. The blockers are the accessibility and layout failures below. All findings are predictions or measurements; no residents have tested it yet.\n\n## What to fix first\n\n1. **Tapping \"Book this slot\" twice cancels the booking, and the next page still says \"Booked.\"** The button gives no sign it's working for about 1.5 seconds, which invites a second tap. That second tap turns the booking into a cancellation. The confirmation page still has \"Booked\" as its headline, with only a small status line saying it's cancelled. The resident may then arrive with a reference the gate doesn't have. We reproduced this on the live site. Fixes:\n   - Ignore taps while the booking is being sent, and show progress.\n   - Never show a \"Booked\" headline on a cancelled booking.\n2. **The mobile number is required, but it's labelled \"for a reminder the evening before.\"** That reads as optional. Leaving it blank, or entering a landline, blocks the booking. Many residents are older, and someone with only a landline can't book at all. Either make it optional, or say why it's needed and accept landlines.\n3. **The \"Few left\" slots are pulled out of time order** into an unlabelled block above \"Morning\". On a phone, free morning slots sit below a mix of morning and afternoon times and may look missing. Keyboard and screen-reader users also move through them in a different order from what's on screen. Every reviewer flagged this. The cause is one style rule in the script; put the slots back in time order with the tag inline.\n4. **Keyboard users can't see which slot has focus.** The script adds a rule that removes the focus outline from slot buttons, in normal mode and in high-contrast mode. Remove that rule.\n5. **The confirmation page shows the reference but not the day, time or vehicle.** This is the page residents will show at the gate, often with no signal. Put the booked day, time, vehicle and waste next to the reference.\n6. **The 5-minute hold on a slot is never mentioned, and when it runs out the message only says \"This slot is no longer available.\"** A resident booking in the evening while doing something else can easily lose the slot. Fixes:\n   - Say the slot is held, and until when, on every step.\n   - When the hold runs out, link straight to choosing another slot.\n7. **Dark mode and small screens:**\n   - The \"Few left\" tag fails text contrast: 3.0:1 in light mode and 3.4:1 in dark mode, where 4.5:1 is needed. It's the only text that fails in dark mode.\n   - At 320–360 px wide the slot grid is wider than the screen, so the page scrolls sideways. Residents using larger text hit this too.\n\n## Next tier, also confirmed\n\n- **Permit:** the permit field shows for cars and before any vehicle is chosen, because a style rule overrides the field's hidden state. A missing or malformed van permit, or a Wednesday (closed day), is only caught at the last step, in an error that doesn't link to the field.\n- **Changing a slot:** \"Change slot\" and \"Back to the slots\" reopen on Today, not the day you chose, so a change can quietly move the booking to today. The page also looks like a brand-new booking.\n- **Past slots:** today's slots that have already started can be chosen, and are only refused at the final step.\n- **Changing or cancelling:** there's no way to do either online, only a phone line on weekdays. Residents book the evening before, when that line is closed.\n- **Loading:** the slot list goes blank for about a second when you change day, with no loading message.\n- **Screen readers:** the \"22 slots free…\" message isn't announced when the page first loads.\n\n## Worth keeping\n\n- **Dark mode** is well built at phone width: backgrounds, cards and buttons invert cleanly, and body text holds its contrast.\n- **The reference** is large and has its own card.\n- **The rules** (opening days, slot length, two bookings a week, permits) are stated right where they apply.\n- **Error messages** on the vehicle and check-and-book steps take focus and link to the field.\n- **\"Few left\" and \"Full\"** are written out in words, not shown by colour alone.\n\n## Not covered yet\n\n- **Real screen readers:** none were used, neither VoiceOver on iOS nor TalkBack on Android.\n- **Real zoom and Windows high-contrast themes:** none were tested.\n- **Residents:** no one from the public has tried the flow.\n- **AI-look checks on the code:** the static code checks couldn't read the minified bundle, so those checks didn't run.\n\nTwo things for someone to confirm, because I couldn't ask:\n\n- **The site's \"Today\"** showed as Monday 12 October during testing, not the real date. Check that the live build uses the real date.\n- **Landline-only households:** the gate attendants could say whether these are common. That would settle how urgent fix 2 is.\n\nThe source locations I give are positions in the minified `app.js` and `styles.css`, so the agency should make the fixes in their own source and send a new bundle. I can also apply them directly to the bundle one at a time, re-testing each, if that's more useful.\n\nFiles are in `.ui-evaluator/runs/20261016-125619-audit-standard/`:\n- `report.md` / `report.html`: the full report, with the evidence behind each finding.\n- `debrief.md`: the summary of findings.\n- `agree-disagree.csv`: a sheet you can pass to council colleagues or the agency to mark which findings they agree with.\n\nI reviewed the whole booking flow at phone and desktop widths, in light and dark mode. The flow isn't ready for launch: residents can complete a booking and dark mode mostly works, but a few problems could send someone to the gate with a booking that doesn't stand. Several others block keyboard and screen-reader users. Nobody from the public has tried it yet, so everything below is either reproduced on the live site or predicted by reviewers.\n\nThe site doesn't reach the first quality level, which covers the automated accessibility and function checks; the project's target is level 3. The blockers are the accessibility and layout failures below.\n\n## What to fix first\n\n1. **Tapping \"Book this slot\" twice cancels the booking, and the next page still says \"Booked\".** The button shows no sign of working for about 1.5 seconds, which invites a second tap. That second tap saves the booking as cancelled, but the confirmation headline stays \"Booked\". The resident may then arrive with a reference the gate doesn't have. Reproduced on the live site.\n   - Ignore taps while the booking is being sent, and show progress.\n   - Never show a \"Booked\" headline on a cancelled booking.\n2. **The mobile number is labelled \"for a reminder the evening before\" but is required.** That reads as optional, yet leaving it blank or entering a landline blocks the booking. A resident with only a landline can't book at all. Either make it optional, or say why it's needed and accept landlines.\n3. **\"Few left\" slots are pulled out of time order** into an unlabelled block above \"Morning\". On a phone, free morning slots end up below a mix of morning and afternoon times and may look missing. Keyboard and screen-reader users also move through them in a different order from the screen. Every reviewer flagged this; the cause is one style rule in the script.\n4. **Keyboard users can't see which slot has focus.** A rule in the script removes the focus outline from slot buttons, in normal and high-contrast mode. Remove that rule.\n5. **The confirmation page shows the reference but not the day, time or vehicle.** This is the page residents show at the gate, often with no signal. Put the booked details next to the reference.\n6. **The 5-minute hold on a slot is never mentioned.** When it runs out, the message only says \"This slot is no longer available\" and gives no way forward. State the hold and its end time on every step, and link straight to choosing another slot when it expires.\n7. **Dark mode and small screens:**\n   - The \"Few left\" tag fails text contrast: 3.0:1 in light mode and 3.4:1 in dark mode, against 4.5:1 needed. It's the only text that fails in dark mode.\n   - At 320–360 px wide the slot grid is wider than the screen, so the page scrolls sideways. Residents using larger text hit this too.\n\n## Next tier, also reproduced\n\n- **Permit field:** it shows for cars and before any vehicle is chosen. A bad van permit, or a Wednesday when the centre is closed, is only caught at the last step, in an error that doesn't link to the field.\n- **Changing a slot:** \"Change slot\" reopens on Today rather than the chosen day, so a change can quietly move the booking to today.\n- **Past slots:** today's slots that have already started can be chosen, and are only refused at the final step.\n- **Changing or cancelling online:** there's no way to do either, only a weekday phone line. That line is closed in the evening, when most people book.\n- **Loading:** the slot list goes blank for about a second when you change day, with no loading message.\n- **Screen readers:** the \"22 slots free…\" message isn't announced when the page first loads.\n\n## Worth keeping\n\n- **Dark mode** is well built at phone width: backgrounds, cards and buttons invert cleanly, and body text keeps its contrast.\n- **The reference** is large and has its own card.\n- **The rules** (opening days, slot length, two bookings a week, permits) are stated where they apply.\n- **Error messages** take focus and link to the field.\n- **\"Few left\" and \"Full\"** are written in words, not shown by colour alone.\n\n## Not covered\n\n- **Real screen readers:** I didn't use VoiceOver or TalkBack.\n- **Real zoom and Windows high-contrast themes:** not tested.\n- **Some code checks didn't run:** the static checks for a generic, AI-generated look couldn't read the minified files.\n\n## Questions I couldn't ask you\n\n- **The date the site uses:** during testing its \"Today\" was Monday 12 October, not the real date. Please check the live build uses the real date.\n- **Landline-only households:** the gate attendants could say how common they are, which settles how urgent fix 2 is.\n\nThe code locations I found are positions in the minified `app.js` and `styles.css`. The agency should make the fixes in their own source and send a new bundle. If that's more useful, I can apply them to the bundle one at a time and re-test each.\n\nFiles are in `.ui-evaluator/runs/20261016-125619-audit-standard/`:\n- `report.html`: the full report with the evidence behind each finding.\n- `report.md`: the same report as text.\n- `debrief.md`: a short summary of what the reviewers agreed on.\n- `agree-disagree.csv`: a sheet colleagues or the agency can use to mark which findings they agree with."
+ }
+}

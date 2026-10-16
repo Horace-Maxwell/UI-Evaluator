@@ -1,0 +1,87 @@
+{
+  "schema": "verifier",
+  "run": "20261016-125559-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "6aa030942306c3c8",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0105",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced on vehicle.html (errors state, 1280 px). After pressing Enter on the 'Choose the vehicle you are bringing' summary link, focus left the link and neither the Car button nor the #vehicle container was focused (probes 54, 56, 58). After the 'Choose at least one kind of waste' link, the Garden waste checkbox was not focused (probe 57). Nothing on the page held focus after either link.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/54/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/55/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/56/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/57/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/58/probe.json"
+      ],
+      "note": "The wording overstates the problem. The browser moves the sequential focus starting point to the target, so a single Tab after the vehicle link lands on 'Car' (probe 55). Keyboard users are not left to search, but no control receives focus and screen-reader users get no announcement of where they landed. The impact line 'may stay on the summary' should be softened to match."
+    },
+    {
+      "candidate_id": "F-0106",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Partly reproduced. Vehicle: after Next, #vehicle-error is visible with the text 'Choose the vehicle you are bringing'. Nothing references it: no aria-describedby containing vehicle-error (probe 63), no aria-describedby on the #vehicle buttons (probe 61) or on the #vehicle group (probe 66), and no aria-errormessage anywhere (probe 65). Waste: NOT reproduced. The waste checkboxes carry aria-describedby that includes waste-error (probe 67) and are marked [invalid] in the ARIA snapshot (probe 56).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/59/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/61/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/63/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/65/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/66/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/67/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/69/probe.json"
+      ],
+      "note": "Narrow the finding to the vehicle buttons and group, and remove the waste checkboxes from its description and locations. The candidate's impact text, locations and evidence are copied from F-0105 (summary-link focus); they should describe the missing error association instead. A better primary criterion is WCAG 1.3.1 (with 3.3.1); 2.4.3 is not involved.",
+      "suggested_criterion": "wcag 1.3.1"
+    },
+    {
+      "candidate_id": "F-0040",
+      "verdict": "needs_human",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "Only the precondition reproduces. Enter in #name on confirm.html triggers Book this slot (probe 72: validation errors appeared after Enter), and #date is a text input, not type=date (probe 70 vs 71). uie probe cannot drive IME composition events, so I could not test whether Enter that commits a composition submits the form.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/70/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/71/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/72/probe.json"
+      ],
+      "note": "Needs a manual check with an OS IME (for example Japanese kana input) in Chrome and Safari: type in #name and press Enter to commit the composition. The audience is en-GB residents, so exposure is likely small."
+    },
+    {
+      "candidate_id": "F-0103",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced end to end (probe 78). I chose Saturday 17 at 09:20, picked Car with Garden waste, and filled valid details on confirm.html. After about 312 s of no action, Book this slot showed \"This slot is no longer available.\" Absence of any disclosure, checked by me: the slot-chosen, vehicle and confirm pages in probe 77 (full-page screenshots and ARIA) contain no mention of a hold, a time limit or minutes. The only time text is \"Slots last 20 minutes\" and \"20-minute slot\", which describe the visit, not the hold. A search of every captured ARIA snapshot (evidence/aria, all routes and states) for hold, held, reserv, expire and five minutes matched only \"household\". No warning appears before expiry and there is no way to extend the hold.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/78/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/78/final.png",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/77/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/77/screenshots/slot-chosen.png",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/77/screenshots/vehicle.png",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/77/screenshots/confirm.png"
+      ],
+      "note": "WCAG 2.2.1 needs a warning before time runs out, or a way to extend the time, and the absence of both is the core of this finding. The candidate's impact line is shared with F-0104."
+    },
+    {
+      "candidate_id": "F-0104",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced on confirm.html with hold=expired, using valid details. After Book this slot (about one second with no visible feedback), the error summary shows only the plain text 'This slot is no longer available.', with no link and no reason. The Slot row changes to '\u2014 \u00b7 Change slot', and the only way to recover is that 'Change slot' link in the booking summary below (probe 75). In probe 73, 0.8 s after the click, nothing had changed yet.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/75/probe.json",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/75/final.png",
+        ".ui-evaluator/runs/20261016-125559-audit-standard/probes/73/probe.json"
+      ],
+      "note": "This is an error-message and recovery problem, so H9 (help users recognise, diagnose and recover from errors), with WCAG 3.3.3, fits better as the primary criterion than 2.2.1. Its own impact line is copied from F-0103. Separately, Book this slot gave no busy feedback for 0.8 s or more (probe 73); that could be a new candidate.",
+      "suggested_criterion": "heuristic H9"
+    }
+  ]
+}

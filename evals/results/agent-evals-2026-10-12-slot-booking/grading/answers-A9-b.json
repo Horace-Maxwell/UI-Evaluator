@@ -1,0 +1,113 @@
+{
+  "answers": [
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": false,
+      "evidence": "The ordering is there ('Fix before launch' / 'Fix soon' / 'Smaller points', plus 'What to fix first: items 1–3 ... Then 4–7'). But the reply never names what it could not check. It says 'Everything listed here is something I reproduced' and lists no needs-human WCAG items and no real-user testing. Its only open question, the hard-coded date for the agency to confirm, is not a list of checks that need a person."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "R1",
+      "title": "Double tap on 'Book this slot' cancels the booking, but the done page still says 'Booked'",
+      "maps_to": "slot-booking-D09",
+      "reason": "Same defect: Book shows no busy state for 1.5 s, the second press turns into cancel, and the done page is still titled 'Booked' with a small cancelled status line."
+    },
+    {
+      "item": "R2",
+      "title": "Five-minute slot hold runs out unseen and the slot is dropped",
+      "maps_to": "slot-booking-D08",
+      "reason": "Same defect: no page mentions the hold. When it lapses, Book says 'This slot is no longer available', the summary shows a dash, there is no link back, and nothing says the timer ran out."
+    },
+    {
+      "item": "R3",
+      "title": "Permit field shows for cars too, suggesting every resident needs a permit",
+      "maps_to": "real-unseeded",
+      "reason": "This is a separate harm from D07, which is about van drivers not being told about the permit and being caught at the end. Here a car driver sees a permit field because a stylesheet rule overrides [hidden], and may think they need a permit or give up. The review says it reproduced this and names the cause. Hiding the field for cars would not fix D07."
+    },
+    {
+      "item": "R4",
+      "title": "A van with no permit passes the vehicle step and is only rejected on the confirm page (and the field appears 1.2 s late)",
+      "maps_to": "slot-booking-D07",
+      "reason": "This is the permit rule enforced only on the confirm page, which has no permit field and gives no link back, plus the 1.2-second delay before the field appears. All of it is D07."
+    },
+    {
+      "item": "R5",
+      "title": "'Change slot' forgets the chosen day and opens on Today",
+      "maps_to": "slot-booking-D12",
+      "reason": "Same defect: 'Change slot' returns to the first step with Today selected instead of the chosen Saturday, so the booking can end up on the wrong day."
+    },
+    {
+      "item": "R6",
+      "title": "Slot grid wider than the screen at 360 px and 320 px",
+      "maps_to": "slot-booking-D04",
+      "reason": "Same defect: below 361 px the script sets fixed column widths, the page scrolls sideways by 14–15 px and the right-hand column is cut off."
+    },
+    {
+      "item": "R7",
+      "title": "No visible focus on slot buttons",
+      "maps_to": "slot-booking-D05",
+      "reason": "Same defect: an injected '.slot:focus{outline:0}' rule removes the focus ring from every slot button, so keyboard users cannot see which slot they are on."
+    },
+    {
+      "item": "R8",
+      "title": "'Few left' slots moved to the top, out of time order and out of reading and focus order",
+      "maps_to": "slot-booking-D10",
+      "reason": "Same defect: 'Few left' slots are moved to the front above the Morning heading, while screen-reader and keyboard order stay chronological (WCAG 1.3.2 and 2.4.3)."
+    },
+    {
+      "item": "R9",
+      "title": "'Few left' tag fails text contrast in both themes",
+      "maps_to": "slot-booking-D03",
+      "reason": "Same defect: the tag measures 3.0:1 (light) and 3.4:1 (dark) against the 4.5:1 it needs."
+    },
+    {
+      "item": "R10",
+      "title": "Today's past slots are offered as free and refused only at the end",
+      "maps_to": "slot-booking-D06",
+      "reason": "Same defect: slots such as 08:00 that have already started, or fall within the 30-minute cut-off, can be chosen, and are rejected only after all the details are typed in."
+    },
+    {
+      "item": "R11",
+      "title": "No loading state while slots arrive; Next does nothing",
+      "maps_to": "slot-booking-D01",
+      "reason": "This is the wait itself: the grid stays empty for about a second with no message, and pressing Next in that time does nothing."
+    },
+    {
+      "item": "R12",
+      "title": "Selected slot hard to tell apart, especially in dark mode",
+      "maps_to": "real-unseeded",
+      "reason": "Not in the ground truth. The chosen slot's fill differs from the others by only 1.4:1 (dark) and 1.2:1 (light), with just a slightly thicker border. A resident on a phone may not be sure which slot they picked, and it is a non-text contrast problem."
+    },
+    {
+      "item": "R13",
+      "title": "Slot length and 'arrive within your slot' only in a title tooltip",
+      "maps_to": "slot-booking-D13",
+      "reason": "Same defect: the 20-minute length and the arrival rule are only in the button tooltip, which phones never show."
+    },
+    {
+      "item": "R14",
+      "title": "Phone hint 'For a reminder' sounds optional, but a UK mobile is required",
+      "maps_to": "real-unseeded",
+      "reason": "Not in the ground truth. The hint makes a required field look optional, so residents get a surprise validation error. Residents without a UK mobile cannot book a council service at all."
+    },
+    {
+      "item": "R15",
+      "title": "Opening done.html directly shows a made-up reference DR-000000",
+      "maps_to": "not-a-problem",
+      "reason": "This is a direct-URL edge case. The review shows no path by which a resident reaches done.html without booking, so the harm is speculative."
+    },
+    {
+      "item": "R16",
+      "title": "First 'N slots free' message not announced to screen readers",
+      "maps_to": "slot-booking-D11",
+      "reason": "Same defect: aria-live is switched on only after the first count is written, so a screen reader is never told how many slots there are."
+    },
+    {
+      "item": "R17",
+      "title": "Hard-coded 'today' of 12 October 2026 blocks every booking after 26 October",
+      "maps_to": "not-a-problem",
+      "reason": "The fixture's fixed demo clock is by design, and the review itself calls this 'my inference' and 'may just be demo data'. It is speculative, not a problem residents meet in this flow."
+    }
+  ]
+}

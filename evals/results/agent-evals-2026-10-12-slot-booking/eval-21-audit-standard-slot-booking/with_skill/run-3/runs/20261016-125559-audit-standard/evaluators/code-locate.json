@@ -1,0 +1,865 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code-locate",
+  "phase": "locate",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261016-125559-audit-standard",
+  "packet_hash": "0ce08988b100846c",
+  "notes": "Styling system: styles.css (minified, one line) declares type/spacing/radius/duration tokens in :root; colour tokens --c-* are injected at run time by app.js he()/B() (app.js col 445-1568) for light and dark. No component library; app.js is a minified one-line bundle, so every app.js location is line 1 with a 1-based column and a distinguishing snippet in method. Locations found by text search; no data-insp-path. Key root causes: injected '.slot:focus{outline:0}' (col 5438); 'order:-1' on few slots (col 6099); p() 360px grid override (col 5492); te() ignores stored date/slot (col 5208); '.field{display:flex}' defeats [hidden] on #permit-wrap (styles.css col 2389), explaining F-0046. F-0020: source does carry aria-current=\"step\" on the current li in all three step lists, so the 'not exposed programmatically' part may be a snapshot artefact; flagged for the lead. Did not read .eval/ or other evaluators' outputs.",
+  "candidates": [],
+  "source_locations": [
+    {
+      "finding_id": "F-0016",
+      "file": "app.js",
+      "line": 1,
+      "col": 5438,
+      "method": "text search — te(): injected <style> '.slot:focus{outline:0}' (specificity 0,2,0) overrides the global :focus-visible outline",
+      "confidence": "high",
+      "selector": "#slots > button.slot"
+    },
+    {
+      "finding_id": "F-0016",
+      "file": "styles.css",
+      "line": 1,
+      "col": 5717,
+      "method": "text search — .slot rule has no :focus-visible replacement style",
+      "confidence": "medium",
+      "selector": ".slot"
+    },
+    {
+      "finding_id": "F-0070",
+      "file": "app.js",
+      "line": 1,
+      "col": 5438,
+      "method": "text search — same injected '.slot:focus{outline:0}' as F-0016/F-0026",
+      "confidence": "high",
+      "selector": ".slot[data-slot=\"08:20\"]"
+    },
+    {
+      "finding_id": "F-0070",
+      "file": "styles.css",
+      "line": 1,
+      "col": 713,
+      "method": "text search — #other-day (.button--quiet, index.html:43) is covered by the global ':focus-visible{outline:3px solid var(--c-focus)}'; no code removes it, so the #other-day part may stem from a non-keyboard focus in the probe",
+      "confidence": "low",
+      "selector": "#other-day"
+    },
+    {
+      "finding_id": "F-0017",
+      "file": "app.js",
+      "line": 1,
+      "col": 6099,
+      "method": "text search — x(): slot template emits style=\"order:-1\" for state 'few'",
+      "confidence": "high",
+      "selector": "#slots > button.slot[style*=order]"
+    },
+    {
+      "finding_id": "F-0021",
+      "file": "app.js",
+      "line": 1,
+      "col": 6099,
+      "method": "text search — x(): style=\"order:-1\" on 'few' slots; headings rendered as div.slots__head at col 5800",
+      "confidence": "high",
+      "selector": "#slots > button.slot[style*=order]"
+    },
+    {
+      "finding_id": "F-0020",
+      "file": "index.html",
+      "line": 31,
+      "col": null,
+      "method": "text search — <li aria-current=\"step\"> IS present (index.html:31, vehicle.html:32, confirm.html:32); the ARIA snapshot omits it. Visual cue: styles.css col 2221 '.steps li[aria-current=step]{...font-weight:700}'",
+      "confidence": "medium",
+      "selector": "ol.steps li"
+    },
+    {
+      "finding_id": "F-0020",
+      "file": "styles.css",
+      "line": 1,
+      "col": 2221,
+      "method": "text search — bold-only current-step style",
+      "confidence": "medium",
+      "selector": ".steps li[aria-current=step]"
+    },
+    {
+      "finding_id": "F-0022",
+      "file": "styles.css",
+      "line": 1,
+      "col": 3714,
+      "method": "text search — 2px accent border + var(--c-tint) background, the only pressed cue",
+      "confidence": "high",
+      "selector": ".button--secondary[aria-pressed=true]"
+    },
+    {
+      "finding_id": "F-0022",
+      "file": "app.js",
+      "line": 1,
+      "col": 927,
+      "method": "text search — he() light theme 'tint:s(152,35,92)' vs 'surface:s(0,0,100)'",
+      "confidence": "medium"
+    },
+    {
+      "finding_id": "F-0023",
+      "file": "done.html",
+      "line": 28,
+      "col": null,
+      "method": "text search — static <h1>Booked</h1>; ne() (app.js col 12669 'e.status===\"cancelled\"') only unhides #status",
+      "confidence": "high",
+      "selector": "h1"
+    },
+    {
+      "finding_id": "F-0023",
+      "file": "app.js",
+      "line": 1,
+      "col": 12669,
+      "method": "text search — ne(): cancelled branch sets #status text only; heading and 'Show this at the gate' (done.html:34) unchanged",
+      "confidence": "high",
+      "selector": "#status"
+    },
+    {
+      "finding_id": "F-0024",
+      "file": "app.js",
+      "line": 1,
+      "col": 5208,
+      "method": "text search — te(): 'f=w,i=\"\"' initialises day to fixed today and no slot; saved e.date/e.slot from b() ignored; links at confirm.html:43, vehicle.html:28",
+      "confidence": "high",
+      "selector": "a[href='index.html']"
+    },
+    {
+      "finding_id": "F-0064",
+      "file": "app.js",
+      "line": 1,
+      "col": 5208,
+      "method": "text search — same root cause as F-0024: te() ignores stored date/slot",
+      "confidence": "high",
+      "selector": "role=link[name=\"Change slot\"]"
+    },
+    {
+      "finding_id": "F-0064",
+      "file": "confirm.html",
+      "line": 43,
+      "col": null,
+      "method": "text search — href=\"index.html\" with no date/slot; also vehicle.html:28 'Back to the slots'",
+      "confidence": "high",
+      "selector": "role=link[name=\"Change slot\"]"
+    },
+    {
+      "finding_id": "F-0025",
+      "file": "app.js",
+      "line": 1,
+      "col": 11812,
+      "method": "text search — oe() book timer: if(G(a)) sets sum-slot '—' then T([{text:\"This slot is no longer available.\"}]) at col 11842, no href",
+      "confidence": "high",
+      "selector": "role=alert"
+    },
+    {
+      "finding_id": "F-0043",
+      "file": "app.js",
+      "line": 1,
+      "col": 6635,
+      "method": "text search — E(): clears #slots and #slots-status, waits 900 ms; #day-heading only updated in x() at col 6601",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0045",
+      "file": "app.js",
+      "line": 1,
+      "col": 4078,
+      "method": "text search — G(): 5*60*1e3 hold limit, never surfaced; hold set at col 7725 on slot click; vehicle.html:27-34 has no booking summary",
+      "confidence": "high"
+    },
+    {
+      "finding_id": "F-0046",
+      "file": "styles.css",
+      "line": 1,
+      "col": 2389,
+      "method": "text search — '.field{display:flex}' overrides the UA [hidden] rule, so #permit-wrap (vehicle.html:50, class 'field measure') stays visible when i() sets hidden=true (app.js col 8521); .date-row and .info__panel have [hidden] overrides, .field does not",
+      "confidence": "high",
+      "selector": "#permit-wrap"
+    },
+    {
+      "finding_id": "F-0046",
+      "file": "app.js",
+      "line": 1,
+      "col": 8521,
+      "method": "text search — re() i(): toggles n.hidden with a 1200 ms delay",
+      "confidence": "medium",
+      "selector": "#permit-wrap"
+    },
+    {
+      "finding_id": "F-0047",
+      "file": "app.js",
+      "line": 1,
+      "col": 11638,
+      "method": "text search — oe(): only n.setAttribute(\"aria-busy\",\"true\") then 1500 ms setTimeout; no style targets [aria-busy]",
+      "confidence": "high",
+      "selector": "#book"
+    },
+    {
+      "finding_id": "F-0048",
+      "file": "app.js",
+      "line": 1,
+      "col": 12411,
+      "method": "text search — ne(): fills only #ref and #reminder; done.html:30-35 has no day/slot/vehicle elements",
+      "confidence": "high",
+      "selector": "region \"Your reference\""
+    },
+    {
+      "finding_id": "F-0048",
+      "file": "done.html",
+      "line": 30,
+      "col": null,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "section.summary"
+    },
+    {
+      "finding_id": "F-0054",
+      "file": "vehicle.html",
+      "line": 28,
+      "col": null,
+      "method": "text search — page has back link, h1 and steps only; re() (app.js col 8020) never renders e.date/e.slot",
+      "confidence": "high",
+      "selector": "main"
+    },
+    {
+      "finding_id": "F-0056",
+      "file": "vehicle.html",
+      "line": 49,
+      "col": null,
+      "method": "text search — plain text 'Apply on the council site', no <a>",
+      "confidence": "high",
+      "selector": "#info-panel"
+    },
+    {
+      "finding_id": "F-0057",
+      "file": "index.html",
+      "line": 68,
+      "col": null,
+      "method": "text search — 'Vans and cars with trailers need a free permit.' without the two-working-day lead time (only at vehicle.html:49)",
+      "confidence": "high",
+      "selector": "#opening"
+    },
+    {
+      "finding_id": "F-0058",
+      "file": "done.html",
+      "line": 39,
+      "col": null,
+      "method": "text search — phone-only change route; no manage-booking page exists among index/vehicle/confirm/done.html",
+      "confidence": "high",
+      "selector": "region \"At the centre\""
+    },
+    {
+      "finding_id": "F-0059",
+      "file": "vehicle.html",
+      "line": 44,
+      "col": null,
+      "method": "text search — icon-only button (aria-label only) inside .actions next to #vehicle group; styled by .icon-button (styles.css)",
+      "confidence": "high",
+      "selector": "#info"
+    },
+    {
+      "finding_id": "F-0060",
+      "file": "app.js",
+      "line": 1,
+      "col": 3423,
+      "method": "text search — j(): generates 08:00-17:20 for any day with no time check",
+      "confidence": "high",
+      "selector": ".slot[data-slot=\"08:00\"]"
+    },
+    {
+      "finding_id": "F-0060",
+      "file": "app.js",
+      "line": 1,
+      "col": 11909,
+      "method": "text search — oe() book timer: 'a.date===w&&R(a.slot)<635' rejects past slots only at booking",
+      "confidence": "high",
+      "selector": "role=alert"
+    },
+    {
+      "finding_id": "F-0061",
+      "file": "app.js",
+      "line": 1,
+      "col": 8988,
+      "method": "text search — re() Next handler validates vehicle and waste only, no permit check",
+      "confidence": "high",
+      "selector": "#next"
+    },
+    {
+      "finding_id": "F-0061",
+      "file": "app.js",
+      "line": 1,
+      "col": 12048,
+      "method": "text search — permit regex /^DRC-\\d{5}$/i checked only in oe() book timer",
+      "confidence": "high",
+      "selector": "role=alert"
+    },
+    {
+      "finding_id": "F-0073",
+      "file": "app.js",
+      "line": 1,
+      "col": 8988,
+      "method": "text search — re() Next handler saves permit:d.value.trim() unchecked (col 9778)",
+      "confidence": "high",
+      "selector": "#permit"
+    },
+    {
+      "finding_id": "F-0067",
+      "file": "app.js",
+      "line": 1,
+      "col": 6940,
+      "method": "text search — show-click invalid branch sets error and returns; slots, i and pressed day untouched",
+      "confidence": "high",
+      "selector": "#date"
+    },
+    {
+      "finding_id": "F-0001",
+      "file": "app.js",
+      "line": 1,
+      "col": 1287,
+      "method": "text search — he() light 'few:s(38,85,40)' on 'few-bg:s(38,80,92)'; dark at col 890",
+      "confidence": "high",
+      "selector": ".slot__tag--few"
+    },
+    {
+      "finding_id": "F-0002",
+      "file": "app.js",
+      "line": 1,
+      "col": 1287,
+      "method": "text search",
+      "confidence": "high",
+      "selector": ".slot__tag--few"
+    },
+    {
+      "finding_id": "F-0036",
+      "file": "app.js",
+      "line": 1,
+      "col": 1287,
+      "method": "text search — consumed by styles.css col 6568 '.slot__tag--few{background:var(--c-few-bg);color:var(--c-few)}'",
+      "confidence": "high",
+      "selector": ".slot__tag--few"
+    },
+    {
+      "finding_id": "F-0009",
+      "file": "app.js",
+      "line": 1,
+      "col": 5492,
+      "method": "text search — p(): repeat(3, floor((innerWidth-16)/3)px) ignores 32px page padding and 16px of gaps",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0010",
+      "file": "app.js",
+      "line": 1,
+      "col": 5492,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0028",
+      "file": "app.js",
+      "line": 1,
+      "col": 5492,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0015",
+      "file": "app.js",
+      "line": 1,
+      "col": 6564,
+      "method": "text search — aria-live set after textContent in x(); index.html:58 has no aria-live",
+      "confidence": "high",
+      "selector": "#slots-status"
+    },
+    {
+      "finding_id": "F-0018",
+      "file": "app.js",
+      "line": 1,
+      "col": 8521,
+      "method": "text search — 1200 ms setTimeout before showing permit field",
+      "confidence": "high",
+      "selector": "#vehicle button"
+    },
+    {
+      "finding_id": "F-0019",
+      "file": "app.js",
+      "line": 1,
+      "col": 6635,
+      "method": "text search — E() empties #slots for 900 ms then refills, shifting #opening; p() also rewrites columns",
+      "confidence": "medium",
+      "selector": "#opening"
+    },
+    {
+      "finding_id": "F-0026",
+      "file": "app.js",
+      "line": 1,
+      "col": 5438,
+      "method": "text search",
+      "confidence": "high",
+      "selector": ".slot"
+    },
+    {
+      "finding_id": "F-0027",
+      "file": "app.js",
+      "line": 1,
+      "col": 6099,
+      "method": "text search",
+      "confidence": "high",
+      "selector": ".slot[style*=order]"
+    },
+    {
+      "finding_id": "F-0029",
+      "file": "app.js",
+      "line": 1,
+      "col": 11638,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#book"
+    },
+    {
+      "finding_id": "F-0030",
+      "file": "app.js",
+      "line": 1,
+      "col": 11263,
+      "method": "text search — second click sets f=!0 and label 'Cancel booking'; stored as status cancelled at col 12315",
+      "confidence": "high",
+      "selector": "#book"
+    },
+    {
+      "finding_id": "F-0031",
+      "file": "done.html",
+      "line": 28,
+      "col": null,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "h1"
+    },
+    {
+      "finding_id": "F-0032",
+      "file": "app.js",
+      "line": 1,
+      "col": 6635,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0033",
+      "file": "app.js",
+      "line": 1,
+      "col": 7780,
+      "method": "text search — 'if(!h){' silently ignores Next while loading",
+      "confidence": "high",
+      "selector": "#next"
+    },
+    {
+      "finding_id": "F-0034",
+      "file": "app.js",
+      "line": 1,
+      "col": 3423,
+      "method": "text search",
+      "confidence": "high",
+      "selector": ".slot"
+    },
+    {
+      "finding_id": "F-0035",
+      "file": "app.js",
+      "line": 1,
+      "col": 5208,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#slots"
+    },
+    {
+      "finding_id": "F-0038",
+      "file": "app.js",
+      "line": 1,
+      "col": 8988,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#next"
+    },
+    {
+      "finding_id": "F-0039",
+      "file": "app.js",
+      "line": 1,
+      "col": 9278,
+      "method": "text search — href:\"#vehicle\" (div role=group) and href:\"#waste\" (col 9764, plain div)",
+      "confidence": "high",
+      "selector": "#error-list a"
+    },
+    {
+      "finding_id": "F-0105",
+      "file": "app.js",
+      "line": 1,
+      "col": 9278,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#error-list a"
+    },
+    {
+      "finding_id": "F-0106",
+      "file": "app.js",
+      "line": 1,
+      "col": 9128,
+      "method": "text search — vehicle-error shown but never referenced by aria-describedby on #vehicle buttons; #waste div aria-describedby (vehicle.html:60) has no role; checkboxes get waste-error only at col 9666",
+      "confidence": "high",
+      "selector": "#vehicle"
+    },
+    {
+      "finding_id": "F-0041",
+      "file": "app.js",
+      "line": 1,
+      "col": 4078,
+      "method": "text search",
+      "confidence": "high"
+    },
+    {
+      "finding_id": "F-0103",
+      "file": "app.js",
+      "line": 1,
+      "col": 4078,
+      "method": "text search",
+      "confidence": "high"
+    },
+    {
+      "finding_id": "F-0104",
+      "file": "app.js",
+      "line": 1,
+      "col": 11842,
+      "method": "text search",
+      "confidence": "high",
+      "selector": "#error-summary"
+    },
+    {
+      "finding_id": "F-0078",
+      "file": "app.js",
+      "line": 1,
+      "col": 4078,
+      "method": "text search",
+      "confidence": "high"
+    },
+    {
+      "finding_id": "F-0079",
+      "file": "done.html",
+      "line": 39,
+      "col": null,
+      "method": "text search",
+      "confidence": "high"
+    }
+  ],
+  "ease_estimates": [
+    {
+      "finding_id": "F-0001",
+      "ease": 1,
+      "layer": "token",
+      "note": "Change light/dark 'few' and 'few-bg' in he() (or map to the declared warning token)."
+    },
+    {
+      "finding_id": "F-0002",
+      "ease": 1,
+      "layer": "token",
+      "note": "Same token change as F-0001."
+    },
+    {
+      "finding_id": "F-0009",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Delete p() column override or account for padding/gaps; CSS auto-fill grid already reflows."
+    },
+    {
+      "finding_id": "F-0010",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Same as F-0009."
+    },
+    {
+      "finding_id": "F-0015",
+      "ease": 1,
+      "layer": "markup",
+      "note": "Add aria-live=\"polite\" to #slots-status in index.html:58."
+    },
+    {
+      "finding_id": "F-0016",
+      "ease": 1,
+      "layer": "one rule",
+      "note": "Remove the injected '.slot:focus{outline:0}' style in te()."
+    },
+    {
+      "finding_id": "F-0017",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Drop order:-1; keep time order (highlight few-left by tag only)."
+    },
+    {
+      "finding_id": "F-0018",
+      "ease": 1,
+      "layer": "one value",
+      "note": "Remove the 1200 ms delay in re() i()."
+    },
+    {
+      "finding_id": "F-0019",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Keep slot region height/placeholder during E() reload instead of emptying it."
+    },
+    {
+      "finding_id": "F-0020",
+      "ease": 1,
+      "layer": "markup/CSS",
+      "note": "aria-current=\"step\" already present; add a non-weight cue or visually hidden '(current step)' text."
+    },
+    {
+      "finding_id": "F-0021",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Same fix as F-0017."
+    },
+    {
+      "finding_id": "F-0022",
+      "ease": 1,
+      "layer": "token/CSS rule",
+      "note": "Strengthen pressed cue in .button--secondary[aria-pressed=true] (e.g. darker tint, check icon)."
+    },
+    {
+      "finding_id": "F-0023",
+      "ease": 2,
+      "layer": "page script",
+      "note": "In ne(), set h1, title and gate text from status."
+    },
+    {
+      "finding_id": "F-0024",
+      "ease": 2,
+      "layer": "page script",
+      "note": "te() should start from stored e.date/e.slot (or link with ?date&slot)."
+    },
+    {
+      "finding_id": "F-0025",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Rewrite expired message with a link to index.html?date=..., keep the slot shown."
+    },
+    {
+      "finding_id": "F-0026",
+      "ease": 1,
+      "layer": "one rule",
+      "note": "Same as F-0016."
+    },
+    {
+      "finding_id": "F-0027",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Same as F-0017."
+    },
+    {
+      "finding_id": "F-0028",
+      "ease": 2,
+      "layer": "component script",
+      "note": "Same as F-0009."
+    },
+    {
+      "finding_id": "F-0029",
+      "ease": 2,
+      "layer": "component",
+      "note": "Visible pending state on #book (label, disabled styling) in oe() plus CSS."
+    },
+    {
+      "finding_id": "F-0030",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Ignore repeat clicks while d is set; remove 'Cancel booking' relabel."
+    },
+    {
+      "finding_id": "F-0031",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0023."
+    },
+    {
+      "finding_id": "F-0032",
+      "ease": 2,
+      "layer": "component",
+      "note": "Render a loading message/aria-busy in E()."
+    },
+    {
+      "finding_id": "F-0033",
+      "ease": 2,
+      "layer": "component",
+      "note": "Give Next feedback while loading (disable with message or queue navigation)."
+    },
+    {
+      "finding_id": "F-0034",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Mark slots before now as passed in j()/x() when f===w, sharing the 635 cutoff."
+    },
+    {
+      "finding_id": "F-0035",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0024."
+    },
+    {
+      "finding_id": "F-0036",
+      "ease": 1,
+      "layer": "token",
+      "note": "Map few tag to declared warning token; same edit as F-0001."
+    },
+    {
+      "finding_id": "F-0038",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Add permit presence/format check to re() Next handler with inline error."
+    },
+    {
+      "finding_id": "F-0039",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Point summary links at the first vehicle button / first checkbox ids."
+    },
+    {
+      "finding_id": "F-0105",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0039."
+    },
+    {
+      "finding_id": "F-0106",
+      "ease": 2,
+      "layer": "page script/markup",
+      "note": "Add aria-describedby to vehicle buttons; move waste describedby to fieldset or inputs consistently."
+    },
+    {
+      "finding_id": "F-0041",
+      "ease": 2,
+      "layer": "copy + page script",
+      "note": "State the 5-minute hold on slot choice and confirm; reword expiry with route back."
+    },
+    {
+      "finding_id": "F-0103",
+      "ease": 2,
+      "layer": "copy",
+      "note": "Add hold disclosure text on vehicle/confirm pages."
+    },
+    {
+      "finding_id": "F-0104",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0025."
+    },
+    {
+      "finding_id": "F-0043",
+      "ease": 2,
+      "layer": "component",
+      "note": "Update #day-heading and show loading text at start of E()."
+    },
+    {
+      "finding_id": "F-0045",
+      "ease": 2,
+      "layer": "copy + page script",
+      "note": "Show chosen slot and hold time on vehicle step; overlaps F-0054/F-0103."
+    },
+    {
+      "finding_id": "F-0046",
+      "ease": 1,
+      "layer": "one CSS rule",
+      "note": "Add '.field[hidden]{display:none}' (or global [hidden] rule) to styles.css."
+    },
+    {
+      "finding_id": "F-0047",
+      "ease": 2,
+      "layer": "component",
+      "note": "Same as F-0029."
+    },
+    {
+      "finding_id": "F-0048",
+      "ease": 2,
+      "layer": "page",
+      "note": "Render day, slot window and vehicle from session in ne()/done.html."
+    },
+    {
+      "finding_id": "F-0054",
+      "ease": 2,
+      "layer": "page",
+      "note": "Add a short booking summary to vehicle.html filled by re()."
+    },
+    {
+      "finding_id": "F-0056",
+      "ease": 1,
+      "layer": "markup",
+      "note": "Wrap 'council site' in a link (needs the real URL)."
+    },
+    {
+      "finding_id": "F-0057",
+      "ease": 1,
+      "layer": "copy",
+      "note": "Add 'allow two working days' to the Opening days notice in index.html:68."
+    },
+    {
+      "finding_id": "F-0058",
+      "ease": 4,
+      "layer": "architecture",
+      "note": "Needs a new manage-booking flow and a backend lookup by reference."
+    },
+    {
+      "finding_id": "F-0059",
+      "ease": 2,
+      "layer": "component",
+      "note": "Give #info a visible text label and separate it from the vehicle buttons (vehicle.html + CSS)."
+    },
+    {
+      "finding_id": "F-0060",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0034."
+    },
+    {
+      "finding_id": "F-0061",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0038."
+    },
+    {
+      "finding_id": "F-0064",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0024."
+    },
+    {
+      "finding_id": "F-0067",
+      "ease": 2,
+      "layer": "page script",
+      "note": "On invalid date clear/disable slots and selection in the show handler."
+    },
+    {
+      "finding_id": "F-0070",
+      "ease": 1,
+      "layer": "one rule",
+      "note": "Same as F-0016 for slots; #other-day already has the global outline."
+    },
+    {
+      "finding_id": "F-0073",
+      "ease": 2,
+      "layer": "page script",
+      "note": "Same as F-0038 (format check)."
+    },
+    {
+      "finding_id": "F-0078",
+      "ease": 2,
+      "layer": "copy + page script",
+      "note": "Same as F-0103."
+    },
+    {
+      "finding_id": "F-0079",
+      "ease": 4,
+      "layer": "architecture",
+      "note": "Same as F-0058."
+    }
+  ]
+}
