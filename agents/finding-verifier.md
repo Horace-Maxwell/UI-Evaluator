@@ -25,7 +25,7 @@ Why this matters: unverified agent findings are often wrong. They describe eleme
 | File | Contents |
 |---|---|
 | `README.md` | run id, the skill directory, the `uie` command, output path, scope (routes, states, personas), iteration number |
-| `candidates.json` | merged judged candidates (blinded): description, criteria, locations, evidence, detection count k of N |
+| `candidates.json` | merged judged candidates (blinded): description, criteria, locations, evidence, detection count k of N; `time_bound` on those whose check may have to wait, listed first |
 | `dismissals.json` | findings a human previously rejected, with reasons |
 | `screens/`, `aria/` | captured evidence |
 
@@ -50,7 +50,7 @@ Apply these steps to each candidate, in order. Stop at the first failing step, a
 
 4. **Reproduce.** Reproduce the problem yourself with `uie probe` against the running UI, following the candidate's steps or your own equivalent.
    - Behavioural claims (feedback, validation, loading, errors, undo) must be reproduced by performing the interaction.
-   - A check that has to wait (a hold or session that expires, a message that arrives late): start it before the others, in the background where your tools allow, and verify the other candidates while it runs. In round 4 the verifier part that waited out a ten-minute basket hold in line took 13 to 14 minutes, the others 4 to 6.
+   - A check that has to wait (a hold or session that expires, a message that arrives late): start it before the others, in the background where your tools allow, and verify the other candidates while it runs. The packet marks the candidates it thinks may wait `time_bound` and lists them first; a candidate it missed waits just the same. In round 4 the verifier part that waited out a ten-minute basket hold in line took 13 to 14 minutes, the others 4 to 6; in round 5 the verifiers started such waits as their 16th to 33rd call.
    - Reproduced → continue.
    - Judge the problem, not the sentence. When the problem reproduces but one clause overstates it (an "only", "never" or "all" the page contradicts once), it is `confirmed`: give `corrected_description`, the problem as the page bears it out, and say in `note` what you corrected. Reject it as not reproduced only when the problem itself does not reproduce.
    - Not reproduced after a faithful attempt → `rejected` (`not_reproduced`), with your probe path.

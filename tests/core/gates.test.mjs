@@ -287,6 +287,28 @@ test('design notes stay out of the verifier packet and are listed apart in the r
   assert.match(md, /\| F-0001 \| Every card shows the same wrench glyph \|/);
 });
 
+test('the verifier packet marks the checks that wait and gives them the first part', (t) => {
+  const { root, runDir, env } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const uie = (...a) => execFileSync(process.execPath, [UIE, ...a], { cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const f = (id, route, title) => ({ id, status: 'candidate', title, description: `${title}.`, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [{ route, state: 'default', selector: `#${id}` }], evidence: [], found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }] });
+  fs.writeFileSync(path.join(runDir, 'merged.json'), JSON.stringify({ schema: 'merged', run: path.basename(runDir), findings: [
+    f('F-0001', '/', 'Slot buttons are 32 px tall'),
+    f('F-0002', '/confirm.html', 'The five-minute hold expires without a warning'),
+    f('F-0003', '/', 'The intro has no heading'),
+    f('F-0004', '/vehicle.html', 'Nothing says how long the chosen slot is held'),
+  ], proposals: [] }));
+  const read = (k, n) => fs.readFileSync(path.join(runDir, 'packets', `finding-verifier-${k}`, n), 'utf8');
+  uie('packet', '--role', 'finding-verifier');
+  assert.deepEqual(JSON.parse(read(1, 'candidates.json')).map((c) => [c.candidate_id, !!c.time_bound]), [['F-0002', true], ['F-0004', true], ['F-0001', false], ['F-0003', false]]);
+  assert.match(read(1, 'README.md'), /## Checks that wait/);
+  uie('packet', '--role', 'finding-verifier', '--parts', '2');
+  assert.deepEqual(JSON.parse(read(1, 'candidates.json')).map((c) => c.candidate_id), ['F-0002', 'F-0004']);
+  assert.match(read(1, 'README.md'), /this packet holds all of them, so the wait happens once/);
+  assert.deepEqual(JSON.parse(read(2, 'candidates.json')).map((c) => c.candidate_id), ['F-0001', 'F-0003']);
+  assert.doesNotMatch(read(2, 'README.md'), /Checks that wait/);
+});
+
 test('DES-01: a quick-depth critic is feedback, never a panel; critics without isolation degrade the panel', (t) => {
   const { root, runDir } = workspace();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

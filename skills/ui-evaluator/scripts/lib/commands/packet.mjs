@@ -12,7 +12,7 @@ import { isoNow, slug } from '../util/time.mjs';
 import { productSections } from '../tokens/product.mjs';
 import { stripComments } from '../util/markdown.mjs';
 import { primaryCriterion } from '../findings/core.mjs';
-import { partitionCandidates } from '../findings/merge.mjs';
+import { partitionCandidates, timeBound } from '../findings/merge.mjs';
 import { validate, loadSchema, SCHEMA_DIR } from '../schema.mjs';
 
 export const argSpec = { boolean: ['json', 'quiet', 'unseal', 'only-changed'] };
@@ -30,7 +30,8 @@ Options:
   --phase review|locate       code-reviewer phase (default review)
   --only-changed              severity-rater: only findings flagged for re-rating
   --parts <n>                 finding-verifier: split the candidates into n packets (finding-verifier-1..n), one per
-                              parallel verifier, each writing verifier-p<k>.json; apply-verdicts reads every part
+                              parallel verifier, each writing verifier-p<k>.json; apply-verdicts reads every part.
+                              Candidates whose check may have to wait (time_bound) get finding-verifier-1
   --directions <dir>          direction-designer: the directions/<dir-id> folder with a roll file
   --unseal --agent <critic-n> design-critic: unseal detector output once that critic's verdict file exists
 
@@ -308,11 +309,13 @@ export async function run(args, ctx) {
       // candidate that names a harm carries it, so the verifier checks the harm as well as the page.
       const cands = merged.findings
         .filter((f) => f.status === 'candidate' && !(f.advisory && (f.found_by || []).every((b) => b.role === 'tool')) && !f.design_note)
-        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, ...(f.harm ? { harm: f.harm } : {}), locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
+        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, ...(f.harm ? { harm: f.harm } : {}), ...(timeBound(f) ? { time_bound: true } : {}), locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
       // With many candidates the lead splits them between parallel verifiers (--parts n); each part keeps a route's
-      // candidates together and writes its own verdict file, which apply-verdicts reads with the others.
+      // candidates together and writes its own verdict file, which apply-verdicts reads with the others. Candidates
+      // whose check may have to wait (time_bound) come first, and with two or more parts they get the first one.
       const parts = args.parts ? intOpt(args.parts, 'parts', { min: 1, max: 9 }) : 1;
-      const groups = parts > 1 ? partitionCandidates(cands, parts) : [cands];
+      const groups = partitionCandidates(cands, parts);
+      const waits = cands.filter((c) => c.time_bound).length;
       groups.forEach((group, i) => {
         const k = i + 1;
         const agent = parts > 1 ? `verifier-p${k}` : 'verifier';
@@ -324,10 +327,13 @@ export async function run(args, ctx) {
           'screens.json': screens,
           'aria.json': aria,
         };
-        const hash = writePacket(path.join(pdir, `finding-verifier-${k}`), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, base }));
+        const extra = group.some((c) => c.time_bound)
+          ? `\n## Checks that wait\n\nThe candidates marked \`time_bound\` come first: checking them may mean waiting for a hold, a session or a message${groups.length > 1 ? ', and this packet holds all of them, so the wait happens once' : ''}. Start that wait before anything else, in the background where your tools allow, and verify the other candidates while it runs.\n`
+          : '';
+        const hash = writePacket(path.join(pdir, `finding-verifier-${k}`), files, readmeFor({ role, agent, runId: r.id, iteration, output: out, base, extra }));
         record({ role, agent, packet: path.join(pdir, `finding-verifier-${k}`), output: out, hash, model, isolation });
       });
-      ctx.info(`${cands.length} candidate(s) to verify${parts > 1 ? ` in ${groups.length} packet(s) (${groups.map((g) => g.length).join(', ')})` : ''}`);
+      ctx.info(`${cands.length} candidate(s) to verify${parts > 1 ? ` in ${groups.length} packet(s) (${groups.map((g) => g.length).join(', ')})` : ''}${waits ? `; ${waits} may have to wait, listed first${groups.length > 1 && groups[0].length === waits ? ' in finding-verifier-1' : ''}` : ''}`);
       break;
     }
     case 'severity-rater': {

@@ -400,13 +400,33 @@ export function sameCauseProposals(findings, existing = [], { minified = () => f
   return out;
 }
 
+// A check that has to wait for time to pass: a hold, a session or a sign-in that expires, lapses or times out, a
+// message minutes later. "timeout" in one word and the verb "holds" are left out: in round 5 they named the code's
+// timer callbacks and a page that holds a form.
+const COUNT = '(?:a few|a couple of|several|\\d+(?:\\.\\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|thirty|sixty)';
+const TIME_BOUND = new RegExp(`\\b(?:hold|held|expir(?:e|es|ed|y|ing|ation)|lapse[sd]?|times? out|timed out|idle|inactivity|countdown|time[- ]limit(?:ed)?|(?:after|for|within|once|wait(?:s|ing)?(?: for)?)\\s+${COUNT}\\s*-?\\s*(?:minutes?|mins?|hours?)|${COUNT}\\s*-?\\s*(?:minutes?|mins?|hours?)\\s+(?:later|pass|of inactivity))\\b`, 'i');
+const TIME_BOUND_STATE = /expir|time-?out|timed-out|idle|lapse|hold/i;
+
+/** A candidate whose check may have to wait for time to pass, by its wording or the state it was seen in. */
+export function timeBound(c) {
+  if (c.time_bound === true) return true;
+  return TIME_BOUND.test([c.title, c.description, c.harm].filter(Boolean).join(' ')) || (c.locations || []).some((l) => TIME_BOUND_STATE.test(String(l.state || '')));
+}
+
 /**
  * Split verifier candidates into at most n packets of near-equal size. A page's candidates stay together (query
  * strings and /index.html aside, as in the duplicate proposals), so each verifier loads a page once; only a page with
  * more candidates than one packet holds is cut into packet-sized pieces.
  * Pieces are placed largest first on the packet that holds the fewest, and the order is deterministic.
+ * Time-bound candidates come first. With two or more packets they get the first one to themselves, whatever their
+ * page, so one verifier waits once: in round 5 they were spread over three verifiers, each of which waited out the
+ * same five-minute hold, late in its work.
  */
 export function partitionCandidates(cands, n) {
+  const waiting = cands.filter(timeBound);
+  const rest = cands.filter((c) => !timeBound(c));
+  if (Number(n) <= 1 || !cands.length) return [[...waiting, ...rest]];
+  if (waiting.length && rest.length) return [waiting, ...partitionCandidates(rest, Number(n) - 1)];
   const parts = Math.max(1, Math.min(Number(n) || 1, cands.length || 1));
   const size = Math.ceil(cands.length / parts);
   const byRoute = new Map();

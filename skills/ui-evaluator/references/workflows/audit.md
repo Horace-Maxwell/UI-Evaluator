@@ -99,7 +99,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 
 ### Verification and rating
 
-8. **Verify.** Run `uie packet --role finding-verifier`, spawn the verifier (`../evaluators/finding-verifier.md`), then run `uie findings apply-verdicts`. With more than about thirty candidates, split them between parallel verifiers: `uie packet --role finding-verifier --parts 3` writes `finding-verifier-1..3`, each with a route's candidates kept together and its own output file `verifier-p<k>.json`; spawn one verifier per packet in the same message and `apply-verdicts` reads every part. One verifier re-checking eighty candidates took twenty minutes in the round of 2026-10-08; three took seven. The verifier re-checks every judged candidate:
+8. **Verify.** Run `uie packet --role finding-verifier`, spawn the verifier (`../evaluators/finding-verifier.md`), then run `uie findings apply-verdicts`. With more than about thirty candidates, split them between parallel verifiers: `uie packet --role finding-verifier --parts 3` writes `finding-verifier-1..3`, each with a route's candidates kept together and its own output file `verifier-p<k>.json`; spawn one verifier per packet in the same message and `apply-verdicts` reads every part. Candidates whose check has to wait (a hold or session that expires) go to `finding-verifier-1` on their own, so spawn that verifier first. One verifier re-checking eighty candidates took twenty minutes in the round of 2026-10-08; three took seven. The verifier re-checks every judged candidate:
    1. evidence resolution;
    2. harness filter;
    3. scope;

@@ -296,6 +296,30 @@ test('an inspector adopting an advisory observation turns it into a finding; sam
   assert.deepEqual(byPage, [['K-0', 'K-1', 'K-4'], ['K-2', 'K-3', 'K-5']], 'each page stays in one packet');
 });
 
+test('candidates whose check has to wait come first, in a packet of their own', async () => {
+  const { partitionCandidates, timeBound } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const c = (id, route, title, state) => ({ candidate_id: id, title, description: '', locations: [{ route, ...(state ? { state } : {}) }] });
+  // Wording from round 5: the hold, the expired error, a state named for the expiry.
+  assert.ok(timeBound(c('a', '/', 'The 5-minute slot hold expires without any warning')));
+  assert.ok(timeBound(c('b', '/', 'No indication anywhere of how long a chosen slot is held')));
+  assert.ok(timeBound(c('c', '/', "'Change slot' reopens on Today", 'expired')));
+  assert.ok(timeBound(c('d', '/', 'The confirmation email arrives after two minutes')));
+  assert.ok(timeBound(c('e', '/', 'The session times out with no warning')));
+  // Code words and other verbs are not waits.
+  assert.ok(!timeBound(c('f', '/', 'The permit is checked only inside the 1.5 s booking timeout')));
+  assert.ok(!timeBound(c('g', '/', "The page reached by 'Change vehicle' also holds the waste checkboxes")));
+  assert.ok(!timeBound(c('h', '/', 'A slot button shows only its start time; a slot lasts 20 minutes')));
+  const cands = [
+    c('F-1', '/', 'Slot buttons are 32 px tall'), c('F-2', '/confirm.html', 'Expired-hold error does not say what to do next'),
+    c('F-3', '/vehicle.html', 'Permit field has no label'), c('F-4', '/', 'Nothing says the chosen slot is held or for how long'),
+    c('F-5', '/vehicle.html', 'Help icon has no name'), c('F-6', '/confirm.html', 'Summary omits the day'),
+  ];
+  const ids = (parts) => parts.map((p) => p.map((x) => x.candidate_id));
+  assert.deepEqual(ids(partitionCandidates(cands, 3)), [['F-2', 'F-4'], ['F-3', 'F-5'], ['F-1', 'F-6']], 'the waiting checks get the first packet, whatever their page');
+  assert.deepEqual(ids(partitionCandidates(cands, 1)), [['F-2', 'F-4', 'F-1', 'F-3', 'F-5', 'F-6']], 'one packet lists them first');
+  assert.equal(partitionCandidates(cands.filter((x) => !timeBound(x)), 2).length, 2, 'without waiting checks the split is as before');
+});
+
 test('part of a same-cause proposal can be accepted; the other members stay apart (ADR-039)', async () => {
   const { acceptProposals } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
   const f = (id, title) => ({ id, status: 'confirmed', title, found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }], locations: [{ route: '/tool.html', selector: '#reserve' }], evidence: [{ type: 'screenshot', ref: `${id}.png` }], criteria: [{ kind: 'heuristic', id: 'H1', primary: true }] });
