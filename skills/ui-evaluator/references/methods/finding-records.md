@@ -232,6 +232,7 @@ Bad candidates, and what to do instead:
 | `validity` | `needs_verification` at candidate; `confirmed` by the verifier; `trade_off` or `not_a_problem` through rating or the owner |
 | `advisory` | `true` on a deterministic observation against an advisory rule (one that gates nothing: APCA, stranded last words, FUN-08). It stays a candidate, is listed apart in the report, is never verified, rated, promoted or counted, and loses the flag when an inspector's finding merges with it. Inspectors never set it: the merge drops it from their outputs (ADR-038) |
 | `design_note` | `true` on a design critic's remark that names no harm to the product's users and no PRODUCT.md or DESIGN.md line it breaks. Like an advisory observation it stays a candidate, is listed apart in the report and is never verified, rated, promoted or counted; it becomes a finding when another inspector's finding merges with it (ADR-040) |
+| `description_as_reported` | the inspector's own wording, kept when the verifier confirmed the problem with a `corrected_description` because one clause overstated it |
 | `harm` | on a design critic's finding: `kind` (`task`, `misread`, `trust` or `requirement`), `statement` (who is harmed and how) and, for a requirement, the quoted line. The verifier checks the harm, not only the page (ADR-040) |
 | `severity`, `priority`, `criticality` | `uie findings rate`, from the rater files (`severity-rating.md`) |
 | `status`, `status_history` | the transitions in §3.8 |

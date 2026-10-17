@@ -101,7 +101,8 @@ export function addDismissal(dismissals, f, { reason, by }) {
 
 /**
  * Apply verifier verdicts to the merged findings (by id).
- * confirmed → confirmed (E1); rejected → rejected; needs_human → candidate (validity needs_verification);
+ * confirmed → confirmed (E1), with the verifier's corrected description when it gives one; rejected → rejected;
+ * needs_human → candidate (validity needs_verification);
  * split_required → candidate flagged for manual split. ceiling_flag is stored for rating (HCI-029).
  */
 export function applyVerifierVerdicts(findings, verifierDoc, { dismissals } = {}) {
@@ -117,6 +118,12 @@ export function applyVerifierVerdicts(findings, verifierDoc, { dismissals } = {}
     if (v.ceiling_flag) f.ceiling_flag = true;
     if (v.verdict === 'confirmed') {
       if (f.status === 'candidate') setStatus(f, 'confirmed', { by: 'finding-verifier', note: v.reason });
+      // A real problem whose wording overstated it is confirmed with the claim the page bears out; the inspector's
+      // wording is kept beside it.
+      if (typeof v.corrected_description === 'string' && v.corrected_description.trim()) {
+        f.description_as_reported = f.description_as_reported || f.description;
+        f.description = v.corrected_description.trim();
+      }
       f.evidence_level = higherEvidence(f.evidence_level || 'E0', 'E1');
       if (Array.isArray(v.evidence)) f.evidence = [...(f.evidence || []), ...v.evidence.map((e) => (typeof e === 'string' ? { type: 'probe', ref: e, detail: 'verifier reproduction' } : e))];
       counts.confirmed += 1;

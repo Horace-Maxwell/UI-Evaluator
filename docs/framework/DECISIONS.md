@@ -347,6 +347,8 @@ The MOT-04, CMP-03 and CMP-06 numbers are UI-Evaluator proposals and are marked 
 
 **Amended 2026-10-10 (round 4).** A proposal groups whatever the code reviewer located within three lines of one file, and a component's markup can hold several problems in that window. In round 4 the leads accepted 4 of 12, 9 of 16 and 5 of 14 proposals and rightly rejected the ones that mixed causes, so their true duplicates stayed apart: in one run a fixed bar reached the report as ten findings, six of them in a rejected group of nine. An entry of `--accept` may now name part of a proposal, `S14:F-0008+F-0011`: the named members (two or more) are merged, the proposal records them as `applied_members`, and the others stay findings of their own.
 
+**Amended 2026-10-16 (round 5).** On a fixture shipped as a minified bundle the code reviewer located 59 to 70 findings a run on `app.js` line 1, so each run got one proposal of 31 to 38 members, which the leads could only take apart two or three members at a time. A source line longer than 1000 characters now counts as minified: on it, findings group by the column the code reviewer gives (within 120 characters of each other), and a location without a column, or with column 0, seeds no proposal. The code reviewer records the column in minified code.
+
 ## ADR-040 — A design critic's remark is a design note unless it names a harm
 
 Status: **accepted** (2026-10-10, by the owner, after round 4).

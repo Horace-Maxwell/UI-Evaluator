@@ -1,4 +1,5 @@
 // uie findings — the findings lifecycle (ARCHITECTURE §7.2, §8.3).
+import fs from 'node:fs';
 import path from 'node:path';
 import { readJson, writeJson, exists, listDir, readJsonl, isDir } from '../util/fs.mjs';
 import { list, intOpt, UsageError } from '../util/args.mjs';
@@ -115,7 +116,7 @@ export async function run(args, ctx) {
       if (args['apply-locate']) {
         const doc = loadMerged(r.dir);
         const n = applyLocate(r.dir, doc);
-        const same = sameCauseProposals(doc.findings, doc.proposals || []);
+        const same = sameCauseProposals(doc.findings, doc.proposals || [], { minified: minifiedLine(ctx.root) });
         doc.proposals = [...(doc.proposals || []), ...same];
         saveMerged(r.dir, doc);
         ctx.result({ ...n, same_cause_proposals: same.map((p) => ({ id: p.id, members: p.members, reason: p.reason })) });
@@ -510,6 +511,24 @@ function recordSelfReport(runDir, { role, agent, model, isolation }) {
 }
 
 /** Attach code-reviewer output (source locations, ease estimates) to merged findings. */
+/** A source line longer than 1000 characters is minified: its number says nothing about where a cause is (ADR-039). */
+function minifiedLine(root) {
+  const cache = new Map();
+  return (file, line) => {
+    if (!cache.has(file)) {
+      let lines = null;
+      try {
+        lines = fs.readFileSync(path.resolve(root, file), 'utf8').split('\n');
+      } catch {
+        // a location outside the project or a file that has gone: treat it as ordinary source
+      }
+      cache.set(file, lines);
+    }
+    const lines = cache.get(file);
+    return !!lines && (lines[line - 1] || '').length > 1000;
+  };
+}
+
 function applyLocate(runDir, doc, { quiet } = {}) {
   const byId = new Map(doc.findings.map((f) => [f.id, f]));
   const byTmp = new Map(doc.findings.flatMap((f) => (f.merged_from || []).map((t) => [t, f])));

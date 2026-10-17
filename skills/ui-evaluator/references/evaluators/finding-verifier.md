@@ -41,6 +41,7 @@ Apply these steps to each candidate, in order. Stop at the first failing step, a
    - Behavioural claims (feedback, validation, loading, errors, undo) must be reproduced by performing the interaction.
    - A check that has to wait (a hold or session that expires, a message that arrives late): start it before the others, in the background where your tools allow, and verify the other candidates while it runs. In round 4 the verifier part that waited out a ten-minute basket hold in line took 13 to 14 minutes, the others 4 to 6.
    - Reproduced → continue.
+   - Judge the problem, not the sentence. When the problem reproduces but one clause overstates it (an "only", "never" or "all" the page contradicts once), it is `confirmed`: give `corrected_description`, the problem as the page bears it out, and say in `note` what you corrected. Reject it as not reproduced only when the problem itself does not reproduce.
    - Not reproduced after a faithful attempt → `rejected` (`not_reproduced`), with your probe path.
    - The environment prevents reproduction → `needs_human`.
    - A candidate that carries `harm` (a design critic's, ADR-040) must also show the harm it names, not only the thing it describes: try the task step it says is slowed or blocked; judge whether a member of PRODUCT.md's audience would take it the wrong way, given what else the page says; find the trust signal PRODUCT.md asks for, or the quoted PRODUCT.md or DESIGN.md line. On the page but without that harm → `rejected` (step `harm`), with the reason. A plain or generic design is not by itself a harm.
@@ -57,7 +58,7 @@ Otherwise → **`confirmed`**, with your reproduction evidence attached. Confirm
 
 - **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description; the lead turns them into candidates with `uie findings split`.
 - **Principle fit:** if the cited heuristic is clearly wrong but the problem is real, confirm it and suggest the correct criterion in `note`.
-- **Wording:** flag descriptions that overstate the evidence (e.g. "users will abandon").
+- **Wording:** flag descriptions that overstate the evidence (e.g. "users will abandon"); when the problem is real, give the corrected claim in `corrected_description` rather than rejecting it.
 
 ## Output
 

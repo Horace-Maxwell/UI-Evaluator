@@ -365,19 +365,26 @@ export function acceptProposals(doc, ids) {
  * and the lead accepts the true ones before rating, so one cause is rated and reported once. Advisory observations,
  * design notes and closed findings are left out; a proposal that already exists (same members) is not repeated.
  */
-export function sameCauseProposals(findings, existing = []) {
+export function sameCauseProposals(findings, existing = [], { minified = () => false } = {}) {
   const src = (f) => (f.locations || []).map((l) => l.source).find((s) => s && s.file && Number.isFinite(Number(s.line)));
+  // In a minified file one line holds the whole program, so a line number says nothing about where a cause is: there
+  // a location groups only by its column (within 120 characters of the last one), and one without a column not at all.
+  // Columns are 1-based; a 0 is a reviewer's placeholder for "not known".
+  const col = (s) => (Number.isFinite(Number(s.col)) && Number(s.col) > 0 ? Number(s.col) : null);
   const items = findings
     .filter((f) => !['rejected', 'dismissed', 'split', 'stale'].includes(f.status) && !f.advisory && !f.design_note && src(f))
-    .map((f) => ({ f, s: src(f) }))
-    .sort((a, b) => a.s.file.localeCompare(b.s.file) || Number(a.s.line) - Number(b.s.line));
+    .map((f) => { const s = src(f); return { f, s, flat: !!minified(s.file, Number(s.line)) }; })
+    .filter((it) => !it.flat || col(it.s) !== null)
+    .sort((a, b) => a.s.file.localeCompare(b.s.file) || Number(a.s.line) - Number(b.s.line) || (col(a.s) ?? 0) - (col(b.s) ?? 0));
   const groups = [];
   for (const it of items) {
     const g = groups.at(-1);
-    if (g && g.file === it.s.file && Number(it.s.line) - g.last <= 3) {
+    const near = g && g.file === it.s.file && (it.flat ? g.flat && Number(it.s.line) === g.last && col(it.s) - g.lastCol <= 120 : !g.flat && Number(it.s.line) - g.last <= 3);
+    if (near) {
       g.members.push(it.f);
       g.last = Number(it.s.line);
-    } else groups.push({ file: it.s.file, line: Number(it.s.line), last: Number(it.s.line), members: [it.f] });
+      g.lastCol = col(it.s);
+    } else groups.push({ file: it.s.file, line: Number(it.s.line), last: Number(it.s.line), col: col(it.s), lastCol: col(it.s), flat: it.flat, members: [it.f] });
   }
   const taken = new Set(existing.map((p) => [...p.members].sort().join('|')));
   let n = existing.filter((p) => /^S\d+$/.test(String(p.id))).length;
@@ -387,7 +394,8 @@ export function sameCauseProposals(findings, existing = []) {
     const members = g.members.map((f) => f.id);
     if (taken.has([...members].sort().join('|'))) continue;
     n += 1;
-    out.push({ id: `S${n}`, members, reason: `same cause: the code reviewer located them at ${g.file}:${g.line}${g.last !== g.line ? `–${g.last}` : ''}`, kind: 'same-cause' });
+    const at = g.flat ? `${g.file}:${g.line}, columns ${g.col}–${g.lastCol}` : `${g.file}:${g.line}${g.last !== g.line ? `–${g.last}` : ''}`;
+    out.push({ id: `S${n}`, members, reason: `same cause: the code reviewer located them at ${at}`, kind: 'same-cause' });
   }
   return out;
 }

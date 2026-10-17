@@ -365,3 +365,31 @@ test("an inspector's own advisory flag is dropped: its candidate is verified and
     fs.rmSync(runDir, { recursive: true, force: true });
   }
 });
+
+test('same-cause proposals on a minified line group by column, not by line (ADR-039)', async () => {
+  const { sameCauseProposals } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const at = (id, file, line, col) => ({ id, status: 'confirmed', locations: [{ route: '/', source: { file, line, ...(col !== undefined ? { col } : {}), method: 'text-search', confidence: 'low' } }] });
+  const findings = [
+    at('F-0001', 'app.js', 1, 5200),
+    at('F-0002', 'app.js', 1, 5260),
+    at('F-0003', 'app.js', 1, 9100),
+    at('F-0004', 'app.js', 1),
+    at('F-0005', 'app.js', 1, 9180),
+    at('F-0006', 'pages.html', 40),
+    at('F-0007', 'pages.html', 42),
+  ];
+  const minified = (file, line) => file === 'app.js' && line === 1;
+  const same = sameCauseProposals(findings, [], { minified });
+  assert.deepEqual(same.map((p) => p.members), [['F-0001', 'F-0002'], ['F-0003', 'F-0005'], ['F-0006', 'F-0007']]);
+  assert.match(same[0].reason, /app\.js:1, columns 5200–5260/);
+  assert.equal(sameCauseProposals(findings, []).length, 2, 'without the check, the whole line is one group (and the pages another)');
+});
+
+test('a confirmed verdict can correct an overstated description; the original wording is kept', async () => {
+  const { applyVerifierVerdicts } = await import('../../skills/ui-evaluator/scripts/lib/findings/register.mjs');
+  const f = { id: 'F-0042', status: 'candidate', title: 'Slot end time only in a tooltip', description: 'The slot end time and arrival rule exist only in the title attribute.', evidence: [], criteria: [{ kind: 'heuristic', id: 'H6', primary: true }], locations: [{ route: '/' }] };
+  applyVerifierVerdicts([f], { verdicts: [{ candidate_id: 'F-0042', verdict: 'confirmed', step: 'none', reason: 'Reproduced on the slot buttons.', corrected_description: 'A slot button shows only its start time; its end and the arrival rule are in a hover tooltip, and the intro mentions the 20-minute length once.' }] });
+  assert.equal(f.status, 'confirmed');
+  assert.match(f.description, /shows only its start time/);
+  assert.equal(f.description_as_reported, 'The slot end time and arrival rule exist only in the title attribute.');
+});

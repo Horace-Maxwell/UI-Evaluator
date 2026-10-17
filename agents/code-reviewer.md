@@ -90,7 +90,7 @@ The README states your phase:
    - large unoptimised images;
    - layout shift sources (images without dimensions, late-inserted banners).
 
-7. **Attach source locations.** For each item in `needs-source.json`, find the component and line that renders the element. Use `data-insp-path` attributes if the dev build has them, otherwise search for text and class names. Record `{ file, line, method, confidence }`. Never guess a location with high confidence.
+7. **Attach source locations.** For each item in `needs-source.json`, find the component and line that renders the element. Use `data-insp-path` attributes if the dev build has them, otherwise search for text and class names. Record `{ file, line, method, confidence }`, and in minified code also `col`, the 1-based offset of the matched text on that line: there the whole program is one line, and only the column says where. Never guess a location with high confidence.
 
 8. **Estimate ease of fix** for every finding listed in the packet's `rate-ease.json`:
    - 1 = one value or token;
