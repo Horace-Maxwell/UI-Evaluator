@@ -1,0 +1,50 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230412-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "cb81c0f4a1f7160d",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0109",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced in a foreground probe with a running clock: chose Saturday 17 09:20 on /, Car + Garden waste, filled all details on /confirm.html, waited 5 min 45 s, pressed Book this slot -> alert 'This slot is no longer available.' and Slot row '—'. Before the press the page (step-19) still showed '09:20 to 09:40' with no warning. Absence checked myself in the root slot-chosen, vehicle default and confirm default ARIA snapshots and in my probe's screenshots: no 'held', 'hold', 'expires', minutes-remaining or timer text anywhere from slot choice to Book.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "corrected_description": "No step from choosing a slot to 'Book this slot' says the slot is held or for how long, yet it lapses before booking: after 5 min 45 s on the filled confirm page, Book this slot returned 'This slot is no longer available.'",
+      "note": "Exact hold length not measured; I confirmed lapse by 5:45, so 'about five minutes' is plausible but unverified. Overlaps F-0110 in route and evidence but is a distinct problem (no advance disclosure vs. the expiry message). Packet listed WCAG 2.2.1 — fits (time limit without warning/extension)."
+    },
+    {
+      "candidate_id": "F-0110",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced on the real flow after a 5:45 wait and on the hold=expired route: the error summary says only 'This slot is no longer available.' with no mention that a hold ran out and no action or link inside the alert; the Slot row changes to '—'. Pressing Book a second time on the expired route gave the same alert, unchanged.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "corrected_description": "When the hold lapses, the error 'This slot is no longer available.' does not say the hold ran out and offers no next step in the message itself; the Slot row blanks to '—', leaving only the generic 'Change slot' link in the summary as a way on.",
+      "note": "Corrected: a 'Change slot' link (to index.html) does sit beside the blanked Slot row, so a route back exists, just not in or linked from the error. 'On first press' is unsupported: the second press shows the same message. Criteria list is copied from F-0109; H9 (help users recover from errors) is the better primary fit than CW-Q1."
+    },
+    {
+      "candidate_id": "F-0039",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The candidate's evidence is source code, which this role may not read. Partially reproduced: on /confirm.html, typing 'Tes' in Your name and pressing Enter submits the booking (error summary for missing registration etc. appears), so Enter in a details field triggers Book. Whether Enter that commits an IME composition also triggers it cannot be driven with uie probe (no composition events), so the actual claim was not reproduced. The #date Enter handler was not exercised.",
+      "evidence": [
+        "<tmp>"
+      ],
+      "note": "Needs a human with a CJK IME (or a CDP Input.imeSetComposition test) to type in Your name and press Enter to commit a candidate. If confirmed, the 'with half-entered text' wording should be checked: with other fields empty the press shows validation errors rather than booking."
+    }
+  ]
+}

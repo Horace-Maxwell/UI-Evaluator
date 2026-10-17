@@ -1,0 +1,236 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230412-audit-standard",
+  "agent": "verifier-p2",
+  "model": "claude-opus-5-5",
+  "iteration": 1,
+  "isolation": "subagent",
+  "packet_hash": "b5ebacd4c618192f",
+  "_notes": "Probes 33-58 under runs/20261016-230412-audit-standard/probes/. I read DESIGN.md and PRODUCT.md only to check quoted lines in harm/requirement claims. No source code was read. Contrast was measured from probe screenshot pixels with a throwaway PNG sampler in the session scratchpad. Iteration 1, so no ceiling flags.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0020",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 px. On Saturday 17 the ten 'Few left' slots (08:20-10:40, 13:40, 14:00, 15:00, 16:40) are drawn in an unheaded block above 'Morning', and the Morning group shows 08:00, 09:20, 10:00. The ARIA tree keeps time order under the headings. Keyboard Tab from 'Another day' lands on 08:00 (under Morning) before the Few-left block.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/37/probe.json"
+      ],
+      "note": "Same element and mechanism as F-0026 and F-0085; the lead should merge them."
+    },
+    {
+      "candidate_id": "F-0025",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced with the keyboard. Tab from 'Another day' focuses the 08:00 slot (an expect step confirmed the focus), and no focus indicator is drawn. Shift+Tab to 'Sunday 18' shows a clear dark focus ring, so the global indicator works elsewhere and is missing only on slots.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/37/screenshots/slot-0800-focused.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/37/screenshots/sunday-focused.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/36/screenshots/tab2.png"
+      ],
+      "corrected_description": "Slot buttons show no visible focus indicator when reached by keyboard: Tab onto the 08:00 slot leaves it looking the same as unfocused slots, while other controls (e.g. the 'Sunday 18' day button) show a dark focus ring.",
+      "note": "I did not verify the source-level cause (injected style) or the 'Choose a slot first.' focus path. The description is restated as observed behaviour."
+    },
+    {
+      "candidate_id": "F-0026",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced on Monday 12 (today) and Saturday 17 at 375, 320 and 1280 px. Few-left slots, including afternoon ones, render above 'Morning'. DOM, ARIA and Tab order stay chronological. Harm checked: the Morning group visibly lacks 08:20-10:40 on Saturday. A resident scanning the Morning row for about 09:00 does not find 09:00 there, which bears out the misread.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/41/screenshots/w1280.png"
+      ],
+      "note": "Duplicate of F-0020 and F-0085 (same element and mechanism)."
+    },
+    {
+      "candidate_id": "F-0027",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 320x640. The full-page capture is 335 px wide, so the page scrolls sideways by about 15 px. The slot grid's right column runs past the 16 px page padding to beyond the viewport edge, while the Opening days card stays inside the content box.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/40/screenshots/w320-full.png"
+      ],
+      "corrected_description": "At a 320 px viewport the slot grid is wider than the page content box: its right column extends past the page padding and the page scrolls horizontally (the full-page capture is 335 px wide).",
+      "note": "I verified only 320 px. The 360 px claim and the source formula were not checked."
+    },
+    {
+      "candidate_id": "F-0028",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. 300 ms after tapping 'Saturday 17', the Slots section shows only the stale date line 'Monday 12 October' and empty space above Next, with no loading text, spinner or skeleton. The slots appear about 0.8-1.3 s after the tap.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat-300ms.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/probe.json"
+      ],
+      "corrected_description": "After a day is chosen, the Slots section is blank for roughly a second, with no loading text, indicator or skeleton, and its date line still names the previously shown day (e.g. 'Monday 12 October' after tapping Saturday 17) until the slots arrive.",
+      "note": "Added the stale date line, which makes the blank state more misleading. I did not verify the aria-busy absence or the first-load case directly."
+    },
+    {
+      "candidate_id": "F-0030",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "The title attribute exists (#slots .slot[title*='Arrive within your slot'] matched). But the claim that the end time and arrival rule exist only there does not reproduce. The intro visibly says 'Choose a day and the 20-minute slot you will arrive in'. Opening days says 'Slots last 20 minutes'. The confirm page shows the end time ('08:00 to 08:20') before booking.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/50/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/45/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png"
+      ],
+      "note": "The tooltip duplicates information that is visible elsewhere. It is not the only source."
+    },
+    {
+      "candidate_id": "F-0031",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The quick-day buttons, slot buttons and vehicle buttons carry aria-pressed. Choosing 09:40 set 09:00 to pressed=false, and choosing Van left one vehicle button pressed. No role=radiogroup or input[type=radio] exists on / or /vehicle.html. Tab moves slot by slot (08:00 then 08:20).",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/50/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/51/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/52/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/53/probe.json"
+      ],
+      "note": "The vehicle buttons sit in group 'Vehicle' and the slots in group 'Slots'. The groups exist, but they carry no single-choice semantics."
+    },
+    {
+      "candidate_id": "F-0035",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced end to end. On Today (Monday 12 October) the 08:00 slot is shown as free and selectable. After choosing it, picking Car and Garden waste, entering valid details and pressing 'Book this slot', the confirm page shows 'There is a problem: The 08:00 slot today can no longer be booked. Choose another slot or day.' This contradicts DESIGN.md line 143, 'Do show a slot as free only when it is.'",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/46/screenshots/today-0800-free.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/46/screenshots/after-book.png"
+      ],
+      "note": "The exact cut-off time (10:35) was not verified; 08:00 suffices."
+    },
+    {
+      "candidate_id": "F-0039",
+      "verdict": "needs_human",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "uie probe cannot generate IME composition events (isComposing / keyCode 229), so the claimed submit-during-composition cannot be reproduced in this environment. The evidence is source-only.",
+      "evidence": [],
+      "note": "A human with a CJK IME should type in 'Your name' on /confirm.html and press Enter to commit a candidate."
+    },
+    {
+      "candidate_id": "F-0040",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Measured from rendered pixels. In light mode the tag text is rgb(189,125,15) on rgb(251,239,218), 3.02:1. In dark mode it is rgb(171,124,43) on rgb(60,50,32), 3.38:1. Both are below 4.5:1 for 16 px bold text. DESIGN.md line 22 declares warning '#8a5a00', and the rendered amber is lighter.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/49/screenshots/dark.png"
+      ],
+      "note": "Sampled the 08:20 tag region. The ratios match the candidate's hand computation. I did not verify the claim that all other colour roles match DESIGN.md."
+    },
+    {
+      "candidate_id": "F-0045",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. Individual 20-minute slot buttons carry an amber 'Few left' tag (accessible name e.g. '08:20 Few left'). Nothing on the slot step (intro, Slots heading, count line, Opening days) explains what 'few left' means for a single slot.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/50/aria.yml"
+      ],
+      "note": "Searched the whole slot-step page for an explanation and found none."
+    },
+    {
+      "candidate_id": "F-0075",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "The step list does expose the current step. role=list[name='Steps'] >> [aria-current='step'] matched on /, /vehicle.html and /confirm.html. Playwright's ARIA snapshot does not render aria-current, so the cited snapshot cannot show its absence.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/54/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/55/probe.json",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/56/probe.json"
+      ],
+      "note": "Snapshot-artefact false positive."
+    },
+    {
+      "candidate_id": "F-0085",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced on Monday 12 at 1280 px (top block 08:20, 09:20, 12:00, 12:20, 12:40, 13:40, 14:20; Morning lacks 08:20 and 09:20) and on Saturday 17 at 375 px. Harm checked: the task step of finding a morning time under 'Morning' is misdirected, because the wanted 09:00 sits in an unlabelled block with afternoon times.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/41/screenshots/w1280.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/33/screenshots/sat.png"
+      ],
+      "note": "Duplicate of F-0020 and F-0026."
+    },
+    {
+      "candidate_id": "F-0086",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280 px. The slot rows end at about x=816 with seven columns, while the Opening days card spans to about x=1184. DESIGN.md line 119 says 'slots in a grid that fills the width from 96 px columns', so the requirement harm is verified. At 375 px, three columns is what 96 px columns give in a 343 px content box, so that clause is not a defect.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/41/screenshots/w1280.png"
+      ],
+      "corrected_description": "At 1280 px the slot grid stops at seven 96 px columns (about 816 px wide) while the content width and the Opening days card run to about 1184 px, leaving roughly a third of each row empty, contrary to DESIGN.md's 'grid that fills the width from 96 px columns'.",
+      "note": "Removed the 375 px clause, which is not a defect. I did not reprobe 1440 px."
+    },
+    {
+      "candidate_id": "F-0106",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "harness_filter",
+      "reason": "Not present in live use. After clicking Tomorrow, then Saturday 17, then 09:20, only Saturday 17 is tinted and Tomorrow is plain, both with the pointer moved away and without moving it. The tint in the capture matches the hover tint seen on slots under a resting pointer, so it is pointer or hover residue from the capture run.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/36/screenshots/days-full.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/36/screenshots/days-no-hover.png"
+      ],
+      "note": "The candidate itself flagged possible hover or focus residue."
+    },
+    {
+      "candidate_id": "F-0021",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 px. With status=cancelled the h1 reads 'Booked', and under it 'Status: cancelled. This booking is not on the gate's list.' is followed by the unchanged 'Show this at the gate…' and 'A reminder will be sent…' lines. Harm checked: PRODUCT.md says residents read the page on the phone the evening before or at the gate. The largest words on the page and the gate instructions contradict the status.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/57/screenshots/cancelled.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/57/aria.yml"
+      ],
+      "corrected_description": "On /done.html with status=cancelled the h1 still reads 'Booked'. The cancellation appears only as a bold red line, 'Status: cancelled. This booking is not on the gate's list.', followed by the unchanged 'Show this at the gate…' and 'A reminder will be sent to your mobile the evening before.' The heading contradicts the status, and screen-reader users navigating by headings hear 'Booked'.",
+      "note": "The status line renders red, not grey as described."
+    },
+    {
+      "candidate_id": "F-0024",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. /done.html with status=booked (URL carries date, slot and vehicle) shows only heading 'Booked', reference DR-204117, the gate and reminder text, 'At the centre' and 'Book another slot'. Searched the whole main region and found no day, time, vehicle or waste. Harm checked: PRODUCT.md line 34 says the reference is read at the gate from the phone screen with poor signal.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/58/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/58/final.png"
+      ],
+      "note": "The absence was confirmed by my own inventory of main."
+    },
+    {
+      "candidate_id": "F-0078",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Absence confirmed by my own search of the ARIA trees of / (slot step), /vehicle.html, /confirm.html, and /done.html booked and cancelled. Navigation has only 'Book a slot' and 'Opening days'. No reference field or change/cancel entry exists. The only route is 'call 01632 960771 on a weekday'; the footer gives weekdays 09:00 to 17:00, while the centre opens every day except Wednesday. 'Change slot' and 'Change vehicle' on the confirm page apply only to the booking in progress. PRODUCT.md line 19 lists 'Residents changing a booking' who hold their reference.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/50/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/45/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/57/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-2/workspace/.ui-evaluator/runs/20261016-230412-audit-standard/probes/58/aria.yml"
+      ],
+      "note": "I did not open the 'Another day' picker, but it is a date chooser for new bookings."
+    }
+  ]
+}

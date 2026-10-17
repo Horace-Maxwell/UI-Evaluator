@@ -1,0 +1,170 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261016-230353-audit-standard",
+  "packet_hash": "5019e89dff6e0746",
+  "notes": "Cognitive walkthrough (full four-question variant) of book-a-slot at 375 px light; record at runs/20261016-230353-audit-standard/cw/book-a-slot.json. Bash was denied in this session, so no `uie probe` runs and no `uie findings validate` were possible; CW-Q4 judgements rest on the pipeline's captured states, and no bounding boxes were measured (none given). All candidates are E0 hypotheses.",
+  "coverage": {
+    "routes": ["/", "/vehicle.html?date=2026-10-17&slot=09:20", "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden", "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired", "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=booked"],
+    "states": ["root/default", "root/date-chosen", "root/slot-chosen", "vehicle/default", "vehicle/van", "vehicle/info-open", "vehicle/errors", "confirm/default", "confirm/expired", "done/default"]
+  },
+  "task_suitability": [
+    { "task": "book-a-slot", "completable": true, "evidence": "Defined sequence matches the captured states through to done/default ('Booked', 'Show this at the gate'). Completion by the walker is not predicted user success." }
+  ],
+  "not_assessable": [
+    "Whether a loading indication appears while Saturday's slots load (persona does not know they take a moment): needs a probe of the day click.",
+    "Whether the permit field hides once Car is chosen: Car-selected state not captured, not probed.",
+    "How long a chosen slot is held, and whether any countdown appears on later pages over time: needs a timed probe."
+  ],
+  "strengths": [
+    { "title": "Confirm page summarises the booking with change links", "evidence": "confirm/default 375-light: 'Your booking' lists Saturday 17 October, 09:20 to 09:40, Car, waste, with 'Change slot' and 'Change vehicle'; helps a first-time resident check before booking." },
+    { "title": "Field hints give the reason for each personal detail", "evidence": "confirm/default: 'For a reminder the evening before.', 'To confirm you live in the district.', registration example 'like AB12 CDE'." }
+  ],
+  "candidates": [
+    {
+      "id": "cw-1-01",
+      "title": "'Few left' slots shown in an unlabelled block above the Morning heading, out of time order",
+      "description": "Slots should be presented in one time-ordered list under their part-of-day headings, so a resident looking for a morning time finds all morning options together. On Saturday 17 October at 375 px, ten 'Few left' slots (08:20, 08:40, 09:00, 09:40, 10:20, 10:40, 13:40, 14:00, 15:00, 16:40) appear first in an unlabelled block that mixes morning and afternoon, and the 'Morning' heading follows with only 08:00, 09:20 and 10:00 free. The accessibility tree reads all slots in time order under 'Morning' and 'Afternoon', so the visual order differs from the reading order.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H2" },
+        { "kind": "wcag", "id": "1.3.2" }
+      ],
+      "impact": "A first-time resident wanting a Saturday morning slot may pick from the unlabelled block thinking it is the morning list, may take an afternoon 'Few left' slot by mistake, or may conclude only three morning slots remain.",
+      "locations": [
+        { "route": "/", "state": "date-chosen", "viewport": { "width": 375 }, "theme": "light", "selector": "role=group[name=\"Slots\"]", "snippet": "heading \"Morning\" [level=3]", "journey": "book-a-slot", "step": 3 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/root/date-chosen/375-light.png", "detail": "unlabelled Few-left block above 'Morning'" },
+        { "type": "aria", "ref": "evidence/aria/root/date-chosen/375-light.yml", "detail": "reading order: Morning heading, then 08:00…11:40 in time order" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Every day with 'Few left' slots; seen on Monday 12 and Saturday 17 captures.", "impact": "Step verdict would_with_effort; risk of booking the wrong part of the day.", "persistence": "Recurs on every booking; regular users may learn it." },
+      "evidence_level": "E0",
+      "recommendation": "Keep each slot in its time position under Morning/Afternoon and mark scarcity with the 'Few left' tag in place.",
+      "tags": ["slots", "ordering"]
+    },
+    {
+      "id": "cw-1-02",
+      "title": "Next is far below the chosen slot on phones, with no prompt to continue",
+      "description": "After a choice that unlocks the next step, the way to continue should be visible or signposted near the choice. At 375 px, choosing 09:20 (about 1,150 px down the page) shows only a colour change; Next sits about 1,740 px down, below four further rows of afternoon slots, with nothing near the chosen slot pointing to it.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "A first-time resident on a phone may stop after tapping the slot, unsure whether it is booked or what to do next, and has to scroll past the afternoon grid to find Next.",
+      "locations": [
+        { "route": "/", "state": "slot-chosen", "viewport": { "width": 375 }, "theme": "light", "selector": "role=button[name=\"Next\"]", "snippet": "Next", "journey": "book-a-slot", "step": 4 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/root/slot-chosen/375-light.png", "detail": "page 375x2230; 09:20 selected mid-page, Next near the bottom; positions read from the capture, not measured" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Every booking on a phone, the main device.", "impact": "Step verdict would_with_effort.", "persistence": "Learned after one use." },
+      "evidence_level": "E0",
+      "recommendation": "Show the chosen slot with a continue action close to it, or keep the continue action in view once a slot is chosen.",
+      "tags": ["mobile", "navigation"]
+    },
+    {
+      "id": "cw-1-03",
+      "title": "How long a chosen slot is held is never shown",
+      "description": "When a choice is held only for a limited time, the user should be told at the moment of choosing and reminded while they finish. Choosing 09:20 only tints the button; neither the slot page, the vehicle page nor the confirm page says the slot is held or for how long. The captured 'expired' state shows the hold can lapse before 'Book this slot' is pressed.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "wcag", "id": "2.2.1" }
+      ],
+      "impact": "A resident who stops to find their registration or answer the door may lose the slot without warning and have to start choosing again, possibly losing the Saturday morning time.",
+      "locations": [
+        { "route": "/", "state": "slot-chosen", "viewport": { "width": 375 }, "theme": "light", "selector": ".slot[data-slot=\"09:20\"]", "snippet": "09:20", "journey": "book-a-slot", "step": 3 },
+        { "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden", "state": "default", "viewport": { "width": 375 }, "theme": "light", "selector": "role=region[name=\"Your booking\"]", "snippet": "09:20 to 09:40", "journey": "book-a-slot", "step": 13 }
+      ],
+      "evidence": [
+        { "type": "aria", "ref": "evidence/aria/root/slot-chosen/375-light.yml", "detail": "only button '09:20' [pressed]; no hold text in the tree" },
+        { "type": "aria", "ref": "evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/default/375-light.yml", "detail": "no hold text" },
+        { "type": "aria", "ref": "evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/default/375-light.yml", "detail": "no hold text" },
+        { "type": "screenshot", "ref": "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png", "detail": "the hold can lapse" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Every booking; matters when a resident pauses mid-flow, common for the 'doing something else' context.", "impact": "Loss of the chosen slot; slot is the scarce resource.", "persistence": "Recurs; residents book only a few times a year so do not learn it." },
+      "evidence_level": "E0",
+      "recommendation": "State the hold period when a slot is chosen and show the remaining time on later steps.",
+      "tags": ["timing", "hold"]
+    },
+    {
+      "id": "cw-1-04",
+      "title": "Expired-slot error gives no reason and no route to a free slot, and blanks the slot",
+      "description": "An error should say what happened, why, and how to recover. When the hold has lapsed, pressing 'Book this slot' shows only 'There is a problem — This slot is no longer available.' The summary's Slot line becomes '—'; there is no explanation that the hold ran out, no nearby free times, and no statement that the entered details are kept. The only way on is the small 'Change slot' link in the summary.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H9" }
+      ],
+      "impact": "A resident who has typed all details may not understand why the slot vanished, may fear losing the details, and may give up rather than choose another time.",
+      "locations": [
+        { "route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired", "state": "expired", "viewport": { "width": 375 }, "theme": "light", "selector": "role=alert", "snippet": "This slot is no longer available.", "journey": "book-a-slot", "step": 13 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png" },
+        { "type": "aria", "ref": "evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.yml", "detail": "alert lists one non-link item; Slot definition '— ·' + link 'Change slot'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Only when the hold lapses or the slot is taken.", "impact": "Recovery is possible via 'Change slot' but not guided.", "persistence": "Each occurrence." },
+      "evidence_level": "E0",
+      "recommendation": "Explain that the hold ran out, offer the nearest free times on the same day, and say the details entered are kept.",
+      "tags": ["error-recovery"]
+    },
+    {
+      "id": "cw-1-05",
+      "title": "Permit number field shown before a vehicle is chosen, with no sign it is only for vans and trailers",
+      "description": "A field that applies only to some users should be shown only to them, or labelled with who needs it. On the vehicle page, 'Permit number — Starts DRC-, then five digits.' appears under the vehicle buttons before any vehicle is chosen. Nothing visible says it is for vans and cars with trailers only; that is explained only behind an icon-only (i) button ('About vans and trailers').",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q1", "primary": true },
+        { "kind": "heuristic", "id": "H2" }
+      ],
+      "impact": "A first-time resident with an ordinary car, who does not know only vans and trailers need a permit, may think they need a permit they do not have, stop to look for one, or abandon the booking.",
+      "locations": [
+        { "route": "/vehicle.html?date=2026-10-17&slot=09:20", "state": "default", "viewport": { "width": 375 }, "theme": "light", "selector": "role=textbox[name=\"Permit number\"]", "snippet": "Starts DRC-, then five digits.", "journey": "book-a-slot", "step": 5 }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/default/375-light.png" },
+        { "type": "aria", "ref": "evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/info-open/375-light.yml", "detail": "condition stated only after expanding 'About vans and trailers'" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Every visit to the vehicle page by car owners, the primary group.", "impact": "Step verdict would_with_effort; possible abandonment. Whether the field hides after choosing Car was not probed.", "persistence": "Learned after one use, but use is a few times a year." },
+      "evidence_level": "E0",
+      "recommendation": "Show the permit field only after Van or Car with trailer is chosen, or label it 'Vans and trailers only'.",
+      "tags": ["forms", "conditional-field"]
+    },
+    {
+      "id": "cw-1-06",
+      "title": "Booking confirmation omits the booked day and arrival time",
+      "description": "A confirmation should restate what was booked, especially the time the user must keep to. The 'Booked' page shows the reference DR-204117 and gate instructions, but not Saturday 17 October or 09:20 to 09:40. Searched: done/default ARIA snapshot (headings 'Booked', 'Your reference', 'At the centre'; paragraphs, link 'Book another slot') and the 375 px capture; neither contains the date, the time or the vehicle.",
+      "problem_type": "missing_element",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Residents do not know they must arrive inside a 20-minute slot; on the day they may have the reference but not the time, and could arrive outside it and be turned away.",
+      "locations": [
+        { "route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=booked", "state": "default", "viewport": { "width": 375 }, "theme": "light", "selector": "role=region[name=\"Your reference\"]", "snippet": "Show this at the gate", "journey": "book-a-slot", "step": 13 }
+      ],
+      "evidence": [
+        { "type": "absence", "ref": "evidence/aria/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/375-light.yml", "detail": "no date, time or vehicle text anywhere in main" },
+        { "type": "screenshot", "ref": "evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/375-light.png" }
+      ],
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-1", "model": "claude-opus-5-5", "method": "CW" } ],
+      "factor_notes": { "frequency": "Every completed booking.", "impact": "Arriving outside the slot means being turned away; the SMS reminder arrives only the evening before.", "persistence": "Every booking." },
+      "evidence_level": "E0",
+      "recommendation": "Show the day, the 20-minute window and the vehicle next to the reference, and say that arrival must be within the window.",
+      "tags": ["confirmation"]
+    }
+  ]
+}

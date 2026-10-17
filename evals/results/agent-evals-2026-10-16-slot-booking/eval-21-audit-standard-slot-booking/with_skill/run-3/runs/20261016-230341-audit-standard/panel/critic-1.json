@@ -1,0 +1,332 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261016-230341-audit-standard",
+  "agent": "critic-1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "38e329a9ddded420",
+  "inventory": [
+    {
+      "surface": "when (/)",
+      "states_seen": ["default", "date-chosen", "slot-chosen"],
+      "widths_seen": ["1280-light", "1280-dark", "768-light", "375-light"],
+      "first_three": ["H1 'Book a slot' (bold Avenir, near-black)", "row of four outlined green day chips with 'Today' pre-selected", "grid of white time boxes with peach 'Few left' tags in the top row"],
+      "primary_action": "green filled 'Next' under the grid; at 1280 it sits at y~1027, below the first viewport",
+      "type": "one sans (Avenir) in bold for headings/labels/chips, regular for body; headings differ from body only in size and weight",
+      "colour": "pale grey-green ground, white cards and slot boxes, one dark green for primary and chip text, peach/amber for 'Few left', grey-tinted fill for 'Full'; dark theme composed with lighter mint primary",
+      "shape_depth": "4 px radii, 1 px borders, no shadows",
+      "imagery": "none; a small stroke bin icon beside 'Dunmore District Council' in the masthead",
+      "copy": ["'Choose a day and the 20-minute slot you will arrive in; the gate checks the reference and the vehicle.'", "'20 slots free on Monday 12 October'", "'Bring the reference and something with your address on it. Vans and cars with trailers need a free permit.'"],
+      "signature": "none found; the slot grid is the category's standard device",
+      "conventions": "masthead with two nav links, step line '1. When 2. Vehicle and waste 3. Check and book', single column, footer with address and phone",
+      "suspected": ["'Few left' slots pulled into an unlabelled row above 'Morning', out of time order", "'Monday 12 October' repeated on two consecutive lines", "grid stops at ~816 px while the Opening days card runs to 1184 px", "selected slot (pale green fill) hard to tell from Full slots (pale grey fill)", "at 375 the step line strands '3. Check and book' and 'Another day' is indented out of line"]
+    },
+    {
+      "surface": "vehicle (/vehicle.html)",
+      "states_seen": ["default", "van", "info-open", "errors"],
+      "widths_seen": ["1280-light", "375-light"],
+      "first_three": ["H1 'Your vehicle and waste'", "vehicle chips Car / Car with trailer / Van plus an (i) icon button", "stack of seven white checkbox rows"],
+      "primary_action": "green 'Next' at the bottom",
+      "type": "same single family; chips here are regular weight in near-black, unlike the bold green day chips",
+      "colour": "same ground and cards; errors in red text and a red-bordered summary box",
+      "copy": ["'Starts DRC-, then five digits.'", "'Choose everything you have loaded. Rubble is limited to four bags and mattresses to two.'", "'A van, or a car with a trailer, needs a free permit from the council... it comes by email within two working days.'"],
+      "signature": "none",
+      "suspected": ["permit field always visible, before any vehicle is chosen", "right ~45% of the page empty at 1280", "vehicle chips a different component style from day chips"]
+    },
+    {
+      "surface": "confirm (/confirm.html)",
+      "states_seen": ["default", "expired", "errors (index only)"],
+      "widths_seen": ["1280-light"],
+      "first_three": ["H1 'Check and book'", "'Your booking' card with Day/Slot/Vehicle/Waste rows and Change links", "four labelled inputs"],
+      "primary_action": "green 'Book this slot'",
+      "copy": ["'For a reminder the evening before.'", "'To confirm you live in the district.'", "'Nothing is paid. Bring the reference and something with your address on it.'"],
+      "suspected": ["expired: slot row shows a bare '—' and 'Book this slot' stays the filled primary while the needed action 'Change slot' is a small underlined link"]
+    },
+    {
+      "surface": "done (/done.html)",
+      "states_seen": ["default", "cancelled"],
+      "widths_seen": ["1280-light", "375-light", "375-dark"],
+      "first_three": ["H1 'Booked'", "'DR-204117' in bold headline size inside a white card", "'At the centre' card"],
+      "primary_action": "none (outlined 'Book another slot')",
+      "copy": ["'Show this at the gate, on your phone or on paper, with something that has your address on it.'", "'Status: cancelled. This booking is not on the gate's list.'"],
+      "signature": "none; the reference is not treated as a pass",
+      "suspected": ["no day, slot, vehicle or waste shown on the page residents show at the gate", "cancelled state keeps the heading 'Booked' and the instruction 'Show this at the gate' and the reminder line", "empty ground band under the footer at 1280"]
+    },
+    {
+      "not_assessable_from_stills": ["focus rings and keyboard order", "120 ms button colour fade", "toast", "hold timer behaviour", "dark-mode switching"]
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": "Swapped products: a GP surgery appointment booker and a library meeting-room booker. Survive unchanged: masthead (icon + organisation name in bold body text), pale ground with white bordered cards, day chips, time-box grid with availability tags, step line, 'There is a problem' error summary, check-and-book card, reference-number page. Bound to this product: copy only ('the gate checks the reference and the vehicle', DRC- permit hint, waste-type checkboxes, 'join the queue for the gate ... which bay to use'). With the name and copy hidden, a reader would see 'a booking form', not 'the tip'."
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": "Predicted default for a UK council booking service: GOV.UK-like plain sans, white/pale grey ground, one green or blue action colour, bold sentence-case headings, outlined chips, red-bordered error summary titled 'There is a problem', reference number in a box. Predicted opposite: a friendly rounded consumer look with illustration. Every identity-carrying element (ground, single green, single sans, error summary wording, slot grid, reference card) matches the default."
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": "Similar brief: 'a leisure centre's lane-swim slot booking for residents, phone-first'. Predicted: day chips (Today/Tomorrow/weekday), a time grid with 'Few left'/'Full' tags split Morning/Afternoon, a check-and-book summary card with Change links, a confirmation page with a bold reference. Overlap is near total; nothing here was driven by vehicles, the gate, bays or waste streams."
+    }
+  },
+  "verdict": {
+    "value": "generic",
+    "evidence": [
+      "All three tests fail on the identity-carrying elements (first viewport, colour anchor, type voice, reference page).",
+      "No signature: nothing from the centre's world (gate, bays, vehicle types, waste streams, slot scarcity) is set as a device; DR-204117 is a bold heading in a white card.",
+      "Product-specific content exists only in the copy, which is good and concrete but sits on a portable frame (anchor: 'Product content sits on a frame that fails the swap test')."
+    ]
+  },
+  "verdict_at": "2026-10-16T23:20:00Z",
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "No focal point or identity beyond the council name in bold body text with a small stroke bin icon (all routes, masthead)",
+      "Headings differ from body only in size and weight; no typographic moment anywhere ('Book a slot', 'Booked')",
+      "Slot grid stops at about 816 px while the Opening days card runs to 1184 px at 1280: columns stop short for no reason (root default/slot-chosen 1280-light)",
+      "Half-empty right side at wide widths on vehicle and confirm: the form column ends at 707 px and the rest is empty ground",
+      "Unlabelled 'Few left' row floats above 'Morning' with no heading of its own",
+      "Done page reads as two plain cards; the reference has no treatment as something to show at a gate; empty ground band below the footer at 1280",
+      "Stranded step label '3. Check and book' wraps alone at 375",
+      "'Another day' link indented out of line with the chips above at 375"
+    ],
+    "evidence": [
+      "root/default/1280-light.png: heading, grey sentence, step line, four outlined chips and a grid of white boxes; nothing rewards a look beyond the green Next button.",
+      "done/default/1280-light.png: 'Booked' + white card with DR-204117 + second card; no visual sense of a pass.",
+      "vehicle/default/1280-light.png: plain form column of checkbox rows, right 45% of the page empty.",
+      "Dark theme (root default 1280-dark, done 375-dark) is composed rather than inverted and tidy, which keeps it from 'unappealing'."
+    ]
+  },
+  "unsealed_at": "2026-10-17T03:13:02.971Z",
+  "brand_fit": {
+    "attributes": [
+      {
+        "pair": "civic, not corporate",
+        "x_evidence": "Masthead names 'Dunmore District Council'; footer gives the centre address and a phone number with hours; copy is plain service language ('Nothing is paid', 'we will free the slot'); no marketing hero, no stock imagery, no brand slogan.",
+        "y_evidence": "None visible.",
+        "judgement": "reflected"
+      },
+      {
+        "pair": "plain, not bare",
+        "x_evidence": "One family, one green, borders not shadows, rules beside controls; nothing decorative without a job.",
+        "y_evidence": "Bare on every surface: no identity beyond the name, no focal device, slot grid stopping short at wide widths, empty right half on vehicle and confirm, done page as two plain cards with the reference not treated as a pass.",
+        "judgement": "partly"
+      },
+      {
+        "pair": "firm about the rules, not stern",
+        "x_evidence": "Limits stated in the option labels ('Rubble (up to four bags)', 'Mattresses (up to two)'), permit format 'Starts DRC-, then five digits', permit explanation in the info panel, 'This booking is not on the gate's list.'",
+        "y_evidence": "Error copy stays neutral ('Choose the vehicle you are bringing.'); red reserved for errors; no warning icons or capitals.",
+        "judgement": "reflected"
+      }
+    ],
+    "overall": "partly",
+    "met": "2 of 3",
+    "weakest": "plain, not bare"
+  },
+  "mode_fit": "All four surfaces are Operate/Read. Conventional structure (masthead, step line, single column form, error summary) is correct for the mode and is not counted against the design. No hero moments or motion are visible, as the mode requires. The issue is the identity floor, not missing expression: identity (name as a mark, the referent's material) belongs on Operate surfaces too, and it is absent.",
+  "rubric": {
+    "specificity": {"score": 1, "label": "judged", "anchor": "1: product content sits on a frame that fails the swap test", "evidence": "All three tests fail; only the copy is bound to the centre; no signature."},
+    "hierarchy": {"score": 2, "label": "judged", "anchor": "2: clear on the main wide view, but the primary competes or collapses in error states", "evidence": "H1 -> day chips -> slot grid -> Next reads in order on when, vehicle and confirm default. Lapses: on confirm/expired 'Book this slot' stays the only filled button while the needed 'Change slot' is a small link next to a bare '—'; on when, the unlabelled 'Few left' row is the first fixation in the grid and breaks Morning/Afternoon order; on done the reference is prominent but the day and time are missing."},
+    "coherence": {"score": 3, "label": "judged", "anchor": "3: one system throughout, with a minor named lapse", "evidence": "One family, one green, 4 px radii and borders on every route and in both themes; dark theme composed. Lapse: vehicle chips (regular weight, near-black, neutral border) do not match the bold green day chips, and neither matches DESIGN.md's 'quiet text button for quick days' / 'segmented vehicle control'."},
+    "restraint": {"score": 2, "label": "judged", "anchor": "cap: no focal point and no signature, so 2 at most", "evidence": "Nothing decorative without a job, one filled button per step, no tells detected; but there is no signature at all."},
+    "brand_fit": {"score": 2, "label": "judged", "anchor": "between 2 and 3; one pair drifts to its Y on every surface rather than one area", "evidence": "civic and firm reflected; 'plain, not bare' drifts to bare across all four surfaces."},
+    "execution": {"score": 2, "label": "judged", "anchor": "2: clean at the main widths, rough at the edges", "evidence": "Clean alignment and spacing at 1280 and 768. Rough: '3. Check and book' stranded and 'Another day' mis-indented at 375; mobile nav links indented off the logo's left edge at 375; expired slot shown as a bare '—'; 'Monday 12 October' repeated on two lines; selected slot barely distinct from Full slots; grid not filling the width as DESIGN.md says."},
+    "appeal": {"score": 2, "label": "judged", "anchor": "2: clean but plain; identity is only the name", "evidence": "See appeal.unfinished; matches the 'plain' verdict."}
+  },
+  "detector_comparison": {
+    "detector_hits": 0,
+    "agreements": [],
+    "detector_only": [],
+    "critic_only": [
+      "SLP-64 sterile default (jdg layer, not machine-detected): no focal point and no signature on any surface",
+      "Slot grid not filling the content width as DESIGN.md Layout requires",
+      "Unlabelled out-of-order 'Few left' group on the when screen",
+      "Selected slot vs Full slot fills too similar",
+      "Done page missing day/slot; cancelled state still headed 'Booked'",
+      "Expired confirm keeps 'Book this slot' as the primary",
+      "Vehicle chips styled unlike day chips (possible SLP-45 drift; detector did not flag)"
+    ],
+    "false_positives": [],
+    "post_unseal_notes": "Zero hits does not change the generic/plain verdicts; the catalogue itself notes that a tell-free page with nothing decided in its place is SLP-64. Possible SLP-28 (emerald sole accent, primary #27684a ~152°) was not flagged; DESIGN.md calls it 'the council's green', which would exempt it if that is the council's existing colour."
+  },
+  "findings": [
+    {
+      "id": "c1-01",
+      "title": "Done page omits the day, slot and vehicle of the booking residents are told to show at the gate",
+      "description": "The done page shows only 'Booked', the reference DR-204117 and generic centre instructions. The day (Saturday 17 October), the 09:20 to 09:40 slot, the vehicle (Car) and the waste are not shown, although they are in the URL and on the confirm page.",
+      "problem_type": "missing_element",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}],
+      "impact": "Residents booking the evening before may not be able to check from this screen when to arrive, and the gate attendant checking the vehicle against the booking sees only a number on the resident's phone.",
+      "harm": {"kind": "task", "statement": "A resident who opens this screen at the gate or the next morning cannot see which day and 20-minute slot they booked or which vehicle it is for, so they may arrive at the wrong time and be turned away."},
+      "locations": [{"route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 155, 1088, 200]}],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/1280-light.png", "detail": "Reference card holds only the reference and two instruction lines"},
+        {"type": "absence", "detail": "No day, time, vehicle or waste text anywhere on done default at 1280-light or 375-dark"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the gate needs to read from the phone and set it with the reference as one unit, at a size readable at arm's length."
+    },
+    {
+      "id": "c1-02",
+      "title": "Cancelled booking still headed 'Booked' and still says 'Show this at the gate'",
+      "description": "In the cancelled state the H1 is 'Booked', the red status line sits inside the reference card, and the same card still says 'Show this at the gate...' and 'A reminder will be sent to your mobile the evening before.'",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "heuristic", "id": "H1", "primary": true}, {"kind": "design", "id": "DES-hierarchy"}],
+      "impact": "The page's loudest elements say the opposite of its state.",
+      "harm": {"kind": "misread", "statement": "A resident whose booking was cancelled may read the large 'Booked' heading and the gate instruction and drive to Quarry Road, where the booking is not on the gate's list and they are turned away."},
+      "locations": [{"route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden&status=cancelled", "state": "cancelled", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 160, 343, 360]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/cancelled/375-light.png", "detail": "H1 'Booked'; red 'Status: cancelled...' followed by 'Show this at the gate'"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Make the state decide the heading and drop instructions that only apply to a live booking."
+    },
+    {
+      "id": "c1-03",
+      "title": "'Few left' slots lifted into an unlabelled row above 'Morning', out of time order",
+      "description": "On the when screen the slots with a 'Few left' tag (e.g. 08:20, 09:20, 12:00 ... 14:20 on Monday) are pulled into their own first row with no heading, and are missing from the Morning and Afternoon groups below, so Morning starts at 08:00 then jumps to 08:40.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "rule", "id": "LAY-03"}],
+      "impact": "The first row of the grid is the first fixation, but it mixes morning and afternoon times under no label, and the labelled groups have gaps.",
+      "harm": {"kind": "misread", "statement": "A resident looking for 'Saturday morning' who scans the 'Morning' group may read 08:20 or 09:20 as not offered and pick a later slot or another day."},
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 509, 720, 290]},
+        {"route": "/", "state": "slot-chosen", "viewport": {"width": 768}, "theme": "light", "bbox": [16, 509, 720, 290]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/1280-light.png", "detail": "Unlabelled row 08:20-14:20 above 'Morning'; Morning row reads 08:00, 08:40, 09:00, 09:40..."},
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/768-light.png", "detail": "Same pattern on Saturday 17"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether scarcity is a sort order or a tag; if a tag, keep every slot in its time group."
+    },
+    {
+      "id": "c1-04",
+      "title": "'Few left' on a slot contradicts 'a slot holds one vehicle'",
+      "description": "Individual 20-minute slots carry a 'Few left' tag. PRODUCT.md says a slot holds one vehicle, so a single slot is either free or full; 'Few left' implies several places inside one slot.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "rule", "id": "CPY-05", "primary": true}, {"kind": "design", "id": "DES-brandfit"}],
+      "impact": "The scarcity cue tells residents something untrue about how slots work.",
+      "harm": {"kind": "misread", "statement": "Residents may believe a 'Few left' slot can be shared and wait to book it, or think a 'Full' slot might still take them, when each slot holds one vehicle."},
+      "locations": [{"route": "/", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [14, 657, 305, 145]}],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/375-light.png", "detail": "'Few left' tags on seven individual slots"},
+        {"type": "quote", "ref": "context.md (PRODUCT.md)", "detail": "'a slot holds one vehicle, the centre takes about 120 vehicles a day'"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what scarcity residents need to see (per day, per part of the day) and state it at that level."
+    },
+    {
+      "id": "c1-05",
+      "title": "Selected slot is barely distinguishable from Full slots",
+      "description": "The chosen 09:20 slot is shown with a pale green fill (#e3f2eb), a slightly darker border and bold text; Full slots use a pale grey-green fill with a border of similar weight. In the light theme the two tinted fills read as the same family at a glance.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}, {"kind": "heuristic", "id": "H1"}],
+      "impact": "Selection is the one state the resident must confirm before Next; it is carried by a fill that also means 'unavailable' nearby.",
+      "harm": {"kind": "misread", "statement": "A resident with a loaded car scanning the grid on a phone may not be sure which slot is chosen, or may read the chosen slot as another Full one, and press Next unsure of the time."},
+      "locations": [{"route": "/", "state": "slot-chosen", "viewport": {"width": 1280}, "theme": "light", "bbox": [200, 718, 512, 80]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/1280-light.png", "detail": "09:20 selected beside 11:00/11:20/11:40 Full on the same row"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Give the chosen state a treatment that no other slot state shares, using the green that DESIGN.md reserves for chosen states."
+    },
+    {
+      "id": "c1-06",
+      "title": "Expired slot keeps 'Book this slot' as the primary while the slot row shows a bare '—'",
+      "description": "On confirm/expired the error summary says 'This slot is no longer available.', the Slot row reads '— · Change slot', and the filled 'Book this slot' button is unchanged. The only route forward is the small underlined 'Change slot' link; the error summary has no link.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "heuristic", "id": "H9"}],
+      "impact": "The page's primary action is the one that cannot succeed.",
+      "harm": {"kind": "task", "statement": "A resident whose held slot expired is invited to press 'Book this slot' again, and has to find a small 'Change slot' link to recover, slowing a booking made in a hurry."},
+      "locations": [{"route": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden&hold=expired", "state": "expired", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 204, 1088, 920]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/1280-light.png", "detail": "'— · Change slot'; 'Book this slot' filled at the bottom"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the one action on this state is and give it the step's filled button."
+    },
+    {
+      "id": "c1-07",
+      "title": "Slot grid does not fill the width as DESIGN.md specifies",
+      "description": "At 1280 and 768 the slot grid is fixed at seven ~96 px columns (ending near x=816 at 1280) while the content column, the Opening days card and the Your booking card run to 1184 px.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "rule", "id": "LAY-03", "primary": true}, {"kind": "design", "id": "DES-execution"}],
+      "impact": "The page's main device stops two-thirds of the way across while the box below it runs the full width, which reads as unfinished and pushes 'Next' further down than needed.",
+      "harm": {"kind": "requirement", "statement": "On desktop the slot grid ends short of the content width and wraps into extra rows, so Next sits below the first viewport at 1280.", "requirement": "DESIGN.md, Layout: 'slots in a grid that fills the width from 96 px columns, a content width of 1120 px.'"},
+      "locations": [{"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 509, 1088, 480]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/1280-light.png", "detail": "Grid right edge ~816 px; Opening days card right edge 1184 px"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide the grid's width rule once, from DESIGN.md, and let the other blocks share its edge."
+    },
+    {
+      "id": "c1-08",
+      "title": "Permit number field shown before any vehicle is chosen",
+      "description": "On vehicle/default the 'Permit number' label, hint and input sit directly under the vehicle chips with no vehicle selected; the info panel says only vans and cars with trailers need a permit.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "heuristic", "id": "H8", "primary": true}, {"kind": "design", "id": "DES-hierarchy"}],
+      "impact": "An always-visible required-looking field states a rule that does not apply to the primary group (car drivers).",
+      "harm": {"kind": "misread", "statement": "A resident booking for a car may think they need a permit number they do not have and abandon or delay the booking."},
+      "locations": [{"route": "/vehicle.html?date=2026-10-17&slot=09:20", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 316, 611, 100]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/default/1280-light.png", "detail": "Permit number field visible with no vehicle selected"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether the field belongs to the van and trailer choices only, and say so beside it. Behaviour after choosing Car could not be judged from stills."
+    },
+    {
+      "id": "c1-09",
+      "title": "No identity or signature: the service has nothing of the centre's own",
+      "description": "Every surface is a pale ground, white bordered boxes, one sans and one green, with the council name in bold body text and a small stroke bin icon. Nothing from the centre's world (the gate, the bays, the vehicle types, the waste streams, the slot as the scarce thing) is drawn or set as a device. The done page's reference, the one thing shown at the gate, is a bold heading in a card.",
+      "problem_type": "overall_structure",
+      "criteria": [{"kind": "design", "id": "DES-appeal", "primary": true}, {"kind": "rule", "id": "SLP-64"}, {"kind": "design", "id": "DES-specificity"}],
+      "impact": "Design note: the pages are clean but read as a default form; 'plain, not bare' drifts to bare.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light"},
+        {"route": "/done.html?ref=DR-204117&date=2026-10-17&slot=09:20&vehicle=car&waste=garden", "state": "default", "viewport": {"width": 1280}, "theme": "light"}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Choose one element from the centre's own mechanism to carry identity quietly on every step, within the Operate budget; the reference-as-gate-pass is the obvious candidate."
+    },
+    {
+      "id": "c1-10",
+      "title": "Vehicle chips and day chips are two different component styles",
+      "description": "Day chips on the when screen are bold green text with green borders; vehicle chips are regular-weight near-black text with neutral borders, and the selected Van grows in weight and shifts the row. DESIGN.md names a 'quiet text button for quick days' and a 'segmented vehicle control', and neither renders as described.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-coherence", "primary": true}, {"kind": "rule", "id": "SLP-45"}],
+      "impact": "Design note: two single-choice controls in the same three-step flow look like they come from different kits.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 324, 680, 44]},
+        {"route": "/vehicle.html?date=2026-10-17&slot=09:20", "state": "van", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 269, 347, 46]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/van/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one single-choice control family for the flow, as DESIGN.md's Components section describes."
+    },
+    {
+      "id": "c1-11",
+      "title": "Narrow-width roughness: stranded step label, mis-indented 'Another day', offset nav",
+      "description": "At 375 the step line wraps so '3. Check and book' sits alone on its own line; 'Another day' is indented ~11 px in from the chips' left edge; the nav links 'Book a slot / Opening days' start ~10 px right of the logo's edge.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}],
+      "impact": "Design note: small alignment lapses on the width most residents use.",
+      "locations": [{"route": "/", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [14, 60, 330, 530]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-3/workspace/.ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/375-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-1", "model": "claude-opus-5-5", "method": "critic"}],
+      "evidence_level": "E0"
+    }
+  ],
+  "strengths": [
+    "Copy states each rule where it applies, in the residents' and the gate's words ('Rubble (up to four bags)', 'Starts DRC-, then five digits', 'This booking is not on the gate's list').",
+    "Dark theme is composed (lighter mint primary, cards lighter than ground), matching the declared use scene.",
+    "One filled button per step and red kept for errors only, as DESIGN.md decides."
+  ],
+  "keep": "Keep the plain, rule-beside-the-control voice and the one-primary-per-step discipline; add identity without adding a second loud element per screen.",
+  "pairwise": null,
+  "notes": "No baseline/ folder in the packet, so pairwise not run (DES-05 not_applicable). Screens viewed: when (default, slot-chosen at 1280-light, 1280-dark, 768-light, 375-light), vehicle (default, van, info-open at 1280-light; errors at 375-light), confirm (default, expired at 1280-light), done (default 1280-light and 375-dark; cancelled 375-light). Forced-colours, more-contrast and CVD variants not reviewed individually. No builder material, source or other critics' files were read. Detector output was opened only after critic-1.verdict.json was written; it held 0 hits."
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "evaluator-output",
+  "role": "walkthrough-evaluator",
+  "agent": "cw-2",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261016-230353-audit-standard",
+  "packet_hash": "869dcb627b1c83d0",
+  "notes": "Cognitive walkthrough (full four-question variant) of journey change-slot at 375 px, light theme. Record: cw/change-slot.json. No source, builder notes, detector output or other evaluators' files were read.",
+  "coverage": {
+    "routes": ["/confirm.html", "/index.html"],
+    "states": ["confirm default", "when after Change slot", "when date-chosen", "when slot-chosen", "confirm after change"]
+  },
+  "task_suitability": [
+    { "task": "change-slot", "completable": true, "evidence": "probes/7: final URL /confirm.html, slot 14:20 to 14:40, day Saturday 17 October" }
+  ],
+  "strengths": [
+    { "title": "Changing the slot returns straight to Check and book with vehicle, waste and typed details kept, so the resident does not redo steps 2 and 3", "evidence": ["probes/7/aria.yml", "probes/9/final.png"] },
+    { "title": "'Change slot' sits on the slot row of the booking summary, in view at 375 px, in the residents' own word", "evidence": ["probes/1/final.png"] }
+  ],
+  "candidates": [
+    {
+      "title": "Change slot opens the When page reset to Today, with no sign that an existing booking is being changed",
+      "description": "When a resident changes one part of a booking, the page they land on should show the current choice and make clear the rest is kept. Activating 'Change slot' on Check and book opens /index.html headed 'Book a slot', with step '1. When' current, the 'Today' day button pressed, an empty Slots area, and no mention of the booking in progress: Saturday 17 and 09:20 are not preselected, and nothing says the vehicle, waste or entered details are kept (they are, as shown on return). The resident has to re-pick the day they already chose.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q4", "primary": true },
+        { "kind": "cw", "id": "CW-Q1" },
+        { "kind": "heuristic", "id": "H1" },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Residents changing a booking, who do not know whether changing keeps the rest, may think they have started a new booking and abandon or go back; they may also not notice the day was reset and read the empty slot area under 'Today' as no slots or still loading.",
+      "scope": { "persona": "resident changing a slot mid-booking on a phone", "task": "move the slot to 14:20 the same day", "journey": "change-slot", "route": "/index.html", "state": "after Change slot", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/index.html", "state": "after Change slot from confirm", "journey": "change-slot", "step": 1, "selector": "role=heading[name=\"Book a slot\"]", "snippet": "Book a slot", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+        { "route": "/index.html", "state": "after Change slot from confirm", "journey": "change-slot", "step": 2, "selector": "role=group[name=\"Day\"] >> role=button[name=\"Today\"]", "snippet": "Today", "viewport": { "width": 375, "height": 900 }, "theme": "light" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/2/", "detail": "click Change slot -> /index.html; heading 'Book a slot'; button 'Today' [pressed]; Saturday 17 not pressed; Slots group empty" },
+        { "type": "screenshot", "ref": "probes/2/final.png" },
+        { "type": "probe", "ref": "probes/9/", "detail": "registration and name typed before changing are still present after returning; nothing on the When page announced this" }
+      ],
+      "factor_notes": { "frequency": "Every slot change from the confirm page.", "impact": "Steps 1 and 2 of change-slot judged would_with_effort; the resident must re-choose the day and trust that the rest is kept.", "persistence": "Recurs on each change; a returning resident may learn it." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-2", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "When arriving from Change slot, preselect the booked day and slot, and say that the vehicle, waste and details are kept (for example a line naming the current booking and a button that returns to Check and book).",
+      "tags": ["change-booking", "state", "feedback"]
+    },
+    {
+      "title": "'Few left' slots are shown out of time order above the Morning heading, splitting the afternoon list",
+      "description": "A slot list should read in time order within its Morning and Afternoon groups, so a resident can scan for a time. On the When page for Saturday 17, the ten 'Few left' slots (08:20 ... 13:40, 14:00, 15:00, 16:40) are shown in a block above the 'Morning' heading, while the accessibility tree lists them in time order inside Morning and Afternoon. In the visual block 14:00 is directly followed by 15:00, and the 'Afternoon' group omits 13:40, 14:00, 15:00 and 16:40, so 14:20 appears only further down.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "cw", "id": "CW-Q2", "primary": true },
+        { "kind": "heuristic", "id": "H4" },
+        { "kind": "wcag", "id": "1.3.2" },
+        { "kind": "wcag", "id": "2.4.3" }
+      ],
+      "impact": "A resident scanning from the top for a particular time may conclude it is not available when it is listed lower down; keyboard and screen-reader users meet the slots in a different order from what is seen.",
+      "scope": { "persona": "resident changing a slot mid-booking on a phone", "task": "move the slot to 14:20 the same day", "journey": "change-slot", "route": "/index.html", "state": "date-chosen (Saturday 17)", "viewport": { "width": 375, "height": 900 }, "theme": "light" },
+      "locations": [
+        { "route": "/index.html", "state": "date-chosen", "journey": "change-slot", "step": 3, "selector": "role=group[name=\"Slots\"]", "snippet": "22 slots free on Saturday 17 October", "viewport": { "width": 375, "height": 900 }, "theme": "light" }
+      ],
+      "evidence": [
+        { "type": "screenshot", "ref": "probes/4/final.png", "detail": "Few-left block above 'Morning'; Afternoon group lacks 13:40, 14:00, 15:00, 16:40" },
+        { "type": "aria", "ref": "probes/4/aria.yml", "detail": "group 'Slots' lists Morning 08:00-11:40 and Afternoon 12:00-17:20 in time order, Few-left slots included" }
+      ],
+      "factor_notes": { "frequency": "Every day that has 'Few left' slots; seen on the main slot-picking step of both booking and changing.", "impact": "Step 3 of change-slot judged would_with_effort; the wanted time is present but not where time order puts it.", "persistence": "Order changes as availability changes, so it is not learnable." },
+      "found_by": [ { "role": "walkthrough-evaluator", "agent": "cw-2", "model": "claude-opus-5-5", "method": "CW", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Keep every slot in time order within Morning and Afternoon and show 'Few left' as a tag on the slot in place.",
+      "tags": ["slot-grid", "order"]
+    }
+  ]
+}

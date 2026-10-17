@@ -1,0 +1,174 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230353-audit-standard",
+  "agent": "verifier-p2",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "iteration": 1,
+  "packet_hash": "c41941f529f5d5f9",
+  "_probe_dir": "<tmp>",
+  "_notes": "No time_bound candidates. Source code was not read; app.js references in candidates were checked only behaviourally. Contrast was measured by sampling probe screenshots (scratch script contrast.cjs using pngjs), not with uie audit, to avoid writing into the shared run.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0020",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 1280 (Monday 12) and 375 (Saturday 17): every 'Few left' slot is drawn in an unlabelled block above the 'Morning' heading, while the ARIA snapshot lists them chronologically under Morning/Afternoon.",
+      "evidence": ["verifier-2/out1/screenshots/after-next.png", "verifier-2/out1/aria.yml", "verifier-2/out3/screenshots/slot-chosen.png", "verifier-2/out14/aria.yml"],
+      "note": "Visual order 08:20, 09:20, 12:00 ... above Morning; DOM order 08:00, 08:20 Few left, 08:40 ... under Morning."
+    },
+    {
+      "candidate_id": "F-0021",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "not_reproduced: with Today's slots loaded and no slot chosen, focusing Next and pressing Enter shows a red alert 'Choose a slot first.' above the grid (role alert in the ARIA snapshot). Next is silent only while slots are still loading, which is covered by F-0032.",
+      "evidence": ["verifier-2/out1/screenshots/after-next.png", "verifier-2/out1/aria.yml"],
+      "note": "Probe path: goto / -> wait .slot -> focus Next -> Enter -> wait 600 ms. The candidate's observation may come from activating Next during the load gap."
+    },
+    {
+      "candidate_id": "F-0024",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "not_reproduced: the Steps list does mark the current step programmatically. [aria-label=Steps] [aria-current=step] exists on all three pages and contains '1. When', '2. Vehicle and waste' and '3. Check and book' respectively; a negative control ('2. Vehicle and waste' on /) failed as expected. The Playwright ARIA snapshot format simply does not print aria-current.",
+      "evidence": ["verifier-2/out12/probe.json", "verifier-2/out13/probe.json"],
+      "note": "Evidence-reading error: absence of a state in aria.yml is not absence of aria-current."
+    },
+    {
+      "candidate_id": "F-0026",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced with forcedColors active at 1280: after choosing Saturday 17 and 09:20, the pressed 'Saturday 17' differs from the other day buttons only by a marginally heavier black border; the chosen slot 09:20 is bold with a coloured border and stays distinct.",
+      "evidence": ["verifier-2/out4/final.png"],
+      "note": "Robustness observation as the candidate itself states; no WCAG failure claimed."
+    },
+    {
+      "candidate_id": "F-0027",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced with the keyboard: Tab onto the 'Today' day button shows a thick focus ring; tabbing on into the slot grid shows no focus indicator on any slot. Likewise, after Enter on Next with no slot, focus moves into the grid with no visible ring.",
+      "evidence": ["verifier-2/out9/screenshots/tab4-today.png", "verifier-2/out9/screenshots/tab10.png", "verifier-2/out3/step-08.png", "verifier-2/out3/step-10.png", "verifier-2/out1/screenshots/after-next.png"],
+      "note": "Existence shown behaviourally; the injected-style mechanism was not inspected (no source access)."
+    },
+    {
+      "candidate_id": "F-0029",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 320 px: the three-column slot grid is wider than the viewport; the right-hand column (12:00, 13:40, 09:00, 10:20 ...) is cut off at the right edge.",
+      "evidence": ["verifier-2/out5/step-05.png", "verifier-2/out5/screenshots/w320-full.png"],
+      "note": "Overflow amount not measured; the clipping is plain in the screenshot."
+    },
+    {
+      "candidate_id": "F-0032",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: on first load and after choosing Saturday 17 the Slots area is blank for about 0.8-0.9 s with no loading text or indicator, and clicking Next during that gap produces no message.",
+      "evidence": ["verifier-2/out1/screenshots/immediate.png", "verifier-2/out2/step-04.png", "verifier-2/out2/step-07.png"],
+      "note": "Overlaps F-0061 (same loading gap); the lead may merge them."
+    },
+    {
+      "candidate_id": "F-0033",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: Today (Monday 12) offers 08:00 as free; booking it with all details filled shows, after the delay, the alert 'There is a problem' with 'The 08:00 slot today can no longer be booked. Choose another slot or day.'",
+      "evidence": ["verifier-2/out1/aria.yml", "verifier-2/out10/aria.yml", "verifier-2/out10/screenshots/after-book.png"],
+      "note": "The error item itself has no link, but a 'Change slot' link is present in the Your booking summary on the same page; impact should reflect that. Cut-off time (10:35) not verified independently."
+    },
+    {
+      "candidate_id": "F-0036",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Measured from rendered pixels: light theme text rgb(189,125,15) on rgb(251,239,218) = 3.02:1; dark theme rgb(171,124,43) on rgb(60,50,32) = 3.38:1. Both below 4.5:1 for small bold text.",
+      "evidence": ["verifier-2/out1/screenshots/after-next.png", "verifier-2/out15/screenshots/dark.png", "verifier-2/contrast.cjs"],
+      "corrected_description": "The 'Few left' tag text uses an amber that is not DESIGN.md's warning token and renders at about 3.0:1 in light theme (#bd7d0f on #fbefda) and 3.4:1 in dark theme (#ab7c2b on #3c3220), below the 4.5:1 needed for its small bold text.",
+      "note": "Corrected the light ratio from ~2.7:1 to the measured 3.0:1. F-0085 reports the same element and mechanism."
+    },
+    {
+      "candidate_id": "F-0039",
+      "verdict": "needs_human",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "The probe tool cannot generate IME composition events (isComposing), so an Enter that commits a candidate cannot be simulated; the claim rests on code reading only.",
+      "evidence": [],
+      "note": "Needs a manual test with a real IME (e.g. Japanese input) in the Your name field on /confirm.html."
+    },
+    {
+      "candidate_id": "F-0040",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: right after page load #slots-status has no aria-live attribute (expect passed in 9 ms); the attribute appears only about 0.9 s later when the first slot count is rendered.",
+      "evidence": ["verifier-2/out11/probe.json"],
+      "corrected_description": "#slots-status is not a live region at page load; aria-live is added only when the first slot count is written, so that first count is not reliably announced. Later updates happen in an existing live region.",
+      "note": "Not tested with a screen reader; the ordering of text write and attribute within the same task could not be observed."
+    },
+    {
+      "candidate_id": "F-0042",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 on Saturday 17: after tapping 09:20 (about y 1150) the only change is the slot's fill; Next sits about y 1740, below one more Morning row and five Afternoon rows, more than a viewport height (900) away, with nothing near the slot pointing to it.",
+      "evidence": ["verifier-2/out3/screenshots/slot-chosen.png"],
+      "corrected_description": "At 375 px, choosing 09:20 (about 1,150 px down the page) shows only a fill change; Next sits about 1,740 px down, below one more Morning row and five Afternoon rows, with nothing near the chosen slot pointing to it.",
+      "note": "Corrected 'four further rows of afternoon slots' to the observed rows."
+    },
+    {
+      "candidate_id": "F-0047",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: 'Change slot' on Check and book (Saturday 17, 09:20) opens / headed 'Book a slot', step 1 bold, 'Today' pressed, Monday 12 slots listed; Saturday 17 and 09:20 are not preselected and nothing mentions the booking in progress.",
+      "evidence": ["verifier-2/out14/screenshots/after-change-300.png", "verifier-2/out14/screenshots/after-change-1800.png", "verifier-2/out14/aria.yml"],
+      "corrected_description": "Activating 'Change slot' on Check and book opens the When page headed 'Book a slot' with 'Today' pressed and Today's slots shown (after the usual load gap); the previously chosen day and slot are not preselected and nothing says the vehicle, waste or entered details are kept.",
+      "note": "The Slots area is empty only during the ~0.9 s load, not persistently. Retention of entered details was not re-checked."
+    },
+    {
+      "candidate_id": "F-0050",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "harness_filter",
+      "reason": "harness_artifact: with the pointer moved away after choosing Saturday 17, only 'Saturday 17' carries the selected tint; 'Tomorrow' is plain. The tint in captures comes from a hover state where the pointer rests (the same effect tints 08:20 in verifier-2/out2/step-10.png after the grid shifts under the pointer).",
+      "evidence": ["verifier-2/out3/step-06.png", "verifier-2/out3/screenshots/slot-chosen.png", "verifier-2/out2/step-10.png"],
+      "note": "In the cited evidence screenshot date-chosen/375-light.png Tomorrow also appears plain."
+    },
+    {
+      "candidate_id": "F-0061",
+      "verdict": "split_required",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Both parts reproduce: after tapping Saturday 17 the Slots area is blank with no indicator, and during that gap the caption still reads 'Monday 12 October'. These are two problems; the first duplicates F-0032.",
+      "evidence": ["verifier-2/out2/step-04.png", "verifier-2/out2/step-07.png", "verifier-2/out1/screenshots/immediate.png"],
+      "split_into": [
+        {"title": "No loading indication while slots load", "description": "On first load and after each day change the Slots area is blank for about 0.9 s with no loading text or indicator (same as F-0032)."},
+        {"title": "Previous day's caption stays shown while the new day loads", "description": "After tapping Saturday 17 the caption under Slots still reads 'Monday 12 October' until the new slots render, so the blank area is labelled with the wrong day."}
+      ],
+      "note": "Measured gap about 0.8-0.9 s, not 1.3 s. The lingering 'Choose a slot first.' error was not re-checked."
+    },
+    {
+      "candidate_id": "F-0078",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Absence confirmed by own search: the done page offers only the 'Book another slot' link and says 'If you cannot come, call 01632 960771 on a weekday'; footer gives weekdays 09:00 to 17:00. No manage, change or cancel control or reference lookup on /, /confirm.html or /done.html (header nav is only Book a slot and Opening days).",
+      "evidence": ["verifier-2/out8/aria.yml", "verifier-2/out7/aria.yml", "verifier-2/out1/aria.yml"],
+      "note": "'Book another slot' is a link, not a button. Whether residents changing a booking are a declared group was not checked (PRODUCT.md not in packet)."
+    },
+    {
+      "candidate_id": "F-0085",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Measured: 'Few left' text rgb(189,125,15) (#bd7d0f, lighter than #8a5a00) on rgb(251,239,218) = 3.02:1 in light theme, below the 4.5:1 AA floor, so the named harm (tag hard to read for older residents if below AA) holds.",
+      "evidence": ["verifier-2/out1/screenshots/after-next.png", "verifier-2/contrast.cjs"],
+      "note": "Same element and mechanism as F-0036; merge. The PRODUCT.md quote could not be checked against the file (not in packet)."
+    }
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "answers": [
+    {
+      "text": "Precision after verification is at least 0.8",
+      "passed": true,
+      "evidence": "Of the 32 judged (non-tool) findings, 24 map to seeded defects, 5 are real but not seeded (F-0038, F-0054, F-0057, F-0059, F-0078) and 3 are not problems (F-0026, F-0042, F-0058): precision = 29/32 = 0.91, strict precision = 24/32 = 0.75. Recall by meaning is 13/14 over all findings (every defect except D13, the slot length and end time shown only in a tooltip); judged findings alone cover 12/14, with D02 found only by tool finding F-0019."
+    },
+    {
+      "text": "The reply puts the fixes in priority order and says what needs a person",
+      "passed": true,
+      "evidence": "The reply's numbered 'What to fix first' list opens with the most severe problem, the second tap that cancels a booking, and then works down through the slot-page and done-page failures. Its 'Still needs people' section names what the agent could not check: a VoiceOver and TalkBack pass, a 200% zoom check on a real phone, a predictive/IME keyboard test and a short test with residents."
+    }
+  ],
+  "mapping": [
+    {
+      "item": "F-0009",
+      "title": "Horizontal page overflow at 320 px",
+      "maps_to": "slot-booking-D04",
+      "reason": "The slot area runs 15 px past a 320 px viewport and the page scrolls sideways. This is the grid overflow at 360 px and below."
+    },
+    {
+      "item": "F-0016",
+      "title": "No visible focus indicator on slot '08:00'",
+      "maps_to": "slot-booking-D05",
+      "reason": "Focusing a slot button changes no pixels, so it has no visible focus ring. This is the seeded focus defect on the slot buttons."
+    },
+    {
+      "item": "F-0020",
+      "title": "'Few left' slots drawn above the Morning/Afternoon headings, out of time order",
+      "maps_to": "slot-booking-D10",
+      "reason": "'Few left' slots are moved visually to the front, out of time order, while the DOM order stays chronological. The headings no longer sit over their slots."
+    },
+    {
+      "item": "F-0022",
+      "title": "Cancelled booking page still headed 'Booked' with gate instructions",
+      "maps_to": "slot-booking-D09",
+      "reason": "D09's harm is the cancelled booking whose done page is still titled 'Booked' and says 'Show this at the gate'. This finding describes exactly that part of it."
+    },
+    {
+      "item": "F-0023",
+      "title": "Confirmation shows only the reference, not day, slot or vehicle",
+      "maps_to": "slot-booking-D14",
+      "reason": "The done page leaves out the day, the slot and the vehicle. This is D14."
+    },
+    {
+      "item": "F-0025",
+      "title": "'This slot is no longer available' gives no next step and blanks the slot",
+      "maps_to": "slot-booking-D08",
+      "reason": "After the hold lapses, Book shows 'This slot is no longer available.' and the slot line turns to a dash without saying why. This is the dropped-hold harm in D08."
+    },
+    {
+      "item": "F-0026",
+      "title": "Selected day in forced colours shown only by a slightly heavier border",
+      "maps_to": "not-a-problem",
+      "reason": "The finding itself says no criterion fails: a visible cue remains and the state is exposed as aria-pressed. The chosen day is also written in the caption and status text. This is a minor robustness observation, not a demonstrated problem for these mostly-phone users."
+    },
+    {
+      "item": "F-0030",
+      "title": "Second tap on 'Book this slot' turns the booking into a cancelled one",
+      "maps_to": "slot-booking-D09",
+      "reason": "A second press during submission cancels the booking. This is D09."
+    },
+    {
+      "item": "F-0031",
+      "title": "'Book this slot' shows no visible pending state during submission",
+      "maps_to": "slot-booking-D09",
+      "reason": "Book gives no visible response, with no busy state, label change or disabled state for 1.5 s. The instructions assign this to D09."
+    },
+    {
+      "item": "F-0032",
+      "title": "Slots load for 900 ms with no indicator; Next silently does nothing",
+      "maps_to": "slot-booking-D01",
+      "reason": "During the slot load the grid and status line are empty and Next does nothing. This is the wait itself (D01)."
+    },
+    {
+      "item": "F-0033",
+      "title": "Today's slots before the cut-off offered as free but rejected at booking",
+      "maps_to": "slot-booking-D06",
+      "reason": "Today's past or imminent slots can be chosen, then are refused at the final Book step with no link back to the slots. This is D06."
+    },
+    {
+      "item": "F-0034",
+      "title": "Permit format checked only at the final step, error not linked",
+      "maps_to": "slot-booking-D07",
+      "reason": "The vehicle step's Next accepts any permit, and the rule is only enforced on the confirm page, which has no permit field. This is the permit-enforcement part of D07."
+    },
+    {
+      "item": "F-0036",
+      "title": "'Few left' tag low contrast in both themes",
+      "maps_to": "slot-booking-D03",
+      "reason": "The 'Few left' amber text measures about 3.0:1 in light and 3.4:1 in dark, against a 4.5:1 requirement. This is D03."
+    },
+    {
+      "item": "F-0104",
+      "title": "Slot hold time limit is never stated",
+      "maps_to": "slot-booking-D08",
+      "reason": "The slot lapses after about 5 minutes and no page mentions the hold. This is D08."
+    },
+    {
+      "item": "F-0038",
+      "title": "Done page shows placeholder reference 'DR-000000' when no booking exists",
+      "maps_to": "real-unseeded",
+      "reason": "A resident who reopens the done page in a new tab or after storage is cleared is shown a fake reference under 'Booked' and told to show it at the gate. They could believe they hold a booking and be turned away."
+    },
+    {
+      "item": "F-0040",
+      "title": "Slot status line gets aria-live only after its first update",
+      "maps_to": "slot-booking-D11",
+      "reason": "aria-live is added only once the first count has been written, so the day's slot count is not announced. This is D11."
+    },
+    {
+      "item": "F-0042",
+      "title": "Next is far below the chosen slot on phones, with no prompt to continue",
+      "maps_to": "not-a-problem",
+      "reason": "Settled by adjudication. The finding says the choice 'shows only a fill change', which is a visible selected state, and that Next 'sits about 1,740 px down', at the end of the slot list: the usual place for a single-question page's continue button, about 590 px (roughly one phone screen) below the chosen slot. It reports no one missing Next or getting stuck. 'Nothing near the chosen slot pointing to it' asks for a nearby or sticky prompt, which is a design suggestion, so the harm is speculative. No seeded defect covers it."
+    },
+    {
+      "item": "F-0043",
+      "title": "How long a chosen slot is held is never shown",
+      "maps_to": "slot-booking-D08",
+      "reason": "No step shows the hold or how long it lasts, and the hold can lapse before Book. This is D08."
+    },
+    {
+      "item": "F-0045",
+      "title": "Permit field shown before a vehicle is chosen, no sign it is only for vans/trailers",
+      "maps_to": "slot-booking-D07",
+      "reason": "The finding says the van/trailer permit rule is explained only behind the icon-only (i) button, and the field does not say who needs it. That is the permit-rule communication in D07."
+    },
+    {
+      "item": "F-0047",
+      "title": "Change slot opens the When page reset to Today",
+      "maps_to": "slot-booking-D12",
+      "reason": "'Change slot' forgets the chosen day and slot and opens on Today, with nothing saying what is kept. This is D12."
+    },
+    {
+      "item": "F-0054",
+      "title": "No online way to change or cancel a booking",
+      "maps_to": "real-unseeded",
+      "reason": "Residents book in the evening and the centre opens at weekends, but the only way to move or free a slot is a weekday phone line. People whose plans change cannot act when they need to, and unused slots stay blocked."
+    },
+    {
+      "item": "F-0056",
+      "title": "Permit rules hidden behind an icon-only (i) button",
+      "maps_to": "slot-booking-D07",
+      "reason": "D07 says the van/trailer permit rule appears only behind an icon-only info button. This finding describes the same thing."
+    },
+    {
+      "item": "F-0057",
+      "title": "Permit help says 'Apply on the council site' with no link",
+      "maps_to": "real-unseeded",
+      "reason": "A van or trailer owner who learns they need a permit has no link or address to apply. That blocks them from completing a valid booking. The missing link is separate from where the rule is shown or enforced."
+    },
+    {
+      "item": "F-0058",
+      "title": "Vehicle step does not restate the chosen day and slot",
+      "maps_to": "not-a-problem",
+      "reason": "The confirm step, one page later, shows the day and slot before anything is booked. Leaving them off the intermediate vehicle step causes little real harm."
+    },
+    {
+      "item": "F-0059",
+      "title": "Waste row in the booking summary has no change link",
+      "maps_to": "real-unseeded",
+      "reason": "On the check page, a resident who picked the wrong waste type sees no way to change it and has to guess that 'Change vehicle' covers waste. A wrong waste type could get them turned away at the gate."
+    },
+    {
+      "item": "F-0060",
+      "title": "Change slot and Back to the slots reopen on Today, not the chosen day",
+      "maps_to": "slot-booking-D12",
+      "reason": "Changing the slot forgets the chosen day, which makes booking the wrong day easy. This is D12."
+    },
+    {
+      "item": "F-0103",
+      "title": "Previous day's caption stays shown while the new day loads",
+      "maps_to": "slot-booking-D01",
+      "reason": "While the new day's slots load, nothing says they are coming and the empty area still carries the old day's label. This is part of the wait in D01."
+    },
+    {
+      "item": "F-0064",
+      "title": "Missing or malformed van permit flagged only on the last step",
+      "maps_to": "slot-booking-D07",
+      "reason": "Next accepts an empty or malformed permit, and 'A van needs a permit number' appears only on the confirm page, which has no permit field. This is D07."
+    },
+    {
+      "item": "F-0069",
+      "title": "Permit number field shown when Car is selected",
+      "maps_to": "slot-booking-D07",
+      "reason": "This is about how the permit field is shown, and whom it is for, on the vehicle step. The instructions put the permit rule and the permit field's behaviour under D07."
+    },
+    {
+      "item": "F-0078",
+      "title": "Booking can only be changed or cancelled by phoning on weekdays",
+      "maps_to": "real-unseeded",
+      "reason": "This is the same problem as F-0054: residents who book in the evening for a weekend visit have no self-service way to change or free their slot, only a weekday phone line."
+    },
+    {
+      "item": "F-0079",
+      "title": "No indication that a chosen slot is held only for a limited time",
+      "maps_to": "slot-booking-D08",
+      "reason": "No step shows the hold or its length. This is D08."
+    },
+    {
+      "item": "F-0085",
+      "title": "'Few left' chip text lighter than the declared warning colour",
+      "maps_to": "slot-booking-D03",
+      "reason": "The amber 'Few left' text renders lighter than the warning token, cited under 1.4.3. This is the contrast defect D03."
+    },
+    {
+      "item": "F-0001",
+      "title": "axe color-contrast failure (#bd7d0f on #fbefda, 3.02:1)",
+      "maps_to": "slot-booking-D03",
+      "reason": "Tool finding: the 'Few left' colours fail contrast at 3.02:1. This is D03."
+    },
+    {
+      "item": "F-0015",
+      "title": "Status message '20 slots free on Monday 12 October' not announced",
+      "maps_to": "slot-booking-D11",
+      "reason": "Tool finding: the slot-count live region is created together with its text, so screen readers do not announce the count. This is D11."
+    },
+    {
+      "item": "F-0017",
+      "title": "Focus order jumps back: '08:00' to '08:20 Few left'",
+      "maps_to": "slot-booking-D10",
+      "reason": "Tool finding: focus jumps around the grid because 'Few left' slots are reordered visually. This is D10."
+    },
+    {
+      "item": "F-0018",
+      "title": "No progress shown during 1.2 s 'Car with trailer' operation",
+      "maps_to": "slot-booking-D07",
+      "reason": "Tool finding: choosing a vehicle that needs a permit takes 1.2 s with no feedback. This is the delayed permit field reveal, which the instructions assign to D07."
+    },
+    {
+      "item": "F-0019",
+      "title": "Layout shift 0.169 above the 0.1 budget, #opening moved",
+      "maps_to": "slot-booking-D02",
+      "reason": "Tool finding: the layout shifts when the slots arrive and #opening is the element that moves most. This is D02."
+    }
+  ],
+  "settled": [
+    {
+      "item": "F-0042",
+      "a": "real-unseeded",
+      "b": "not-a-problem",
+      "final": "not-a-problem",
+      "reason": "The finding says choosing 09:20 'shows only a fill change', which is a visible selected state, and that Next 'sits about 1,740 px down' at the end of the slot list, the usual place for a single-question page's continue button, about 590 px (roughly one phone screen) below the chosen slot. It reports nothing observed: no one missed Next or got stuck. Its complaint, 'nothing near the chosen slot pointing to it', asks for a nearby or sticky prompt, which is a design suggestion. Grader A's 'may not see how to continue' is a prediction the finding does not support, so under the mapping rule this is speculative without basis in what the review shows. No seeded defect covers it. This matches how both graders judged F-0058 and F-0026."
+    }
+  ]
+}

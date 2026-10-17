@@ -1,0 +1,75 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230353-audit-standard",
+  "agent": "verifier-p1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "e8440a331017ffbd",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0025",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced through the real flow: Saturday 17, 14:20, Car + Garden waste, details filled, about 5 min 30 s wait, then Book this slot. The alert 'There is a problem' showed the plain list item 'This slot is no longer available.' with no link, and the Slot row became '— · Change slot'. Entered details were kept. Harm: the page gives no next step and the filled 'Book this slot' button stays the main action. Pressing it again did not book; it only re-rendered the alert. The other error summaries (confirm/errors) link each item to its field.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "corrected_description": "When the hold has expired, the first press of 'Book this slot' shows an alert whose only item is the plain text 'This slot is no longer available.' It has no link and no next step, unlike the other error summaries, which link to the field to fix. The Slot row changes to '—' with 'Change slot' beside it, but the alert does not point there, and 'Book this slot' stays the main action. Pressing it again does not book; the alert changes to a single link, 'Choose a slot', and the explanation of what went wrong disappears. Entered details are kept.",
+      "note": "Corrected: the message is not permanently without a link. A second submit replaces it with a 'Choose a slot' link (to index.html) and drops the explanation, so the alert shows either the reason or the route, never both. That inconsistency is part of the same problem. The harm wording ('drawn to press Book again') was borne out because that is the only way the link appears. Probe-wait (a direct-URL goto that skipped the vehicle step) is not valid evidence: in that path 'Book this slot' did nothing even without waiting (probe-control)."
+    },
+    {
+      "candidate_id": "F-0037",
+      "verdict": "split_required",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Bundles two problems: (a) the hold time limit is never stated before it applies, and (b) the expiry error gives no way forward. Both reproduce behaviourally. The hold lapsed within about 5 min 30 s of choosing 14:20, no page warned beforehand (step-21.png taken just before Book shows no notice), and the first expiry alert had no link. Each part duplicates another candidate: (a) is F-0043/F-0079 and (b) is F-0025.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>"
+      ],
+      "split_into": [
+        {
+          "title": "Slot hold time limit is never stated",
+          "description": "A chosen slot lapses within about five minutes, but no step mentions a hold or its length before it applies (same problem as F-0043/F-0079)."
+        },
+        {
+          "title": "Hold-expiry error gives no way forward on first submit",
+          "description": "After expiry, the first submit shows only 'This slot is no longer available.' with no link or next step (same problem as F-0025)."
+        }
+      ],
+      "note": "Its only evidence is source code, which I did not read. I verified it behaviourally, so I cannot confirm the exact 5-minute figure, only expiry within about 5.5 min. The description's 'with no link to choose another slot' holds on the first submit only; a second submit shows a 'Choose a slot' link. Its location selectors (#error-summary, #book) carry no captured state. Suggest merging the parts into F-0043 and F-0025 instead of creating new candidates."
+    },
+    {
+      "candidate_id": "F-0043",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Choosing a slot only marks the button pressed. My own probes of slot-chosen (probe-control2 step-03), vehicle (probe-control step-06) and confirm before and after the wait (probe-wait2 step-14, step-21) show no text about a hold, its length or a timer. A case-insensitive search of every captured ARIA tree for hold/held/reserv/expire/minute found only '20-minute slot' (slot length, not the hold). The hold does lapse: expiry reproduced after about 5 min 30 s.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Absence search recorded above. 'possibly losing the Saturday morning time' in the impact is speculative; the problem itself is confirmed."
+    },
+    {
+      "candidate_id": "F-0079",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "This absence claim states where it looked (root/slot-chosen, vehicle/default, vehicle/van, confirm/default and probes). My own search agrees: no hold, timer or 'held until' text on the slot, vehicle or confirm steps, in live probes or captured ARIA. A hold that lapses was reproduced (about 5 min 30 s).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>"
+      ],
+      "note": "Same problem as F-0043 (same element and mechanism); the lead should merge them. It has no locations."
+    }
+  ]
+}

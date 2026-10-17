@@ -1,0 +1,176 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230341-audit-standard",
+  "agent": "verifier-p3",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "5f22eca47bed7ea0",
+  "iteration": 1,
+  "_notes": "Iteration 1, so no ceiling flags. Dismissal ledger empty. Not independently read: source code. Several candidates cite app.js/vehicle.html snippets; I judged them only on probe behaviour. Duplicate pairs for the lead to merge: F-0025/F-0048, F-0050/F-0089, F-0074/F-0088; F-0055 is a sub-part of F-0035. Probes are under .ui-evaluator/runs/20261016-230341-audit-standard/probes/.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0025",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 px. 'Permit number' with the hint 'Starts DRC-, then five digits.' is shown with no vehicle chosen, after Car and after Van, and looks the same in each case. No 'optional' or 'vans and trailers only' wording. The condition appears only in the (i) panel. Harm check: nothing else on this page says cars are exempt (the root 'Opening days' box says so, but on another page), so a car owner reading this step could fairly think a permit is needed. Car + Garden waste + empty permit + Next still reaches confirm.html (probe 81), so the effect is hesitation, not a block.",
+      "evidence": ["probes/68/screenshots/default.png", "probes/68/screenshots/car.png", "probes/68/screenshots/van-immediate.png", "probes/68/aria.yml", "probes/76/aria.yml", "probes/81/"],
+      "note": "Duplicate of F-0048 (same element and mechanism)."
+    },
+    {
+      "candidate_id": "F-0034",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "Not reproduced. The permit field is already visible when the page loads and stays visible after Car. In the screenshot taken 16 ms after pressing Van it is shown at once, so no 1.2 s reveal can be seen. The candidate rests on a code snippet; the page does not behave as it describes.",
+      "evidence": ["probes/68/screenshots/default.png", "probes/68/screenshots/car.png", "probes/68/screenshots/van-immediate.png", "probes/68/screenshots/van-later.png"],
+      "note": "If the delayed reveal is meant to happen (field hidden for cars), the real problem is F-0025: the field is never hidden."
+    },
+    {
+      "candidate_id": "F-0035",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. Van + Wood + empty permit + Next goes to confirm.html showing 'Van, no permit given' with no error. With permit '12345' it shows 'Van, permit 12345' with no error. After the four details are filled and 'Book this slot' is pressed, the alert reads 'A van needs a permit number (DRC- and five digits).' as plain text, not a link. Confirm has no permit field; the only way back is 'Change vehicle'.",
+      "evidence": ["probes/71/screenshots/confirm.png", "probes/71/aria.yml", "probes/72/screenshots/confirm.png", "probes/72/aria.yml"],
+      "note": "Overlaps F-0055, which is the 'no link back to the field' part of this candidate. The lead may merge them or keep F-0055 as a separate recovery problem."
+    },
+    {
+      "candidate_id": "F-0041",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced with DOM selectors in the errors state. div#waste has aria-describedby='waste-hint waste-error' and no role. No input or fieldset references waste-hint. No element references #vehicle-error through aria-describedby or aria-errormessage, although it is visible. #vehicle has aria-labelledby='vehicle-heading' only.",
+      "evidence": ["probes/82/probe.json", "probes/74/aria.yml"],
+      "note": "Mitigation: the error summary alert lists both errors and is announced, and the checkboxes are marked invalid. The description is accurate."
+    },
+    {
+      "candidate_id": "F-0042",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced in part. Following the '#vehicle' or '#waste' summary link does not move focus to a control. The claim that focus stays on the link is wrong: after the click the link is not focused (probe 74). After Enter on the '#waste' link, focus goes to the document and one Tab lands on 'Garden waste' (probe 80).",
+      "evidence": ["probes/74/probe.json", "probes/74/screenshots/after-vehicle-link.png", "probes/80/probe.json", "probes/80/screenshots/after-tab.png"],
+      "corrected_description": "The vehicle step's error-summary links '#vehicle' and '#waste' point at non-focusable divs. Following one scrolls to the group, but focus goes to the document, not to a control. Keyboard users reach the first control with one Tab. Screen-reader users are not placed on the vehicle buttons or the first checkbox.",
+      "note": "Corrected the mechanism: focus does not stay on the link. Keyboard cost is a single Tab, so the impact is smaller than stated."
+    },
+    {
+      "candidate_id": "F-0048",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. After Car is pressed, the 'Permit number' field and its DRC hint are still shown with no optional or van-only wording. Car + Garden waste + empty permit + Next reaches confirm.html.",
+      "evidence": ["probes/68/screenshots/car.png", "probes/81/"],
+      "corrected_description": "On /vehicle.html the 'Permit number' field ('Starts DRC-, then five digits') is shown before any vehicle is chosen and stays after 'Car' is pressed, with no 'optional' or 'vans and trailers only' wording. On this step the only statement of who needs a permit is inside the (i) panel ('A van, or a car with a trailer, needs a free permit'). The first page's 'Opening days' box says the same. Next accepts the form with the field empty.",
+      "note": "Corrected 'the only statement ... is on the first page': the (i) panel on this step also says it (probe 76). Duplicate of F-0025."
+    },
+    {
+      "candidate_id": "F-0061",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The opened panel reads '... Apply on the council site; it comes by email within two working days.' and contains no link. The header 'Dunmore District Council' link points to index.html. Own absence search: the captured ARIA for root, vehicle, confirm and done mentions permits only in the root 'Opening days' paragraph, the panel and the field hint, and none of these has a link.",
+      "evidence": ["probes/76/aria.yml", "probes/76/screenshots/info-open.png", "evidence/aria/*/1280-light.yml (grep 'permit')"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0062",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The control next to the vehicle buttons shows only a circled 'i' glyph and has no visible text. Its accessible name is 'About vans and trailers'. It opens the permit rules.",
+      "evidence": ["probes/68/screenshots/default.png", "probes/68/aria.yml", "probes/76/aria.yml"],
+      "note": "WCAG 2.5.3 (Label in Name) hardly applies, because the visible label is an icon, not text. H6 and H10 fit."
+    },
+    {
+      "candidate_id": "F-0069",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The vehicle step opened with date=2026-10-17&slot=09:20 has no day or time anywhere in main (ARIA: Back link, h1, steps, Vehicle region, waste group, Next). Confirm shows 'Saturday 17 October' and '09:20 to 09:40'.",
+      "evidence": ["probes/68/aria.yml", "probes/74/aria.yml", "probes/71/aria.yml"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0022",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced through a real booking (double press, probe 73). The done page has h1 'Booked', then 'Status: cancelled. This booking is not on the gate's list.', then 'Show this at the gate...' and 'A reminder will be sent...'. Harm check: the heading and the gate instruction both say the booking is live, and only one line says otherwise. The misreading the candidate names is a fair one.",
+      "evidence": ["probes/73/aria.yml", "probes/73/screenshots/result.png"],
+      "note": "F-0036 is a reachable path to this page."
+    },
+    {
+      "candidate_id": "F-0050",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced after a real booking. The done page has h1 'Booked', the reference, gate and reminder lines, 'At the centre' and 'Book another slot'. It has no day, time, vehicle or waste. Harm: PRODUCT.md line 105 names the done surface's purpose as 'know the booking is made and what to show at the gate'. The page that is meant to be shown and kept does not say when the 20-minute slot is.",
+      "evidence": ["probes/73/aria.yml", "PRODUCT.md:105"],
+      "note": "Duplicate of F-0089."
+    },
+    {
+      "candidate_id": "F-0074",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The done page offers only 'If you cannot come, call 01632 960771 on a weekday and we will free the slot.' The footer gives weekdays 09:00 to 17:00. Own absence search: grep of the captured ARIA for every in-scope route and state for 'cancel', 'manage' and 'reference' finds no control that takes a reference or changes a booking. The done page's only action is 'Book another slot'.",
+      "evidence": ["probes/73/aria.yml", "evidence/aria/*/1280-light.yml (grep cancel|manage|reference)"],
+      "note": "Duplicate of F-0088."
+    },
+    {
+      "candidate_id": "F-0089",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The done page after a real booking shows no day, slot, vehicle or waste (see F-0050). Harm (task): the page residents are told to show at the gate cannot tell them when to arrive.",
+      "evidence": ["probes/73/aria.yml"],
+      "note": "Duplicate of F-0050."
+    },
+    {
+      "candidate_id": "F-0036",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. Car booking with valid details. 'Book this slot' pressed, then pressed again about 330 ms later: the button relabels to 'Cancel booking'. When the delay ends the done page shows reference DR-265532 with 'Status: cancelled. This booking is not on the gate's list.' under the h1 'Booked'.",
+      "evidence": ["probes/73/screenshots/pending-2.png", "probes/73/screenshots/after-second-press.png", "probes/73/aria.yml"],
+      "note": "Not reproduced: the claim that the flag persists after a validation error. The main claim stands."
+    },
+    {
+      "candidate_id": "F-0037",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. Screenshots taken right after the press and about 330 ms later show 'Book this slot' unchanged in label, colour and enabled state, with no spinner or message. The page stays until about 1.5 s.",
+      "evidence": ["probes/73/screenshots/pending-1.png", "probes/73/screenshots/pending-2.png"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0055",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. The confirm alert's permit item is a plain listitem, not a link. The other detail errors on this page are links to #reg, #name, #phone and #postcode. Confirm has no permit field, and 'Change vehicle' in the summary is the only way back.",
+      "evidence": ["probes/71/aria.yml", "evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/errors/1024-dark.yml"],
+      "note": "Sub-part of F-0035."
+    },
+    {
+      "candidate_id": "F-0056",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced. With 'Van, permit 12345' in the booking summary, the alert says 'A van needs a permit number (DRC- and five digits).' It does not say that the number entered is in the wrong format.",
+      "evidence": ["probes/72/aria.yml"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0088",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced (see F-0074). There is no manage or change-booking entry and no reference input. The only route is a weekday phone call during 09:00 to 17:00.",
+      "evidence": ["probes/73/aria.yml"],
+      "note": "Duplicate of F-0074. Its locations array is empty; use F-0074's (done page, region 'At the centre')."
+    }
+  ]
+}

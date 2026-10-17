@@ -1,0 +1,575 @@
+{
+  "schema": "evaluator-output",
+  "role": "code-reviewer",
+  "agent": "code",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261016-230412-audit-standard",
+  "packet_hash": "030f32e5d2ae4578",
+  "notes": "Styling system: one minified stylesheet (styles.css, 1 line) and one minified IIFE bundle (app.js, 1 line, global DR). Non-colour tokens are CSS custom properties on :root (--font-ui, --text-*, --s1..--s7, --radius, --duration). Colour tokens (--c-*) exist only at run time: app.js function he() builds HSL values for light and dark and B() writes them to documentElement.style, re-run on prefers-color-scheme change; styles.css has no colour fallbacks. No component library. I converted every runtime HSL value to hex and compared with design.md: all roles match the declared light and dark hex values except the 'few' (warning) pair (finding code-16). uie lint over the six UI files: 0 hits, COL-01 and LAY-01 shares 100%; it does not see CSS injected from a JS string (code-1) or Enter handlers in the minified bundle (code-15). Columns are 1-based offsets on line 1, computed with a read-only indexOf script in my scratch space. Packet had no needs-source.json or rate-ease.json, so no source_locations were requested; ease estimates cover my own candidates. Minor observation not raised: while slots load, Next is silently ignored (if(!h) guard, app.js:1:7812). Independence: a Glob of the workspace listed file names under .eval/ and .ui-evaluator/runs/ (evidence screenshots); I did not open any of them, nor PRODUCT.md or DESIGN.md (design.md from the packet used instead). Bash with cat/sed was denied; node commands worked.",
+  "passes": [
+    { "pass": 1, "summary": "Read all four HTML pages, styles.css and app.js in full; ran uie lint; checked tokens, states, semantics, IME, motion." }
+  ],
+  "coverage": {
+    "routes": ["/", "/vehicle.html", "/confirm.html", "/done.html"],
+    "states": ["default", "loading", "date-chosen", "slot-selected", "vehicle-permit", "error", "submitting", "hold-expired", "done", "done-cancelled"]
+  },
+  "not_assessable": [
+    "Whether the inline end-of-body DR.init() sets colours before first paint (possible flash of unstyled colours) needs a rendered trace.",
+    "Rendered contrast values for code-16 are computed from the HSL source, not measured; the contrast check should confirm."
+  ],
+  "strengths": [
+    { "title": "One global :focus-visible outline built from the focus token (3px, offset 2px) covers every control except slots", "evidence": "styles.css:1:713" },
+    { "title": "Motion matches the declared budget: only background-color on .button and opacity on .toast transition, 120 ms ease-out, both removed under prefers-reduced-motion", "evidence": "styles.css:1 (.button, .toast, @media (prefers-reduced-motion: reduce))" },
+    { "title": "Personal-data fields carry correct autocomplete tokens (name, tel, postal-code) and visible labels with hints associated through aria-describedby", "evidence": "confirm.html:59,65,71" },
+    { "title": "Error summary pattern: role=alert container receives focus, lists linked errors, fields get aria-invalid and associated error text", "evidence": "app.js T() and oe(); vehicle.html:35, confirm.html:34" },
+    { "title": "Full slots are disabled with three cues (muted colour, ground background, 'Full' text tag) and not-allowed cursor", "evidence": "styles.css .slot[disabled], .slot__tag--full; app.js:1:5695" },
+    { "title": "Runtime colour roles reproduce the declared design.md hex values in both themes (checked by conversion) apart from the warning pair", "evidence": "app.js he()" }
+  ],
+  "candidates": [
+    {
+      "id": "code-1",
+      "title": "Slot buttons lose their focus indicator through a runtime-injected outline reset",
+      "description": "Every tab stop should show a visible focus change (A11Y-04). On the When step, te() appends <style>.slot:focus{outline:0}</style> to the head. Its specificity (0,2,0) beats the global :focus-visible outline (0,1,0), and no replacement style exists for .slot:focus or .slot:focus-visible, so focused slot buttons show no indicator. The same code path that reports 'Choose a slot first.' moves focus to the first enabled slot, which then shows nothing.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-04", "primary": true },
+        { "kind": "wcag", "id": "2.4.7" },
+        { "kind": "rule", "id": "CMP-08" }
+      ],
+      "impact": "Keyboard users choosing a slot cannot see which of up to 29 slot buttons has focus, so they may book the wrong time or be unable to choose one.",
+      "scope": { "route": "/", "state": "default", "theme": "light and dark" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "#slots .slot",
+          "snippet": "u.textContent=\".slot:focus{outline:0}\"",
+          "source": { "file": "app.js", "line": 1, "col": 5439, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "code", "ref": "app.js:1:5439", "detail": "let u=document.createElement(\"style\");u.textContent=\".slot:focus{outline:0}\",document.head.appendChild(u)" },
+        { "type": "code", "ref": "styles.css:1:713", "detail": ":focus-visible{outline:3px solid var(--c-focus);outline-offset:2px} is the only focus style; no .slot focus rule in styles.css" }
+      ],
+      "factor_notes": { "frequency": "Every slot button on every day shown.", "impact": "No indicator at all on the step's main control.", "persistence": "Every visit; not learnable around." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Delete the injected style; if a mouse-click outline was the concern, :focus-visible already handles it.",
+      "tags": ["focus", "keyboard", "slots"]
+    },
+    {
+      "id": "code-2",
+      "title": "'Few left' slots are moved out of time order and above the Morning heading with CSS order",
+      "description": "Visual order should match DOM and focus order, and slots should read in time order under their Morning and Afternoon headings. x() gives every 'few' slot an inline style=\"order:-1\" in the grid, while headings and other slots keep order 0. Those slots, including afternoon ones, render first, before the Morning heading, while the DOM, screen-reader and Tab order keep them in time order.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-03", "primary": true },
+        { "kind": "wcag", "id": "2.4.3" },
+        { "kind": "wcag", "id": "1.3.2" },
+        { "kind": "heuristic", "id": "H4" }
+      ],
+      "impact": "Residents scanning for a time may misread an afternoon slot as morning, and keyboard focus jumps around the grid instead of moving in reading order.",
+      "scope": { "route": "/", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "#slots .slot[style*='order']",
+          "snippet": "style=\"${g.state===\"few\"?\"order:-1\":\"\"}\"",
+          "source": { "file": "app.js", "line": 1, "col": 6099, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:6099", "detail": "inline order:-1 on few slots; .slots__head (app.js:1:5797) has no order, so few slots precede the first heading" } ],
+      "factor_notes": { "frequency": "Every day with any 'few' slot (about a quarter of slots by the generator).", "impact": "Misordered times and headings.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Remove the inline order; the 'Few left' tag already marks scarcity.",
+      "tags": ["order", "slots"]
+    },
+    {
+      "id": "code-3",
+      "title": "Slot grid columns at widths up to 360 px are sized wider than the page content box",
+      "description": "Content should reflow at 320 px without horizontal scrolling. At innerWidth <= 360, p() sets grid-template-columns to repeat(3, floor((innerWidth-16)/3)px). The grid sits inside .page with 16 px padding on each side and has 8 px gaps, so at 320 px the columns total 3 x 101 + 16 = 319 px in a 288 px content box, about 31 px of overflow (about 30 px at 360 px). The CSS default (auto-fill, minmax(96px,1fr)) would fit.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-07", "primary": true },
+        { "kind": "wcag", "id": "1.4.10" }
+      ],
+      "impact": "On small phones, the declared main device, the right column of slots may be cut off or the page may scroll sideways.",
+      "scope": { "route": "/", "state": "default", "viewport": { "width": 320, "height": 640 } },
+      "locations": [
+        {
+          "route": "/", "state": "default", "viewport": { "width": 320, "height": 640 }, "selector": "#slots",
+          "snippet": "r.style.gridTemplateColumns=`repeat(3, ${l}px)`",
+          "source": { "file": "app.js", "line": 1, "col": 5604, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:5604", "detail": "l=Math.floor((window.innerWidth-16)/3); styles.css .page padding 0 var(--s4)=16px each side; .slots gap var(--s2)=8px" } ],
+      "factor_notes": { "frequency": "Widths 320 to 360 px only.", "impact": "Horizontal overflow of the main control.", "persistence": "Every visit at those widths." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Drop the JS sizing and, if three columns are wanted, set repeat(3, minmax(0,1fr)) in a CSS media query.",
+      "tags": ["reflow", "layout", "slots"]
+    },
+    {
+      "id": "code-4",
+      "title": "Slot list shows no loading state while a day's slots are fetched",
+      "description": "A data view should show a loading state while it waits. E() empties #slots and the status line, then waits 900 ms before rendering, with nothing in between: no text, skeleton or busy state, and #slots gets no aria-busy. On first load and after every day change the Slots section is blank for that time.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-05", "primary": true },
+        { "kind": "rule", "id": "CMP-10" },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Residents may read the blank section as 'no slots' and pick another day, or see the layout jump when the slots arrive.",
+      "scope": { "route": "/", "state": "loading" },
+      "locations": [
+        {
+          "route": "/", "state": "loading", "selector": "#slots",
+          "snippet": "function E(){h=!0,clearTimeout(c),r.innerHTML=\"\",n.textContent=\"\"",
+          "source": { "file": "app.js", "line": 1, "col": 6635, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:6635", "detail": "innerHTML and status cleared; setTimeout(...,900) then x(); no loading markup or aria-busy" } ],
+      "factor_notes": { "frequency": "Every page load and every day change.", "impact": "Ambiguous blank state for under a second.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Write 'Loading slots for <day>' into the status line and set aria-busy on #slots until x() runs.",
+      "tags": ["loading", "slots"]
+    },
+    {
+      "id": "code-5",
+      "title": "Slot count status becomes a live region only at the moment its text is written",
+      "description": "A status region should exist and be live before its content changes. #slots-status has no aria-live in index.html; x() writes the text and adds aria-live=\"polite\" in the same task. Screen readers usually do not announce a region's first change when it becomes live in the same update, so the first result (for example 'No slots on …: the centre is closed on Wednesdays') may not be announced.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-15", "primary": true },
+        { "kind": "wcag", "id": "4.1.3" }
+      ],
+      "impact": "Screen-reader users may not hear how many slots are free, or why there are none, after the first load.",
+      "scope": { "route": "/", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "#slots-status",
+          "snippet": "n.setAttribute(\"aria-live\",\"polite\")",
+          "source": { "file": "app.js", "line": 1, "col": 6564, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/", "state": "default", "selector": "#slots-status",
+          "snippet": "<p id=\"slots-status\" class=\"slots-status\"></p>",
+          "source": { "file": "index.html", "line": 58, "col": null, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:6564", "detail": "n.textContent=… then n.setAttribute(\"aria-live\",\"polite\") inside x()" } ],
+      "factor_notes": { "frequency": "First render on each page load.", "impact": "Missed announcement.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Put role=\"status\" (or aria-live=\"polite\") on the element in index.html.",
+      "tags": ["live-region", "screen-reader"]
+    },
+    {
+      "id": "code-6",
+      "title": "Slot end time and the arrival rule exist only in the slot buttons' title attribute",
+      "description": "Information the task needs should not live only in a tooltip. Each slot button carries title=\"HH:MM to HH:MM. Arrive within your slot.\"; the visible label shows only the start time. title shows on mouse hover only, never on touch or keyboard focus.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-21", "primary": true },
+        { "kind": "heuristic", "id": "H6" }
+      ],
+      "impact": "Phone users, the main audience, never see the slot's end or the rule to arrive within it, which the gate enforces.",
+      "scope": { "route": "/", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "#slots .slot[title]",
+          "snippet": "title=\"${g.time} to ${ie}. Arrive within your slot.\"",
+          "source": { "file": "app.js", "line": 1, "col": 6001, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:6001", "detail": "title only; .slot__time shows start time; intro text names 20-minute slots but not the arrive-within rule" } ],
+      "factor_notes": { "frequency": "Every slot.", "impact": "Rule hidden from touch and keyboard users.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "State the rule once in visible text beside the grid and drop the title.",
+      "tags": ["tooltip", "slots"]
+    },
+    {
+      "id": "code-7",
+      "title": "Single-choice groups (day, slot, vehicle) are built as independent toggle buttons",
+      "description": "A one-of-many choice should be exposed as one: a radio group (or role=radiogroup with arrow keys). The quick-day buttons, the slot buttons and the vehicle segmented control are each a group of aria-pressed buttons; pressing one silently unpresses the others, every option is its own tab stop, and nothing tells assistive technology that only one can be chosen.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-25", "primary": true },
+        { "kind": "wcag", "id": "1.3.1" }
+      ],
+      "impact": "Screen-reader users hear 'toggle button, pressed' and may not realise choosing a second option cancelled the first; keyboard users must tab through every slot.",
+      "scope": { "route": "/", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "[data-quick]",
+          "snippet": "<button type=\"button\" class=\"button button--secondary\" data-quick=",
+          "source": { "file": "index.html", "line": 39, "col": null, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/", "state": "default", "selector": "#slots .slot",
+          "snippet": "aria-pressed=\"${g.time===i}\"",
+          "source": { "file": "app.js", "line": 1, "col": 5972, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/vehicle.html", "state": "default", "selector": "#vehicle button",
+          "snippet": "aria-pressed=\"${c.id===t}\"",
+          "source": { "file": "app.js", "line": 1, "col": 8189, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:8189", "detail": "click handlers set aria-pressed true on the clicked button and false on all siblings" } ],
+      "factor_notes": { "frequency": "Three controls across two steps.", "impact": "Semantics mismatch, many tab stops.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Use native radio inputs styled as the current buttons inside a fieldset with a legend.",
+      "tags": ["semantics", "keyboard"]
+    },
+    {
+      "id": "code-8",
+      "title": "Permit number field appears 1.2 s after choosing a van or a car with a trailer",
+      "description": "A control's consequence should appear at once. When a vehicle needing a permit is chosen, i() reveals #permit-wrap through setTimeout(…,1200). Nothing shows in the meantime, and the reveal is not announced.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-04", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Residents may move on to the waste list before the field appears and only learn about the permit at the booking step.",
+      "scope": { "route": "/vehicle.html", "state": "vehicle-permit" },
+      "locations": [
+        {
+          "route": "/vehicle.html", "state": "vehicle-permit", "selector": "#permit-wrap",
+          "snippet": "f=setTimeout(()=>{n.hidden=!1},1200)",
+          "source": { "file": "app.js", "line": 1, "col": 8521, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:8521", "detail": "c&&c.permit?f=setTimeout(()=>{n.hidden=!1},1200):n.hidden=!0" } ],
+      "factor_notes": { "frequency": "Every van or trailer choice.", "impact": "Delayed, unannounced field.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Unhide the field synchronously.",
+      "tags": ["feedback", "permit"]
+    },
+    {
+      "id": "code-9",
+      "title": "Permit number is not checked on the vehicle step; the format error appears only after booking is attempted",
+      "description": "Errors should be caught where the field is. vehicle.html's Next handler validates vehicle and waste but not the permit, and saves any value, including an empty one. The DRC- plus five digits check runs only on the confirm page, after the 1.5 s booking wait, as an error-summary item on a page that has no permit field.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-18", "primary": true },
+        { "kind": "heuristic", "id": "H5" },
+        { "kind": "wcag", "id": "3.3.1" }
+      ],
+      "impact": "Van and trailer owners fill in all their details, press Book, and only then learn the permit is missing or wrong, and must go back a step to fix it.",
+      "scope": { "route": "/vehicle.html", "state": "vehicle-permit" },
+      "locations": [
+        {
+          "route": "/vehicle.html", "state": "vehicle-permit", "selector": "#permit",
+          "snippet": "v({vehicle:t,waste:c,permit:d.value.trim()})",
+          "source": { "file": "app.js", "line": 1, "col": 9826, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/confirm.html", "state": "error", "selector": "#error-summary",
+          "snippet": "p&&p.permit&&!/^DRC-\\d{5}$/i.test(a.permit||\"\")",
+          "source": { "file": "app.js", "line": 1, "col": 12037, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:12037", "detail": "permit check inside the 1500 ms setTimeout of the Book handler" } ],
+      "factor_notes": { "frequency": "Every van or trailer booking with a missing or mistyped permit.", "impact": "Late error, cross-page recovery.", "persistence": "Every time." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Validate the permit in the vehicle step's Next handler with an inline error and summary link to #permit.",
+      "tags": ["validation", "permit"]
+    },
+    {
+      "id": "code-10",
+      "title": "Booking-time errors in the error summary have no link to where they can be fixed",
+      "description": "Each error-summary item should lead to the place to fix it (CMP-18). After the booking wait, four errors are added as plain text with no href: the expired hold ('This slot is no longer available.'), a past slot today, a missing or invalid permit, and a closed day. The permit and slot can only be fixed on other pages, and the summary offers no way there; the expired-hold item also gives no next step.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-18", "primary": true },
+        { "kind": "heuristic", "id": "H9" },
+        { "kind": "rule", "id": "CPY-04" }
+      ],
+      "impact": "Residents told their slot or permit is wrong must find the Change slot link or the browser Back button themselves, at the last step.",
+      "scope": { "route": "/confirm.html", "state": "error" },
+      "locations": [
+        {
+          "route": "/confirm.html", "state": "hold-expired", "selector": "#error-list li",
+          "snippet": "T([{text:\"This slot is no longer available.\"}])",
+          "source": { "file": "app.js", "line": 1, "col": 11846, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/confirm.html", "state": "error", "selector": "#error-list li",
+          "snippet": "T(u.map(E=>({text:E})))",
+          "source": { "file": "app.js", "line": 1, "col": 12235, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:12235", "detail": "past-slot, permit and closed-day messages mapped to {text} only; T() renders an <a> only when href is set" } ],
+      "factor_notes": { "frequency": "Every late booking error.", "impact": "Dead-end error at the final step.", "persistence": "Every time." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Give each item an href (index.html for slot and day errors, vehicle.html#permit for the permit) and say what to do next.",
+      "tags": ["errors", "recovery"]
+    },
+    {
+      "id": "code-11",
+      "title": "Today's slots that can no longer be booked are shown as free and selectable",
+      "description": "design.md: 'Do show a slot as free only when it is.' x() renders today's slots from the generator with no time filter, so early slots (before 10:35 in this build) show as free and can be chosen. Only the confirm page's Book handler rejects them, after details are entered and the 1.5 s wait: 'The HH:MM slot today can no longer be booked.'",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-18", "primary": true },
+        { "kind": "heuristic", "id": "H5" },
+        { "kind": "design", "id": "design.md Do's and Don'ts: show a slot as free only when it is" }
+      ],
+      "impact": "Residents booking for today can pick a slot, complete two more steps, and then be told at the end that it was never available.",
+      "scope": { "route": "/", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "selector": "#slots .slot",
+          "snippet": "x(A(f)||!I(f)?[]:j(f))",
+          "source": { "file": "app.js", "line": 1, "col": 6724, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/confirm.html", "state": "error", "selector": "#error-summary",
+          "snippet": "a.date===w&&R(a.slot)<635",
+          "source": { "file": "app.js", "line": 1, "col": 11909, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:11909", "detail": "cut-off check exists only in the Book handler; render path j(f) yields all 08:00-1720 slots" } ],
+      "factor_notes": { "frequency": "Every same-day booking; default day is today.", "impact": "Late rejection after the whole flow.", "persistence": "Every day." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Apply the same cut-off when rendering today's slots: mark them unavailable with a 'Passed' tag.",
+      "tags": ["slots", "error-prevention"]
+    },
+    {
+      "id": "code-12",
+      "title": "A second press of Book during submission records the booking as cancelled",
+      "description": "Repeat presses during a pending action should be ignored or clearly offered as a separate action. While the 1.5 s booking timer is pending, another click on #book sets a flag and changes the label to 'Cancel booking'; when the timer fires the label resets to 'Book this slot' and the booking is saved with status 'cancelled' and the resident is sent to done.html, whose heading still says 'Booked'. A double-click, common on touch and with impatient presses, therefore cancels the booking.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-15", "primary": true },
+        { "kind": "rule", "id": "CMP-04" },
+        { "kind": "heuristic", "id": "H5" },
+        { "kind": "heuristic", "id": "H3" }
+      ],
+      "impact": "Residents may arrive at the gate with a cancelled booking that the done page headed 'Booked', and be turned away.",
+      "scope": { "route": "/confirm.html", "state": "submitting" },
+      "locations": [
+        {
+          "route": "/confirm.html", "state": "submitting", "selector": "#book",
+          "snippet": "if(d){f=!0,n.textContent=\"Cancel booking\";return}",
+          "source": { "file": "app.js", "line": 1, "col": 11263, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/done.html", "state": "done-cancelled", "selector": "h1",
+          "snippet": "<h1>Booked</h1>",
+          "source": { "file": "done.html", "line": 28, "col": null, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:11263", "detail": "f=!0 on repeat click; later v({ref:x,status:f?\"cancelled\":\"booked\"}); ne() only adds a status line, h1 unchanged" } ],
+      "factor_notes": { "frequency": "Any repeat press within 1.5 s.", "impact": "Silent loss of the booking.", "persistence": "Every submission." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Ignore clicks while pending (disable or aria-disabled the button); offer cancellation, if needed, as a separate action on the done page.",
+      "tags": ["double-submit", "booking"]
+    },
+    {
+      "id": "code-13",
+      "title": "Book button gives no visible sign of the 1.5 s submission",
+      "description": "Waits over about a second need visible progress (CMP-10). On a valid press, #book only gets aria-busy=\"true\"; its label, style and the page stay unchanged for 1.5 s, and no CSS targets [aria-busy].",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-10", "primary": true },
+        { "kind": "rule", "id": "CMP-12" },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Residents see nothing happen and are likely to press again, which triggers the cancellation path in code-12.",
+      "scope": { "route": "/confirm.html", "state": "submitting" },
+      "locations": [
+        {
+          "route": "/confirm.html", "state": "submitting", "selector": "#book",
+          "snippet": "n.setAttribute(\"aria-busy\",\"true\")",
+          "source": { "file": "app.js", "line": 1, "col": 11638, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:11638", "detail": "aria-busy set, label untouched until timer; styles.css has no [aria-busy] rule" } ],
+      "factor_notes": { "frequency": "Every booking.", "impact": "No feedback for 1.5 s.", "persistence": "Every time." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Change the label to 'Booking…' and style the busy state while pending.",
+      "tags": ["loading", "booking"]
+    },
+    {
+      "id": "code-14",
+      "title": "The five-minute slot hold is never shown, warned about or extendable",
+      "description": "A time limit must be stated and adjustable or extendable (WCAG 2.2.1). Selecting a slot stores hold_started; G() treats the hold as expired after 5 minutes, checked only when Book's timer fires, which then clears the slot. No page states the limit, shows time remaining, warns before expiry, or offers more time.",
+      "problem_type": "missing_element",
+      "criteria": [
+        { "kind": "wcag", "id": "2.2.1", "primary": true },
+        { "kind": "heuristic", "id": "H1" }
+      ],
+      "impact": "Residents who take time over the vehicle and details steps (looking up a permit or registration) may lose their slot at the last press with no warning.",
+      "scope": { "route": "/confirm.html", "state": "hold-expired" },
+      "locations": [
+        {
+          "route": "/", "state": "slot-selected", "selector": "#slots .slot",
+          "snippet": "v({date:f,slot:i,hold_started:Date.now()})",
+          "source": { "file": "app.js", "line": 1, "col": 7725, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/confirm.html", "state": "hold-expired", "selector": "#error-summary",
+          "snippet": "function G(e){return!!e.hold_started&&Date.now()-e.hold_started>5*60*1e3}",
+          "source": { "file": "app.js", "line": 1, "col": 4087, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [
+        { "type": "absence", "detail": "Searched index.html, vehicle.html, confirm.html, done.html and app.js for any hold, minute, expiry or countdown text or timer UI: only the 20-minute slot length and the post-expiry message exist; no element renders hold time. The #toast region is never written to." },
+        { "type": "code", "ref": "app.js:1:4087", "detail": "G() 5*60*1e3 limit; used only inside the Book timer" }
+      ],
+      "factor_notes": { "frequency": "Any booking taking over 5 minutes from slot choice.", "impact": "Loss of chosen slot at the end.", "persistence": "Every time." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "State the hold on the vehicle and confirm steps, warn before it ends and let the resident extend it.",
+      "tags": ["timing", "hold"]
+    },
+    {
+      "id": "code-15",
+      "title": "Enter handlers on the date and details fields act during IME composition",
+      "description": "Enter handlers in text fields should return early while composing (I18N-14). The date field's keydown handler clicks Show, and each of the reg, name, phone and postcode handlers clicks Book, on any Enter with no isComposing or keyCode 229 check. Pressing Enter to confirm an IME composition in the name field submits the booking with half-entered text.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "rule", "id": "I18N-14", "primary": true },
+        { "kind": "heuristic", "id": "H5" }
+      ],
+      "impact": "Residents who type their name with a Chinese, Japanese or Korean IME may submit the booking mid-word.",
+      "scope": { "route": "/confirm.html", "state": "default" },
+      "locations": [
+        {
+          "route": "/", "state": "date-chosen", "selector": "#date",
+          "snippet": "t.addEventListener(\"keydown\",l=>{l.key===\"Enter\"&&",
+          "source": { "file": "app.js", "line": 1, "col": 7115, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/confirm.html", "state": "default", "selector": "#reg, #name, #phone, #postcode",
+          "snippet": "o(i.id).addEventListener(\"keydown\",h=>{h.key===\"Enter\"&&",
+          "source": { "file": "app.js", "line": 1, "col": 11106, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:11106", "detail": "no isComposing/keyCode 229 guard in either handler; uie lint did not flag (minified)" } ],
+      "factor_notes": { "frequency": "IME users only; name field most likely.", "impact": "Premature submission.", "persistence": "Every time for those users." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E1",
+      "recommendation": "Add `if (e.isComposing || e.keyCode === 229) return;` at the top of both handlers.",
+      "tags": ["ime", "i18n"]
+    },
+    {
+      "id": "code-16",
+      "title": "'Few left' tag colours drift from the warning token to a lighter amber with low text contrast",
+      "description": "Colour roles should come from the declared tokens. design.md declares warning #8a5a00; the runtime 'few' role is hsl(38 85% 40%) (about #bd7d0f) on 'few-bg' hsl(38 80% 92%) (about #fbefda) in light mode, about 3.0:1 by computation; in dark mode hsl(38 60% 42%) on hsl(38 30% 18%), about 3.4:1. The tag text is 16 px bold, below the large-text size, so 4.5:1 applies. With #8a5a00 the light pair would be about 5.2:1. All other runtime colour roles match design.md.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "COL-01", "primary": true },
+        { "kind": "wcag", "id": "1.4.3" },
+        { "kind": "rule", "id": "A11Y-11" }
+      ],
+      "impact": "Residents on phones, often outdoors or in dark mode, may not read 'Few left', the only cue that a slot is scarce.",
+      "scope": { "route": "/", "state": "default", "theme": "light and dark" },
+      "locations": [
+        {
+          "route": "/", "state": "default", "theme": "light", "selector": ".slot__tag--few",
+          "snippet": "few:s(38,85,40),\"few-bg\":s(38,80,92)",
+          "source": { "file": "app.js", "line": 1, "col": 1287, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/", "state": "default", "theme": "dark", "selector": ".slot__tag--few",
+          "snippet": "few:s(38,60,42),\"few-bg\":s(38,30,18)",
+          "source": { "file": "app.js", "line": 1, "col": 890, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "app.js:1:1287", "detail": "HSL to sRGB conversion and WCAG relative luminance computed by hand: light ~3.0:1, dark ~3.4:1; needs the contrast check to confirm" } ],
+      "factor_notes": { "frequency": "Every 'few' slot.", "impact": "Unreadable scarcity tag.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Set the light 'few' value to the declared warning (#8a5a00) and declare a dark warning that reaches 4.5:1 on its background.",
+      "tags": ["tokens", "contrast", "drift"]
+    },
+    {
+      "id": "code-17",
+      "title": "Waste-limit hint is attached to a generic div, so the checkboxes do not expose it",
+      "description": "Hints should be programmatically associated with their controls (A11Y-13). The hint 'Rubble is limited to four bags and mattresses to two' is referenced by aria-describedby on #waste, a plain div with no role, which assistive technology does not expose; the checkboxes get aria-describedby only on error, and then only 'waste-error'.",
+      "problem_type": "single_location",
+      "criteria": [
+        { "kind": "rule", "id": "A11Y-13", "primary": true },
+        { "kind": "wcag", "id": "1.3.1" }
+      ],
+      "impact": "Screen-reader users may not hear the load limits the gate enforces.",
+      "scope": { "route": "/vehicle.html", "state": "default" },
+      "locations": [
+        {
+          "route": "/vehicle.html", "state": "default", "selector": "#waste",
+          "snippet": "<div id=\"waste\" class=\"choices measure\" aria-describedby=\"waste-hint waste-error\">",
+          "source": { "file": "vehicle.html", "line": 60, "col": null, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "vehicle.html:60", "detail": "aria-describedby on a role-less div inside the fieldset; fieldset itself has no aria-describedby" } ],
+      "factor_notes": { "frequency": "Every visit to the vehicle step.", "impact": "Rule not announced.", "persistence": "Every visit." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Move aria-describedby to the fieldset.",
+      "tags": ["forms", "semantics"]
+    },
+    {
+      "id": "code-18",
+      "title": "Vehicle-step error-summary links point to containers that cannot take focus",
+      "description": "Error-summary links should move focus to the control to fix (CMP-18). On the vehicle step the links go to #vehicle (a div role=group) and #waste (a div); neither is focusable, so activating the link scrolls but leaves focus on the link, and the next Tab continues from the summary.",
+      "problem_type": "multiple_locations",
+      "criteria": [
+        { "kind": "rule", "id": "CMP-18", "primary": true },
+        { "kind": "wcag", "id": "2.4.3" }
+      ],
+      "impact": "Keyboard and screen-reader users following the error link do not land on the vehicle buttons or the checkboxes.",
+      "scope": { "route": "/vehicle.html", "state": "error" },
+      "locations": [
+        {
+          "route": "/vehicle.html", "state": "error", "selector": "#error-list a[href='#vehicle']",
+          "snippet": "href:\"#vehicle\"",
+          "source": { "file": "app.js", "line": 1, "col": 9278, "method": "text search", "confidence": "high" }
+        },
+        {
+          "route": "/vehicle.html", "state": "error", "selector": "#error-list a[href='#waste']",
+          "snippet": "href:\"#waste\"",
+          "source": { "file": "app.js", "line": 1, "col": 9764, "method": "text search", "confidence": "high" }
+        }
+      ],
+      "evidence": [ { "type": "code", "ref": "vehicle.html:43,60", "detail": "#vehicle and #waste have no tabindex; no click handler on summary links moves focus" } ],
+      "factor_notes": { "frequency": "Every vehicle-step error.", "impact": "Focus not moved to the fix.", "persistence": "Every time." },
+      "found_by": [ { "role": "code-reviewer", "agent": "code", "model": "claude-opus-5-5", "method": "code", "pass": 1 } ],
+      "evidence_level": "E0",
+      "recommendation": "Link to the first vehicle button and first checkbox by id.",
+      "tags": ["errors", "focus"]
+    }
+  ],
+  "source_locations": [],
+  "ease_estimates": [
+    { "finding_id": "code-1", "ease": 1, "layer": "app.js te()", "note": "Delete the injected style string." },
+    { "finding_id": "code-2", "ease": 1, "layer": "app.js x() slot template", "note": "Remove the inline order style." },
+    { "finding_id": "code-3", "ease": 2, "layer": "app.js p() and styles.css .slots", "note": "Drop JS column sizing; a CSS media query covers narrow widths." },
+    { "finding_id": "code-4", "ease": 2, "layer": "app.js E() and #slots-status", "note": "Write a loading message and aria-busy in the existing fetch function." },
+    { "finding_id": "code-5", "ease": 1, "layer": "index.html #slots-status", "note": "One attribute in the markup." },
+    { "finding_id": "code-6", "ease": 2, "layer": "index.html Slots section and app.js x()", "note": "Add one visible line of text; drop the title." },
+    { "finding_id": "code-7", "ease": 3, "layer": "index.html, vehicle.html, app.js te()/re() and styles.css", "note": "Three controls change element type, handlers and styles." },
+    { "finding_id": "code-8", "ease": 1, "layer": "app.js re() i()", "note": "Remove the timeout." },
+    { "finding_id": "code-9", "ease": 2, "layer": "app.js re() Next handler and vehicle.html", "note": "Add permit validation and an error element on the vehicle step." },
+    { "finding_id": "code-10", "ease": 2, "layer": "app.js oe() Book handler", "note": "Add hrefs and next-step wording to four messages." },
+    { "finding_id": "code-11", "ease": 2, "layer": "app.js x()/j() render path", "note": "Share the cut-off between render and submit." },
+    { "finding_id": "code-12", "ease": 2, "layer": "app.js oe() Book handler, done.html", "note": "Ignore repeat clicks while pending; remove the cancel path." },
+    { "finding_id": "code-13", "ease": 2, "layer": "app.js oe() and styles.css .button", "note": "Pending label and an [aria-busy] style." },
+    { "finding_id": "code-14", "ease": 3, "layer": "hold state across vehicle and confirm steps", "note": "Needs a shared hold notice, warning and extension across the flow." },
+    { "finding_id": "code-15", "ease": 2, "layer": "app.js te() and oe() keydown handlers", "note": "One guard line in two handlers." },
+    { "finding_id": "code-16", "ease": 1, "layer": "app.js he() colour roles", "note": "Change the 'few' values to the warning token (and declare a dark one)." },
+    { "finding_id": "code-17", "ease": 1, "layer": "vehicle.html fieldset", "note": "Move one attribute." },
+    { "finding_id": "code-18", "ease": 1, "layer": "app.js re() error hrefs", "note": "Point hrefs at focusable ids." }
+  ]
+}

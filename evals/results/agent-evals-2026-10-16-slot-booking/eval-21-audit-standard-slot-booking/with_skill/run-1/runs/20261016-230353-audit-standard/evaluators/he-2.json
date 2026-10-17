@@ -1,0 +1,240 @@
+{
+  "schema": "evaluator-output",
+  "role": "heuristic-evaluator",
+  "agent": "he-2",
+  "lens": "expert frequent user",
+  "phase": "review",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "run": "20261016-230353-audit-standard",
+  "packet_hash": "840aca53bf860c8e",
+  "notes": "Worked from the packet, screenshots and live probes only. journeys.json carries a _comment naming a ground-truth file; I did not open it. Probe directories are under .ui-evaluator/runs/20261016-230353-audit-standard/probes/ (3, 6, 8, 10, 11, 12, 13, 14, 16, 17); probe 15 failed on an ambiguous locator and was repeated as 16. The probe clock is the real date, so 'Today' renders as Monday 12 October from fixture data.",
+  "passes": [
+    { "pass": 1, "summary": "Learned the four-step flow (when, vehicle and waste, check and book, done) from the 375 px light captures of every state and a first probe of the slot page.", "elements_inspected": 0 },
+    { "pass": 2, "summary": "Element-by-element inspection against H1-H10 with probes of slot loading, Next without a slot, Change slot, Change vehicle, Back to the slots, Another day, van permit handling and booking submission.", "elements_inspected": 66 }
+  ],
+  "coverage": {
+    "routes": ["/", "/vehicle.html", "/confirm.html", "/confirm.html?hold=expired", "/done.html?status=booked", "/done.html?status=cancelled"],
+    "states": ["root/default", "root/date-chosen", "root/slot-chosen", "vehicle/default", "vehicle/van", "vehicle/info-open", "vehicle/errors", "confirm/default", "confirm/errors", "confirm/expired", "done/default", "done/cancelled"],
+    "controls_exercised": 19,
+    "controls_total": 66,
+    "out_of_scope": [
+      "27 further slot buttons: same component as 09:20 and 14:20, which were exercised; full slots confirmed disabled in ARIA (probe 6)",
+      "Tomorrow and Sunday 18 quick-day buttons: same mechanism as Saturday 17, exercised",
+      "Header links (council, Book a slot, Opening days): site navigation, inspected visually only",
+      "Error-summary links on vehicle and confirm (6): inspected in captures only",
+      "About vans and trailers info button: inspected in the info-open capture only",
+      "Six waste checkboxes besides Garden waste: same component",
+      "Book another slot on done: inspected visually only"
+    ]
+  },
+  "cross_screen_pass": true,
+  "task_suitability": [
+    { "task": "Book a slot for a car", "completable": true, "evidence": "probe 13: filled confirm form, Book this slot reached done.html?ref=DR-265532" },
+    { "task": "Change the slot of an existing booking (during booking)", "completable": true, "evidence": "probe 8: completable, but Change slot reopens on Today, so a resident who taps 14:20 without re-choosing the day gets Monday 12 October instead of Saturday 17 (finding 1). After booking, changing is only by phone on weekdays (finding 9)." },
+    { "task": "Book a slot for a van or trailer with the permit", "completable": true, "evidence": "probe 14: Car with trailer + DRC-12345 reached confirm with the permit shown; permit errors only surface at the last step (finding 5)" },
+    { "task": "See the opening days and what the centre takes", "completable": true, "evidence": "Opening days panel on root (root/default 375-light); accepted waste listed on vehicle step" }
+  ],
+  "not_assessable": [
+    "Whether a double tap on Book this slot creates two bookings: I saw no visual change during submission (finding 6) but did not attempt a double submission.",
+    "Whether the Opening days header link on vehicle and confirm discards the booking in progress: not probed.",
+    "How long a chosen slot is held before the expired state occurs: the expired state is seeded by a URL parameter, so the real hold length could not be observed."
+  ],
+  "strengths": [
+    { "title": "Booking details survive Change slot and Change vehicle", "evidence": "probe 8 after-next.png: registration and name typed before Change slot are still filled on return; probe 14 back-at-confirm.png: same after Change vehicle. Helps residents adjusting a booking mid-flow (change-slot task)." },
+    { "title": "Error summary plus inline errors that state the expected format", "evidence": "confirm/errors 375-light: 'Enter a UK mobile number, like 07700 900123', 'Enter a Dunmore district postcode, which starts DN'; vehicle/errors likewise. Summary items are links to the fields." },
+    { "title": "Closed days and malformed dates are explained on Another day", "evidence": "probe 16 wednesday.png: 'No slots on Wednesday 14 October: the centre ...'; iso-date.png: 'Enter a day as DD/MM/YYYY, for example 17/10/2026.' with the typed value kept." },
+    { "title": "Confirm step shows the booking with the slot as a range and direct change links", "evidence": "confirm/default 375-light: 'Slot 09:20 to 09:40 · Change slot', 'Vehicle Car · Change vehicle'. Makes the 20-minute window explicit." },
+    { "title": "Quick-day buttons match how residents talk about the visit", "evidence": "root/default: Today, Tomorrow, Saturday 17, Sunday 18 as one-tap choices; supports the 'tomorrow or at the weekend' task with no date typing." },
+    { "title": "Full slots are disabled rather than selectable", "evidence": "probe 6 aria.yml: 'button \"11:00 Full\" [disabled]'; prevents choosing an unavailable slot." }
+  ],
+  "candidates": [
+    {
+      "title": "Change slot and Back to the slots reopen the slot page on Today, not on the chosen day",
+      "description": "From confirm (Saturday 17 October, 09:20) Change slot opens index.html with no day carried over; Today (Monday 12 October) is pressed and its slots are shown. Tapping 14:20 and Next returned to confirm with 'Day Monday 12 October, Slot 14:20 to 14:40'. Back to the slots on the vehicle step does the same. A resident moving the time on the same day expects the chosen day to stay selected.",
+      "problem_type": "multiple_locations",
+      "criteria": [ { "kind": "heuristic", "id": "H3", "primary": true }, { "kind": "heuristic", "id": "H5" }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Residents changing to the afternoon may book the right time on the wrong day and be turned away at the gate, since nothing on the slot page signals that the day was reset.",
+      "scope": { "task": "Change the slot of an existing booking", "journey": "change-slot" },
+      "locations": [
+        { "route": "/confirm.html", "state": "default", "viewport": { "width": 375 }, "selector": "role=link[name=\"Change slot\"]", "snippet": "Change slot" },
+        { "route": "/vehicle.html", "state": "default", "viewport": { "width": 375 }, "selector": "role=link[name=\"Back to the slots\"]", "snippet": "Back to the slots" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/8/", "detail": "Change slot -> url index.html (no params); after-change-slot.png shows Today pressed, Monday 12 October; after clicking 14:20 + Next, after-next.png shows Day Monday 12 October, Slot 14:20 to 14:40" },
+        { "type": "probe", "ref": "probes/14/", "detail": "Back to the slots from vehicle.html?date=2026-10-17&slot=09:20 -> index.html; back-to-slots.png shows Today pressed" }
+      ],
+      "factor_notes": { "frequency": "every use of Change slot or Back to the slots for a non-today booking", "impact": "silent wrong-day booking unless the resident rechecks the Day row", "persistence": "every time" },
+      "recommendation": "Carry the chosen day (and current slot) back to the slot page.",
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["navigation", "state-loss"]
+    },
+    {
+      "title": "No loading indication while slots load; the old day's label stays shown",
+      "description": "After tapping Saturday 17 the slot grid empties for about 1.3 s with no spinner or 'loading' text, while the line under Slots still reads 'Monday 12 October' and the earlier 'Choose a slot first.' error stays visible. The same blank area appears on first load. The resident needs to know slots are being fetched for the new day.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true } ],
+      "impact": "On a phone, an empty Slots area under the wrong date may read as 'no slots' or as the tap not registering, prompting repeated taps or abandoning that day.",
+      "locations": [ { "route": "/", "state": "date-chosen", "viewport": { "width": 375 }, "selector": "role=region[name=\"Slots\"]", "snippet": "Slots" } ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/6/step-08.png", "detail": "Saturday 17 pressed, Slots region empty, caption 'Monday 12 October', 'Choose a slot first.' still shown; wait for .slot took 1282 ms" },
+        { "type": "probe", "ref": "probes/3/step-01.png", "detail": "initial load: Slots heading with nothing beneath it" }
+      ],
+      "factor_notes": { "frequency": "every day change and every page load", "impact": "brief, but misleading date label", "persistence": "repeats on each day change" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["feedback", "loading"]
+    },
+    {
+      "title": "'Few left' slots are pulled out of time order into a block above Morning",
+      "description": "Slots marked 'Few left' are shown in a separate unlabelled block above the Morning and Afternoon groups, so 08:00, 09:20 and 10:00 appear under Morning while 08:20, 08:40 and 09:00 appear above it. Reading for 'Saturday morning' requires scanning two places. The accessibility tree lists all slots chronologically under Morning/Afternoon, so the visual order and the reading/focus order differ.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H4", "primary": true }, { "kind": "heuristic", "id": "H8" }, { "kind": "wcag", "id": "1.3.2" } ],
+      "impact": "Residents looking for a morning time may miss free morning slots or misjudge what is left; keyboard users see focus jump between the top block and the groups.",
+      "locations": [ { "route": "/", "state": "slot-chosen", "viewport": { "width": 375 }, "selector": "#slots", "snippet": "Few left" } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/root/slot-chosen/375-light.png", "detail": "08:20-16:40 Few left block above 'Morning'; Morning shows 08:00, 09:20, 10:00, 11:00-11:40" },
+        { "type": "aria", "ref": "probes/6/aria.yml", "detail": "group 'Slots': heading Morning, then 08:00, 08:20 Few left, 08:40 Few left ... in time order" }
+      ],
+      "factor_notes": { "frequency": "every day with any 'Few left' slot (all captured days)", "impact": "slower scanning, risk of missing a slot", "persistence": "every visit" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["slots", "ordering"]
+    },
+    {
+      "title": "Confirmation page does not show the day, time or vehicle booked",
+      "description": "After booking, the done page shows the reference, gate instructions and a reminder line, but not the day, the 20-minute slot or the vehicle. The resident needs these to know when to arrive and to check what the gate will check, especially since the centre has poor signal and this screen is what they keep.",
+      "problem_type": "missing_element",
+      "criteria": [ { "kind": "heuristic", "id": "H6", "primary": true }, { "kind": "heuristic", "id": "H1" } ],
+      "impact": "Residents may arrive outside their slot or be unsure which booking a reference belongs to, having to rely on memory or the next-evening reminder.",
+      "locations": [ { "route": "/done.html", "state": "default", "viewport": { "width": 375 }, "selector": "main", "snippet": "Your reference" } ],
+      "evidence": [
+        { "type": "absence", "ref": "evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/375-light.png", "detail": "Searched done/default and done/cancelled: content is 'Your reference DR-204117', show-at-gate text, 'At the centre' panel, Book another slot. No date, slot time or vehicle, although the route carries date, slot and vehicle." },
+        { "type": "probe", "ref": "probes/13/screenshots/t3100.png", "detail": "real submission lands on done.html?ref=DR-265532 with the same content and no day/slot" }
+      ],
+      "factor_notes": { "frequency": "every completed booking", "impact": "resident must remember the slot", "persistence": "lasts until the reminder arrives" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["confirmation"]
+    },
+    {
+      "title": "Missing or malformed van permit is only flagged on the last step, after all details are typed",
+      "description": "On the vehicle step, Van with an empty permit, or with '12345' (no DRC- prefix, despite the hint 'Starts DRC-, then five digits'), passes Next without any message. Confirm then shows 'Van, no permit given' or 'Van, permit 12345' without comment; only after filling registration, name, mobile and postcode and pressing Book this slot does 'A van needs a permit number (DRC- and five digits).' appear. Unlike the other errors, this one is plain text, not a link to the field, which is on a different page.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H5", "primary": true }, { "kind": "heuristic", "id": "H9" } ],
+      "impact": "Van and trailer residents complete the whole form before learning the permit is wrong, then must find Change vehicle to fix it; error prevention at the point of entry is absent for a rule that otherwise gets them turned away.",
+      "locations": [
+        { "route": "/vehicle.html", "state": "van", "viewport": { "width": 375 }, "selector": "#permit", "snippet": "Permit number" }
+      ],
+      "evidence": [
+        { "type": "probe", "ref": "probes/11/screenshots/van-empty-permit.png", "detail": "Van, no permit, Next -> confirm with 'Van, no permit given', no warning" },
+        { "type": "probe", "ref": "probes/10/screenshots/bad-permit.png", "detail": "permit '12345' accepted; confirm shows 'Van, permit 12345'" },
+        { "type": "probe", "ref": "probes/17/aria.yml", "detail": "after Book this slot: alert 'There is a problem' listitem 'A van needs a permit number (DRC- and five digits).' (text, no link)" },
+        { "type": "probe", "ref": "probes/12/screenshots/van-nopermit-booked.png", "detail": "same error for empty permit at Book this slot" }
+      ],
+      "factor_notes": { "frequency": "van and trailer residents who mistype or lack the permit", "impact": "rework across two steps", "persistence": "each attempt" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["validation", "permit"]
+    },
+    {
+      "title": "Book this slot shows no progress while the booking is submitted",
+      "description": "After pressing Book this slot with valid details, the page looks unchanged at 0 s and at 0.6 s (same button label and state, no message), and moves to the done page only some time before 3.1 s. The resident needs to see that the booking is being made.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true }, { "kind": "heuristic", "id": "H5" } ],
+      "impact": "On mobile data, a resident may press again or leave, unsure whether a scarce slot was booked.",
+      "locations": [ { "route": "/confirm.html", "state": "default", "viewport": { "width": 375 }, "selector": "#book", "snippet": "Book this slot" } ],
+      "evidence": [ { "type": "probe", "ref": "probes/13/", "detail": "t0.png and t600.png identical apart from focus; url changes to done.html between 0.6 s and 3.1 s" } ],
+      "factor_notes": { "frequency": "every booking", "impact": "uncertainty, possible repeat press", "persistence": "every submission" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["feedback", "submit"]
+    },
+    {
+      "title": "Cancelled booking page is headed 'Booked' and still says to show the reference",
+      "description": "With status cancelled, the page heading remains 'Booked' and the card still says 'Show this at the gate' and 'A reminder will be sent ... the evening before', with a red line 'Status: cancelled. This booking is not on the gate's list.' between them. The page contradicts itself about whether the booking is valid.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true }, { "kind": "heuristic", "id": "H4" } ],
+      "impact": "A resident glancing at the heading may drive to the centre with a cancelled booking and be turned away.",
+      "locations": [ { "route": "/done.html", "state": "cancelled", "viewport": { "width": 375 }, "selector": "h1", "snippet": "Booked" } ],
+      "evidence": [ { "type": "screenshot", "ref": "evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/cancelled/375-light.png", "detail": "h1 'Booked'; 'Status: cancelled...' followed by 'Show this at the gate' and reminder text" } ],
+      "factor_notes": { "frequency": "residents whose booking is cancelled", "impact": "wasted trip", "persistence": "each view" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["status"]
+    },
+    {
+      "title": "Expired-slot error does not name the lost slot or how to choose another",
+      "description": "When the held slot has gone, confirm shows 'There is a problem / This slot is no longer available.' and the Slot row changes to '–'. The message does not say which slot was lost, that the other details are kept, or what to do next; the only route is the small Change slot link, which reopens on Today (see finding 1).",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H9", "primary": true }, { "kind": "heuristic", "id": "H6" } ],
+      "impact": "Residents who took time over the form lose their slot and must remember the time they had chosen to find a nearby alternative.",
+      "locations": [ { "route": "/confirm.html?hold=expired", "state": "expired", "viewport": { "width": 375 }, "selector": "role=alert", "snippet": "This slot is no longer available." } ],
+      "evidence": [ { "type": "screenshot", "ref": "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png", "detail": "error box text only; 'Slot – · Change slot'" } ],
+      "factor_notes": { "frequency": "residents whose hold runs out", "impact": "must recall and reselect", "persistence": "once per expiry" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["error-recovery", "hold"]
+    },
+    {
+      "title": "A booking can only be changed or cancelled by phoning on weekdays",
+      "description": "After booking, the only stated way to change or free a slot is 'call 01632 960771 on a weekday'; phone hours are weekdays 09:00 to 17:00, while the centre is open at weekends and residents book in the evening. The done page offers only Book another slot. Residents changing a booking with their reference (a declared group) have no self-service route.",
+      "problem_type": "missing_element",
+      "criteria": [ { "kind": "heuristic", "id": "H3", "primary": true }, { "kind": "heuristic", "id": "H7" } ],
+      "impact": "A resident whose weekend plans change on a Friday evening cannot free or move the slot, and the household's two-a-week allowance may be consumed.",
+      "evidence": [
+        { "type": "absence", "ref": "evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/375-light.png", "detail": "Searched root, vehicle, confirm and done states: no 'manage', 'change' or 'cancel booking' control or reference lookup; done page controls are header links and #again 'Book another slot' (inventory.json)" },
+        { "type": "quote", "ref": "done/default", "detail": "'If you cannot come, call 01632 960771 on a weekday and we will free the slot.' Footer: 'Questions: 01632 960771, weekdays 09:00 to 17:00.'" }
+      ],
+      "factor_notes": { "frequency": "every resident whose plans change after booking", "impact": "may be impossible outside office hours", "persistence": "until the phone line opens" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["control", "manage-booking"]
+    },
+    {
+      "title": "Permit lead time and source are hidden behind an unlabelled 'i' icon",
+      "description": "That a permit is applied for on the council site and 'comes by email within two working days' appears only after tapping a bare ⓘ icon next to the vehicle buttons. The visible hint under Permit number says only 'Starts DRC-, then five digits.' Van residents booking for tomorrow need this before choosing a slot.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H10", "primary": true }, { "kind": "heuristic", "id": "H6" } ],
+      "impact": "Van and trailer residents who do not open the icon may book a slot they cannot use because the permit will not arrive in time, and are turned away.",
+      "locations": [ { "route": "/vehicle.html", "state": "van", "viewport": { "width": 375 }, "selector": "#info", "snippet": "About vans and trailers" } ],
+      "evidence": [
+        { "type": "screenshot", "ref": "evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/van/375-light.png", "detail": "ⓘ icon only; no visible text about getting a permit" },
+        { "type": "screenshot", "ref": "evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/info-open/375-light.png", "detail": "panel: '...Apply on the council site; it comes by email within two working days.'" }
+      ],
+      "factor_notes": { "frequency": "van and trailer residents without a permit", "impact": "booking that cannot be used", "persistence": "each van booking" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["help", "permit"]
+    },
+    {
+      "title": "Permit number field is shown when Car is selected",
+      "description": "With Car selected (or no vehicle), the Permit number field and its hint stay visible between the vehicle choice and the waste list. Cars need no permit, so the field asks car drivers for something they do not have.",
+      "problem_type": "single_location",
+      "criteria": [ { "kind": "heuristic", "id": "H8", "primary": true }, { "kind": "heuristic", "id": "H2" } ],
+      "impact": "Car residents, the primary group, may stop to wonder whether they need a permit or try to obtain one.",
+      "locations": [ { "route": "/vehicle.html", "state": "default", "viewport": { "width": 375 }, "selector": "#permit", "snippet": "Permit number" } ],
+      "evidence": [ { "type": "probe", "ref": "probes/11/screenshots/car.png", "detail": "Car pressed; 'Permit number / Starts DRC-, then five digits.' field visible" } ],
+      "factor_notes": { "frequency": "every car booking", "impact": "hesitation", "persistence": "every visit" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["form", "permit"]
+    },
+    {
+      "title": "No indication that a chosen slot is held only for a limited time",
+      "description": "Nothing on the slot, vehicle or confirm steps says that a chosen slot is held, or for how long, although an expired-hold state exists. Residents do not know how long a chosen slot is held (context.md).",
+      "problem_type": "missing_element",
+      "criteria": [ { "kind": "heuristic", "id": "H1", "primary": true } ],
+      "impact": "Residents booking 'while doing something else' may pause mid-form and lose the slot without warning.",
+      "evidence": [
+        { "type": "absence", "ref": "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/default/375-light.png", "detail": "Searched root/slot-chosen, vehicle/default, vehicle/van, confirm/default captures and probe 8/13/14 aria: no hold, timer or 'held until' text; found only step labels, booking summary and form fields" },
+        { "type": "screenshot", "ref": "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png", "detail": "an expiry state exists: 'This slot is no longer available.'" }
+      ],
+      "factor_notes": { "frequency": "residents interrupted mid-booking", "impact": "lost slot, restart", "persistence": "once per booking" },
+      "found_by": [ { "role": "heuristic-evaluator", "agent": "he-2", "model": "claude-opus-5-5", "method": "HE", "pass": 2 } ],
+      "evidence_level": "E0",
+      "tags": ["hold", "status"]
+    }
+  ]
+}

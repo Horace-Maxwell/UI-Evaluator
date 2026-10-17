@@ -1,0 +1,166 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230353-audit-standard",
+  "agent": "verifier-p3",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "27e5ee7307e7f66c",
+  "iteration": 1,
+  "_probe_root": "<tmp>",
+  "_notes": "Candidates F-0034/F-0035/F-0038/F-0030/F-0031 carry app.js source refs; I did not open source and verified behaviour by probe only. Overlaps for the lead's merge: F-0034 and F-0064 (late permit check); F-0045 and F-0069 (permit field shown to car owners); F-0056 and F-0068 (permit rules behind the (i) icon).",
+  "verdicts": [
+    {
+      "candidate_id": "F-0034",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: Van + permit '12345' passes Next with no message; confirm shows 'Van, permit 12345'; only after Book this slot does the alert list 'A van needs a permit number (DRC- and five digits).' as plain text, while the other field errors are links (#reg, #name, #phone, #postcode).",
+      "evidence": ["verifier-3/out2/screenshots/confirm-badpermit.png", "verifier-3/out2/aria.yml", "verifier-3/out6/aria.yml"],
+      "note": "Same problem as F-0064; merge. The 1.5 s delay figure comes from source; observed error present by 2.4 s after Book."
+    },
+    {
+      "candidate_id": "F-0035",
+      "verdict": "rejected",
+      "ceiling_flag": false,
+      "step": "reproduction",
+      "reason": "not_reproduced: the Permit number field is already visible on page load with no vehicle chosen, and is visible in the screenshot taken immediately after clicking Van; there is no 1.2 s delayed reveal and no layout shift from it on the running page.",
+      "evidence": ["verifier-3/out1/screenshots/v-default.png", "verifier-3/out1/screenshots/v-van-0.png", "verifier-3/out1/screenshots/v-van-1600.png"],
+      "note": "The visible-always behaviour is the subject of F-0045/F-0069."
+    },
+    {
+      "candidate_id": "F-0045",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced at 375 px: 'Permit number / Starts DRC-, then five digits.' and its textbox show with no vehicle chosen and stay after choosing Car; nothing visible says it is for vans and trailers only. The condition appears only after expanding the icon-only 'About vans and trailers' button. Harm holds: the label carries no 'optional' or 'vans and trailers only' cue, so a car owner reading the page can reasonably take it as required.",
+      "evidence": ["verifier-3/out1/screenshots/v-default.png", "verifier-3/out1/screenshots/v-car-1600.png", "verifier-3/out1/aria.yml"],
+      "note": "Duplicate of F-0069. The index page's Opening days panel does say 'Vans and cars with trailers need a free permit', which slightly softens the misread but is on a different step. Impact wording 'abandon the booking' is speculative."
+    },
+    {
+      "candidate_id": "F-0056",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: the (i) button has no visible text; the permit/two-working-days explanation appears only after pressing it. At 375 px after choosing Car or Van the icon wraps to its own line below the vehicle buttons.",
+      "evidence": ["verifier-3/out1/screenshots/v-car-1600.png", "verifier-3/out1/screenshots/v-van-0.png", "verifier-3/out1/screenshots/v-info-open.png"],
+      "note": "Overlaps F-0068 (same mechanism, lead-time emphasis); merge. Wrap occurs in any selected state, not only Van."
+    },
+    {
+      "candidate_id": "F-0057",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "absence",
+      "reason": "Own search: the expanded info panel is plain text ('Apply on the council site; it comes by email within two working days') with no link; the only links on the vehicle page are the header 'Dunmore District Council' (to index.html), 'Book a slot', 'Opening days' and 'Back to the slots', none to a permit application.",
+      "evidence": ["verifier-3/out1/aria.yml", "verifier-3/out1/screenshots/v-info-open.png"],
+      "note": "Header council link goes to index.html, so it does not help."
+    },
+    {
+      "candidate_id": "F-0058",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: vehicle.html?date=2026-10-17&slot=09:20 shows no day or slot text in default, car, van or info-open states; the confirm step does show 'Saturday 17 October' and '09:20 to 09:40'.",
+      "evidence": ["verifier-3/out1/screenshots/v-default.png", "verifier-3/out1/aria.yml", "verifier-3/out5/screenshots/confirm-default.png"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0064",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: Van with '12345' passes Next; confirm shows 'Van, permit 12345' without comment; after filling registration, name, mobile, postcode and pressing Book this slot the alert shows the permit error as a plain list item, whereas the other field errors (empty-submit probe) are links to #reg, #name, #phone, #postcode.",
+      "evidence": ["verifier-3/out2/screenshots/confirm-badpermit.png", "verifier-3/out2/aria.yml", "verifier-3/out6/aria.yml"],
+      "note": "Duplicate of F-0034. Empty-permit case not re-probed by me; the malformed case reproduces."
+    },
+    {
+      "candidate_id": "F-0068",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: where to apply and the two-working-day lead time are only in the panel behind the icon-only (i); the visible hint says only 'Starts DRC-, then five digits.'",
+      "evidence": ["verifier-3/out1/screenshots/v-van-1600.png", "verifier-3/out1/screenshots/v-info-open.png"],
+      "note": "Overlaps F-0056. 'Before choosing a slot' is the candidate's design suggestion; the index Opening days panel mentions permits but not the lead time."
+    },
+    {
+      "candidate_id": "F-0069",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: with Car pressed (after 1.6 s) the Permit number field and hint remain visible between vehicle choice and waste list.",
+      "evidence": ["verifier-3/out1/screenshots/v-car-1600.png"],
+      "note": "Duplicate of F-0045."
+    },
+    {
+      "candidate_id": "F-0022",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced through a real double-tap submission (not just the URL): done page h1 'Booked', red 'Status: cancelled. This booking is not on the gate's list.' then 'Show this at the gate...' and 'A reminder will be sent to 07700900123 the evening before.' Harm holds: the heading and the gate/reminder copy contradict the status line on the page residents are told to show at the gate.",
+      "evidence": ["verifier-3/out3/screenshots/dbl-after.png"],
+      "note": "The red status line is directly under the reference, so a careful reader would see it; the misread risk rests on the heading and contradictory instructions."
+    },
+    {
+      "candidate_id": "F-0023",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "absence",
+      "reason": "Own search: done page after real submissions (booked-path and cancelled-path) and done.html with no session show reference, gate instructions, 'At the centre' and 'Book another slot' only; no day, slot time, vehicle or waste. Harm holds: the page offers no way to recover the slot time.",
+      "evidence": ["verifier-3/out3/screenshots/dbl-after.png", "verifier-3/out4/final.png"],
+      "note": "The SMS reminder may restate the slot; not verifiable from the UI."
+    },
+    {
+      "candidate_id": "F-0038",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: opening /done.html in a fresh context shows 'Booked', 'Your reference DR-000000' and the normal show-at-gate instructions.",
+      "evidence": ["verifier-3/out4/final.png"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0054",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "absence",
+      "reason": "Own search of index, vehicle, confirm and done pages: nav has only 'Book a slot' and 'Opening days'; done page offers only 'Book another slot' and 'call 01632 960771 on a weekday'; footer gives phone hours weekdays 09:00-17:00; no control takes a reference. The index says the centre is open every day except Wednesday.",
+      "evidence": ["verifier-3/out3/screenshots/dbl-after.png", "verifier-3/out5/screenshots/after-change-slot.png", "verifier-3/out1/aria.yml"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0030",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: clicking Book this slot, then again 200 ms later, relabels the button 'Cancel booking'; ~2.5 s later the done page shows reference DR-265532 with 'Status: cancelled. This booking is not on the gate's list.' No confirmation was asked.",
+      "evidence": ["verifier-3/out3/screenshots/dbl-t200.png", "verifier-3/out3/screenshots/dbl-second.png", "verifier-3/out3/screenshots/dbl-after.png"],
+      "note": ""
+    },
+    {
+      "candidate_id": "F-0031",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: 600 ms after clicking Book this slot the button label and look are unchanged and no progress text appears; navigation happens later.",
+      "evidence": ["verifier-3/out2/screenshots/book-t0.png", "verifier-3/out2/screenshots/book-t600.png", "verifier-3/out3/screenshots/dbl-t200.png"],
+      "note": "Claims about styles.css come from source; verified only that nothing visible changes."
+    },
+    {
+      "candidate_id": "F-0059",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: confirm summary has 'Change slot' and 'Change vehicle' links; the Waste row 'Garden waste' has none.",
+      "evidence": ["verifier-3/out5/screenshots/confirm-default.png", "verifier-3/out2/aria.yml"],
+      "note": "Selector dd:nth-of-type(4) is approximate; element is the Waste definition."
+    },
+    {
+      "candidate_id": "F-0060",
+      "verdict": "confirmed",
+      "ceiling_flag": false,
+      "step": "none",
+      "reason": "Reproduced: from confirm for Saturday 17 October, Change slot goes to index.html (no params) with Today pressed, not Saturday 17. 'Back to the slots' on the vehicle step also links to index.html with no parameters (ARIA /url).",
+      "evidence": ["verifier-3/out5/screenshots/after-change-slot.png", "verifier-3/out1/aria.yml"],
+      "note": "In my probe Today had no slots listed, so I did not repeat the 14:20 wrong-day rebooking; the day reset itself reproduces. The weekday shown for Today depends on the app clock."
+    }
+  ]
+}

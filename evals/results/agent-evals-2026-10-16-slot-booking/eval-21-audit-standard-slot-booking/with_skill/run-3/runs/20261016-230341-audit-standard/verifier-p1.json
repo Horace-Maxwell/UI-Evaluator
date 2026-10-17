@@ -1,0 +1,104 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230341-audit-standard",
+  "agent": "verifier-p1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "4aee4a25d610ebd2",
+  "iteration": 1,
+  "_probe_dir": "<tmp>",
+  "verdicts": [
+    {
+      "candidate_id": "F-0023",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced with a real hold that lapsed (Saturday 17 09:20 chosen, details filled, 330 s wait, then Book this slot). The first press shows the summary 'There is a problem / This slot is no longer available.' as plain text with no link or next step. The Slot row shows '— · Change slot' and the filled 'Book this slot' button is still the main action. The same result appears on the ?hold=expired route. Harm check: the summary names no way out, so recovery needs a second press or finding the small Change slot link. That slows the task as stated.",
+      "corrected_description": "When the held slot has expired, the first press of 'Book this slot' shows an error summary with one plain-text item, 'This slot is no longer available.', with no link and no next step (3.3.3). The Slot row then shows '—'. A second press replaces the item with a 'Choose a slot' link but drops the explanation. On the first error, the only route forward is the small 'Change slot' link in the booking summary.",
+      "note": "Corrected the claim, based on probe 42, that a second press shows the same message. In my real-expiry probe the second press (step 29) changes the summary item to a link, 'Choose a slot' (to index.html), and drops the reason. The first-press problem stands. Recovery through Change slot also resets the day (see F-0051). I could not read the code evidence (app.js) under the verifier's rules, so I did not use it.",
+      "evidence": [
+        "scratchpad/p-wait/probe.json",
+        "scratchpad/p-wait/step-26.png",
+        "scratchpad/p-wait/step-29.png",
+        "scratchpad/p-wait/aria.yml",
+        "scratchpad/p-expired/aria.yml",
+        "scratchpad/p-expired/final.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0026",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced on the expired route at 375 px and in the real-expiry flow at 1280 px. The result arrives about 1.2 to 1.5 s after the press. At 200 ms, 300 ms and 800 ms the button looks unchanged (step-09/11, p-wait step-24) and stays enabled (the 'enabled' expect passed). There is no role=status or aria-live region on the page.",
+      "corrected_description": "After 'Book this slot' is pressed, the result takes about 1.2 to 1.5 s to appear. In that time the button looks exactly the same and stays enabled, so it can be pressed again. No visible busy indicator or live-region message is shown. The button does get aria-busy=\"true\" during the wait, which many screen readers do not announce on a button.",
+      "note": "Corrected the claim that the button is 'not marked aria-busy'. A probe showed button[aria-busy=\"true\"] present right after the click and gone after about 1.15 s (p-busy step 9, p-busy2 step 7). It is not disabled or aria-disabled. The visible feedback gap is real.",
+      "evidence": [
+        "scratchpad/p-busy/probe.json",
+        "scratchpad/p-busy2/probe.json",
+        "scratchpad/p-expired/step-09.png",
+        "scratchpad/p-expired/step-11.png",
+        "scratchpad/p-wait/step-24.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0038",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Behaviour reproduced without reading code. A slot chosen and left for about 332 s had lapsed when Book this slot was pressed. During the wait nothing changed on the page: there was no warning and no extend control (p-wait step-21, before the press, still shows '09:20 to 09:40'). My own absence search of every captured ARIA snapshot (all routes, states and widths) and of my probe snapshots for hold, held, reserv, minute, expire and countdown found only '20-minute slot' and 'Slots last 20 minutes', which describe how long a visit lasts, not a hold.",
+      "corrected_description": "A chosen slot stops being held after about five minutes (it had lapsed after about 5.5 minutes in a probe). The time limit is not stated on any page. No warning appears before it ends and there is no way to extend it. The resident finds out only when 'Book this slot' is pressed.",
+      "note": "I could not confirm the exact 5-minute figure without the code, which I may not read. The probe bounds the hold at about 5.5 minutes or less. For WCAG 2.2.1, the lead or rater should consider whether the 'essential' exception applies to holding a scarce slot. This overlaps heavily with F-0047 and F-0087, which may be the same problem.",
+      "evidence": [
+        "scratchpad/p-wait/probe.json",
+        "scratchpad/p-wait/step-14.png",
+        "scratchpad/p-wait/step-21.png",
+        "scratchpad/p-wait/step-26.png",
+        "grep -i 'held|hold|reserv|minute|expire|countdown' evidence/aria/**"
+      ]
+    },
+    {
+      "candidate_id": "F-0047",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Absence confirmed by my own search. The vehicle (default, van, info-open, errors) and confirm (default, errors) ARIA snapshots contain no hold, held, reserved or minutes text. The vehicle page has no slot summary: its ARIA shows only 'Back to the slots', the steps, the Vehicle section and the waste section. Holds do lapse: the real-expiry probe shows 'This slot is no longer available' after about 5.5 minutes.",
+      "note": "This bundles a second point: the vehicle page does not restate the chosen slot. It is minor and related, so I did not split it, but the lead may separate it. It is probably a duplicate of F-0087 and overlaps F-0038.",
+      "evidence": [
+        "evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/default/1024-dark.yml",
+        "evidence/aria/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/default/1024-dark.yml",
+        "scratchpad/p-wait/step-08.png",
+        "scratchpad/p-wait/step-14.png",
+        "scratchpad/p-wait/step-26.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0051",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375 px. 'Back to the slots' after choosing Saturday 17 09:20 opens the When page with Today pressed and no slot pressed (p-change step-08). 'Change slot' from Check and book (Saturday 17 October, 09:20) opens it with Today pressed and 'Monday 12 October'. Choosing '14:20 Few left' and pressing Next goes straight back to Check and book with Day 'Monday 12 October' and Slot '14:20 to 14:40', and nothing warns that the day changed (p-change2 aria.yml). On the expired page, Change slot links to plain index.html, the same target.",
+      "note": "I did not click Change slot on the expired page, but its link target is the same as on the default page (p-wait aria.yml). On Monday 12 the 14:20 button's name is '14:20 Few left'.",
+      "evidence": [
+        "scratchpad/p-change/step-08.png",
+        "scratchpad/p-change/aria.yml",
+        "scratchpad/p-change2/aria.yml",
+        "scratchpad/p-change2/final.png",
+        "scratchpad/p-wait/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0087",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Absence confirmed by my own search of all captured ARIA snapshots for root (default, date-chosen, slot-chosen), vehicle and confirm, plus my probe snapshots. None mentions a hold, its length or a countdown; the only time text is about how long a visit slot lasts. The real-expiry probe shows the first sign of a hold is the 'This slot is no longer available' error after it has lapsed.",
+      "note": "This is very likely a duplicate of F-0047 (same element and mechanism) and overlaps F-0038. The candidate has no locations; the lead should take them from F-0047.",
+      "evidence": [
+        "grep -i 'held|hold|reserv|minute|expire|countdown' evidence/aria/**",
+        "scratchpad/p-wait/step-14.png",
+        "scratchpad/p-wait/step-26.png"
+      ]
+    }
+  ]
+}

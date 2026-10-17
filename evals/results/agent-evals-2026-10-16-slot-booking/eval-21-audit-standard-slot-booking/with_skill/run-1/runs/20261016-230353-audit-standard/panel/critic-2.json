@@ -1,0 +1,287 @@
+{
+  "schema": "panel",
+  "role": "design-critic",
+  "run": "20261016-230353-audit-standard",
+  "agent": "critic-2",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "bbf0687fb42d0bbc",
+  "inventory": [
+    {
+      "surface": "when (/)",
+      "screens": ["root/default/1280-light", "root/slot-chosen/375-light", "root/date-chosen/1280-dark"],
+      "notes": "Masthead: generic bin/bag line glyph + 'Dunmore District Council' in bold, two text nav links. H1 'Book a slot', one-line intro, plain-text step list '1. When 2. Vehicle and waste 3. Check and book'. Day buttons (outlined, bold green text; selected = pale green tint), 'Another day' link. Slot grid of 96px bordered white boxes with times; amber 'Few left' chips and grey 'Full' chips. Few-left slots are pulled into an unlabelled group ABOVE the 'Morning' and 'Afternoon' groups, so times are out of sequence (e.g. 12:00 and 14:20 sit above 'Morning' on Monday 12). Filled green 'Next', then a full-width 'Opening days' card, footer. Eye order: H1 -> amber Few-left row -> day buttons; Next is fourth or fifth. Type: one sans (Avenir-like) at two weights. Colour: pale grey-green ground, white boxes, one green, one amber. Flat, 4px radius, borders, no shadows, no imagery. Signature candidate: the slot grid with availability tags. At 1280 the grid occupies ~720px of a 1088px column while the Opening days card spans full width.",
+      "copy": ["Choose a day and the 20-minute slot you will arrive in; the gate checks the reference and the vehicle.", "20 slots free on Monday 12 October", "A household can book two slots a week."]
+    },
+    {
+      "surface": "vehicle (/vehicle.html)",
+      "screens": ["vehicle/default/375-light", "vehicle/van/1280-light", "vehicle/errors/375-light", "vehicle/info-open/375-light"],
+      "notes": "'Back to the slots' link, H1, step list. Segmented-looking vehicle buttons (Car / Car with trailer / Van) in regular dark text plus an icon-only (i) button; the 'Permit number' field sits directly under them with almost no gap and is shown even when no vehicle (or Car) is chosen. Seven full-width checkbox rows for waste. Filled Next. Errors: red-bordered summary with underlined links, inline red messages. Info-open: a white panel explaining the DRC- permit. Eye order: H1 -> vehicle buttons -> long checkbox stack. No imagery, no focal point beyond the H1.",
+      "copy": ["Starts DRC-, then five digits.", "Rubble is limited to four bags and mattresses to two.", "Choose the vehicle you are bringing."]
+    },
+    {
+      "surface": "confirm (/confirm.html)",
+      "screens": ["confirm/default/1280-light", "confirm/expired/375-light"],
+      "notes": "H1 'Check and book', step list, full-width 'Your booking' summary card (Day, Slot, Vehicle, Waste with 'Change' links), four labelled inputs, a reassurance line, filled 'Book this slot'. Expired: red-bordered 'There is a problem / This slot is no longer available.' (plain text, not a link), Slot row reads '– · Change slot', the filled 'Book this slot' remains the primary action. Eye order: H1 -> summary card -> inputs -> button.",
+      "copy": ["Nothing is paid. Bring the reference and something with your address on it.", "For a reminder the evening before."]
+    },
+    {
+      "surface": "done (/done.html)",
+      "screens": ["done/default/1280-light", "done/default/375-dark", "done/cancelled/1280-light"],
+      "notes": "H1 'Booked'; full-width card 'Your reference' with DR-204117 large and bold; half-width 'At the centre' card; outlined 'Book another slot'. The day, slot time and vehicle are not shown. At 1280 the footer stops short and a bare grey band fills the bottom of the viewport. Cancelled state keeps the H1 'Booked', adds a small red 'Status: cancelled. This booking is not on the gate's list.' and keeps 'Show this at the gate...' and 'A reminder will be sent...'. Eye order: DR-204117 -> 'Booked' -> 'At the centre'. Dark theme is composed (lighter cards on dark ground, mint green accents).",
+      "copy": ["Show this at the gate, on your phone or on paper, with something that has your address on it.", "join the queue for the gate ... tell you which bay to use"]
+    },
+    {
+      "not_assessable": "Motion (120 ms fades), focus rings, hover states, toast; behaviour of the hold timer before expiry."
+    }
+  ],
+  "tests": {
+    "swap": {
+      "result": "fail",
+      "evidence": "Swapped products: a public library's study-room booking and a GP surgery's flu-clinic booking. Surviving unchanged: masthead layout, grey-green ground, white bordered 4px cards, single green filled button, step list, day buttons, time-slot grid with availability chips, error summary. Bound to this product: only copy (20-minute slots, gate, DRC- permit, rubble/mattress limits, Quarry Road, bays) and the vehicle step. With the name and copy hidden, a reader could tell it is 'a booking form' but not that it is for a recycling centre; the bin glyph is the only visual cue."
+    },
+    "category_guess": {
+      "result": "fail",
+      "evidence": "Predicted default for a UK council booking flow: GOV.UK-like single column, white/pale ground, one green action, error summary with red border and underlined links, bold sans headings, no imagery. Predicted opposite: a friendly eco-branded page with leaf greens, rounded cards, illustrations of bins. The render matches the default on ground, accent, type voice, error pattern and layout. Green as the action colour is the category association for recycling as well as the council's hue."
+    },
+    "similar_prompt": {
+      "result": "fail",
+      "evidence": "Similar brief: 'booking page for a council bulky-waste kerbside collection, residents on phones'. Predicted choices: council name masthead, step list, date buttons, slot grid, green primary, checkbox list of item types, reference card on done. Overlap is near-total in the visual layer; only the strings (gate, vehicle permit, bays) are driven by this brief."
+    }
+  },
+  "verdict": {
+    "value": "partly_specific",
+    "evidence": [
+      "Specific: the copy and the content model (20-minute slots, Few left/Full availability, vehicle + DRC- permit, waste limits, gate reference, Quarry Road bays).",
+      "Not specific: every identity-carrying visual element (masthead, ground, accent, type voice, shapes, done-page reference card) passes the swap test to unrelated bookings and matches the category default.",
+      "All three tests fail for the visual layer; the first viewport is a category-default form, so this is partly_specific at best on the strength of content."
+    ]
+  },
+  "verdict_at": "2026-10-16T23:30:00Z",
+  "unsealed_at": "2026-10-17T03:13:05.230Z",
+  "appeal": {
+    "value": "plain",
+    "unfinished": [
+      "Identity is only the council name set in bold body-size text next to a generic bin/bag glyph (masthead, all routes).",
+      "No focal point beyond the H1 on vehicle and confirm; pages read as a default form.",
+      "Half-empty right side at 1280/1440: text sits in a ~610px measure inside full-width cards, leaving large empty white (done 'Your reference', root 'Opening days').",
+      "Done page at 1280: footer band stops short and a bare grey band fills the bottom of the viewport.",
+      "Mismatched card widths on done: 'Your reference' full width, 'At the centre' half width with nothing beside it.",
+      "Headings differ from body only by size and weight in the same face; no typographic moment.",
+      "Colour does almost no expressive work: pale grey-green ground and one green button; amber 'Few left' is the only other hue."
+    ],
+    "evidence": [
+      "Root default 1280-light: orderly slot grid with amber chips, otherwise heading, paragraph, buttons and grid on a flat ground.",
+      "Vehicle van 1280-light: three outline buttons, one input and seven checkbox rows; nothing else to look at.",
+      "Done default 375-dark: the most finished screen (large reference, composed dark theme) yet still two text cards and an outline button.",
+      "Clean, calm and consistent, which suits Operate, but a first-time resident would see a tidy default form rather than a cared-for council service."
+    ]
+  },
+  "brand_fit": {
+    "attributes": [
+      {
+        "pair": "civic, not corporate",
+        "x_evidence": "Council name in masthead; plain public-service copy ('Questions: 01632 960771, weekdays 09:00 to 17:00'); no marketing language, no gradients, no hero.",
+        "y_evidence": "None pulls toward corporate; the generic bin glyph and unbranded name are neutral rather than civic-specific.",
+        "judgement": "reflected"
+      },
+      {
+        "pair": "plain, not bare",
+        "x_evidence": "One face, one green, borders not shadows, short concrete copy, one filled button per step.",
+        "y_evidence": "Pulls to bare: no focal point on vehicle/confirm, half-empty full-width cards at desktop, footer stopping short on done, headings that differ from body only in size, identity reduced to a name in bold text.",
+        "judgement": "partly"
+      },
+      {
+        "pair": "firm about the rules, not stern",
+        "x_evidence": "Rules sit beside controls: '20-minute slot', 'Rubble (up to four bags)', 'Starts DRC-, then five digits', 'A household can book two slots a week'; info panel explains the permit in calm words.",
+        "y_evidence": "Red-bordered 'There is a problem' summary is the standard pattern, not stern. But the cancelled done page keeps 'Booked' and 'Show this at the gate', which undercuts 'firm' (the rule that a cancelled booking is not on the gate's list is stated in small red text under a large reference).",
+        "judgement": "partly"
+      }
+    ],
+    "overall": "partly",
+    "weakest": "plain, not bare"
+  },
+  "mode_fit": "All four surfaces are Operate/Read; structure is conventional and quiet, which is correct for the mode. No hero moments, no choreography. The shortfall is the identity floor (ADR-035), not expressiveness.",
+  "rubric": {
+    "specificity": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor 2: some choices trace to the brief (copy, availability tags, vehicle/permit model), but the first viewport and the reference card are portable and match the category default; all three tests fail for visuals."
+    },
+    "hierarchy": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "Anchor 3: vehicle, confirm and done have a clear H1 -> content -> single filled button order at all widths. Lapse on root: the amber 'Few left' row competes ahead of the day buttons and pulls slots out of their time sequence; on root 1280 'Next' is the fourth or fifth fixation."
+    },
+    "coherence": {
+      "score": 3,
+      "label": "(judged)",
+      "evidence": "Anchor 3: one face, 4px radius, borders, one green family across routes and both themes; dark theme is composed (lighter cards, mint accent). Lapse: day buttons use bold green text while vehicle buttons use regular dark text and a different selected treatment, though DESIGN.md names both as button-type choices."
+    },
+    "restraint": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor cap: nothing decorative lacks a job, but there is no focal point or signature on vehicle and confirm, so Restraint is capped at 2 (restraint is not emptiness)."
+    },
+    "brand_fit": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "One pair reflected (civic), two partly (plain drifts to bare; firm undercut by the cancelled page). None contradicted."
+    },
+    "execution": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor 2: clean at the main widths; rough at the edges: done page footer stops short at 1280 leaving a bare band; half-width 'At the centre' card beside a full-width card; permit field crammed under the vehicle buttons; expired confirm shows a bare dash '–' for the slot; cancelled state keeps 'Booked' heading."
+    },
+    "appeal": {
+      "score": 2,
+      "label": "(judged)",
+      "evidence": "Anchor 2: clean but plain; identity only the name; the slot grid is the one detail with texture inside an otherwise default form. Matches the 'plain' verdict."
+    }
+  },
+  "detector_comparison": {
+    "agreements": [],
+    "detector_only": [],
+    "critic_only": [
+      "Few-left slots pulled out of time order above Morning/Afternoon",
+      "Cancelled booking page still headed 'Booked' with gate instructions",
+      "Done page omits day, slot and vehicle",
+      "Expired-slot error not linked; dash in place of slot; 'Book this slot' still primary",
+      "Permit field shown with no vehicle chosen",
+      "Identity floor missing; half-empty wide layouts; footer stops short on done"
+    ],
+    "false_positives": [],
+    "notes": "The sealed detector file contained 0 hits. Nothing to compare; no verdict change. anti-slop.md was not consulted."
+  },
+  "findings": [
+    {
+      "id": "c2-cancelled-reads-booked",
+      "title": "Cancelled booking page is still headed 'Booked' and still tells the resident to show the reference at the gate",
+      "description": "On /done.html in the cancelled state, the H1 remains 'Booked', the reference DR-204117 stays the dominant element, and the copy still reads 'Show this at the gate, on your phone or on paper...' and 'A reminder will be sent to your mobile the evening before.' The only sign of cancellation is one line of small red bold text under the reference.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "heuristic", "id": "H1"}],
+      "impact": "The page's strongest signals (heading, large reference, gate instructions) say the booking is valid, while the small red line says the opposite.",
+      "harm": {"kind": "misread", "statement": "A resident glancing at this page on their phone may take it as a valid booking, drive a loaded car to Quarry Road and be turned away at the gate because the booking is not on the gate's list."},
+      "locations": [{"route": "/done.html", "state": "cancelled", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 100, 1088, 280]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/cancelled/1280-light.png", "detail": "H1 'Booked'; red status line at y~275; 'Show this at the gate' still present"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide the cancelled state as its own page state: heading, emphasis and instructions should all say the booking is not valid, and the gate instructions should not appear."
+    },
+    {
+      "id": "c2-fewleft-out-of-order",
+      "title": "'Few left' slots are pulled out of time order into an unlabelled group above Morning and Afternoon",
+      "description": "On the when step, slots tagged 'Few left' are shown in their own row above the 'Morning' heading, mixing morning and afternoon times (Monday 12: 08:20, 09:20, 12:00, 12:20, 12:40, 13:40, 14:20). The Morning and Afternoon groups then skip those times (Morning starts 08:00, 08:40, 09:00, 09:40...). The group has no heading of its own.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "heuristic", "id": "H4"}],
+      "impact": "Residents scan for 'Saturday morning' under the Morning heading; times they want are elsewhere, and the order of the day is broken.",
+      "harm": {"kind": "task", "statement": "A resident looking for a morning slot under 'Morning' may conclude 09:20 is not offered (it sits in the unlabelled Few-left row on Monday 12), slowing the choice or leading them to pick a worse time."},
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 509, 720, 80]},
+        {"route": "/", "state": "slot-chosen", "viewport": {"width": 375}, "theme": "light", "bbox": [14, 740, 310, 345]}
+      ],
+      "evidence": [
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/root/default/1280-light.png", "detail": "Few-left row above 'Morning' heading"},
+        {"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/root/slot-chosen/375-light.png", "detail": "10 Few-left slots stacked above Morning at 375"}
+      ],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide whether availability or time is the organising axis; keep each slot in its time position and let the tag carry scarcity."
+    },
+    {
+      "id": "c2-done-missing-when",
+      "title": "Done page does not show the day, slot time or vehicle of the booking",
+      "description": "The done page shows the reference DR-204117 and generic instructions, but not 'Saturday 17 October, 09:20 to 09:40' nor the vehicle, although the confirm step shows them and the gate checks the vehicle.",
+      "problem_type": "missing_element",
+      "criteria": [{"kind": "design", "id": "DES-hierarchy", "primary": true}, {"kind": "heuristic", "id": "H6"}],
+      "impact": "The surface's job is 'know the booking is made and what to show at the gate'; the time to arrive is the most important fact after the reference.",
+      "harm": {"kind": "task", "statement": "A resident who books the evening before and checks the page on the morning may not know which 20-minute slot to arrive in, or which vehicle the booking was made for, and risk arriving outside the slot and being turned away."},
+      "locations": [{"route": "/done.html", "state": "default", "viewport": {"width": 1280}, "theme": "light"}],
+      "evidence": [{"type": "absence", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/1280-light.png", "detail": "No day, time or vehicle on the page; also absent at 375-dark"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the gate-ready summary contains; the arrival time and vehicle belong next to the reference."
+    },
+    {
+      "id": "c2-expired-dead-end",
+      "title": "Expired-slot error is plain text, the slot reads '–', and 'Book this slot' stays the primary action",
+      "description": "On confirm with an expired hold, the error summary says 'This slot is no longer available.' as plain text (the vehicle step's summary uses links), the Slot row shows a bare dash '– · Change slot', and the filled 'Book this slot' button remains the one primary action.",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}, {"kind": "heuristic", "id": "H9"}],
+      "impact": "The way out ('Change slot') is a small inline link while the visual weight still points at an action that cannot succeed.",
+      "harm": {"kind": "task", "statement": "A resident whose hold expired is drawn to press 'Book this slot' again instead of choosing a new slot, slowing recovery at the last step of the booking."},
+      "locations": [{"route": "/confirm.html?hold=expired", "state": "expired", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 295, 343, 330]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png", "detail": "error box text not a link; Slot row '–'; filled Book this slot at bottom"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide what the primary action is when the slot is gone, and make the error summary lead there as the vehicle step's summary does."
+    },
+    {
+      "id": "c2-permit-always-shown",
+      "title": "Permit number field is shown before a vehicle is chosen and sits flush under the vehicle buttons",
+      "description": "On the vehicle step, 'Permit number / Starts DRC-, then five digits.' and its input appear in the default state with no vehicle selected, directly under the vehicle buttons with almost no gap; nothing near it says it is only for vans and trailers (that rule is behind the (i) button).",
+      "problem_type": "single_location",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}, {"kind": "heuristic", "id": "H2"}],
+      "impact": "DESIGN.md asks for rules stated beside the control they govern; here the field appears without its rule.",
+      "harm": {"kind": "misread", "statement": "A resident bringing an ordinary car may think they need a DRC- permit they do not have, and stop or call the council instead of booking."},
+      "locations": [{"route": "/vehicle.html", "state": "default", "viewport": {"width": 375}, "theme": "light", "bbox": [16, 445, 343, 100]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/default/375-light.png", "detail": "Permit field visible with no vehicle chosen"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide when the permit question applies and state the van/trailer rule at the field itself."
+    },
+    {
+      "id": "c2-identity-floor",
+      "title": "Identity is only the council name and a generic bin glyph; nothing from the recycling centre's world",
+      "description": "Across all routes the masthead is 'Dunmore District Council' in bold text beside a generic bin/bag line icon. No element draws on the centre itself (the site, the bays, the gate, waste streams). The frame would serve any council booking unchanged.",
+      "problem_type": "overall_structure",
+      "criteria": [{"kind": "design", "id": "DES-specificity", "primary": true}, {"kind": "design", "id": "DES-appeal"}],
+      "impact": "Design note: the service reads as a default form; 'plain, not bare' drifts to bare.",
+      "locations": [{"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 20, 240, 30]}],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/root/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one identity element drawn from the centre's own world that can sit on every Operate surface without becoming a hero moment; the gate-ready reference on done is the natural candidate."
+    },
+    {
+      "id": "c2-wide-layout-unfinished",
+      "title": "At desktop widths full-width cards hold half-width text and the done page footer stops short",
+      "description": "At 1280: 'Your reference' and 'Opening days' cards span 1088px with text in ~610px, leaving large empty white; 'At the centre' is half width beside nothing; on done the footer band ends ~180px above the viewport bottom leaving a bare grey band.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-execution", "primary": true}],
+      "impact": "Design note: makes the desktop view look unfinished.",
+      "locations": [
+        {"route": "/done.html", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [0, 716, 1280, 184]},
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 1066, 1088, 222]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/done-html-ref-dr-204117-date-2026-10-17-slot-09-20-vehicle-c/default/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one content width for cards and text at desktop and let the page ground or footer reach the viewport bottom."
+    },
+    {
+      "id": "c2-button-families",
+      "title": "Day buttons and vehicle buttons use different text weight, colour and selected treatment",
+      "description": "Day buttons: bold green label, selected = pale green tint. Vehicle buttons: regular dark label, selected = bold dark label + tint + darker border. Both are single-choice toggles.",
+      "problem_type": "multiple_locations",
+      "criteria": [{"kind": "design", "id": "DES-coherence", "primary": true}],
+      "impact": "Design note: two treatments for one kind of control weaken the system.",
+      "locations": [
+        {"route": "/", "state": "default", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 324, 560, 44]},
+        {"route": "/vehicle.html", "state": "van", "viewport": {"width": 1280}, "theme": "light", "bbox": [96, 270, 350, 45]}
+      ],
+      "evidence": [{"type": "screenshot", "ref": "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/evidence/screens/vehicle-html-date-2026-10-17-slot-09-20/van/1280-light.png"}],
+      "found_by": [{"role": "design-critic", "agent": "critic-2", "method": "critic"}],
+      "evidence_level": "E0",
+      "recommendation": "Decide one single-choice control treatment and its selected state."
+    }
+  ],
+  "strengths": [
+    "Copy states each rule where it applies, in the attendant's brief voice ('Rubble (up to four bags)', 'Starts DRC-, then five digits').",
+    "Dark theme is composed rather than inverted: lighter cards on a dark ground, mint accent, readable reference.",
+    "One filled button per step, conventional form anatomy, error summary with linked messages on the vehicle step."
+  ],
+  "keep": "Keep the quiet one-button-per-step structure and the rule-beside-control copy; add identity without adding a second loud element per step.",
+  "pairwise": null,
+  "notes": "No baseline in packet; pairwise not run. Detector file had 0 hits. Packet README directed to screens.json evidence paths outside the packet folder; only screenshots were opened. Bash cat was denied by permission, files read with Read tool."
+}

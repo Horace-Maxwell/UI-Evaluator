@@ -1,0 +1,79 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230353-audit-standard",
+  "agent": "verifier",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "1b1403ee5945150f",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0104",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced through the real flow at 375 px: chose 10:00, Car + Garden waste, reached /confirm.html, filled all four fields correctly, waited about 330 s, pressed 'Book this slot': alert 'There is a problem / This slot is no longer available.' and the Slot row changed to '—'. No text about a hold or its length appears on the slot page (ARIA after load), the vehicle page (ARIA) or the confirm page before expiry (full-page screenshots confirm-start, filled, after-165s).",
+      "evidence": [
+        "<tmp>",
+        "<tmp>",
+        "<tmp>",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/24/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/25/aria.yml"
+      ],
+      "corrected_description": "A chosen slot lapses within a few minutes (observed: lapsed when 'Book this slot' was pressed about 5.5 minutes after reaching the confirm step), but no step mentions a hold or its length, so a resident who fills in the details slowly loses the slot without warning.",
+      "note": "I verified the lapse behaviourally and did not read the cited source; the exact 5-minute limit comes from the candidate's code evidence. I observed only that it had lapsed by about 330 s. Absence of hold text was checked on the slot, vehicle and confirm pages."
+    },
+    {
+      "candidate_id": "F-0105",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Same probe: after expiry the alert reads only 'There is a problem / This slot is no longer available.', with no reason (the hold lapsing) and no link or instruction in the alert. The entered details stay filled in.",
+      "evidence": [
+        "<tmp>",
+        "<tmp>"
+      ],
+      "corrected_description": "When the hold has lapsed, 'Book this slot' shows 'This slot is no longer available.' with no reason and no link or instruction in the error itself. The only way back is the small 'Change slot' link in the 'Your booking' summary, where the slot now shows '—', so the resident is not told why the slot went or what to do next.",
+      "note": "Corrected the 'no link back to the slots' clause: a 'Change slot' link (index.html) is on the page in the booking summary just below the alert, though the error does not point to it. Principle fit: WCAG 2.2.1 belongs to F-0104 (the timing). This candidate is error recovery, so H9 should be primary (WCAG 3.3.3 could be secondary).",
+      "suggested_criterion": "H9"
+    },
+    {
+      "candidate_id": "F-0039",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Part of it reproduces: pressing Enter in #name on /confirm.html submits the form ('There is a problem' summary for reg, mobile and postcode, probes/27). The core claim, that an Enter which commits an IME candidate also submits (no isComposing/229 guard), needs a real composition session. uie probe cannot drive one: its press sends a plain keydown. I may not read the cited source.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/27/aria.yml",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/27/screenshots/after-enter-name.png"
+      ],
+      "note": "A human with an IME (for example Japanese input) should type a name in 'Your name' and commit a candidate with Enter, then see whether the form submits. The #date handler on the slot page was not exercised: no #date field was visible in the default state ('Another day' opens it)."
+    },
+    {
+      "candidate_id": "F-0102",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375 px. On initial load, at 200 ms the 'Slots' heading has nothing beneath it: no loading text or indicator, and slots appeared after about 800 ms. After tapping 'Saturday 17', at 150 ms and 550 ms the region still shows only the old caption, with no slots and no indicator; slots rendered after about 880 ms in total.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/screenshots/load-200ms.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/screenshots/sat-150ms.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/screenshots/sat-550ms.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/probe.json"
+      ],
+      "note": "Timing is against a local server; the harness filter does not apply because the blank state is the app's own rendering, captured in the foreground with a running clock."
+    },
+    {
+      "candidate_id": "F-0103",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375 px: 550 ms after tapping 'Saturday 17' (the button already shows as pressed), the caption under 'Slots' still reads 'Monday 12 October' over an empty area. It updates only when the new slots render.",
+      "evidence": [
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/screenshots/sat-550ms.png",
+        "<round>/eval-21-audit-standard-slot-booking/with_skill/run-1/workspace/.ui-evaluator/runs/20261016-230353-audit-standard/probes/26/screenshots/sat-loaded.png"
+      ],
+      "note": "This is a separate problem from F-0102 (stale label versus no loading indicator), though one fix may address both."
+    }
+  ]
+}

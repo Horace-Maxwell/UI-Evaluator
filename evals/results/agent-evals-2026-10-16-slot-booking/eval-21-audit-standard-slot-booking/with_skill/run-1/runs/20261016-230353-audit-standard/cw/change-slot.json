@@ -1,0 +1,99 @@
+{
+  "schema": "cw-record",
+  "run": "20261016-230353-audit-standard",
+  "agent": "cw-2",
+  "model": "claude-opus-5-5",
+  "journey": "change-slot",
+  "variant": "full",
+  "persona": {
+    "group": "Resident who has reached the confirm page and wants a different slot",
+    "knows": ["which day and slot they chose a moment ago (Saturday 17 October, 09:20)", "that the afternoon suits them better now", "the booking flow they just went through (When, Vehicle and waste, Check and book)"],
+    "does_not_know": ["whether changing the slot keeps the vehicle, the waste and the details they entered"],
+    "context": "On a phone (375 px), mid-booking, after a message changed the morning's plans; often older, doing something else at the same time",
+    "goal_in_own_words": "Move it to the afternoon on Saturday, 14:20, without starting again"
+  },
+  "task": "Keep Saturday 17 October but move the slot to 14:20 and get back to the confirm step. Scenario: you have reached the confirm page with Saturday 17 October at 09:20 chosen, but the morning no longer works.",
+  "start_state": {
+    "url": "/confirm.html?date=2026-10-17&slot=09:20&vehicle=car&waste=garden,wood",
+    "data": "booking in progress for Saturday 17 October 09:20, car, garden waste and wood; today is Monday 12 October 2026 10:05",
+    "viewport_width": 375,
+    "locale": "en-GB"
+  },
+  "sequence": [
+    "1. On Check and book, activate the 'Change slot' link next to the slot",
+    "2. On the When page, choose the day button 'Saturday 17' and wait for the slots to appear",
+    "3. Choose the slot '14:20'",
+    "4. Press 'Next' and land back on Check and book showing 14:20 to 14:40 on Saturday 17 October"
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "action": "click role=link[name=\"Change slot\"] on /confirm.html",
+      "sub_goal": "Get to the place where the slot can be changed",
+      "visible_cues": "'Your booking' box at the top: 'Slot 09:20 to 09:40 · Change slot' (underlined link), 'Vehicle Car · Change vehicle'.",
+      "most_likely_action": "Tap 'Change slot'",
+      "answers": {
+        "q1": { "answer": "yes", "story": "The persona wants a different slot; the summary shows the slot they no longer want, so changing it is the obvious next effect.", "evidence": ["probes/1/final.png", "probes/1/aria.yml"] },
+        "q2": { "answer": "yes", "story": "The link sits right after the slot time, in view at the top of the page at 375 px without scrolling.", "evidence": ["probes/1/final.png"] },
+        "q3": { "answer": "yes", "story": "'Change slot' uses the persona's own word 'slot' and sits on the slot row.", "evidence": ["probes/1/aria.yml: link \"Change slot\""] },
+        "q4": { "answer": "no", "story": "The link opens the start page 'Book a slot' with step '1. When' highlighted and 'Today' pressed; Saturday 17 and 09:20 are not shown as chosen, and nothing says the vehicle, waste and details are kept. The persona, who already did not know whether changing keeps the rest, sees what looks like a fresh booking and may think they have started over.", "evidence": ["probes/2/final.png", "probes/2/aria.yml: heading \"Book a slot\"; button \"Today\" [pressed]", "probes/2/probe.json: final_url /index.html"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The tap works, but the page that opens looks like the start of a new booking (heading 'Book a slot', 'Today' selected, no slots, no mention of the existing booking). Missing feedback: that this is changing the existing booking and that the vehicle, waste and details are kept. The persona may hesitate, go back, or proceed expecting to re-enter everything.",
+      "missing": "feedback"
+    },
+    {
+      "n": 2,
+      "action": "click [data-quick=\"2026-10-17\"] ('Saturday 17'), then slots appear",
+      "sub_goal": "Get the Saturday slots on screen",
+      "visible_cues": "Day buttons 'Today' (pressed), 'Tomorrow', 'Saturday 17', 'Sunday 18', 'Another day'; a 'Slots' heading with nothing under it, then 'Next'.",
+      "most_likely_action": "Tap 'Saturday 17' (after noticing that Today, not Saturday, is selected)",
+      "answers": {
+        "q1": { "answer": "no", "story": "The persona already chose Saturday a moment ago and expects it to still be chosen; their goal is to pick a new time, not a day. With 'Today' pressed and an empty 'Slots' area, they need to realise the day was reset and must be chosen again. An empty slots area under a pressed 'Today' can also read as 'no slots today' or still loading.", "evidence": ["probes/2/final.png", "probes/2/aria.yml: region \"Slots\" with empty paragraphs and empty group"] },
+        "q2": { "answer": "yes", "story": "'Saturday 17' is a large button in view.", "evidence": ["probes/2/final.png"] },
+        "q3": { "answer": "yes", "story": "'Saturday 17' matches the persona's 'Saturday'.", "evidence": ["probes/2/aria.yml: button \"Saturday 17\""] },
+        "q4": { "answer": "yes", "story": "The button shows a pressed state at once; about 0.9 s later the slots appear with 'Saturday 17 October' and '22 slots free on Saturday 17 October'. No loading indicator in that gap, but it is short.", "evidence": ["probes/4/step-02.png (pressed, slots not yet shown)", "probes/4/final.png", "probes/4/probe.json: expect .slot 919 ms"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "Missing knowledge: that the earlier choice of Saturday 17 was not carried over and the day must be picked again. Same root cause as step 1 (the When page does not restore the booking being changed).",
+      "missing": "knowledge"
+    },
+    {
+      "n": 3,
+      "action": "click .slot[data-slot=\"14:20\"]",
+      "sub_goal": "Pick 14:20",
+      "visible_cues": "Under 'Slots': first a block of ten 'Few left' slots (08:20, 08:40, 09:00, 09:40, 10:20, 10:40, 13:40, 14:00, 15:00, 16:40) above any heading; then 'Morning' (08:00, 09:20, 10:00, 11:00-11:40 Full); then 'Afternoon' (12:00 Full, 12:20, 12:40 Full, 13:00 Full, 13:20, 14:20, 14:40, 15:20, 15:40, 16:00 Full, 16:20, 17:00, 17:20).",
+      "most_likely_action": "Scan the first block for 14:20 (it holds 14:00 and 15:00 next to each other), then look further down; or jump to 'Afternoon'",
+      "answers": {
+        "q1": { "answer": "yes", "story": "Picking the time is exactly the persona's goal.", "evidence": ["probes/4/final.png"] },
+        "q2": { "answer": "no", "story": "Visually the 'Few left' slots are pulled out of time order into an unlabelled block above 'Morning'. In that block 14:00 is followed directly by 15:00, so a persona scanning from the top for 14:20 may conclude it is not available. The 'Afternoon' group, where 14:20 is, lacks 13:40, 14:00, 15:00 and 16:40, so it is not a complete afternoon list either. The accessibility tree lists slots in time order under the headings, so the visual and reading orders differ.", "evidence": ["probes/4/final.png", "probes/4/aria.yml: group \"Slots\" chronological order, 'Few left' slots inside Morning/Afternoon"] },
+        "q3": { "answer": "yes", "story": "The button text '14:20' is exactly the time wanted.", "evidence": ["probes/4/aria.yml: button \"14:20\""] },
+        "q4": { "answer": "yes", "story": "14:20 gets a darker border, tinted fill and bold text, and aria-pressed=true. No text echo of the choice, but the change is visible on the tapped button.", "evidence": ["probes/5/final.png", "probes/5/aria.yml: button \"14:20\" [pressed]"] }
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "Missing knowledge: that 'Few left' slots are shown in a separate block out of time order, and that the rest of the afternoon is further down. The persona may read the first block as the timetable, see 14:00 then 15:00, and think 14:20 is gone.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 4,
+      "action": "click role=button[name=\"Next\"]",
+      "sub_goal": "Go back to booking with the new slot",
+      "visible_cues": "'Next' button below the slot grid; step list shows '1. When' current.",
+      "most_likely_action": "Tap 'Next'",
+      "answers": {
+        "q1": { "answer": "yes", "story": "With a time picked, the persona wants to move on; the step list suggests more steps follow.", "evidence": ["probes/5/final.png"] },
+        "q2": { "answer": "yes", "story": "'Next' is the only primary button, directly under the grid.", "evidence": ["probes/5/final.png"] },
+        "q3": { "answer": "yes", "story": "'Next' is the generic move-on label; it is the only forward action. It does not say it returns to Check and book, but the persona has no other candidate.", "evidence": ["probes/5/aria.yml: button \"Next\""] },
+        "q4": { "answer": "yes", "story": "The page returns straight to 'Check and book' with 'Slot 14:20 to 14:40', Day 'Saturday 17 October', Vehicle Car and Waste 'Garden waste, Wood' kept. A further probe showed registration and name typed before changing were also kept. No message says the slot was changed, but the summary at the top shows it.", "evidence": ["probes/7/final.png", "probes/7/aria.yml", "probes/9/final.png (details kept)"] }
+      },
+      "verdict": "would",
+      "missing": null
+    }
+  ],
+  "overall": "would_with_effort",
+  "failure_points": [
+    "Step 1 CW-Q4 and step 2 CW-Q1: the When page opens reset (Today selected, no slot) with no sign it is changing the existing booking",
+    "Step 3 CW-Q2: 'Few left' slots are shown out of time order above the Morning heading, splitting the afternoon list"
+  ],
+  "notes": "Walked with the sequence fixed from journeys.json; the sequence ran as defined (final URL /confirm.html, #sum-slot 14:20 to 14:40). The confirm URL after the change has no query string; state appears kept in the browser. Probe 9 (outside the defined sequence) checked that registration and name typed before changing survive; they do. These are failure-point hypotheses (E0), not predicted user outcomes; the walker knew the path."
+}

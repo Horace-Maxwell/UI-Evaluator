@@ -1,0 +1,227 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230412-audit-standard",
+  "agent": "verifier-p3",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "cbdbd1bde6b27f67",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0032",
+      "verdict": "rejected",
+      "step": "reproduction",
+      "reason": "not_reproduced: the Permit number field is visible on first load (expect #permit-wrap visible passed), stays visible after Car (screenshot at 1.7 s), and is visible 0 ms after Van is pressed. No delayed reveal can be observed on the page.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/default.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/car-1700ms.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/van-0ms.png"
+      ],
+      "ceiling_flag": false,
+      "note": "The code path cited may exist, but the field is never hidden in the running UI, so the delay has no visible effect. The real issue here is the reverse one (field always shown), covered by F-0048/F-0055/F-0088."
+    },
+    {
+      "candidate_id": "F-0033",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: Van + permit '12345' + Garden waste + Next went to the confirm page with no error ('Van, permit 12345'); after filling details and Book this slot, alert 'There is a problem' lists 'A van needs a permit number (DRC- and five digits).' as plain text (no link) on a page without a permit field.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-B/screenshots/confirm.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-B/aria.yml"
+      ],
+      "ceiling_flag": false,
+      "note": "Empty-permit path also shown in the candidate's own probes 15/21/23."
+    },
+    {
+      "candidate_id": "F-0041",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced by attribute probes: #waste is a div without role carrying aria-describedby containing waste-hint; no checkbox and no fieldset has aria-describedby in the default state.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-D/probe.json",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-D/aria.yml"
+      ],
+      "ceiling_flag": false,
+      "corrected_description": "The waste hint ('Rubble is limited to four bags and mattresses to two') is referenced by aria-describedby on #waste, a plain div with no role, so it is not associated with the checkboxes; no checkbox or fieldset carries the description. The limits themselves are still exposed in the checkbox names 'Rubble (up to four bags)' and 'Mattresses (up to two)', and the hint is read inside the 'What are you bringing?' group in browse mode.",
+      "note": "Impact overstated: the limits are in the accessible names of the two limited checkboxes, so screen-reader users do hear them when they reach those options."
+    },
+    {
+      "candidate_id": "F-0042",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: #vehicle and #waste have no tabindex in the error state; activating the 'Choose the vehicle you are bringing' summary link scrolls to the Vehicle block, but focus goes to body (link no longer focused, expect body focused passed) rather than to a control.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-C/screenshots/after-link.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-C2/probe.json"
+      ],
+      "ceiling_flag": false,
+      "corrected_description": "The vehicle-step error-summary links go to #vehicle and #waste, containers without tabindex. Activating a link scrolls to the block but focus moves to the document body, not to a vehicle button or checkbox, so screen readers do not announce the field to fix. In Chromium the next Tab does reach the 'Car' button through the sequential-focus starting point.",
+      "note": "The candidate's 'leaves focus on the link, and the next Tab continues from the summary' did not reproduce: focus left the link and the next Tab landed on 'Car'. Keyboard impact is therefore smaller than stated; the screen-reader announcement gap remains."
+    },
+    {
+      "candidate_id": "F-0046",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Absence confirmed with own search: ARIA of /vehicle.html?date=2026-10-17&slot=09:20 (default, after Car/Van, error state) contains no day, date or time text; the step shows only steps list, vehicle and waste questions and 'Back to the slots'. Confirm page shows 'Saturday 17 October' and '09:20 to 09:40'.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-D/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/default.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-C/screenshots/errors.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-B/aria.yml"
+      ],
+      "ceiling_flag": false,
+      "note": "Impact 'losing time on a held slot' is speculative; no hold countdown was observed on this step."
+    },
+    {
+      "candidate_id": "F-0048",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: after pressing Car the Permit number field and 'Starts DRC-, then five digits.' remain, with no 'only for vans and trailers' text; the rule is only in the panel behind the icon-only 'About vans and trailers' button. Next with Car and empty permit proceeds to the confirm page.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/car-1700ms.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/screenshots/before-book.png"
+      ],
+      "ceiling_flag": false,
+      "note": "Same element and mechanism as F-0055 and F-0088 (permit field shown regardless of vehicle); likely duplicates for the lead to merge."
+    },
+    {
+      "candidate_id": "F-0055",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: field visible in the default state with no vehicle chosen, after Car and after Van, unchanged. Harm holds: PRODUCT.md lists 'that vans and trailers need a permit' as something the primary (car) group does not know, and nothing at the field says it applies only to vans and trailers; the visible page offers only an unlabelled (i) icon.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/default.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/car-1700ms.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/van-0ms.png",
+        "PRODUCT.md:17"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0048 / F-0088. Design criteria DES-brandfit/DES-execution are secondary; H5/H2 primary fits."
+    },
+    {
+      "candidate_id": "F-0056",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: the (i) button has the same outlined box as Car / Car with trailer / Van, shows only an icon, wraps alone onto the next row at 375 px; its name 'About vans and trailers' is not visible; the panel holds the only explanation of the permit (free, from the council, by email within two working days).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/default.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/info-open/375-light.yml"
+      ],
+      "ceiling_flag": false,
+      "note": "Overlaps F-0087 (same control, design angle). The home page 'Opening days' also says vans and trailers need a free permit, so 'only explanation' holds for what the permit is and how to get it, not for the fact that one is needed."
+    },
+    {
+      "candidate_id": "F-0057",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Confirmed from ARIA: the info panel text 'Apply on the council site; it comes by email within two working days.' has no link node, and the home 'Opening days' paragraph 'Vans and cars with trailers need a free permit.' has no link. PRODUCT.md lists 'where the permit number comes from' as a knowledge gap of van/trailer residents.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/info-open/375-light.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-G/aria.yml",
+        "PRODUCT.md:18"
+      ],
+      "ceiling_flag": false,
+      "note": "Static content; reproduction is the ARIA read of the live page (v3-G captured index.html with the same Opening days text)."
+    },
+    {
+      "candidate_id": "F-0087",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: Car, Car with trailer and Van are separate outlined boxes with gaps (not a segmented control), and the (i) button uses the same box style directly after Van, wrapping alone at 375 px. Harm holds against DESIGN.md:131 which names 'the segmented vehicle control'.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/van-0ms.png",
+        "DESIGN.md:131"
+      ],
+      "ceiling_flag": false,
+      "note": "Same (i) control as F-0056; lead may merge the 'looks like a fourth option' part."
+    },
+    {
+      "candidate_id": "F-0088",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: Permit number field with 'Starts DRC-, then five digits.' shown in default and error states with no vehicle selected, and after Car. DESIGN.md:143 says 'Do state a rule where it applies.'; the rule's scope (vans and trailers) is not stated at the field.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-A/screenshots/default.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-C/screenshots/errors.png",
+        "DESIGN.md:143"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0048 / F-0055."
+    },
+    {
+      "candidate_id": "F-0036",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: valid booking, Book pressed, a second press 300 ms later turned the label to 'Cancel booking'; after the wait the done page shows h1 'Booked', reference DR-265532 and 'Status: cancelled. This booking is not on the gate's list.'",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-F/screenshots/second-press.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-F/aria.yml"
+      ],
+      "ceiling_flag": false,
+      "corrected_description": "While the 1.5 s booking is pending, a second press on 'Book this slot' relabels the button 'Cancel booking'; when the wait ends the booking is saved as cancelled and the resident lands on done.html, whose heading still says 'Booked' while a smaller line says 'Status: cancelled. This booking is not on the gate's list.'",
+      "note": "The done page does state the cancelled status in a paragraph, so the loss is not entirely silent, but the h1 'Booked' contradicts it."
+    },
+    {
+      "candidate_id": "F-0037",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: 0 ms and 700 ms after pressing Book this slot the label stays 'Book this slot', the button stays enabled, fields remain unchanged, no spinner or message; only the button shade changes slightly (pressed/focus style). Done page appears after about 1.5 s.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/screenshots/before-book.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/screenshots/book-700ms.png"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0049. The aria-busy / CSS claim was not checked (source not read); the visible absence of progress is what was reproduced."
+    },
+    {
+      "candidate_id": "F-0049",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced as for F-0037: no busy state, label unchanged and button enabled at 700 ms; done page reached after the ~1.5 s wait.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/screenshots/book-700ms.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/aria.yml"
+      ],
+      "ceiling_flag": false,
+      "note": "Duplicate of F-0037. Its factor note says repeat presses were harmless; v3-F shows a second press records the booking as cancelled (F-0036)."
+    },
+    {
+      "candidate_id": "F-0060",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: on the confirm summary Day and Waste have no link, Slot has 'Change slot', Vehicle has 'Change vehicle' (to vehicle.html, where waste is also chosen).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-B/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-E/screenshots/before-book.png"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0063",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Reproduced: after choosing Saturday 17, 09:20 and reaching the confirm page, 'Change slot' opens index.html with 'Today' pressed, 'Monday 12 October' and no slot pressed. 'Back to the slots' links to the same bare index.html.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-G/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-G/screenshots/slots-after-change.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-D/aria.yml"
+      ],
+      "ceiling_flag": false
+    },
+    {
+      "candidate_id": "F-0080",
+      "verdict": "confirmed",
+      "step": "none",
+      "reason": "Absence confirmed with own search: navigation 'Main' has only 'Book a slot' and 'Opening days' on index, vehicle, confirm and done pages; done page offers only 'Book another slot' and 'If you cannot come, call 01632 960771 on a weekday and we will free the slot.'; no reference field anywhere. PRODUCT.md:25 declares 'Change the slot of an existing booking' a core task.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-F/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-G/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-D/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/v3-B/aria.yml",
+        "PRODUCT.md:25"
+      ],
+      "ceiling_flag": false,
+      "note": "I did not probe unlinked URLs (e.g. /manage.html); absence covers everything reachable from the UI."
+    }
+  ]
+}

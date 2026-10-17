@@ -4,10 +4,10 @@
 //   node tools/bench/record-evals.mjs <round-dir> --date <YYYY-MM-DD> [--out evals/results/agent-evals-<date>] [--grading <dir>]
 //
 // For every graded run it keeps grading.json, timing.json, the final reply and the run's decision files (manifest,
-// merged findings, verifier verdicts, ratings, walkthrough records, gates, coverage, report, report lint, diff, fix
-// review, the register, feedback themes and the study results), but no screenshots, packets or transcripts. It
-// writes summary.json and summary.md: assertions passed per eval and arm, metrics (with the adjusted-Wald intervals
-// grade-eval.mjs computes), tokens, cost and time. Control-arm runs (without_skill) are stored beside the skill's.
+// merged findings, verifier verdicts from verifier.json and the parallel parts' verifier-p<k>.json, ratings,
+// walkthrough records, gates, coverage, report, report lint, diff, fix review, the register, feedback themes and the
+// study results), but no screenshots, packets or transcripts. It writes summary.json and summary.md: assertions
+// passed per eval and arm, metrics (with the adjusted-Wald intervals grade-eval.mjs computes), tokens, cost and time. Control-arm runs (without_skill) are stored beside the skill's.
 // --grading copies the graders' folder (instructions, packets, answers, agreement, consensus) to grading/. Local
 // absolute paths in every stored text file become <round>, <repo>, <tmp> or ~, so the record names no machine.
 import fs from 'node:fs';
@@ -55,6 +55,8 @@ for (const { evalDir, arm, runName, runDir } of runDirs) {
   const runs = path.join(ws, '.ui-evaluator/runs');
   for (const r of fs.existsSync(runs) ? fs.readdirSync(runs).filter((x) => x !== 'LATEST') : []) {
     for (const f of KEEP_RUN) copy(path.join(runs, r, f), path.join(dest, 'runs', r, f));
+    // Parallel verifiers write verifier-p<k>.json beside (or instead of) verifier.json.
+    for (const f of fs.readdirSync(path.join(runs, r)).filter((n) => /^verifier-p\d+\.json$/.test(n))) copy(path.join(runs, r, f), path.join(dest, 'runs', r, f));
     for (const d of KEEP_DIRS) copy(path.join(runs, r, d), path.join(dest, 'runs', r, d));
   }
   const decided = grading.expectations.filter((e) => e.passed !== null);

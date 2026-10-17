@@ -1,0 +1,231 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230341-audit-standard",
+  "agent": "verifier-p2",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "cd3380ab70be85c8",
+  "iteration": 1,
+  "verdicts": [
+    {
+      "candidate_id": "F-0020",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: after choosing Saturday 17, Tab x3 focuses 08:00 in the Morning row, the next Tab focuses 08:20 in the 'Few left' block drawn above the Morning heading. Captured screens at 320, 375 and 1280 show all 'Few left' slots (including 13:40, 14:00, 15:00, 16:40) above 'Morning'; the ARIA tree keeps them in clock order under Morning/Afternoon.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-05.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/probe.json",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/1280-light.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/320-light.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/aria/root/slot-chosen/1280-light.yml"
+      ],
+      "note": "Same element and mechanism as F-0029 and F-0091; the lead should merge them."
+    },
+    {
+      "candidate_id": "F-0021",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280: expect .slot[data-slot=08:00] focused passed, and the screenshot shows 08:00 unchanged (no outline, border or fill change); 08:20 focused likewise. Shift+Tab back to the 'Saturday 17' day button shows a clear dark focus ring, so the defect is specific to slot buttons and not width-dependent.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-05.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-08.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-10.png"
+      ],
+      "note": "Same problem as F-0027 (slot focus indicator suppressed); merge."
+    },
+    {
+      "candidate_id": "F-0024",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Screens show the current step in bold ('1. When' on /); the ARIA trees on /, /vehicle.html and /confirm.html (including my probes 70, 75 and 77) list the three steps as plain listitems with no current state or hidden text.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/75/aria.yml",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/77/aria.yml",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/aria/vehicle-html-date-2026-10-17-slot-09-20/default/1280-light.yml"
+      ],
+      "note": "Each step page also has a distinct h1, which partly conveys the step."
+    },
+    {
+      "candidate_id": "F-0027",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Behaviour reproduced: keyboard-focused slot buttons show no visible indicator (probe 69), while other controls show the :focus-visible outline. I did not check the source-code mechanism cited; the visible defect is confirmed.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-05.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-10.png"
+      ],
+      "note": "Duplicate of F-0021; merge. The cause in the description (injected .slot:focus{outline:0}) is the author's code reading, not verified by me."
+    },
+    {
+      "candidate_id": "F-0028",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 320 px: scrolling the 09:00 slot (third column) into view scrolls the page horizontally (the 16 px left padding disappears and the header rule ends short of the right edge), so the grid is wider than the viewport. The captured 320-light full-page screenshot is 335 px wide, also showing the document exceeds 320 px.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/79/step-04.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/320-light.png"
+      ],
+      "note": "The pixel arithmetic in the description is from code; observed overflow at 320 is roughly 15 px of page width plus the right column crossing the content padding. Width 360 not probed."
+    },
+    {
+      "candidate_id": "F-0029",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Visual order vs DOM/focus order mismatch reproduced (probe 69; captured screens at 375/1280 show 'Few left' slots above 'Morning', ARIA in time order).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-05.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/date-chosen/375-light.png"
+      ],
+      "note": "Duplicate of F-0020 (and F-0091); merge. Inline order:-1 cause not verified by me."
+    },
+    {
+      "candidate_id": "F-0030",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: on Today (Monday 12 October) 08:00 is offered as free and selectable; after choosing it, Car, Garden waste and filling all four details, 'Book this slot' returns 'There is a problem: The 08:00 slot today can no longer be booked. Choose another slot or day.'",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/75/step-02.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/75/aria.yml",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/75/final.png"
+      ],
+      "note": "The 10:35 cut-off value is from code; I reproduced only the 08:00 case."
+    },
+    {
+      "candidate_id": "F-0031",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 375: right after clicking Saturday 17 the Slots region shows only the heading and a date line, then blank space and Next; no spinner, skeleton or loading text. Slots appeared ~0.9-1.3 s later.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-03.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-06.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-08.png"
+      ],
+      "note": "Additional observation: during the blank interval the date line still read 'Monday 12 October' (the previous day) although Saturday 17 was pressed."
+    },
+    {
+      "candidate_id": "F-0032",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: pressing Next ~40 ms after choosing Saturday 17 (slots still loading) produced no message, navigation or visible change (step-06). Pressing Next after the slots loaded did show 'Choose a slot first.', so the silence is specific to the loading window.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-06.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-11.png"
+      ],
+      "note": "Probe 20 (cited by F-0065) shows the same silent press during the initial page-load window."
+    },
+    {
+      "candidate_id": "F-0033",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: from the confirm page for Saturday 17 at 09:20, 'Change slot' opens the When step with 'Today' pressed, 'Monday 12 October' shown and no slot pressed.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/77/aria.yml",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/77/final.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0040",
+      "verdict": "needs_human",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "The claim concerns Enter during IME composition; the probe tool cannot drive an IME composition, and browsers differ in whether the composition-ending Enter reaches a key==='Enter' handler (Chromium usually reports 'Process'/229, Safari reports Enter with isComposing). Needs a manual check with a Japanese/Chinese IME in Safari and Chromium on the confirm-step fields.",
+      "evidence": [],
+      "note": "Plain Enter in #date does submit 'Show slots' (probe 78), so the handlers exist."
+    },
+    {
+      "candidate_id": "F-0043",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Measured from captured screenshots: 'Few left' tag text (188,124,14) on (251,239,218) = 3.06:1 in light; (171,124,43) on (60,50,32) = 3.38:1 in dark. Both below 4.5:1 for 16 px bold text.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/1280-light.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/1280-dark.png"
+      ],
+      "note": "Pixel sampling on antialiased text; darkest glyph pixel used, so the true ratio is not higher."
+    },
+    {
+      "candidate_id": "F-0044",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: after 'Another day', #date[inputmode=numeric] is present and the hint reads 'As DD/MM/YYYY, up to 14 days ahead.'; typing '17102026' and Enter is accepted and reformatted to 17/10/2026, and the hint never says digits alone work.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/78/step-04.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/78/step-08.png"
+      ],
+      "note": "The iOS keypad lacking '/' is platform behaviour for inputmode=numeric, not observed on a device here."
+    },
+    {
+      "candidate_id": "F-0065",
+      "verdict": "rejected",
+      "step": "reproduction",
+      "ceiling_flag": false,
+      "reason": "Not reproduced. With slots loaded and none chosen, pressing Next shows a red 'Choose a slot first.' message above the grid, exposed as an alert in the ARIA tree, and scrolls to it. The cited probe 20 pressed Next immediately after page load, during the 900 ms slot-loading window, which is the behaviour already captured by F-0032.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/step-11.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/70/aria.yml",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/20/probe.json"
+      ],
+      "note": "The message is an inline line, not a 'There is a problem' summary as on the later steps; if that inconsistency matters it is a separate, much smaller claim."
+    },
+    {
+      "candidate_id": "F-0091",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "On / default (Monday) the 'Few left' slots 08:20, 09:20, 12:00, 12:20, 12:40, 13:40, 14:20 sit in an unlabelled first row; the Morning group reads 08:00, 08:40, 09:00, 09:40... with 08:20 and 09:20 missing. Harm plausible: a resident reading the 'Morning' group sees no 08:20 or 09:20 there, and nothing labels the top row as containing morning times.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/1280-light.png",
+        ".ui-evaluator/runs/20261016-230341-audit-standard/probes/69/step-05.png"
+      ],
+      "note": "Same element and mechanism as F-0020/F-0029; merge, keeping this visual-grouping harm."
+    },
+    {
+      "candidate_id": "F-0092",
+      "verdict": "rejected",
+      "step": "harm",
+      "ceiling_flag": false,
+      "reason": "The tag is on the page, but the named harm is not shown: nothing on the page tells residents a slot holds one vehicle, so 'Few left' reads as ordinary scarcity that urges booking sooner rather than waiting; 'Full' slots are disabled and cannot be chosen, so no one can act on believing a Full slot might take them.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/375-light.png",
+        "PRODUCT.md:11"
+      ],
+      "note": "PRODUCT.md:11 quote verified, but the same line says about 120 vehicles a day against 29 slots a day, so the capacity model is itself unclear; the owner may want to clarify whether 'Few left' is accurate copy."
+    },
+    {
+      "candidate_id": "F-0093",
+      "verdict": "rejected",
+      "step": "harm",
+      "ceiling_flag": false,
+      "reason": "The fills are indeed near-identical (selected 237,243,240 vs Full 244,246,245), but the selected 09:20 has a dark green border, bold near-black text and no tag, while every Full tile has greyed text and a 'Full' label. In the row it is the most salient tile, so reading it as Full or being unsure which is chosen is not borne out.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/slot-chosen/1280-light.png"
+      ],
+      "note": "Not a taste rejection: the misread named in the harm does not follow from what the tile shows."
+    },
+    {
+      "candidate_id": "F-0095",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "At 1280 the slot grid is seven ~96 px columns ending near x=816 while the content column and Opening days card run to x=1184; Next sits at y~1027, below the 900 px fold. The requirement is verified in DESIGN.md:119: 'slots in a grid that fills the width from 96 px columns, a content width of 1120 px.'",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230341-audit-standard/evidence/screens/root/default/1280-light.png",
+        "DESIGN.md:119"
+      ],
+      "corrected_description": "At 1280 the slot grid is fixed at seven ~96 px columns, ending near x=816, while the content column, the Opening days card and the Your booking card run to 1184 px; DESIGN.md asks for a grid that fills the width.",
+      "note": "Removed '768' from the description: at 768 seven columns nearly fill the content column, and only 1280 is listed as a location."
+    }
+  ]
+}

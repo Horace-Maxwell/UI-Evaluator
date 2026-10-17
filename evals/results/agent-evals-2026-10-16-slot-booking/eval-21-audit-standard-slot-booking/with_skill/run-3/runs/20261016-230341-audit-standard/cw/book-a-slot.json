@@ -1,0 +1,179 @@
+{
+  "schema": "cw-record",
+  "run": "20261016-230341-audit-standard",
+  "agent": "cw-1",
+  "model": "claude-opus-5-5",
+  "journey": "book-a-slot",
+  "variant": "full",
+  "persona": {
+    "group": "Resident booking a drop-off for the first time",
+    "knows": ["the car is loaded with garden waste and some wood (old fence panels)", "Saturday morning is when they can go", "registration AB12 CDE, mobile number, postcode DN4 1AA", "uses a phone; has used ordinary online booking forms"],
+    "does_not_know": ["that a slot lasts twenty minutes and they must arrive within it", "how long a chosen slot is held while they finish", "that the slots take a moment to appear", "whether a car needs a permit"],
+    "context": "Phone (375 px), Monday evening, car loaded on the drive, often doing something else"
+  },
+  "task": "Goal in the persona's words: 'get a slot at the tip on Saturday morning and the reference to show at the gate'. Scenario: car loaded with garden waste and old fence panels; go Saturday 17 October 2026 in the morning; registration AB12 CDE; postcode DN4 1AA. Success: /done.html showing 'Booked' and 'Show this at the gate'.",
+  "start_state": {"url": "/", "data": "no booking in progress; today is Monday 12 October 2026, 10:05", "locale": "en-GB", "viewport_width": 375},
+  "sequence": [
+    "goto /",
+    "click [data-quick=\"2026-10-17\"] (Saturday 17), then wait for .slot visible",
+    "click .slot[data-slot=\"09:20\"]",
+    "click button Next; expect /vehicle.html",
+    "click [data-vehicle=\"car\"]",
+    "check Garden waste",
+    "check Wood",
+    "click button Next; expect /confirm.html",
+    "fill Registration AB12 CDE",
+    "fill Your name Test Resident",
+    "fill Mobile number 07700 900123",
+    "fill Postcode DN4 1AA",
+    "click Book this slot; expect 'Show this at the gate'"
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "action": "On / choose the day 'Saturday 17' and wait for the slots to appear",
+      "answers": {
+        "q1": {"answer": "yes", "story": "The page opens with 'Book a slot' and 'Choose a day and the 20-minute slot you will arrive in'. The persona wants Saturday, so choosing a day is what they expect to do first.", "evidence": ["probes/1/final.png", "probes/1/aria.yml"]},
+        "q2": {"answer": "yes", "story": "Quick-pick buttons 'Today', 'Tomorrow', 'Saturday 17', 'Sunday 18' sit under the 'When' heading, above the fold at 375 px.", "evidence": ["probes/1/final.png"]},
+        "q3": {"answer": "yes", "story": "'Saturday 17' is the persona's own words ('Saturday', 17 October).", "evidence": ["probes/1/aria.yml: button \"Saturday 17\""]},
+        "q4": {"answer": "no", "story": "After the tap the Saturday button turns pressed, but the 'Slots' area under it stays blank (empty paragraphs, empty group) for about 0.9 s on a local server, with no loading message or spinner; the default 'Today' state also showed an empty 'Slots' heading. The persona does not know slots take a moment to load; on mobile data the blank may last longer and they may think Saturday has no slots or tap again. Missing feedback: a visible 'loading slots' state.", "evidence": ["probes/2/step-01.png", "probes/2/aria.yml", "probes/3/probe.json (expect .slot 919 ms)"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona taps 'Saturday 17' and the area under 'Slots' stays empty with no sign anything is loading; they may tap again or believe there are no Saturday slots. Missing feedback: a loading state for the slot list.",
+      "missing": "feedback"
+    },
+    {
+      "n": 2,
+      "action": "Choose the 09:20 slot",
+      "answers": {
+        "q1": {"answer": "yes", "story": "The list headed 'Saturday 17 October, 22 slots free' invites a time choice; the persona wants a morning time.", "evidence": ["probes/3/final.png"]},
+        "q2": {"answer": "no", "story": "On screen the first block of slots is the ten 'Few left' slots (08:20 ... 10:40, then 13:40, 14:00, 15:00, 16:40), shown above the 'Morning' heading and mixing morning and afternoon times out of time order. 09:20 only appears further down, under 'Morning', between 08:00 and 10:00, below the fold at 375x900. The persona looking for 'Saturday morning' scans the first block and may not register that a separate, chronological 'Morning' list follows, or may take the first block to be the morning list.", "evidence": ["probes/3/final.png", "probes/3/aria.yml (DOM order: Morning heading, 08:00, 08:20 Few left ... - differs from visual order)"]},
+        "q3": {"answer": "yes", "story": "Each slot is labelled with a 24-hour start time, the format the persona expects; '09:20' is plainly a Saturday-morning time.", "evidence": ["probes/3/aria.yml: button \"09:20\""]},
+        "q4": {"answer": "yes", "story": "09:20 turns bold with a tinted background and is announced as pressed. The change is modest but visible at the tapped spot.", "evidence": ["probes/4/final.png", "probes/4/aria.yml: button \"09:20\" [pressed]"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona sees a block of 'Few left' slots at the top, mixing 08:20 and 16:40, above a 'Morning' heading; the grouping reads as if the top block were separate from or the whole of the morning, and 09:20 is lower down out of view. Missing knowledge: that the top block is 'nearly full' slots pulled out of order and that the full chronological morning list follows.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 3,
+      "action": "Press Next to go to the vehicle step",
+      "answers": {
+        "q1": {"answer": "yes", "story": "The step list says '1. When  2. Vehicle and waste  3. Check and book'; after picking a time the persona expects to continue.", "evidence": ["probes/4/aria.yml"]},
+        "q2": {"answer": "yes", "story": "'Next' sits directly below the last slot; after tapping 09:20 the persona has to scroll down past the afternoon list to reach it, but it is the only primary button.", "evidence": ["probes/4/final.png"]},
+        "q3": {"answer": "yes", "story": "'Next' is the generic continue label in a three-step form.", "evidence": ["probes/4/aria.yml: button \"Next\""]},
+        "q4": {"answer": "no", "story": "The vehicle page loads at once and the step list bolds '2. Vehicle and waste', so the persona sees progress. But nothing on this page (or the next) restates the chosen day and slot or says the slot is only held for a limited time; the persona, who does not know about the hold, may believe the slot is already theirs and break off (they are often doing something else). The captured 'expired' state of the confirm page shows that a hold can lapse ('This slot is no longer available').", "evidence": ["probes/5/final.png", "probes/5/aria.yml", "evidence/screens/confirm-html-date-2026-10-17-slot-09-20-vehicle-car-waste-ga/expired/375-light.png"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona moves on believing 09:20 is secured; no message says the slot is only held while they finish or for how long. If they pause, they may come back to 'This slot is no longer available'. Missing feedback: that the slot is held, not booked, and for how long.",
+      "missing": "feedback"
+    },
+    {
+      "n": 4,
+      "action": "Choose 'Car'",
+      "answers": {
+        "q1": {"answer": "yes", "story": "Heading 'Your vehicle and waste' and 'Vehicle' ask exactly what they are bringing.", "evidence": ["probes/5/aria.yml"]},
+        "q2": {"answer": "yes", "story": "'Car', 'Car with trailer', 'Van' buttons at the top of the form, above the fold.", "evidence": ["probes/5/final.png"]},
+        "q3": {"answer": "yes", "story": "'Car' is the persona's own word.", "evidence": ["probes/5/aria.yml: button \"Car\""]},
+        "q4": {"answer": "no", "story": "'Car' becomes pressed, but the 'Permit number' field ('Starts DRC-, then five digits') stays on screen directly beneath, with nothing saying it is only for vans and trailers or that it is optional. A first-timer who has no permit may conclude they cannot book with a car, or look for a permit. Missing feedback: after choosing Car, that no permit is needed.", "evidence": ["probes/7/final.png", "probes/7/aria.yml: textbox \"Permit number\" still present with Car [pressed]"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "The persona taps 'Car' and still sees 'Permit number - Starts DRC-, then five digits' with an empty box. They have no permit and nothing says cars do not need one. Missing feedback/knowledge: the permit field applies only to vans and trailers.",
+      "missing": "both"
+    },
+    {
+      "n": 5,
+      "action": "Tick 'Garden waste'",
+      "answers": {
+        "q1": {"answer": "yes", "story": "'What are you bringing? Choose everything you have loaded' matches the persona's car full of garden stuff.", "evidence": ["probes/7/aria.yml"]},
+        "q2": {"answer": "yes", "story": "Checkbox list immediately below, first item 'Garden waste'.", "evidence": ["probes/7/final.png"]},
+        "q3": {"answer": "yes", "story": "'Garden waste' is the persona's own words.", "evidence": ["probes/7/aria.yml: checkbox \"Garden waste\""]},
+        "q4": {"answer": "yes", "story": "The checkbox is ticked in place.", "evidence": ["probes/8/step-07.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 6,
+      "action": "Tick 'Wood'",
+      "answers": {
+        "q1": {"answer": "yes", "story": "'Choose everything you have loaded' prompts them to add the fence panels.", "evidence": ["probes/7/aria.yml"]},
+        "q2": {"answer": "yes", "story": "'Wood' is second in the list.", "evidence": ["probes/7/final.png"]},
+        "q3": {"answer": "yes", "story": "Old fence panels are wood; no competing label such as 'Bulky items'.", "evidence": ["probes/7/aria.yml: checkbox \"Wood\""]},
+        "q4": {"answer": "yes", "story": "The checkbox is ticked in place.", "evidence": ["probes/8/step-08.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 7,
+      "action": "Press Next to go to Check and book, leaving the permit field empty",
+      "answers": {
+        "q1": {"answer": "no", "story": "The form still shows an empty 'Permit number' field with a format hint and no 'optional' or 'vans and trailers only' wording. A persona who thinks every field must be filled may not press Next, or may stop to find out how to get a permit. Missing knowledge: that a car needs no permit (only stated on the first page's 'Opening days' box, 'Vans and cars with trailers need a free permit').", "evidence": ["probes/7/final.png", "probes/1/aria.yml (Opening days paragraph)"]},
+        "q2": {"answer": "yes", "story": "'Next' directly under the waste list.", "evidence": ["probes/7/final.png"]},
+        "q3": {"answer": "yes", "story": "Same 'Next' as on step 1 of the form.", "evidence": ["probes/7/aria.yml: button \"Next\""]},
+        "q4": {"answer": "yes", "story": "'Check and book' opens with a 'Your booking' summary: Saturday 17 October, 09:20 to 09:40, Car, Garden waste, Wood, and the step list bolds step 3. The persona sees their choices were kept (and that the permit was not needed).", "evidence": ["probes/8/final.png", "probes/8/aria.yml"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "Same cause as step 4: the unexplained permit field may make the persona hesitate to continue without a permit. Missing knowledge: the permit is only for vans and trailers.",
+      "missing": "knowledge"
+    },
+    {
+      "n": 8,
+      "action": "Fill Registration with AB12 CDE",
+      "answers": {
+        "q1": {"answer": "yes", "story": "'Your details' asks for information the persona has; they know the registration.", "evidence": ["probes/8/aria.yml"]},
+        "q2": {"answer": "yes", "story": "First field under 'Your details', above the fold.", "evidence": ["probes/8/final.png"]},
+        "q3": {"answer": "yes", "story": "'Registration - The vehicle you are bringing, like AB12 CDE' is plain and gives the format.", "evidence": ["probes/8/aria.yml: textbox \"Registration\""]},
+        "q4": {"answer": "yes", "story": "Typed text appears in the field.", "evidence": ["probes/11/step-11.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 9,
+      "action": "Fill Your name",
+      "answers": {
+        "q1": {"answer": "yes", "story": "Next field in a short form.", "evidence": ["probes/8/aria.yml"]},
+        "q2": {"answer": "yes", "story": "Visible directly below Registration.", "evidence": ["probes/8/final.png"]},
+        "q3": {"answer": "yes", "story": "'Your name' is unambiguous.", "evidence": ["probes/8/aria.yml: textbox \"Your name\""]},
+        "q4": {"answer": "yes", "story": "Typed text appears.", "evidence": ["probes/11/step-12.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 10,
+      "action": "Fill Mobile number",
+      "answers": {
+        "q1": {"answer": "yes", "story": "Hint 'For a reminder the evening before' explains why it is asked.", "evidence": ["probes/8/aria.yml"]},
+        "q2": {"answer": "yes", "story": "Visible below Your name.", "evidence": ["probes/8/final.png"]},
+        "q3": {"answer": "yes", "story": "'Mobile number' matches what they have.", "evidence": ["probes/8/aria.yml: textbox \"Mobile number\""]},
+        "q4": {"answer": "yes", "story": "Typed text appears.", "evidence": ["probes/11/step-13.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 11,
+      "action": "Fill Postcode",
+      "answers": {
+        "q1": {"answer": "yes", "story": "Hint 'To confirm you live in the district' explains the reason.", "evidence": ["probes/8/aria.yml"]},
+        "q2": {"answer": "yes", "story": "Last field, above the fold at 375x900.", "evidence": ["probes/8/final.png"]},
+        "q3": {"answer": "yes", "story": "'Postcode' is the persona's word.", "evidence": ["probes/8/aria.yml: textbox \"Postcode\""]},
+        "q4": {"answer": "yes", "story": "Typed text appears.", "evidence": ["probes/11/step-14.png"]}
+      },
+      "verdict": "would"
+    },
+    {
+      "n": 12,
+      "action": "Press 'Book this slot' and read the confirmation",
+      "answers": {
+        "q1": {"answer": "yes", "story": "Everything is filled in; the persona wants to finish the booking.", "evidence": ["probes/11/step-14.png"]},
+        "q2": {"answer": "yes", "story": "'Book this slot' is the only primary button, under the fields.", "evidence": ["probes/8/final.png"]},
+        "q3": {"answer": "yes", "story": "'Book this slot' says exactly what they want to do.", "evidence": ["probes/8/aria.yml: button \"Book this slot\""]},
+        "q4": {"answer": "no", "story": "Two gaps. (a) For about 1.5 s after the tap the page stays as it was: the button only darkens slightly, its label does not change and no 'booking...' message appears, so the persona may tap again or wonder whether it worked. (b) The 'Booked' page shows the reference DR-xxxxxx and 'Show this at the gate', but does not repeat the day, the slot time (09:20 to 09:40) or the vehicle. The persona, who does not know they must arrive within the 20-minute slot, has no record on this screen (or a printout of it) of when to arrive.", "evidence": ["probes/11/step-15.png", "probes/11/probe.json (expect 'Show this at the gate' 1540 ms)", "probes/11/final.png", "probes/11/aria.yml"]}
+      },
+      "verdict": "would_with_effort",
+      "failure_story": "(a) After tapping 'Book this slot' nothing visibly happens for about a second and a half; the persona may tap again. Missing feedback: an in-progress state. (b) The confirmation gives a reference but not 'Saturday 17 October, 09:20 to 09:40, Car'; the persona screenshotting it for the gate cannot see when they must arrive. Missing feedback: the booked day, time window and vehicle on the confirmation.",
+      "missing": "feedback"
+    }
+  ],
+  "overall": "would_with_effort",
+  "notes": "Full four-question variant, run as an isolated subagent (no DEGRADED banner). The journey's sequence was complete and replayed successfully through probes 1-11; step granularity: the goto and the expects were folded into the user-action steps (12 judged steps). Failure points are E0 hypotheses, not predicted user outcomes. Probe numbers 6, 9 and 10 belong to other agents running concurrently. Alternative paths noted, not walked: any other morning slot (including the 'Few left' ones) also satisfies the goal; 'Another day' date picker. Observation outside the sequence: on load 'Today' is preselected with an empty 'Slots' area and 'Next' already shown. Bash 'cat' was refused by the permission system; files were read with the Read tool instead."
+}

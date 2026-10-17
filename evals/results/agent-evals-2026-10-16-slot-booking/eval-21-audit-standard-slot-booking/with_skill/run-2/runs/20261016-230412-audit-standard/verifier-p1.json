@@ -1,0 +1,119 @@
+{
+  "schema": "verifier",
+  "run": "20261016-230412-audit-standard",
+  "agent": "verifier-p1",
+  "model": "claude-opus-5-5",
+  "isolation": "subagent",
+  "packet_hash": "d488c432363fd9aa",
+  "iteration": 1,
+  "_notes": "Real hold wait run in background (probe 35): chose Sat 17 09:20 through the UI, Car + Garden waste, sat on confirm.html 5 min 20 s, filled details, pressed Book this slot twice. No hold/time-limit text or warning at any point; first press -> unlinked 'This slot is no longer available.' and Slot '—'; second press -> the item is replaced by link 'Choose a slot'. Candidate F-0034 cites app.js source; I did not read source and verified behaviourally only.",
+  "verdicts": [
+    {
+      "candidate_id": "F-0022",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced both via the hold=expired route (375 and 1280) and via a real lapsed hold through the UI flow: after Book this slot the alert lists 'This slot is no longer available.' as plain text with no next step, the Slot row becomes '— · Change slot', the typed details are kept and Book this slot stays the primary button.",
+      "corrected_description": "When the hold has expired, the first press of Book this slot shows the summary 'There is a problem / This slot is no longer available.' as plain text with no next step, while the field-error summary items on the same page are links to the fields. At the same time the Slot row in 'Your booking' changes to '—', so the resident can no longer see which slot was lost (a screen reader reads it as 'dash'). Only a second press of Book this slot replaces the item with a link 'Choose a slot'. The details the resident typed are kept.",
+      "note": "Corrected 'unlike every other error summary item on the site': the permit and closed-day booking errors are also unlinked plain text (probe 38). Added that a second press turns the item into a 'Choose a slot' link (probes 32, 35).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/32/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/32/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/47/screenshots/after-book-1.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0023",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced with a real hold: slot chosen through the UI lapsed within about 5 min 20 s on confirm.html with no duration, countdown or warning shown at 1 s, 150 s or 320 s; an idle 4.5 min on vehicle.html also showed no notice. Own search of all captured ARIA for hold/held/expire/remaining/minute finds only 'Slots last 20 minutes'.",
+      "note": "2.2.1 conformance (real-time exception for a shared slot) remains a human judgement as the candidate says; the hold is roughly five minutes, well under the 20-hour exemption.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-start.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-150s.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-320s-before-book.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/48/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0034",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced behaviourally: booking with a van, invalid permit 'XYZ' and Wednesday 21 October lists 'A van needs a permit number (DRC- and five digits).' and 'The centre is closed on Wednesday 21 October.' as plain list items with no link; the expired-hold item is plain text on first press. Field errors in the same summary are links (#reg, #name, #phone, #postcode).",
+      "corrected_description": "Each error-summary item should lead to the place to fix it (CMP-18). Errors raised when Book this slot is pressed are plain text with no link: the expired hold ('This slot is no longer available.', on the first press), a missing or invalid van permit, and a closed day. The permit and slot can only be fixed on other pages, and the summary offers no way there, while the field errors in the same summary are links.",
+      "note": "Dropped the past-slot-today case: booking 08:00 on the app's 'Today' (probe 44) and on 16 Oct (probe 39) both succeeded, so I could not trigger that error. The expired item does become a 'Choose a slot' link on a second press. Overlaps F-0022/F-0089 on the expired item.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/38/aria.yml",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/38/screenshots/after-book.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/44/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0038",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced: a slot chosen through the UI was lost after about 5 min 20 s (Book this slot -> 'This slot is no longer available.', Slot '—'); no page stated the limit, showed time remaining, warned before expiry or offered more time, at 0, 150 and 320 s on confirm.html and 4.5 min on vehicle.html.",
+      "note": "I did not read source; the exact 5-minute figure is consistent with my run (lapsed by 5:20) but not bracketed from below. Overlaps F-0023 and F-0081 (same missing hold notice).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/probe.json",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-320s-before-book.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/48/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0047",
+      "verdict": "split_required",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Both parts reproduce (probe 35: no hold notice anywhere in the flow; after lapse the error says only 'This slot is no longer available.' and the slot shows '—'), but the record bundles two distinct problems at different steps.",
+      "split_into": [
+        {
+          "title": "How long a chosen slot is held is never stated",
+          "description": "No step from choosing a slot to 'Book this slot' mentions that the slot is held or for how long, though it lapses after about five minutes."
+        },
+        {
+          "title": "Expiry error does not say the hold ran out or how to get a slot again",
+          "description": "After the hold lapses, 'This slot is no longer available.' does not say the hold expired or offer a next step on first press, and the Slot row blanks to '—'."
+        }
+      ],
+      "note": "Part 1 duplicates F-0023/F-0038/F-0081; part 2 duplicates F-0022/F-0089.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-150s.png"
+      ]
+    },
+    {
+      "candidate_id": "F-0081",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Absence confirmed by own search (all captured ARIA: only 'Slots last 20 minutes') and by a real flow (probe 35) and idle vehicle page (probe 48): no hold, limit or countdown text; the slot lapses within about 5 min 20 s.",
+      "note": "Candidate has no locations; the routes are /, /vehicle.html and /confirm.html (default).",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/confirm-320s-before-book.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/48/aria.yml"
+      ]
+    },
+    {
+      "candidate_id": "F-0089",
+      "verdict": "confirmed",
+      "step": "none",
+      "ceiling_flag": false,
+      "reason": "Reproduced at 1280 and 375 (expired route and real lapse): plain-text error, Slot '— · Change slot', and the only filled button still reads 'Book this slot'. Harm shown: the slot that was lost is no longer named on the page, and pressing the primary button again does not book (it only swaps the message for a 'Choose a slot' link), so the route to a new slot is the small inline link.",
+      "note": "Slot row shows an em dash '—', not a hyphen. Same state as F-0022.",
+      "evidence": [
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/47/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/screenshots/after-book-1.png",
+        ".ui-evaluator/runs/20261016-230412-audit-standard/probes/35/aria.yml"
+      ]
+    }
+  ]
+}
