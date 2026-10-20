@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.3.0 (2026-10-11) |
+| Version | 2.4.0 (2026-10-20) |
 | Status | Normative for releases. A release that does not meet §6 is not tagged. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 
