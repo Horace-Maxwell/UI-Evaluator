@@ -66,6 +66,9 @@ export function contextOptions({ width = 1280, height = 900, dsf = 1, theme = 'l
     isMobile: false,
     serviceWorkers: 'block',
     timezoneId: 'UTC',
+    // The checks inject measuring styles and scripts; a page's own Content-Security-Policy (style-src 'self') would
+    // block them and turn a hidden-text probe into a false 1:1 contrast failure.
+    bypassCSP: true,
   };
   if (locale) opts.locale = locale;
   if (storageState) opts.storageState = storageState;

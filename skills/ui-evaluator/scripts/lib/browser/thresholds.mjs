@@ -409,6 +409,10 @@ export function spacingFailures(targets, diameter = 24) {
 
 // --- copy (CPY-03) and language (A11Y-16) ---------------------------------------------------------------
 
+// Day and month names are capitalised in English whatever the case style, so a date heading ("Saturday 7 November")
+// tells nothing about title or sentence case.
+const CALENDAR_WORDS = new Set(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'mon', 'tue', 'tues', 'wed', 'thu', 'thur', 'thurs', 'fri', 'sat', 'sun', 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec']);
+
 const SMALL_WORDS = new Set(['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'into', 'nor', 'of', 'on', 'onto', 'or', 'over', 'per', 'so', 'the', 'to', 'up', 'via', 'vs', 'with', 'yet']);
 
 /**
@@ -424,7 +428,7 @@ export function classifyCase(text, { ignore = [] } = {}) {
   if (words.every(isUpper)) return 'upper';
   if (words.every((w) => w === w.toLowerCase())) return 'lower';
   if (!isCap(words[0])) return null;
-  const sig = words.slice(1).filter((w) => !SMALL_WORDS.has(w.toLowerCase()) && !(w.length >= 2 && isUpper(w)));
+  const sig = words.slice(1).filter((w) => !SMALL_WORDS.has(w.toLowerCase()) && !CALENDAR_WORDS.has(w.toLowerCase()) && !(w.length >= 2 && isUpper(w)));
   if (!sig.length) return null;
   const caps = sig.filter(isCap).length;
   if (caps === sig.length) return 'title';

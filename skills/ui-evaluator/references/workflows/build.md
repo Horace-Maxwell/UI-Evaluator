@@ -52,9 +52,18 @@ Use this workflow when creating or substantially changing UI: new pages, compone
    - type roles, sizes and line heights;
    - spacing, radius, elevation and motion tokens.
 
+   With no styling system in the project, start from `../assets/base/reference.css` (`../knowledge/reference-grade.md` §9): copy it, set its token block from `DESIGN.md`, and delete what the page does not use.
+
    After this step, components reference tokens only. A raw hex value, a raw palette utility (`bg-indigo-500`) or an off-scale spacing value inside a component is drift (COL-01, LAY-01). Read `../knowledge/typography.md`, `../knowledge/color.md`, `../knowledge/layout.md` and `../knowledge/shape-depth.md` for the rules each token must satisfy.
 
-3. **Use conventional structure.** Navigation placement, control types, form patterns and page anatomy follow what users of this surface type expect. Distinctiveness goes into the brand layer (type, colour, imagery, voice, one signature moment), not into unfamiliar controls [P3].
+3. **Use conventional structure, composed the way reference teams compose.** Navigation placement, control types, form patterns and page anatomy follow what users of this surface type expect. Distinctiveness goes into the brand layer (type, colour, imagery, voice, one signature moment), not into unfamiliar controls [P3]. Compose the page with `../knowledge/reference-grade.md` open:
+   - full-bleed bands of two or three ground tones, not every section in a card on one colour (§2.1);
+   - section spacing and widths for the mode (§2.2, §2.3);
+   - one hero display at 3–5× body on Persuade surfaces, section headings at the heading role, one heading weight, tightened display tracking (§2.4);
+   - cards only for objects people compare, choose or open (§2.5);
+   - the real thing in every band (§2.7) and one icon family drawn like the text (§2.8).
+
+   Keep the code small (§5): HTML and CSS first, JavaScript only for behaviour HTML lacks, no framework or dependency the project does not already have, one stylesheet with the tokens at the top, and the page's weight budget. Add an abstraction when something is used twice, not before.
    - Use semantic HTML and native controls first.
    - Add ARIA only for widgets HTML lacks, and only together with the keyboard model those widgets require [TOOL-09].
    - One `h1` per page; headings in order; landmarks present.
@@ -118,7 +127,9 @@ Use this workflow when creating or substantially changing UI: new pages, compone
     - **The wide layout is composed for the width.** At 1280 px there are no half-empty columns, no empty bands and no narrow strip floating in a wide field. Either use the width (facts beside the form at matched heights, the referent's object beside the text), or set the page narrower on purpose.
     - **Controls are styled, not left at the browser's defaults.** Keep them native, and give them the direction's accent (`accent-color`), comfortable sizes, a themed focus ring and, for a few options, choice cards.
     - **The type has a voice.** The display role differs from the body in more than size, through its face, weight or width, and the headings step clearly. A page set entirely in the platform's UI sans has no type voice, even when every size is right. With system fonts only, most platforms still ship faces with a point of view; choose one for its job.
-    - **Every primary action works as shipped.** A booking link with no address, or a form with nowhere to send, is broken. Build what you can (a small server that keeps sign-ups and lets the owner read them); only facts the owner alone has become settings (`../knowledge/content-copy.md` §3.5).
+    - **It looks as if a reference team made it.** Compare the captures with `../knowledge/reference-grade.md` §7: no section boxed for no reason, a hero with real scale, the ground changing between bands, nothing decorative that shows nothing.
+    - **It is ready to ship:** the checklist in `../knowledge/reference-grade.md` §6 (head tags, favicon, skip link, not-found page, print, image sizes, no console errors).
+    - **Every primary action works as shipped.** A booking link with no address, or a form with nowhere to send, is broken. Use the simplest mechanism the owner can host: a small server only where the project already runs one or the brief asks for it, otherwise a form posting to one named setting; only facts the owner alone has become settings (`../knowledge/content-copy.md` §3.5).
     - **Then remove** any decoration without a job [IMP-056]. Each screen keeps one primary action and one signature moment at most. Restraint decides where boldness goes, never whether there is any (ADR-035).
 
 12. **Hand off to `audit`.** Run it at standard depth, or at the depth the owner chose. The build is not "done" until the audit reaches the target level.
@@ -151,5 +162,7 @@ Use this workflow when creating or substantially changing UI: new pages, compone
 | Fabricated metrics, testimonials or logos to fill a layout | facts section; copy written around missing facts; SLP-12 |
 | A page that passes every gate and still looks unfinished: a direction made of avoidances, placeholders on show, one isolated signature | the finish pass (step 11); the appeal verdict (DES-07). In the 2026-10-01 benchmark, two such builds lost every blind comparison to builds made without the skill (ADR-035) |
 | Placeholder boxes in the first viewport, or a primary action that cannot work | step 1; `../knowledge/content-copy.md` §3.5 |
+| Every section a card on one flat ground, timid uniform headings, nothing to look at: the look that lost 6 of 8 human blind comparisons on 2026-10-04 | step 3 with `../knowledge/reference-grade.md`; the finish pass |
+| Over-built code: a framework, a component library or a dozen helpers for a page HTML and CSS can do | step 3; `../knowledge/reference-grade.md` §5 |
 | Hover-only information or actions | every action reachable without hover (`../knowledge/components-states.md`) |
 | Claiming "done" after the self-check | only the audit's gates define done |

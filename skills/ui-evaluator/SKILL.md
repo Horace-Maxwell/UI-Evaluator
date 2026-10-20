@@ -4,7 +4,7 @@ description: Builds, audits and fixes web front-end UIs to a verifiable bar — 
 license: Apache-2.0
 compatibility: Node.js 20 or newer. Browser-based checks use Playwright with Chromium, installed into a cache on request.
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
   author: "Horace-Maxwell"
   repository: "https://github.com/Horace-Maxwell/UI-Evaluator"
 ---
@@ -204,6 +204,7 @@ Read the file for the domain you are working on. Each one states its rules with 
 | Accessibility | [references/knowledge/accessibility.md](references/knowledge/accessibility.md) | WCAG 2.2 AA, A11Y-*, ARIA patterns |
 | Anti-slop catalogue | [references/knowledge/anti-slop.md](references/knowledge/anti-slop.md) | directions, builds and audits; SLP-* tells |
 | Brand expression | [references/knowledge/brand-expression.md](references/knowledge/brand-expression.md) | `direct`; modes; attribute → lever mapping; references |
+| Reference-grade finish | [references/knowledge/reference-grade.md](references/knowledge/reference-grade.md) | `build` and `direct`: composing and finishing a page the way Apple, Google and GOV.UK do; keeping the code small; ship-ready checklist |
 | CJK and localisation | [references/knowledge/cjk.md](references/knowledge/cjk.md) | any Chinese, Japanese or Korean content; I18N-* |
 | Platform profiles | [references/knowledge/platforms.md](references/knowledge/platforms.md) | Apple-like, Material, Fluent or Chinese-enterprise conventions |
 | Data display | [references/knowledge/data-display.md](references/knowledge/data-display.md) | tables, numbers, charts, dashboards |

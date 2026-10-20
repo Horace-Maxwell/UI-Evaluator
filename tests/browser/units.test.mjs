@@ -155,6 +155,7 @@ test('network guard, context options and auth walls', () => {
   for (const u of ['https://example.com/', 'http://10.0.0.5/', 'http://localhost.example.com/']) assert.ok(!isLocalUrl(u), u);
   assert.equal(contextOptions({ preference: 'default' }).reducedMotion, 'no-preference');
   assert.equal(contextOptions({ preference: 'reduced-motion' }).reducedMotion, 'reduce');
+  assert.equal(contextOptions({}).bypassCSP, true, 'a page CSP must not block the injected probes');
   assert.equal(contextOptions({ preference: 'default', reducedMotion: 'reduce' }).reducedMotion, 'reduce');
   assert.equal(contextOptions({ width: 375 }).hasTouch, true);
   assert.equal(contextOptions({ width: 1280 }).hasTouch, false);
@@ -409,4 +410,11 @@ test('placeholder identities are named as the page writes them (SLP-13)', () => 
   assert.deepEqual(matchedTexts(list, 'Not sure? Email a photo to repaircafe@example.org and we will reply.'), ['repaircafe@example.org']);
   assert.deepEqual(matchedTexts(list, 'Write to info@example.net or visit www.example.com'), ['info@example.net', 'www.example.com']);
   assert.deepEqual(matchedTexts(list, 'Our volunteers fix toasters for free.'), []);
+});
+
+test('case classifier: day and month names say nothing about the case style', () => {
+  assert.equal(T.classifyCase('Saturday 7 November'), null);
+  assert.equal(T.classifyCase('Next repair cafe on Saturday'), 'sentence');
+  assert.equal(T.classifyCase('What We Fix'), 'title');
+  assert.equal(T.classifyCase('Book a slot for Sat 7 Nov'), 'sentence');
 });

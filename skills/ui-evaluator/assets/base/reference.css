@@ -1,0 +1,249 @@
+/*
+  UI-Evaluator reference base, v1 (references/knowledge/reference-grade.md §9).
+
+  A small starting stylesheet that composes the way Apple, Google and GOV.UK pages do and meets the skill's floors
+  when its tokens pass: full-bleed bands instead of boxed sections, a hero with real scale, one heading weight,
+  tightened display tracking, shadowless tiles for objects, 48 px controls, a visible focus ring, quiet tables and a
+  tinted footer. Copy it into the project, then set every token in the first block from DESIGN.md: the accent,
+  the grounds and the families below are deliberately neutral placeholders, and an un-themed copy reads as a
+  template. Delete what the page does not use. No build step, no JavaScript.
+*/
+
+/* 1. Tokens: set these from DESIGN.md --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light dark;
+
+  /* Grounds: the page, a second tone for alternating bands, an inverse band for the one moment that matters. */
+  --ground: #ffffff;
+  --ground-2: #f5f5f7;
+  --inverse: #1d1d1f;
+  --on-inverse: #f5f5f7;
+  --on-inverse-2: #c7c7cc;
+  --on-inverse-line: #48484d;
+  --on-inverse-line-strong: #8e8e93;
+
+  /* Ink: near-black, never #000, and two quieter levels. */
+  --ink: #1d1d1f;
+  --ink-2: #55555a;
+  --line: #d2d2d7;
+  --line-strong: #86868b;
+
+  /* One accent, only for what can be pressed, is selected or reports status. Replace it. */
+  --accent: #1d1d1f;
+  --accent-hover: #3a3a3f;
+  --on-accent: #ffffff;
+  --accent-tint: #ececf0;
+  --focus: #1d1d1f;
+  --error: #b3261e;
+
+  /* Type: one family used fully; a display face is optional. Replace both stacks. */
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-text);
+  --weight-heading: 600;
+  --text-body: 1.0625rem;          /* 17 px; 16–19 px by mode (TYP-02) */
+  --text-small: 0.875rem;          /* 14 px */
+  --text-lead: 1.3125rem;          /* 21 px */
+  --text-h3: 1.3125rem;
+  --text-h2: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);    /* 28–40 px */
+  --text-display: clamp(2.5rem, 1.4rem + 4.6vw, 4.5rem); /* 40–72 px, the page's one display moment */
+  --track-display: -0.02em;        /* 0 under :lang(zh|ja|ko) below */
+  --leading-body: 1.5;
+  --leading-heading: 1.15;
+
+  /* Spacing on a 4 px scale; band padding steps by width (fixed steps keep LAY-01 on scale). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --band-pad: 64px;
+  --gutter: 20px;
+  --container: 1200px;
+  --measure: 40rem;                /* about 65–75 characters */
+
+  --radius-control: 999px;         /* pills; set 8–12px for a squarer system */
+  --radius-field: 10px;
+  --radius-tile: 24px;
+  --control-height: 48px;
+}
+
+@media (min-width: 768px) {
+  :root { --band-pad: 96px; --gutter: 32px; }
+}
+@media (min-width: 1200px) {
+  :root { --band-pad: 128px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #000000;
+    --ground-2: #161617;
+    --inverse: #f5f5f7;
+    --on-inverse: #1d1d1f;
+    --on-inverse-2: #48484d;
+    --on-inverse-line: #d2d2d7;
+    --on-inverse-line-strong: #6e6e73;
+    --ink: #f5f5f7;
+    --ink-2: #a1a1a6;
+    --line: #38383a;
+    --line-strong: #8e8e93;
+    --accent: #f5f5f7;
+    --accent-hover: #d2d2d7;
+    --on-accent: #1d1d1f;
+    --accent-tint: #2c2c2e;
+    --focus: #f5f5f7;
+    --error: #f2b8b5;
+  }
+}
+
+:lang(zh), :lang(ja), :lang(ko) {
+  --track-display: 0;
+  --leading-body: 1.75;
+  --leading-heading: 1.3;
+}
+
+/* 2. Base ------------------------------------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, p, ul, ol, dl, figure, blockquote { margin: 0; }
+img, svg, video { display: block; max-width: 100%; height: auto; }
+a { color: var(--accent); text-underline-offset: 0.18em; }
+a:hover { color: var(--accent-hover); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+::selection { background: var(--accent-tint); }
+
+.skip-link { position: absolute; left: var(--space-4); top: -100px; padding: var(--space-3) var(--space-4); background: var(--ground); color: var(--ink); border-radius: var(--radius-field); z-index: 10; }
+.skip-link:focus { top: var(--space-4); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* 3. Type roles ------------------------------------------------------------------------------------------------- */
+.display, h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-heading);
+  line-height: 1.1;
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+}
+.display { font-size: var(--text-display); }
+h1 { font-size: var(--text-h2); }
+h2 { font-family: var(--font-display); font-size: var(--text-h2); font-weight: var(--weight-heading); line-height: var(--leading-heading); letter-spacing: calc(var(--track-display) / 2); text-wrap: balance; }
+h3 { font-size: var(--text-h3); font-weight: var(--weight-heading); line-height: 1.3; }
+.lead { font-size: var(--text-lead); line-height: 1.45; color: var(--ink-2); max-width: var(--measure); text-wrap: pretty; }
+p, li { max-width: var(--measure); text-wrap: pretty; }
+.small { font-size: var(--text-small); color: var(--ink-2); }
+.numeric { font-variant-numeric: tabular-nums; }
+
+/* 4. Layout: full-bleed bands, a container, stacks -------------------------------------------------------------- */
+.container { width: min(100% - 2 * var(--gutter), var(--container)); margin-inline: auto; }
+.band { padding-block: var(--band-pad); }
+.band--tint { background: var(--ground-2); }
+/* The inverse band redefines the tokens, so text, fields, focus rings and buttons inside it keep their contrast. */
+.band--inverse {
+  --ground: var(--inverse);
+  --ink: var(--on-inverse);
+  --ink-2: var(--on-inverse-2);
+  --line: var(--on-inverse-line);
+  --line-strong: var(--on-inverse-line-strong);
+  --focus: var(--on-inverse);
+  --accent: var(--on-inverse);
+  --accent-hover: var(--on-inverse-2);
+  --on-accent: var(--inverse);
+  --accent-tint: var(--on-inverse-line);
+  background: var(--ground);
+  color: var(--ink);
+}
+.stack > * + * { margin-top: var(--space-4); }
+.stack-lg > * + * { margin-top: var(--space-6); }
+.section-head { margin-bottom: var(--space-7); }
+.section-head > * + * { margin-top: var(--space-4); }
+.split { display: grid; gap: var(--space-7); align-items: start; }
+@media (min-width: 900px) { .split { grid-template-columns: 1fr 1fr; gap: var(--space-8); } }
+.cluster { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+/* Tiles: objects people compare, choose or open. Shadowless, the band's opposite tone. */
+.tiles { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.tile { background: var(--ground-2); border-radius: var(--radius-tile); padding: var(--space-6); }
+.band--tint .tile { background: var(--ground); }
+
+/* Lists of facts: dividers, not cards. */
+.list-divided { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+.list-divided > li { padding-block: var(--space-4); border-bottom: 1px solid var(--line); max-width: none; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-3) var(--space-6); }
+.facts dt { color: var(--ink-2); }
+.facts dd { margin: 0; }
+
+/* 5. Controls ------------------------------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: var(--control-height); padding: 0 var(--space-5);
+  border: 1px solid var(--accent); border-radius: var(--radius-control);
+  background: var(--accent); color: var(--on-accent);
+  font: inherit; font-weight: var(--weight-heading); text-decoration: none; cursor: pointer;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out;
+}
+.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+.btn:active { transform: translateY(1px); }
+.btn--secondary { background: transparent; color: var(--accent); }
+.btn--secondary:hover { background: var(--accent-tint); color: var(--accent); }
+
+/* Forms (GOV.UK patterns): label above, a one-line hint, the error beside the field. */
+.field { display: grid; gap: var(--space-2); max-width: 32rem; }
+.field + .field, .field + fieldset, fieldset + .field { margin-top: var(--space-6); }
+label, legend { font-weight: var(--weight-heading); }
+legend { padding: 0; margin-bottom: var(--space-3); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.hint { color: var(--ink-2); font-size: var(--text-small); margin-top: calc(-1 * var(--space-1)); }
+input:not([type="radio"]):not([type="checkbox"]), select, textarea {
+  width: 100%; min-height: var(--control-height); padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-field);
+  background: var(--ground); color: var(--ink); font: inherit;
+}
+textarea { min-height: 7rem; resize: vertical; }
+input:hover, select:hover, textarea:hover { border-color: var(--ink); }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border: 2px solid var(--error); }
+.field-error { color: var(--error); font-weight: var(--weight-heading); }
+input[type="radio"], input[type="checkbox"] { width: 22px; height: 22px; margin: 0; accent-color: var(--accent); flex: none; }
+
+/* A few options: choice cards that look designed, still native inputs. */
+.choices { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.choice { display: flex; gap: var(--space-3); align-items: center; min-height: 56px; padding: var(--space-3) var(--space-4); border: 1px solid var(--line-strong); border-radius: var(--radius-field); cursor: pointer; font-weight: 400; }
+.choice:hover { border-color: var(--ink); }
+.choice:has(input:checked) { border: 2px solid var(--accent); background: var(--accent-tint); }
+.choice:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.error-summary { border: 3px solid var(--error); border-radius: var(--radius-field); padding: var(--space-5); margin-bottom: var(--space-6); }
+.error-summary a { color: var(--error); font-weight: var(--weight-heading); }
+
+/* 6. Tables: almost no chrome ------------------------------------------------------------------------------------ */
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+caption { text-align: left; font-weight: var(--weight-heading); padding-bottom: var(--space-3); }
+th, td { text-align: left; padding: var(--space-3) var(--space-4) var(--space-3) 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: var(--weight-heading); }
+td.num, th.num { text-align: right; }
+
+/* 7. Footer ------------------------------------------------------------------------------------------------------ */
+.site-footer { background: var(--ground-2); color: var(--ink-2); font-size: var(--text-small); padding-block: var(--space-7); }
+.site-footer a { color: var(--ink); }
+
+/* 8. Preferences and print --------------------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+@media print {
+  .skip-link, nav, .site-footer, .no-print { display: none !important; }
+  .band, .band--tint, .band--inverse { background: none !important; color: #000 !important; padding-block: 12pt; }
+  a { color: #000; }
+}
