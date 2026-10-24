@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | 2.4.0 (2026-10-20) |
+| Version | 3.0.0 (2026-10-24) |
 | Status | Normative for structure, file formats and the CLI contract. Implementation details may change as long as these contracts hold. |
 | Parent | [FRAMEWORK](FRAMEWORK.md) |
 
