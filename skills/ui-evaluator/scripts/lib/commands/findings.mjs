@@ -4,9 +4,9 @@ import path from 'node:path';
 import { readJson, writeJson, exists, listDir, readJsonl, isDir } from '../util/fs.mjs';
 import { list, intOpt, UsageError } from '../util/args.mjs';
 import { validate, loadSchema, guessSchema } from '../schema.mjs';
-import { paths, resolveRun, readRegister, writeRegister, readDismissals, appendIndex, updateManifest } from '../project.mjs';
+import { paths, resolveRun, readRegister, writeRegister, readDismissals, appendIndex, updateManifest, verifierFiles } from '../project.mjs';
 import { mergeRun, acceptProposals, readJudgedOutputs, sameCauseProposals } from '../findings/merge.mjs';
-import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits } from '../findings/register.mjs';
+import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits, unverifiedCandidates } from '../findings/register.mjs';
 import { setStatus, buildQueue, primaryCriterion, STATUSES, applyPriorityPolicy } from '../findings/core.mjs';
 import { anyTwoAgreement, discoveryEstimate } from '../study/stats.mjs';
 import { loadRules } from '../gates/rules.mjs';
@@ -209,9 +209,10 @@ export async function run(args, ctx) {
         return out.disposition === 'ship' ? 0 : 2;
       }
       // One verifier writes verifier.json; parallel verifiers (uie packet --role finding-verifier --parts n) write
-      // verifier-p1.json … verifier-pn.json, and every part's verdicts are applied together.
-      const vFiles = ['verifier.json', ...listDir(r.dir).filter((n) => /^verifier-p\d+\.json$/.test(n)).sort()].filter((n) => exists(path.join(r.dir, n)));
-      if (!vFiles.length) throw new UsageError(`no verifier.json (or verifier-p<k>.json) in ${r.dir}`);
+      // verifier-p1.json … verifier-pn.json; a later pass, such as the one over split parts, writes verifier-s<n>.json.
+      // Every file's verdicts are applied, pass by pass.
+      const vFiles = verifierFiles(r.dir);
+      if (!vFiles.length) throw new UsageError(`no verifier.json (or verifier-p<k>.json, verifier-s<n>.json) in ${r.dir}`);
       const doc = loadMerged(r.dir);
       const blind = readJson(path.join(r.dir, 'packets', '.blind-map-verifier.json'), {});
       const vdocs = vFiles.map((n) => readJson(path.join(r.dir, n)));
@@ -223,14 +224,23 @@ export async function run(args, ctx) {
       const counts = applyVerifierVerdicts(doc.findings, vdoc, { dismissals: readDismissals(ctx.root) });
       saveMerged(r.dir, doc);
       for (const d of vdocs) recordSelfReport(r.dir, { role: 'finding-verifier', agent: d.agent, model: d.model, isolation: d.isolation });
-      ctx.result({ ...counts, files: vFiles });
+      // A candidate with no verdict in any file was never checked: a verifier part that did not return, or one that
+      // skipped it. It is not "awaiting a human", and USE-03 fails until it gets a verdict.
+      const unchecked = unverifiedCandidates(doc.findings);
+      ctx.result({ ...counts, files: vFiles, unchecked: unchecked.map((f) => f.id) });
       ctx.print(`verifier verdicts applied from ${vFiles.join(', ')}: ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+      if (unchecked.length) {
+        ctx.warn(`${unchecked.length} candidate(s) got no verdict: ${unchecked.map((f) => f.id).join(', ')}. Did every verifier part return its file? Verify them (uie packet --role finding-verifier builds a packet of what is left), then apply again.`);
+        return 2;
+      }
       return 0;
     }
 
     case 'rate': {
       const r = resolveRun(ctx.root, args.run);
-      const doc = loadMerged(r.dir);
+      // A re-rating of register findings (ingest, --only-changed) may run where nothing was merged.
+      const hadMerged = exists(path.join(r.dir, 'merged.json'));
+      const doc = hadMerged ? loadMerged(r.dir) : { findings: [] };
       const dir = path.join(r.dir, 'ratings');
       const docs = listDir(dir)
         .filter((n) => n.endsWith('.json'))
@@ -247,15 +257,33 @@ export async function run(args, ctx) {
       batches.forEach((b, i) => b.docs.forEach((d) => (d.ratings || []).forEach((x) => latest.set(b.map[x.finding_id] || x.finding_id, i))));
       const decoded = batches.flatMap((b, i) => b.docs.map((d) => ({ ...d, ratings: (d.ratings || []).map((x) => ({ ...x, finding_id: b.map[x.finding_id] || x.finding_id })).filter((x) => latest.get(x.finding_id) === i) })));
       const iteration = args.iteration ? intOpt(args.iteration, 'iteration', { min: 1 }) : inferIteration(ctx.root);
-      const { rated } = applyRatings(doc.findings, decoded, { iteration });
+      // Findings rated here that live only in the register (re-rated after feedback was linked) are rated there.
+      const reg = readRegister(ctx.root);
+      const ratedIds = new Set(decoded.flatMap((d) => (d.ratings || []).map((x) => x.finding_id)));
+      const inRun = new Set(doc.findings.map((f) => f.id));
+      const regOnly = reg.findings.filter((f) => ratedIds.has(f.id) && !inRun.has(f.id));
+      const { rated } = applyRatings([...doc.findings, ...regOnly], decoded, { iteration });
+      // The register's copy takes the new severity, and a finding re-rated after a feedback link is no longer waiting
+      // for it (EMP-03; the flag used to stay set for good).
+      let cleared = 0;
+      for (const rf of reg.findings) {
+        if (!ratedIds.has(rf.id)) continue;
+        const run = doc.findings.find((m) => m.id === rf.id);
+        if (run && run.severity?.source === 'raters') Object.assign(rf, { severity: run.severity, priority: run.priority });
+        if (rf.needs_rerating && rf.severity?.source === 'raters') {
+          delete rf.needs_rerating;
+          cleared += 1;
+        }
+      }
+      if (regOnly.length || cleared) writeRegister(ctx.root, reg);
       for (const d of docs) recordSelfReport(r.dir, { role: 'severity-rater', agent: d.rater, model: d.model, isolation: d.isolation });
       // Deterministic findings keep rule severity; make sure their priority policy is applied.
       for (const f of doc.findings) if (f.severity?.source === 'rule') applyPriorityPolicy(f);
-      saveMerged(r.dir, doc);
+      if (hadMerged) saveMerged(r.dir, doc);
       const divergent = doc.findings.filter((f) => f.severity?.divergent).length;
       const held = doc.findings.filter((f) => f.held).length;
-      ctx.result({ rated, raters: docs.length, divergent, held });
-      ctx.print(`rated ${rated} finding(s) from ${docs.length} rater file(s); ${divergent} divergent, ${held} held (HCI-029).`);
+      ctx.result({ rated, raters: docs.length, divergent, held, rerated: cleared });
+      ctx.print(`rated ${rated} finding(s) from ${docs.length} rater file(s); ${divergent} divergent, ${held} held (HCI-029)${cleared ? `; ${cleared} re-rated after feedback` : ''}.`);
       if (docs.length < 3) ctx.warn(`only ${docs.length} rater(s): severities are provisional (USE-04 needs ≥ 3).`);
       return 0;
     }

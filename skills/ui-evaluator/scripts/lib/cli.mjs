@@ -18,6 +18,7 @@ export const COMMANDS = {
   audit: { file: 'audit', summary: 'deterministic page audits (see --checks)', browser: true },
   lint: { file: 'lint', summary: 'static source scan for tells, motion, token drift and a11y source rules' },
   packet: { file: 'packet', summary: 'build the input packet for an isolated role' },
+  wait: { file: 'wait', summary: 'wait inside the turn until subagents\' output files arrive' },
   probe: { file: 'probe', summary: 'perform an interaction recipe and record evidence', browser: true },
   journey: { file: 'journey', summary: 'replay a journey and check its success condition', browser: true },
   findings: { file: 'findings', summary: 'validate|merge|split|apply-verdicts|rate|queue|set|dismiss|link|list|show|agreement|promote' },

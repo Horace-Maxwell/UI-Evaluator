@@ -4,9 +4,11 @@
 import os from 'node:os';
 import path from 'node:path';
 import { readJson, readJsonl, exists, listDir, readText } from '../util/fs.mjs';
+import { sha256 } from '../util/hash.mjs';
 import { hoursSince } from '../util/time.mjs';
 import { validate, loadSchema } from '../schema.mjs';
-import { paths, loadConfig, readRegister, readWaivers, loadJourneys } from '../project.mjs';
+import { paths, loadConfig, readRegister, readWaivers, loadJourneys, verifierFiles } from '../project.mjs';
+import { unverifiedCandidates } from '../findings/register.mjs';
 import { readJudgedOutputs } from '../findings/merge.mjs';
 import { primaryCriterion, isDeterministic } from '../findings/core.mjs';
 import { GATES, loadTells } from './rules.mjs';
@@ -90,7 +92,9 @@ export function loadInputs(root, runDir) {
     human: readJson(p.humanChecks, { wcag: {}, confirmations: {}, design_verdict: null }),
     reportLint: readJson(path.join(runDir, 'report-lint.json'), null),
     agreement: readJson(path.join(runDir, 'agreement.json'), null),
-    verifier: readJson(path.join(runDir, 'verifier.json'), null),
+    // Every verifier file of the run: one verifier, parallel parts and later passes (round 6 run 3 verified in parts
+    // only, and this gate said the verifier had not run).
+    verifier: (() => { const files = verifierFiles(runDir); return files.length ? { files, verdicts: files.flatMap((n) => readJson(path.join(runDir, n), {}).verdicts || []) } : null; })(),
     outputs: readJudgedOutputs(runDir),
     panels: listDir(path.join(runDir, 'panel'))
       .filter((n) => n.endsWith('.json') && !n.endsWith('verdict.json'))
@@ -290,7 +294,8 @@ const E = {
   independence(I) {
     const ev = I.manifest?.evaluators || [];
     if (!ev.length && !I.outputs.length) return st('not_applicable', 'no judged roles ran');
-    const missing = ev.filter((e) => !e.isolation || !e.model);
+    // "unknown" is what merge writes when an agent reported nothing: it records nothing.
+    const missing = ev.filter((e) => !e.isolation || !e.model || e.isolation === 'unknown' || e.model === 'unknown');
     if (missing.length) return st('fail', `${missing.length} evaluator(s) without recorded isolation or model`);
     if (ev.some((e) => e.isolation === 'single-context')) return st('degraded', 'some roles ran without isolation (DEGRADED banner required)');
     if (I.outputs.length && !ev.length) return st('fail', 'evaluator outputs exist but the manifest records no evaluators');
@@ -427,7 +432,10 @@ const E = {
     if (!I.verifier && (judged.length || pending.length)) return st('not_run', 'the verifier has not run');
     const unverified = judged.filter((f) => !f.verification_check && f.status !== 'disputed');
     if (unverified.length) return st('fail', `${unverified.length} reported finding(s) skipped verification`, unverified.map((f) => f.id));
-    return st('pass', `${judged.length} judged finding(s) verified; ${pending.length} awaiting a human`);
+    // A candidate no verifier file answered is not awaiting a human: a part did not return, or skipped it.
+    const unchecked = unverifiedCandidates(pending);
+    if (unchecked.length) return st('fail', `${unchecked.length} candidate(s) got no verdict (did every verifier part return?)`, unchecked.map((f) => f.id));
+    return st('pass', `${judged.length} judged finding(s) verified; ${pending.length} awaiting a human or a split`);
   },
   ratings(I) {
     const depth = I.manifest?.depth || I.config.depth || 'standard';
@@ -495,15 +503,21 @@ const E = {
     const need = depth === 'rigorous' ? 5 : 3;
     if (!I.panels.length) return st('not_run', 'no design-panel outputs');
     const log = readJson(path.join(I.runDir, 'packets', '.log.json'), { unsealed: {} });
-    const orderOk = I.panels.every((p) => {
+    // Each critic's verdict is written, timed, before its detector output is unsealed, and not changed after.
+    const broken = I.panels.map((p) => {
       const agent = p.doc.agent;
-      const verdict = readJson(path.join(I.runDir, 'panel', `${agent}.verdict.json`), null);
-      if (!verdict) return false;
-      const unsealed = log.unsealed?.[agent] || p.doc.unsealed_at;
+      const file = path.join(I.runDir, 'panel', `${agent}.verdict.json`);
+      const verdict = readJson(file, null);
+      if (!verdict) return `${agent}: no verdict file`;
       const written = verdict.written_at || p.doc.verdict_at;
-      return !unsealed || !written || written <= unsealed;
-    });
-    if (!orderOk) return st('fail', 'a critic has no verdict file, or unsealed detector output before writing it');
+      if (!written) return `${agent}: the verdict has no written_at`;
+      const unsealed = log.unsealed?.[agent] || p.doc.unsealed_at;
+      if (unsealed && written > unsealed) return `${agent}: unsealed detector output before writing the verdict`;
+      const hash = log.unsealed_hash?.[agent];
+      if (hash && hash !== sha256(readText(file))) return `${agent}: the verdict changed after unsealing`;
+      return null;
+    }).filter(Boolean);
+    if (broken.length) return st('fail', broken.join('; '));
     // Quick depth runs one critic as feedback for the builder; it is never a panel (DES-01 needs ≥ 3 isolated critics).
     if (depth === 'quick') return st('degraded', `${I.panels.length} critic(s) at quick depth: feedback for the builder, not a panel`);
     if (I.panels.length < need) return st('fail', `${I.panels.length} critic(s); ${depth} depth needs ${need}`);
@@ -514,7 +528,8 @@ const E = {
   },
   specificity(I) {
     if (!I.panels.length) return st('not_run', 'no design-panel outputs');
-    const v = I.panels.map((p) => p.doc.verdict?.value || p.doc.verdict);
+    // The sealed verdict file is the record (ADR-017); the panel file is written after unsealing.
+    const v = I.panels.map((p) => readJson(path.join(I.runDir, 'panel', `${p.doc.agent}.verdict.json`), null)?.value || p.doc.verdict?.value || p.doc.verdict);
     const specific = v.filter((x) => x === 'specific').length;
     return specific > I.panels.length / 2 ? st('pass', `${specific}/${I.panels.length} critics judged it specific`) : st('fail', `${specific}/${I.panels.length} critics judged it specific`);
   },

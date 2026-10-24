@@ -156,6 +156,28 @@ export function resolveRun(root, id) {
   return { id: runId, dir };
 }
 
+const VERIFIER_FILE = /^verifier(?:-s(\d+))?(?:-p(\d+))?\.json$/;
+/**
+ * A run's verifier output files in the order their verdicts apply: the first pass (verifier.json, or verifier-p<k>.json
+ * from parallel verifiers), then each later pass, such as the one over split parts (verifier-s<n>.json,
+ * verifier-s<n>-p<k>.json). A later pass writes its own file, so it never overwrites an earlier one.
+ */
+export function verifierFiles(runDir) {
+  return listDir(runDir)
+    .map((n) => ({ n, m: VERIFIER_FILE.exec(n) }))
+    .filter((x) => x.m)
+    .sort((a, b) => Number(a.m[1] || 0) - Number(b.m[1] || 0) || Number(a.m[2] || 0) - Number(b.m[2] || 0))
+    .map((x) => x.n);
+}
+
+/** The output file and agent id for the next verifier pass of a run, part k of `parts`. */
+export function nextVerifierOutput(runDir, k, parts) {
+  const passes = verifierFiles(runDir).map((n) => Number(VERIFIER_FILE.exec(n)[1] || 0));
+  const s = passes.length ? Math.max(...passes) + 1 : 0;
+  const stem = `verifier${s ? `-s${s}` : ''}${parts > 1 ? `-p${k}` : ''}`;
+  return { file: `${stem}.json`, agent: stem };
+}
+
 export function listRuns(root) {
   const p = paths(root);
   return listDir(p.runs)

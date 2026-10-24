@@ -74,7 +74,7 @@ Take each candidate through the seven steps in order (METHODS §5 step 2) [HCI-0
 | 1. Evidence resolution | the anchor resolves in the captured state | `evidence_unresolved` |
 | 2. Harness filter | the problem is not an artefact of capture, emulation or tooling | `harness_artifact` |
 | 3. Scope filter | the problem lies within the declared routes, states and personas | `out_of_scope` |
-| 4. Skeptical re-check | you reproduced the problem with `uie probe`; a real problem with one overstated clause is confirmed with a `corrected_description` | `not_reproduced` |
+| 4. Skeptical re-check | you reproduced the problem with `uie probe`; a real problem with one overstated clause is confirmed with a `corrected_description`, and so is an "only" claim whose information exists elsewhere but not at the step where the user needs it | `not_reproduced` |
 | 4, a critic's harm (ADR-040) | the harm a design critic named follows on the page: the task step, the misreading, the trust signal or the quoted requirement | `harm` |
 | 5. Absence rule | an absence claim has positive evidence | `absence_unsupported` |
 | 6. Dismissal ledger | no human dismissed this problem before, or new evidence exists | `previously_dismissed` |
@@ -159,7 +159,7 @@ EVD-07 needs, for every evaluator, critic, rater and the verifier, a record in t
 
 ## 4. Output format
 
-`verifier.schema.json`, written to `runs/<id>/verifier.json` and checked with `uie findings validate <file>`. One entry per candidate, none skipped:
+`verifier.schema.json`, written to the output path the packet names (`runs/<id>/verifier.json`, `verifier-p<k>.json` for a parallel part, `verifier-s<n>.json` for a later pass such as the one over split parts) and checked with `uie findings validate <file>`. One entry per candidate, none skipped:
 
 - `verdict`: `confirmed`, `rejected` or `needs_human`;
 - the deciding verification-chain step (§3.3 table), or the last step passed for a confirmed candidate;

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { readJson, writeJson, writeText, exists, listDir, readText, ensureDir, readJsonl, walkFiles } from '../util/fs.mjs';
 import { rng } from '../roll/prng.mjs';
 import { intOpt, list, UsageError } from '../util/args.mjs';
-import { paths, resolveRun, loadConfig, loadJourneys, readRegister, readDismissals, updateManifest, readManifest } from '../project.mjs';
+import { paths, resolveRun, loadConfig, loadJourneys, readRegister, readDismissals, updateManifest, readManifest, nextVerifierOutput } from '../project.mjs';
 import { SKILL_DIR, SCRIPTS_DIR } from '../cli.mjs';
 import { sha256, stableStringify } from '../util/hash.mjs';
 import { isoNow, slug } from '../util/time.mjs';
@@ -114,7 +114,19 @@ function inventory(runDir) {
   return Object.fromEntries(Object.entries(out).map(([k, m]) => [k, [...m.values()]]));
 }
 
+// A packet rebuilt for the same agent (a pass over split parts, a re-rating) keeps the one it replaces as <folder>.1,
+// <folder>.2 …, so the record of what each earlier agent was given survives (round 6 lost the first verifier pass's).
+let kept = [];
+function keepEarlier(dir) {
+  if (!exists(path.join(dir, 'README.md'))) return;
+  let n = 1;
+  while (exists(`${dir}.${n}`)) n += 1;
+  fs.renameSync(dir, `${dir}.${n}`);
+  kept.push(`${path.basename(dir)}.${n}`);
+}
+
 function writePacket(dir, files, readme) {
+  keepEarlier(dir);
   ensureDir(dir);
   for (const [name, content] of Object.entries(files)) {
     const p = path.join(dir, name);
@@ -149,6 +161,7 @@ ${extra}`;
 }
 
 export async function run(args, ctx) {
+  kept = [];
   const role = args.role ? String(args.role) : null;
   const r = resolveRun(ctx.root, args.run);
   const cfg = loadConfig(ctx.root);
@@ -184,6 +197,8 @@ export async function run(args, ctx) {
     ensureDir(dest);
     writeJson(path.join(dest, 'detectors.json'), { unsealed_at: isoNow(), hits: summary });
     log.unsealed = { ...(log.unsealed || {}), [agent]: isoNow() };
+    // The sealed verdict's hash, so the gates can tell when it changed after the critic saw the detectors (ADR-017, ADR-035).
+    log.unsealed_hash = { ...(log.unsealed_hash || {}), [agent]: sha256(readText(verdictPath)) };
     writeJson(path.join(pdir, '.log.json'), log);
     ctx.print(`unsealed detector output for ${agent}: ${path.relative(ctx.root, path.join(dest, 'detectors.json'))} (${summary.length} hit(s))`);
     return 0;
@@ -309,17 +324,19 @@ export async function run(args, ctx) {
       // candidate that names a harm carries it, so the verifier checks the harm as well as the page.
       const cands = merged.findings
         .filter((f) => f.status === 'candidate' && !(f.advisory && (f.found_by || []).every((b) => b.role === 'tool')) && !f.design_note)
-        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, ...(f.harm ? { harm: f.harm } : {}), ...(timeBound(f) ? { time_bound: true } : {}), locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
+        .map((f) => ({ candidate_id: f.id, title: f.title, description: f.description, problem_type: f.problem_type, criteria: f.criteria, impact: f.impact, ...(f.harm ? { harm: f.harm } : {}), ...(timeBound(f) ? { time_bound: true } : {}), ...(f.merged_texts ? { merged_texts: f.merged_texts.map(({ title, description }) => ({ title, description })) } : {}), locations: absLocations(f.locations, r.dir, ctx.root), evidence: absEvidence(f.evidence, r.dir, ctx.root), detection: { k: f.detection?.k, n: f.detection?.n }, factor_notes: f.factor_notes }));
       // With many candidates the lead splits them between parallel verifiers (--parts n); each part keeps a route's
       // candidates together and writes its own verdict file, which apply-verdicts reads with the others. Candidates
       // whose check may have to wait (time_bound) come first, and with two or more parts they get the first one.
       const parts = args.parts ? intOpt(args.parts, 'parts', { min: 1, max: 9 }) : 1;
       const groups = partitionCandidates(cands, parts);
       const waits = cands.filter((c) => c.time_bound).length;
+      // Outputs are named before any is written, so every part of this pass shares one pass number.
+      const outputs = groups.map((_, i) => nextVerifierOutput(r.dir, i + 1, groups.length));
       groups.forEach((group, i) => {
         const k = i + 1;
-        const agent = parts > 1 ? `verifier-p${k}` : 'verifier';
-        const out = path.join(r.dir, parts > 1 ? `verifier-p${k}.json` : 'verifier.json');
+        const { agent } = outputs[i];
+        const out = path.join(r.dir, outputs[i].file);
         const files = {
           'candidates.json': group,
           'dismissals.json': readDismissals(ctx.root),
@@ -338,8 +355,10 @@ export async function run(args, ctx) {
     }
     case 'severity-rater': {
       const n = args.n ? intOpt(args.n, 'n', { min: 1, max: 9 }) : 3;
+      // --only-changed re-rates the register's findings whose observed frequency changed (ingest step 7); an ingest
+      // run has no merged.json of its own.
       const merged = readJson(path.join(r.dir, 'merged.json'), null);
-      if (!merged) throw new UsageError('run `uie findings merge` and `apply-verdicts` first');
+      if (!merged && !args['only-changed']) throw new UsageError('run `uie findings merge` and `apply-verdicts` first');
       const reg = readRegister(ctx.root);
       const changed = new Set(reg.findings.filter((f) => f.needs_rerating).map((f) => f.id));
       const pool = (args['only-changed'] ? reg.findings.filter((f) => changed.has(f.id)) : merged.findings.filter((f) => f.status === 'confirmed' && f.severity?.source !== 'rule'));
@@ -444,6 +463,10 @@ export async function run(args, ctx) {
     }
     default:
       throw new UsageError(`unknown role "${role}".\n\n${help}`);
+  }
+  if (kept.length) {
+    log.kept = [...(log.kept || []), ...kept.map((folder) => ({ folder, at: isoNow() }))];
+    ctx.info(`kept the earlier packet(s) as ${kept.join(', ')}`);
   }
   writeJson(path.join(pdir, '.log.json'), log);
   // Record evaluators in the manifest (EVD-07); merge later fills in the models agents report.

@@ -199,7 +199,7 @@ A good candidate, from a language-learning flashcard app (illustration; values a
                    "selector": "role=button[name='Play pronunciation']", "bbox": [300, 96, 44, 44],
                    "snippet": "<button aria-label=\"Play pronunciation\">" } ],
   "evidence": [ { "type": "probe", "ref": "probes/12/", "detail": "tap at 0 s; first visual change at audio start, 1.8 s; second tap replays" } ],
-  "factor_notes": "Button on every card; delay on each card's first play; recurs every session.",
+  "factor_notes": { "frequency": "button on every card", "impact": "delay on each card's first play", "persistence": "recurs every session" },
   "found_by": [ { "role": "heuristic-evaluator", "agent": "he-1", "model": "<model>", "method": "HE", "pass": 2 } ],
   "evidence_level": "E0", "validity": "needs_verification", "status": "candidate",
   "recommendation": "Show a pressed or loading state on tap and ignore repeat taps while the audio loads.",

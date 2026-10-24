@@ -172,8 +172,8 @@ async function auditChecks(depth, minHe) {
   };
   checks['Verification and three blind ratings exist'] = () => {
     // One verifier writes verifier.json; parallel verifiers (uie packet --role finding-verifier --parts n) write
-    // verifier-p<k>.json, and apply-verdicts reads every file (round 6: a run with parts only).
-    const vfiles = (run?.dir && fs.existsSync(run.dir) ? fs.readdirSync(run.dir) : []).filter((n) => /^verifier(-p\d+)?\.json$/.test(n)).sort();
+    // verifier-p<k>.json and later passes verifier-s<n>.json; apply-verdicts reads every file (round 6: a run with parts only).
+    const vfiles = (run?.dir && fs.existsSync(run.dir) ? fs.readdirSync(run.dir) : []).filter((n) => /^verifier(-s\d+)?(-p\d+)?\.json$/.test(n)).sort();
     const vok = vfiles.map((n) => valid('verifier', json(path.join(run.dir, n))).valid);
     const rdir = path.join(run?.dir || '', 'ratings');
     const ratings = (fs.existsSync(rdir) ? fs.readdirSync(rdir) : []).filter((f) => f.endsWith('.json')).map((f) => valid('rating', json(path.join(rdir, f))).valid);

@@ -62,6 +62,13 @@ function checkRun(runDir) {
     // A file name inside a quoted string is a pattern or a URL (grep -o 'confirmed.html…'), not a file being read.
     const unquoted = s.replace(/'[^']*'|"[^"]*"/g, '""');
     if (SRC.test(s) || (c.name === 'Bash' && BARE.test(unquoted))) a.reads.push(s.slice(0, 120));
+    // A content search (Grep) over the site's files reads them too; one inside the run folder does not.
+    if (c.name === 'Grep') {
+      const where = path.resolve(c.input.path || ws);
+      const inSite = (where === ws || where.startsWith(`${ws}/`)) && !/^\/(\.ui-evaluator|\.eval|\.git)(\/|$)/.test(where.slice(ws.length));
+      const source = where === ws || /\.(html|js|css)\b/.test(`${where} ${c.input.glob || ''}`) || ['js', 'html', 'css'].includes(c.input.type);
+      if (inSite && source) a.reads.push(`Grep ${c.input.pattern || ''} in ${where}`.slice(0, 120));
+    }
   }
   const black = [...agents.values()].filter((a) => !WHITE_BOX.has(a.role));
 

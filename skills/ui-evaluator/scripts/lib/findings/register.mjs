@@ -71,14 +71,36 @@ export function higherEvidence(a, b) {
   return (ia >= ib ? a : b) || a || b;
 }
 
-/** True when a candidate matches a dismissed finding (same element and mechanism, any criterion). */
+const titleWords = (t) => new Set(String(t || '').toLowerCase().split(/[^a-z0-9\u00c0-\uffff]+/).filter((w) => w.length > 3));
+/** Shared words over the shorter title: a remark re-raised under another heuristic keeps most of its words. */
+function sameMechanism(a, b) {
+  const A = titleWords(a);
+  const B = titleWords(b);
+  const shared = [...A].filter((w) => B.has(w)).length;
+  return Math.min(A.size, B.size) > 0 && shared / Math.min(A.size, B.size) >= 0.5;
+}
+
+/**
+ * A finding a dismissal may never touch: a deterministic failure, or one under G1/G2 or a WCAG success criterion
+ * (core rule 11: WCAG 2.2 AA failures are not waived).
+ */
+export function unwaivable(f) {
+  return isDeterministic(f) || f.severity?.source === 'rule' || f.gate === 'G1' || f.gate === 'G2' || (f.criteria || []).some((c) => c.kind === 'wcag' || /^\d+\.\d+\.\d+$/.test(String(c.id)));
+}
+
+/**
+ * True when a finding matches a dismissed one: the same fingerprint, or the same element (route, selector, state) and
+ * the same mechanism (the same primary criterion, or a title that shares most of its words), under any heuristic.
+ */
 export function matchesDismissal(f, dismissals) {
+  if (unwaivable(f)) return undefined;
   const loc = (f.locations || [])[0] || {};
   const sel = normalizeSelector(loc.selector || '');
   return (dismissals.entries || []).find((d) => {
     if (d.fingerprint && d.fingerprint === f.fingerprint) return true;
     if (!sel || !d.selector) return false;
-    return d.route === (loc.route || '') && normalizeSelector(d.selector) === sel && (!d.state || d.state === (loc.state || 'default'));
+    const sameElement = d.route === (loc.route || '') && normalizeSelector(d.selector) === sel && (!d.state || d.state === (loc.state || 'default'));
+    return sameElement && (d.criterion === primaryCriterion(f).id || sameMechanism(d.title, f.title));
   });
 }
 
@@ -97,6 +119,14 @@ export function addDismissal(dismissals, f, { reason, by }) {
     at: isoNow(),
   };
   return { version: 1, ...dismissals, entries: [...(dismissals.entries || []), entry] };
+}
+
+/**
+ * Judged candidates that no verifier file gave a verdict: never checked, as opposed to checked and left for a human
+ * (needs_human) or for a split. Design notes and tool findings are not verified (ADR-038, ADR-040).
+ */
+export function unverifiedCandidates(findings) {
+  return findings.filter((f) => f.status === 'candidate' && !f.verification_check && !f.design_note && !isDeterministic(f) && f.severity?.source !== 'rule');
 }
 
 /**
@@ -139,12 +169,19 @@ export function applyVerifierVerdicts(findings, verifierDoc, { dismissals } = {}
       counts.split_required += 1;
     } else counts.unknown += 1;
   }
-  // Dismissal-ledger safety net (the verifier checks too).
+  // Dismissal-ledger safety net for what the verifier left as a candidate. A finding the verifier confirmed with the
+  // ledger in its packet keeps its verdict and carries the match for the owner to see; deterministic and WCAG
+  // findings are never waived (matchesDismissal).
   if (dismissals) {
     for (const f of findings) {
       if (f.status !== 'confirmed' && f.status !== 'candidate') continue;
       const d = matchesDismissal(f, dismissals);
-      if (d && !(f.evidence_level && ['E3', 'E4', 'E5'].includes(f.evidence_level))) {
+      if (!d) continue;
+      if (f.status === 'confirmed') {
+        f.dismissal_match = { finding: d.finding, reason: d.reason };
+        continue;
+      }
+      if (!(f.evidence_level && ['E3', 'E4', 'E5'].includes(f.evidence_level))) {
         setStatus(f, 'rejected', { by: 'dismissal-ledger', note: `previously dismissed (${d.finding}): ${d.reason}` });
         counts.rejected += 1;
       }

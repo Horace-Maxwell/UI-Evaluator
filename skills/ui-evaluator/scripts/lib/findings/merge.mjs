@@ -77,7 +77,15 @@ export function namesHarm(h) {
   return h.kind !== 'requirement' || String(h.requirement || '').trim().length >= 5;
 }
 
+// What each merged report said, so nothing is lost when two inspectors report different problems on one element under
+// one criterion: the verifier sees every text and returns split_required when they differ (review 2026-10-24, H4).
+const said = (f) => ({ agent: (f.found_by || [])[0]?.agent || null, title: f.title || '', description: f.description || '' });
+const sameText = (a, b) => normalizeText(a.title) === normalizeText(b.title) && normalizeText(a.description) === normalizeText(b.description);
+const normalizeText = (t) => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
 function mergeInto(target, src) {
+  const texts = target.merged_texts || [said(target)];
+  if (!texts.some((t) => sameText(t, said(src)))) target.merged_texts = [...texts, said(src)];
   const crit = [...(target.criteria || [])];
   for (const c of src.criteria || []) {
     if (!crit.some((x) => x.kind === c.kind && x.id === c.id)) crit.push({ ...c, primary: false });
@@ -241,7 +249,9 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
   const merged = [...byKey.values(), ...unkeyed.map((f) => ({ ...f, merged_from: [f._tmp] }))];
 
   // 4. Detection counts (k of N independent judged outputs; feedback outputs are not inspectors).
-  const N = outputs.filter((o) => o.role !== 'feedback').length;
+  // N counts inspectors, not files: a walkthrough's per-journey records and the code reviewer's locate pass are the same
+  // agents again (review of 2026-10-24: they took n from 4 to 7).
+  const N = new Set(outputs.filter((o) => o.role !== 'feedback' && o.doc?.phase !== 'locate' && !/-locate\.json$/.test(o.file)).map((o) => o.agent)).size;
   for (const f of merged) {
     f.detection = { k: evaluatorAgents(f).size, n: N };
   }
@@ -401,16 +411,35 @@ export function sameCauseProposals(findings, existing = [], { minified = () => f
 }
 
 // A check that has to wait for time to pass: a hold, a session or a sign-in that expires, lapses or times out, a
-// message minutes later. "timeout" in one word and the verb "holds" are left out: in round 5 they named the code's
-// timer callbacks and a page that holds a form.
-const COUNT = '(?:a few|a couple of|several|\\d+(?:\\.\\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|thirty|sixty)';
-const TIME_BOUND = new RegExp(`\\b(?:hold|held|expir(?:e|es|ed|y|ing|ation)|lapse[sd]?|times? out|timed out|idle|inactivity|countdown|time[- ]limit(?:ed)?|(?:after|for|within|once|wait(?:s|ing)?(?: for)?)\\s+${COUNT}\\s*-?\\s*(?:minutes?|mins?|hours?)|${COUNT}\\s*-?\\s*(?:minutes?|mins?|hours?)\\s+(?:later|pass|of inactivity))\\b`, 'i');
-const TIME_BOUND_STATE = /expir|time-?out|timed-out|idle|lapse|hold/i;
+// message that comes later. Words that only look like it are left out: "timeout" in one word and the verb "holds"
+// (round 5: the code's timer callbacks, a page that holds a form), and, from the review of 2026-10-24, holding a key
+// or a press, a field that looks idle, an expiry-date field, a character countdown, a placeholder "held" in a label, "lapses"
+// as a noun and "after a day is tapped".
+const COUNT = '(?:a few|a couple of|several|\\d+(?:\\.\\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|thirty|sixty|ninety)';
+// A wait worth its own verifier is minutes long; seconds count from ten up.
+const DURATION = String.raw`(?:${COUNT}\s*-?\s*(?:minutes?|mins?|hours?|hrs?|days?)|(?:\d{2,}|thirty|sixty|ninety)\s*-?\s*(?:seconds?|secs?))`;
+const TIME_BOUND = new RegExp([
+  String.raw`(?<!press and |press-and-)\bhold\b(?!\s+(?:shift|ctrl|control|alt|option|cmd|command|down|the|a|and)\b)`,
+  String.raw`\b(?:slot|seat|booking|reservation|basket|cart|ticket|order|room|table|place)s?\s+(?:is|are|was|were|stays?)?\s*held\b`,
+  String.raw`\bon hold\b`,
+  String.raw`\bexpir(?:e|es|ed|ing|ation|y)\b(?!\s+(?:date|month|year|field)\b)`,
+  String.raw`\blapsed\b|\b(?:hold|slot|session|booking|reservation|time)\s+lapses\b`, String.raw`\btimes? out\b`, String.raw`\btimed out\b`, String.raw`\btime[- ]limit(?:ed)?\b`,
+  String.raw`\b(?:inactivity|no activity)\b`, String.raw`\bidle (?:time|timeout|for|session)\b`,
+  String.raw`\bcountdown\b(?!\s+of\s+(?:remaining\s+)?characters)`,
+  String.raw`\b(?:session|sign[- ]?in|login|log-in)\s+(?:ends|expires|is lost|lapses|times out)\b`,
+  String.raw`\b(?:only )?valid for\s+${DURATION}`,
+  String.raw`\b(?:after|for|within|once|in|wait(?:s|ing)?(?: for)?)\s+(?:${DURATION}|half an hour|an hour)\b`,
+  String.raw`\b${DURATION}\s+(?:later|pass|of inactivity)\b`,
+  String.raw`\b(?:a day later|the next day|overnight|at midnight)\b`,
+].join('|'), 'i');
+// A state named for a wait, matched on whole words of its name ("placeholder-shown" and "threshold" are not a hold).
+const TIME_BOUND_STATE_WORDS = new Set(['expired', 'expiry', 'expires', 'timeout', 'timed', 'idle', 'lapsed', 'hold', 'held']);
+const timeBoundState = (state) => String(state || '').toLowerCase().split(/[^a-z]+/).some((w) => TIME_BOUND_STATE_WORDS.has(w));
 
 /** A candidate whose check may have to wait for time to pass, by its wording or the state it was seen in. */
 export function timeBound(c) {
   if (c.time_bound === true) return true;
-  return TIME_BOUND.test([c.title, c.description, c.harm].filter(Boolean).join(' ')) || (c.locations || []).some((l) => TIME_BOUND_STATE.test(String(l.state || '')));
+  return TIME_BOUND.test([c.title, c.description, c.harm].filter(Boolean).join(' ')) || (c.locations || []).some((l) => timeBoundState(l.state));
 }
 
 /**

@@ -23,10 +23,12 @@ Use this workflow:
 | Depth | Use for | Spawns | Reaches at most |
 |---|---|---|---|
 | `quick` | a quick look, one component, an early prototype | every deterministic check, 1 heuristic pass (labelled single-pass), 1 design critic (feedback, not a G6 verdict) + verifier | L1 — the auditor-judged G2 rows (A11Y-02 leftovers, A11Y-19, A11Y-27) are listed for judgement, not claimed |
-| `standard` (default) | most audits and pre-release checks | 3 heuristic evaluators, walkthroughs of critical journeys, 3 critics, accessibility auditor, code reviewer, verifier, 3 raters (about 12 runs) | L2 |
+| `standard` (default) | most audits and pre-release checks | 3 heuristic evaluators, walkthroughs of critical journeys, 3 critics, accessibility auditor, code reviewer, verifiers, 3 raters (16 to 18 subagents) | L2 |
 | `rigorous` | releases, redesigns, high stakes | 5 heuristic evaluators across ≥ 2 model configurations, walkthroughs of all journeys, 5 critics, pairwise comparison with the baseline, then human confirmation | L3 |
 
-Tell the owner the depth and its approximate cost before starting. Record the depth in the run.
+Tell the owner the depth and its approximate cost before starting. Record the depth in the run. Measured cost of a standard audit of a four-page flow (rounds 4 to 6, 2026-10, one model): 39 to 68 minutes and $25 to $37 of model usage; rounds 5 and 6 also counted 35 to 43 million tokens (most of them cached) and 16 to 18 subagents. A quick audit spawns two to three subagents; it has not been measured in an agent-level round. A plain session without the skill found about as many of the seeded problems in 3 to 4 minutes for about $1 (evals/README.md); say so when the owner only wants a list of problems.
+
+**Run the CLI in a form the sandbox accepts.** Call `node <skill-dir>/scripts/uie.mjs <command>` with the absolute path every time: no shell variables (`UIE=…`), no `cd … &&`, no loops or pipes into loops, no `$(…)`. Each refused command costs a turn, and in interactive use a permission prompt; rounds 4 to 6 counted 15 to 36 refusals a run, mostly wrappers and variables. Wait for subagents with `uie wait`, not a polling loop.
 
 ## 2. Preconditions
 
@@ -51,7 +53,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 | `packets/` | role inputs |
 | `evaluators/`, `cw/`, `panel/` | candidate findings, walkthrough records, critic verdicts |
 | `merged.json` | merged candidates and merge proposals |
-| `verifier.json` | verdict per candidate |
+| `verifier.json` (`verifier-p<k>.json` per parallel part, `verifier-s<n>.json` per later pass) | verdict per candidate; `apply-verdicts` applies every file, pass by pass |
 | `ratings/` | blind severity ratings |
 | `findings.json` | the run's final findings |
 | `debrief.md` | the lead's synthesis |
@@ -93,7 +95,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
 
    Give each agent its packet path and output path. Each validates its own output with `uie findings validate <file>` and returns at most about ten lines. Never ask an evaluator for a fixed number of findings. "No problems found" is a valid result [HCI-025].
 
-   **Keep the turn while subagents run.** Never end your turn to wait for a subagent: in a non-interactive session (`claude -p`, a harness, CI) the end of the turn ends the session, and the round of 2026-10-08 lost an audit that way. If your agent tool returns when a foreground subagent finishes, spawn the parallel roles in one message and wait for them inside the turn. If it runs them in the background, keep working on what does not need their output (the deterministic summary for your own use, the merge and verification methods) and act on each completion notice; the last thing you do before the turn ends is write the reply.
+   **Keep the turn while subagents run.** Never end your turn to wait for a subagent: in a non-interactive session (`claude -p`, a harness, CI) the end of the turn ends the session, and the round of 2026-10-08 lost an audit that way. If your agent tool returns when a foreground subagent finishes, spawn the parallel roles in one message and wait for them inside the turn. If it runs them in the background, keep working on what does not need their output (the deterministic summary for your own use, the merge and verification methods), then wait for their output files with `uie wait <the output paths uie packet printed>`: it returns when all have arrived, or at its timeout with the ones still missing, and you run it again. Its default, 110 seconds, fits a shell tool's two-minute default; give the call a ten-minute tool timeout and `--timeout 540` to wait longer per call. Do not end the turn with "I'll act as each completes": in round 6 two of three leads did, twenty times each, and only the harness's lifted limit kept those sessions alive. The last thing you do before the turn ends is write the reply.
 
 7. **Merge.** `uie findings merge` merges tool findings, evaluator candidates, walkthrough failures and critic design findings on a deterministic key (same locator + same failure mechanism + same state). It keeps every label and piece of evidence, and lists text-similarity merge *proposals* separately. A critic's remark that names no harm to the product's users becomes a design note: the report lists it apart, and nothing verifies, rates or counts it (ADR-040). Review the proposals and accept only true duplicates with `uie findings merge --accept <proposal-ids>` [EVAL C5].
 
@@ -115,7 +117,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
    - Then run `uie findings merge --apply-locate`. Besides attaching the locations, it lists **same-cause proposals** (`S1`, `S2`, …): confirmed findings the code reviewer located at one source line, which describe one cause from the angles of different checks and roles (a fixed bar reported as an obscured focus, a focus-order jump, a target too close to a button and overlapping text is one cause). Accept the true ones with `uie findings merge --accept S1,S2` before rating, so one cause is rated and reported once (ADR-039). A component's markup can hold several problems within three lines, so read each member: when a proposal mixes causes, accept the members that share one, `--accept S14:F-0008+F-0011+F-0015`, and the others stay findings of their own. A proposal whose members are all different problems that happen to share a line is left alone.
    - Without a code-reviewer run, the white-box role is you: set ease with `uie findings set <id> --ease <1-4>`. Without any source, leave ease empty; it is estimated when someone with the source fixes the finding.
 
-10. **Rate blind.** Run `uie packet --role severity-rater --n 3` and spawn three raters (`../evaluators/severity-rater.md`) in parallel, in one message, and wait for them inside the turn. Then run `uie findings rate`. It computes the mean of the problem and trade-off values (not-a-problem votes carry no value), the spread and the priority; flags divergent findings (spread ≥ 2, or a not-a-problem vote against a mean ≥ 2.5) and sends them to `disputed`, as it does findings where more than half of the raters vote not a problem, or more than half vote trade-off (ADR-029); holds flagged single-pass findings whose mean is below 2.5 in iteration ≥ 2 [HCI-029]; and applies the criticality clamp and the G1/G2 floor. Read `../methods/severity-rating.md`.
+10. **Rate blind.** Run `uie packet --role severity-rater --n 3` and spawn three raters (`../evaluators/severity-rater.md`) in parallel, in one message, and wait for them inside the turn (`uie wait` on their output files when they run in the background). Then run `uie findings rate`. It computes the mean of the problem and trade-off values (not-a-problem votes carry no value), the spread and the priority; flags divergent findings (spread ≥ 2, or a not-a-problem vote against a mean ≥ 2.5) and sends them to `disputed`, as it does findings where more than half of the raters vote not a problem, or more than half vote trade-off (ADR-029); holds flagged single-pass findings whose mean is below 2.5 in iteration ≥ 2 [HCI-029]; and applies the criticality clamp and the G1/G2 floor. Read `../methods/severity-rating.md`.
 
 11. **Agreement.** `uie findings agreement` reports any-two agreement between passes, detection counts, and the estimate of undiscovered problems (labelled as an estimate).
 
@@ -180,7 +182,7 @@ Then ask 2–4 targeted questions tied to specific findings [IMP-042]: priority 
 | Severity copied from the detector or from the evaluator who found it | blind raters; rule-declared severity only for deterministic findings |
 | A 150-item list that buries what matters | P0/P1 and quick P2 wins go to the fix queue; the rest go to the debt register [HCI-077] |
 | Re-raising a finding a human dismissed | the dismissal ledger check in verification |
-| Ending the turn to wait for a background verifier or rater (the session ends in non-interactive use) | keep the turn: wait inside it, or keep working and act on completion notices (step 6) |
+| Ending the turn to wait for a background verifier or rater (the session ends in non-interactive use) | keep the turn: `uie wait <output files>`, again until all have arrived (step 6) |
 | Reporting advisory observations (APCA, stranded words) as confirmed findings | they stay candidates flagged `advisory`, listed apart and never counted (ADR-038) |
 | One cause reported five times from different checks' angles | same-cause proposals after `--apply-locate`, accepted before rating (ADR-039) |
 | A strength claimed at a width the members do not use | strengths cite the capture at a width the audit ran (step 12) |

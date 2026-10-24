@@ -37,6 +37,11 @@ function summarise(file) {
   const tok = { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 };
   let result = null;
   let sub = 0;
+  // A lead that ended its turn while work ran leaves one result event per turn; time and turns are summed over them
+  // (round 6 recorded 2 minutes and 14 turns for a 54-minute run from the last event alone).
+  let turnsEnded = 0;
+  let durationMs = 0;
+  let numTurns = 0;
   for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
     if (!line.trim()) continue;
     let ev;
@@ -45,7 +50,12 @@ function summarise(file) {
     } catch {
       continue;
     }
-    if (ev.type === 'result') result = ev;
+    if (ev.type === 'result') {
+      result = ev;
+      turnsEnded += 1;
+      durationMs += Number(ev.duration_ms || 0);
+      numTurns += Number(ev.num_turns || 0);
+    }
     if (ev.type !== 'assistant' || !ev.message?.usage) continue;
     const id = ev.message.id || `${seen.size}`;
     if (seen.has(id)) continue;
@@ -57,10 +67,11 @@ function summarise(file) {
   return {
     total_tokens: total,
     tokens: tok,
-    duration_ms: result?.duration_ms ?? null,
-    total_duration_seconds: result?.duration_ms ? Math.round(result.duration_ms / 100) / 10 : null,
+    duration_ms: result ? durationMs : null,
+    total_duration_seconds: result ? Math.round(durationMs / 100) / 10 : null,
+    turns_ended: turnsEnded,
     total_cost_usd: result?.total_cost_usd ?? null,
-    num_turns: result?.num_turns ?? null,
+    num_turns: result ? numTurns : null,
     is_error: result?.is_error ?? null,
     subtype: result?.subtype ?? null,
     subagent_messages: sub,

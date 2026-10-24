@@ -14,7 +14,7 @@ Why this matters: unverified agent findings are often wrong. They describe eleme
 | File | Contents |
 |---|---|
 | `README.md` | run id, the skill directory, the `uie` command, output path, scope (routes, states, personas), iteration number |
-| `candidates.json` | merged judged candidates (blinded): description, criteria, locations, evidence, detection count k of N; `time_bound` on those whose check may have to wait, listed first |
+| `candidates.json` | merged judged candidates (blinded): description, criteria, locations, evidence, detection count k of N; `time_bound` on those whose check may have to wait, listed first; `merged_texts`, what each merged report said, when they differed |
 | `dismissals.json` | findings a human previously rejected, with reasons |
 | `screens/`, `aria/` | captured evidence |
 
@@ -42,6 +42,7 @@ Apply these steps to each candidate, in order. Stop at the first failing step, a
    - A check that has to wait (a hold or session that expires, a message that arrives late): start it before the others, in the background where your tools allow, and verify the other candidates while it runs. The packet marks the candidates it thinks may wait `time_bound` and lists them first; a candidate it missed waits just the same. In round 4 the verifier part that waited out a ten-minute basket hold in line took 13 to 14 minutes, the others 4 to 6; in round 5 the verifiers started such waits as their 16th to 33rd call.
    - Reproduced → continue.
    - Judge the problem, not the sentence. When the problem reproduces but one clause overstates it (an "only", "never" or "all" the page contradicts once), it is `confirmed`: give `corrected_description`, the problem as the page bears it out, and say in `note` what you corrected. Reject it as not reproduced only when the problem itself does not reproduce.
+   - When the "only" is the claim itself ("the end time is only in a tooltip") and you find the information elsewhere on the page, ask whether the user has it where the task needs it: at the step and the control where they decide or act, on the device the product names. If they do not (the slot buttons show start times and the end appears only on hover, while the slot length is stated in a paragraph above the grid), the narrower problem is real: confirm it with a `corrected_description` that says where the information is and where it is missing. Reject only when the information is in view at that step. In round 6 a verifier rejected such a candidate because the page stated the slot length twice, and the seeded problem went unreported.
    - Not reproduced after a faithful attempt → `rejected` (`not_reproduced`), with your probe path.
    - The environment prevents reproduction → `needs_human`.
    - A candidate that carries `harm` (a design critic's, ADR-040) must also show the harm it names, not only the thing it describes: try the task step it says is slowed or blocked; judge whether a member of PRODUCT.md's audience would take it the wrong way, given what else the page says; find the trust signal PRODUCT.md asks for, or the quoted PRODUCT.md or DESIGN.md line. On the page but without that harm → `rejected` (step `harm`), with the reason. A plain or generic design is not by itself a harm.
@@ -56,13 +57,13 @@ Otherwise → **`confirmed`**, with your reproduction evidence attached. Confirm
 
 ## Also check, without rejecting
 
-- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description; the lead turns them into candidates with `uie findings split`.
+- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description; the lead turns them into candidates with `uie findings split`. A candidate with `merged_texts` was merged from several reports on one element under one criterion: read every text, and when they describe different problems, split it the same way.
 - **Principle fit:** if the cited heuristic is clearly wrong but the problem is real, confirm it and suggest the correct criterion in `note`.
 - **Wording:** flag descriptions that overstate the evidence (e.g. "users will abandon"); when the problem is real, give the corrected claim in `corrected_description` rather than rejecting it.
 
 ## Output
 
-1. Write `verifier.json` to the README's output path (`verifier.schema.json`). Per candidate, record:
+1. Write your verdicts to the output path your packet's README names (`verifier.json`, `verifier-p<k>.json` for a parallel part, `verifier-s<n>.json` for a later pass; `verifier.schema.json`). Per candidate, record:
    - `verdict`: `confirmed`, `rejected`, `needs_human` or `split_required`;
    - `ceiling_flag` (boolean, step 7);
    - `step`: the verification-chain step that decided it;

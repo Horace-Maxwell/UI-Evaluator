@@ -145,7 +145,7 @@ The lead's own context is protected by having subagents write results to files a
 | `ui-evaluator:design-critic` | `design-critic.md` | black | Read, Bash (packet unlock only), Write | `runs/<id>/panel/critic-<n>.json` |
 | `ui-evaluator:accessibility-auditor` | `accessibility-auditor.md` | grey | Read, Bash, Write | `runs/<id>/evaluators/a11y.json` |
 | `ui-evaluator:code-reviewer` | `code-reviewer.md` | white | Read, Grep, Glob, Bash, Write | `runs/<id>/evaluators/code.json`; ease-of-fix estimates |
-| `ui-evaluator:finding-verifier` | `finding-verifier.md` | black | Read, Bash, Write | `runs/<id>/verifier.json` |
+| `ui-evaluator:finding-verifier` | `finding-verifier.md` | black | Read, Bash, Write | `runs/<id>/verifier.json` (or `verifier-p<k>.json`, `verifier-s<n>.json`) |
 | `ui-evaluator:severity-rater` | `severity-rater.md` | black | Read, Write | `runs/<id>/ratings/rater-<n>.json` |
 | `ui-evaluator:fix-reviewer` | `fix-reviewer.md` | black | Read, Bash, Write | `runs/<id>/fix-review.json` |
 | `ui-evaluator:direction-designer` | `direction-designer.md` | — | Read, Bash, Write | `.ui-evaluator/directions/<dir-id>/` |
@@ -186,7 +186,8 @@ Every agent writes a schema-valid JSON file, validates it with `uie findings val
 | `uie capture` | Deterministic screenshots and ARIA snapshots over routes × states × widths × themes × emulations; CVD and forced-colour evidence | `evidence/screens`, `evidence/aria` | yes |
 | `uie audit [--checks …] [--quick]` | Page audits: axe, keyboard walk, focus visibility and obscuring, dialog contract, reflow, text spacing, text resize, targets, contrast, forms probe, live regions, lang, cross-page consistency, style census, DOM tell detection, motion inspection, vitals | `tool-findings.jsonl`, `evidence/dom`, `evidence/axe` | yes |
 | `uie lint [paths…] [--changed f]` | Static source scan: hard tells, token drift, motion rules, a11y source rules (outline removal, `user-scalable=no`, positive tabindex, down-event activation, single-key shortcuts), IME guard, CJK font stacks, restricted fonts, copy tells | findings on stdout or appended to the run | no |
-| `uie packet --role <role>` | Build the role-specific input packet with only the materials that role may see; `--parts <n>` splits the verifier's candidates between parallel verifiers, a page's candidates kept together (query strings aside) and the ones whose check may have to wait (`time_bound`) in the first part; every packet's screen list names each screenshot by its route, with the evidence folder as `slug` | `runs/<id>/packets/<role>/` | no |
+| `uie packet --role <role>` | Build the role-specific input packet with only the materials that role may see; `--parts <n>` splits the verifier's candidates between parallel verifiers, a page's candidates kept together (query strings aside) and the ones whose check may have to wait (`time_bound`) in the first part; a packet built again for the same agent keeps the one it replaces as `<folder>.<n>`; every packet's screen list names each screenshot by its route, with the evidence folder as `slug` | `runs/<id>/packets/<role>/` | no |
+| `uie wait <file>...` | Wait inside the turn until the named output files of background subagents exist and parse; an output older than the packet that names it does not count; exit 2 after `--timeout` (110 s by default) with the ones still missing, so the lead runs it again instead of ending its turn | — | no |
 | `uie probe --url … --actions …` | Perform an interaction recipe and return screenshots, ARIA snapshot, console and network summary, and timing. Used by evaluators and the verifier to exercise behaviour | `runs/<id>/probes/<n>/` | yes |
 | `uie journey <id>` | Replay a journey; check the success condition; record per-step evidence | `runs/<id>/journeys/<id>.json` | yes |
 | `uie findings validate\|merge\|split\|apply-verdicts\|rate\|queue\|set\|dismiss\|link\|list\|show\|agreement\|promote` | The findings lifecycle (§8.3). `set` changes status, ease of fix, criticality or notes with a recorded actor; `--status blocked --on <who> --question <text>` records a wait on a named person's decision and `--answer <text>` ends it (ADR-036). `split <id> --into <parts.json>` replaces a candidate or confirmed finding with candidates that keep its sources, recorded in `runs/<id>/splits.json` and re-applied by later merges (ADR-037). `merge` keeps hits of advisory rules as candidates flagged `advisory`, which nothing counts, and drops the flag from inspectors' outputs (ADR-038), and keeps a design critic's remark that names no harm as a candidate flagged `design_note`, listed apart in the report (ADR-040); `merge --apply-locate` lists same-cause proposals (findings located at one source line, or within 120 columns on a minified line) for `--accept`, which takes a whole proposal or part of one (`S14:F-0008+F-0011`) (ADR-039). `apply-verdicts` reads `verifier.json` or the parts `verifier-p<k>.json`. `promote` copies a run's final findings into the living register | `merged.json`, `findings.json`, queue | no |
@@ -266,7 +267,7 @@ Browser-layer packages are resolved in this order:
     │   ├── cw/<journey>.json
     │   ├── panel/critic-<n>.json
     │   ├── merged.json
-    │   ├── verifier.json
+    │   ├── verifier.json              # verifier-p<k>.json per parallel part, verifier-s<n>.json per later pass
     │   ├── ratings/rater-<n>.json
     │   ├── findings.json              # run snapshot
     │   ├── fix-review.json

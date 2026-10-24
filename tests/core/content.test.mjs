@@ -87,6 +87,34 @@ test('report lint: wording may not exceed the evidence', () => {
   assert.equal(findings.violations[0].where, 'F-1.title');
 });
 
+test('report lint: a corpus of over-claims is caught, and honest wording is left alone', () => {
+  const rules = (text, evidence = 'E1') => lintReport({ texts: [{ text, evidence, where: 't' }] }).violations.map((v) => v.rule);
+  // Sentences the lint let through before the review of 2026-10-24.
+  const overClaims = [
+    'Residents cannot see the fee until they pay.',
+    'Keyboard users are unable to reach the menu.',
+    'Users will abandon the form at step 2.',
+    "Most users won't notice the error.",
+    'Every user gets lost on the vehicle step.',
+    'This page is accessible to everyone.',
+    'The site meets WCAG 2.2 AA.',
+    'There are no accessibility problems left.',
+    'Participants could not find the menu.',
+  ];
+  for (const s of overClaims) assert.ok(rules(s).length, `not caught: ${s}`);
+  const honest = [
+    'Residents may not see the fee until they pay.',
+    'The fee is not shown until the payment step.',
+    'The site does not meet WCAG 2.2 AA: three success criteria fail.',
+    'The contrast check passes WCAG 1.4.3 on every page we captured.',
+    'Keyboard focus cannot reach the menu (probe 12).',
+    'A resident who taps Next during the wait sees nothing happen.',
+    'Screen readers do not announce the outcome.',
+  ];
+  for (const s of honest) assert.deepEqual(rules(s), [], `flagged: ${s}`);
+  assert.deepEqual(rules('In 3 of 5 sessions participants could not find the menu.', 'E3'), [], 'observed behaviour may be stated');
+});
+
 test('report lint: the browser checks never write wording their own evidence cannot carry', () => {
   // Tool findings are E1 or E2, so a generated sentence about what users cannot do fails the lint in every report.
   const dir = path.join(SKILL, 'scripts/lib/browser/checks');

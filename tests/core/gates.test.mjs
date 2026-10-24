@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadInputs, evaluateGates } from '../../skills/ui-evaluator/scripts/lib/gates/evaluate.mjs';
 import { loadRules } from '../../skills/ui-evaluator/scripts/lib/gates/rules.mjs';
@@ -215,7 +215,7 @@ test('DES-07: a majority of appeal verdicts decides; no verdict is not_run; the 
     appeals.forEach((a, i) => {
       const agent = `critic-${i + 1}`;
       fs.writeFileSync(path.join(dir, `${agent}.json`), JSON.stringify({ agent, tests: {}, verdict: { value: 'specific' }, rubric: rubric(keys) }));
-      fs.writeFileSync(path.join(dir, `${agent}.verdict.json`), JSON.stringify({ agent, value: 'specific', evidence: ['x'], ...(a ? { appeal: { value: a, unfinished: [], evidence: ['x'] } } : {}) }));
+      fs.writeFileSync(path.join(dir, `${agent}.verdict.json`), JSON.stringify({ agent, value: 'specific', evidence: ['x'], written_at: '2026-10-08T10:00:00Z', ...(a ? { appeal: { value: a, unfinished: [], evidence: ['x'] } } : {}) }));
     });
   };
   const crit = (id) => evaluateGates(loadInputs(root, runDir), rules, { target: 'L2' }).criteria[id];
@@ -238,9 +238,9 @@ test('the detector section stays sealed until the verdict file holds the appeal 
   uie('packet', '--role', 'design-critic');
   const vfile = path.join(runDir, 'panel', 'critic-1.verdict.json');
   fs.mkdirSync(path.dirname(vfile), { recursive: true });
-  fs.writeFileSync(vfile, JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['first viewport'] }));
+  fs.writeFileSync(vfile, JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['first viewport'], written_at: '2026-10-08T10:00:00Z' }));
   assert.throws(() => uie('packet', '--role', 'design-critic', '--unseal', '--agent', 'critic-1'), (err) => /no appeal verdict/.test(String(err.stderr)));
-  fs.writeFileSync(vfile, JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['first viewport'], appeal: { value: 'plain', unfinished: ['placeholder boxes in the hero'], evidence: ['hero'] } }));
+  fs.writeFileSync(vfile, JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['first viewport'], written_at: '2026-10-08T10:00:00Z', appeal: { value: 'plain', unfinished: ['placeholder boxes in the hero'], evidence: ['hero'] } }));
   assert.match(uie('packet', '--role', 'design-critic', '--unseal', '--agent', 'critic-1'), /unsealed detector output for critic-1/);
 });
 
@@ -307,9 +307,13 @@ test('the verifier packet marks the checks that wait and gives them the first pa
   assert.match(read(1, 'README.md'), /this packet holds all of them, so the wait happens once/);
   assert.deepEqual(JSON.parse(read(2, 'candidates.json')).map((c) => c.candidate_id), ['F-0001', 'F-0003']);
   assert.doesNotMatch(read(2, 'README.md'), /Checks that wait/);
+  // The rebuilt first packet keeps the one it replaced, so what the earlier verifier was given survives.
+  assert.equal(JSON.parse(read('1.1', 'candidates.json')).length, 4, 'the first build is kept as finding-verifier-1.1');
+  const log = JSON.parse(fs.readFileSync(path.join(runDir, 'packets', '.log.json'), 'utf8'));
+  assert.deepEqual(log.kept.map((k) => k.folder), ['finding-verifier-1.1']);
 });
 
-test('DES-01: a quick-depth critic is feedback, never a panel; critics without isolation degrade the panel', (t) => {
+test('DES-01: a quick-depth critic is feedback, never a panel; critics without isolation degrade the panel', async (t) => {
   const { root, runDir } = workspace();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const rules = loadRules();
@@ -320,7 +324,7 @@ test('DES-01: a quick-depth critic is feedback, never a panel; critics without i
     for (let i = 1; i <= n; i += 1) {
       const agent = `critic-${i}`;
       fs.writeFileSync(path.join(dir, `${agent}.json`), JSON.stringify({ agent, isolation, tests: {}, verdict: { value: 'specific' }, rubric: {} }));
-      fs.writeFileSync(path.join(dir, `${agent}.verdict.json`), JSON.stringify({ agent, value: 'specific', evidence: ['x'], appeal: { value: 'appealing', evidence: ['x'] } }));
+      fs.writeFileSync(path.join(dir, `${agent}.verdict.json`), JSON.stringify({ agent, value: 'specific', evidence: ['x'], written_at: '2026-10-08T10:00:00Z', appeal: { value: 'appealing', evidence: ['x'] } }));
     }
   };
   const des01 = (depth) => {
@@ -338,6 +342,18 @@ test('DES-01: a quick-depth critic is feedback, never a panel; critics without i
   assert.equal(des01('standard').state, 'pass');
   write(2, 'subagent');
   assert.equal(des01('standard').state, 'fail');
+  // The sealed verdict is the record: changed after unsealing fails DES-01, and DES-02 reads it, not the panel file.
+  write(3, 'subagent');
+  const { sha256 } = await import('../../skills/ui-evaluator/scripts/lib/util/hash.mjs');
+  const vf = path.join(dir, 'critic-1.verdict.json');
+  fs.mkdirSync(path.join(runDir, 'packets'), { recursive: true });
+  fs.writeFileSync(path.join(runDir, 'packets', '.log.json'), JSON.stringify({ packets: [], unsealed: { 'critic-1': '2026-10-08T11:00:00Z' }, unsealed_hash: { 'critic-1': sha256(fs.readFileSync(vf, 'utf8')) } }));
+  assert.equal(des01('standard').state, 'pass');
+  fs.writeFileSync(vf, JSON.stringify({ agent: 'critic-1', value: 'generic', evidence: ['x'], written_at: '2026-10-08T10:00:00Z', appeal: { value: 'appealing', evidence: ['x'] } }));
+  assert.match(des01('standard').detail, /critic-1: the verdict changed after unsealing/);
+  for (const i of [2, 3]) fs.writeFileSync(path.join(dir, `critic-${i}.verdict.json`), JSON.stringify({ agent: `critic-${i}`, value: 'generic', evidence: ['x'], written_at: '2026-10-08T10:00:00Z' }));
+  const I = loadInputs(root, runDir);
+  assert.match(evaluateGates(I, rules, { target: 'L2' }).criteria['DES-02'].detail, /^0\/3/, 'the panel files still say "specific"; the sealed verdicts do not');
 });
 
 test('findings validate accepts a directory and checks every JSON file in it', (t) => {
@@ -345,7 +361,7 @@ test('findings validate accepts a directory and checks every JSON file in it', (
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const dir = path.join(runDir, 'panel');
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'critic-1.verdict.json'), JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['x'] }));
+  fs.writeFileSync(path.join(dir, 'critic-1.verdict.json'), JSON.stringify({ agent: 'critic-1', value: 'specific', evidence: ['x'], written_at: '2026-10-08T10:00:00Z' }));
   fs.writeFileSync(path.join(dir, 'critic-2.verdict.json'), JSON.stringify({ agent: 'critic-2', value: 'maybe', evidence: ['x'] }));
   let out = '';
   try {
@@ -397,4 +413,27 @@ test('findings set corrects a mis-cited criterion; only a person may drop a WCAG
   assert.deepEqual(after.criteria.map((c) => `${c.kind}:${c.id}:${!!c.primary}`), ['heuristic:H5:true']);
   assert.equal(after.criteria_history.length, 2);
   assert.equal(evaluateGates(loadInputs(root, runDir), rules, { target: 'L1' }).criteria['A11Y-27'].state === 'fail', false);
+});
+
+test('verifier passes write their own files; USE-03 reads them all and fails on a candidate with no verdict', (t) => {
+  const { root, runDir, env } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const run = (...a) => spawnSync(process.execPath, [UIE, ...a], { cwd: root, env, encoding: 'utf8' });
+  const f = (id) => ({ id, status: 'candidate', title: `Problem ${id}`, description: `Problem ${id}.`, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [{ route: '/', state: 'default', selector: `#${id}` }], evidence: [], found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }] });
+  fs.writeFileSync(path.join(runDir, 'merged.json'), JSON.stringify({ schema: 'merged', run: path.basename(runDir), findings: [f('F-0001'), f('F-0002')], proposals: [] }));
+  const verdicts = (file, agent, list) => fs.writeFileSync(path.join(runDir, file), JSON.stringify({ agent, model: 'test', isolation: 'subagent', verdicts: list.map((id) => ({ candidate_id: id, verdict: 'confirmed', step: 'none', reason: 'reproduced', evidence: [] })) }));
+  const use03 = () => JSON.parse(run('gates', '--json').stdout).criteria['USE-03'];
+  assert.match(run('packet', '--role', 'finding-verifier').stdout, /output .*verifier\.json/);
+  verdicts('verifier.json', 'verifier', ['F-0001']);
+  const first = run('findings', 'apply-verdicts');
+  assert.equal(first.status, 2, 'a candidate with no verdict is reported');
+  assert.match(first.stderr, /got no verdict: F-0002/);
+  assert.equal(use03().state, 'fail');
+  // The next pass is named apart, so it never overwrites the first pass's verdicts.
+  assert.match(run('packet', '--role', 'finding-verifier').stdout, /output .*verifier-s1\.json/);
+  verdicts('verifier-s1.json', 'verifier-s1', ['F-0002']);
+  assert.equal(run('findings', 'apply-verdicts').status, 0);
+  const merged = JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8'));
+  assert.deepEqual(merged.findings.map((x) => x.status), ['confirmed', 'confirmed']);
+  assert.equal(use03().state, 'pass');
 });

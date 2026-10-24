@@ -55,8 +55,8 @@ for (const { evalDir, arm, runName, runDir } of runDirs) {
   const runs = path.join(ws, '.ui-evaluator/runs');
   for (const r of fs.existsSync(runs) ? fs.readdirSync(runs).filter((x) => x !== 'LATEST') : []) {
     for (const f of KEEP_RUN) copy(path.join(runs, r, f), path.join(dest, 'runs', r, f));
-    // Parallel verifiers write verifier-p<k>.json beside (or instead of) verifier.json.
-    for (const f of fs.readdirSync(path.join(runs, r)).filter((n) => /^verifier-p\d+\.json$/.test(n))) copy(path.join(runs, r, f), path.join(dest, 'runs', r, f));
+    // Parallel verifiers write verifier-p<k>.json beside (or instead of) verifier.json, and later passes verifier-s<n>.json.
+    for (const f of fs.readdirSync(path.join(runs, r)).filter((n) => /^verifier(-s\d+)?(-p\d+)?\.json$/.test(n) && n !== 'verifier.json')) copy(path.join(runs, r, f), path.join(dest, 'runs', r, f));
     for (const d of KEEP_DIRS) copy(path.join(runs, r, d), path.join(dest, 'runs', r, d));
   }
   const decided = grading.expectations.filter((e) => e.passed !== null);

@@ -84,7 +84,7 @@ Use this workflow:
 
    Results are E4 with intervals. Never report quantitative benchmarks or NPS from a 5-user formative round.
 
-7. **Re-rate severity with observed frequency.** Spawn three severity raters again for the findings whose frequency changed (`uie packet --role severity-rater --n 3 --only-changed`), then run `uie findings rate`. Raters now see observed frequency as data rather than estimating it [EVAL §3.5].
+7. **Re-rate severity with observed frequency.** Spawn three severity raters again for the findings whose frequency changed (`uie packet --role severity-rater --n 3 --only-changed`), then run `uie findings rate`. It writes the new severities to the register and clears each finding's re-rating flag, which EMP-03 waits for; an ingest run needs no merged findings of its own. Raters now see observed frequency as data rather than estimating it [EVAL §3.5].
 
 8. **Agree/disagree sheets.** For stakeholder sheets:
    - "disagree" on an E0–E1 finding moves it to `disputed`, unless the stakeholder gives evidence that it is not a problem; then it is `dismissed`, with the reason;

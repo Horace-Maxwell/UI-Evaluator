@@ -179,6 +179,25 @@ test('a second batch of raters gets its own blind map; the first batch still dec
   const sev = Object.fromEntries(merged().findings.map((f) => [f.id, f.severity?.mean]));
   assert.equal(sev[feeId], 4, 'the first batch still decodes with its own map');
   assert.equal(sev[pluralId], 3, 'the re-rated finding takes the latest batch');
+  // The register's copy takes the new severity and stops waiting for a re-rating (EMP-03).
+  const after = JSON.parse(fs.readFileSync(regPath, 'utf8')).findings.find((f) => f.id === pluralId);
+  assert.equal(after.needs_rerating, undefined);
+  assert.equal(after.severity.mean, 3);
+
+  // An ingest run has no merged.json: --only-changed rates the register's finding there, and the flag clears.
+  const ingest = uie('run', 'new', '--label', 'ingest', '--json').json().run;
+  const reg2 = JSON.parse(fs.readFileSync(regPath, 'utf8'));
+  reg2.findings.find((f) => f.id === feeId).needs_rerating = true;
+  fs.writeFileSync(regPath, JSON.stringify(reg2, null, 2));
+  assert.equal(uie('packet', '--role', 'severity-rater', '--n', '3', '--only-changed', '--run', ingest).code, 0);
+  const ingestDir = path.join(root, '.ui-evaluator', 'runs', ingest);
+  const map = JSON.parse(fs.readFileSync(path.join(ingestDir, 'packets/.blind-map-raters.json'), 'utf8'));
+  for (const i of [1, 2, 3]) write(path.join(ingestDir, `ratings/rater-${i}.json`), { schema: 'rating', rater: `rater-${i}`, model: 'test-model', isolation: 'subagent', ratings: Object.keys(map).map((b) => ({ finding_id: b, frequency: 3, impact: 3, persistence: 1, value: 3, validity: 'problem', note: 'seen by two people' })) });
+  assert.equal(uie('findings', 'rate', '--run', ingest).code, 0);
+  const feeAfter = JSON.parse(fs.readFileSync(regPath, 'utf8')).findings.find((f) => f.id === feeId);
+  assert.equal(feeAfter.needs_rerating, undefined);
+  assert.equal(feeAfter.severity.mean, 3);
+  assert.equal(fs.existsSync(path.join(ingestDir, 'merged.json')), false, 'the ingest run gets no empty merged.json');
 });
 
 test('an empty fix queue says why when the audit was never merged or promoted', (t) => {

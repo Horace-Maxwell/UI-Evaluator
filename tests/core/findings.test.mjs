@@ -417,3 +417,49 @@ test('a confirmed verdict can correct an overstated description; the original wo
   assert.match(f.description, /shows only its start time/);
   assert.equal(f.description_as_reported, 'The slot end time and arrival rule exist only in the title attribute.');
 });
+
+test('a dismissal never waives a WCAG or tool finding, and only catches the same problem on the same element', async () => {
+  const { applyVerifierVerdicts, addDismissal, matchesDismissal } = await import('../../skills/ui-evaluator/scripts/lib/findings/register.mjs');
+  const at = [{ route: '/', state: 'default', selector: 'button.primary' }];
+  const judged = (id, title, crit, status = 'candidate') => ({ id, status, fingerprint: `sha1:${id}`, title, criteria: [{ kind: 'heuristic', id: crit, primary: true }], locations: at, found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }] });
+  const ledger = addDismissal({ version: 1, entries: [] }, judged('F-0001', 'Primary button uses an off-brand green', 'H8'), { reason: 'brand colour, owner decision', by: 'human:owner' });
+  const contrast = { id: 'F-0002', status: 'confirmed', fingerprint: 'sha1:b', gate: 'G2', severity: { source: 'rule', value: 3, mean: 3 }, criteria: [{ kind: 'rule', id: 'A11Y-11', primary: true }], locations: at, found_by: [{ role: 'tool', method: 'tool' }], title: 'Text contrast 3.1:1' };
+  const target = { id: 'F-0003', status: 'candidate', fingerprint: 'sha1:c', criteria: [{ kind: 'wcag', id: '2.5.8', primary: true }], locations: at, found_by: [{ role: 'heuristic-evaluator', agent: 'he-2', method: 'HE' }], title: 'Target is 18 px tall' };
+  const again = judged('F-0004', 'Primary button green is off-brand', 'H4');
+  const other = judged('F-0005', 'Primary button label says Proceed, other steps say Continue', 'H4');
+  const confirmed = judged('F-0006', 'The off-brand green on the primary button', 'H8');
+  assert.equal(matchesDismissal(contrast, ledger), undefined, 'a deterministic G2 failure is never waived');
+  assert.equal(matchesDismissal(target, ledger), undefined, 'a WCAG success criterion is never waived');
+  const findings = [contrast, target, again, other, confirmed];
+  const counts = applyVerifierVerdicts(findings, { verdicts: [{ candidate_id: 'F-0006', verdict: 'confirmed', reason: 'new evidence: the brand changed' }] }, { dismissals: ledger });
+  assert.deepEqual(findings.map((f) => f.status), ['confirmed', 'candidate', 'rejected', 'candidate', 'confirmed']);
+  assert.equal(confirmed.dismissal_match.finding, 'F-0001', 'a confirmed finding keeps its verdict and shows the match');
+  assert.deepEqual([counts.confirmed, counts.rejected], [1, 1], 'each finding is counted once');
+});
+
+test('a merge on one element and criterion keeps what each report said, for the verifier to split', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-texts-'));
+  try {
+    const loc = { route: '/', state: 'default', selector: 'button#next', viewport: { width: 375, height: 812 } };
+    const cand = (title, description) => ({ title, description, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H4', primary: true }], locations: [loc], evidence: [] });
+    fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+    const write = (agent, c) => fs.writeFileSync(path.join(runDir, `evaluators/${agent}.json`), JSON.stringify({ role: 'heuristic-evaluator', agent, candidates: [c] }));
+    write('he-1', cand('Next says "Proceed" here but "Continue" elsewhere', 'The same action has two names.'));
+    write('he-2', cand('Next is grey like the disabled Back button', 'It looks unavailable.'));
+    write('he-3', cand('Next says "Proceed" here but "Continue" elsewhere', 'The same action has two names.'));
+    const [f] = mergeRun(runDir, {}).findings.filter((x) => x.locations.some((l) => l.selector === 'button#next'));
+    assert.deepEqual(f.merged_texts.map((t) => [t.agent, t.title]), [['he-1', 'Next says "Proceed" here but "Continue" elsewhere'], ['he-2', 'Next is grey like the disabled Back button']], 'the second problem is kept; an identical third report adds nothing');
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
+test('the time-bound detector: words that only look like a wait are not one, and common durations are', async () => {
+  const { timeBound } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const notWaits = ['Hold Shift and Tab skips the search field', 'Press and hold on a slot opens nothing on touch devices', 'The Save button looks idle: no hover or pressed state', 'Placeholder text is held in the label slot instead of a real label', 'The expiry date field on the payment form has no format hint', 'Card expiration month uses a free text box', 'The countdown of remaining characters is not announced', 'Takes 3 minutes to read the terms before the button appears below the fold', 'Small detailing lapses: a stranded icon', "After a day is tapped the slot area stays empty"];
+  const waits = ['Your session ends after 15 seconds without a warning', 'The reservation is released after 90 seconds and the page does not say so', 'The confirmation email arrives a day later, nothing tells the user to wait', 'The basket empties itself after half an hour', 'Sign-in is lost after 20 min of no activity', 'The code you were texted is only valid for 10 minutes', 'The offer disappears at midnight', 'The 5-minute slot hold expires without any warning', 'How long a chosen slot is held is never stated'];
+  for (const title of notWaits) assert.equal(timeBound({ title }), false, title);
+  for (const title of waits) assert.equal(timeBound({ title }), true, title);
+  assert.equal(timeBound({ title: 'x', locations: [{ state: 'hold-expired' }] }), true);
+  assert.equal(timeBound({ title: 'x', locations: [{ state: 'placeholder-shown' }, { state: 'household-form' }] }), false, 'state names match on whole words');
+});
