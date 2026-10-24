@@ -52,7 +52,7 @@ Use this workflow when creating or substantially changing UI: new pages, compone
    - type roles, sizes and line heights;
    - spacing, radius, elevation and motion tokens.
 
-   With no styling system in the project, start from `../assets/base/reference.css` (`../knowledge/reference-grade.md` §9): copy it, set its token block from `DESIGN.md`, and delete what the page does not use.
+   With no styling system in the project, start from `../assets/base/reference.css` (`../knowledge/reference-grade.md` §9): copy it, set its token block from `DESIGN.md`, and delete what the page does not use. When `DESIGN.md` names a style preset (`ui-evaluator.style`), also copy `../assets/base/styles/<name>.css` and load it after `reference.css`, then the product's own overrides (`../knowledge/styles.md` §1).
 
    After this step, components reference tokens only. A raw hex value, a raw palette utility (`bg-indigo-500`) or an off-scale spacing value inside a component is drift (COL-01, LAY-01). Read `../knowledge/typography.md`, `../knowledge/color.md`, `../knowledge/layout.md` and `../knowledge/shape-depth.md` for the rules each token must satisfy.
 

@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <b>English</b> · <a href="README.zh-CN.md">中文</a> · <a href="#quick-start">Quick start</a> · <a href="#how-it-works">How it works</a> · <a href="#measured-results">Measured results</a> · <a href="#questions">Questions</a> · <a href="docs/README.md">Documentation</a>
+  <b>English</b> · <a href="README.zh-CN.md">中文</a> · <a href="#quick-start">Quick start</a> · <a href="#how-it-works">How it works</a> · <a href="#ask-for-a-look">Styles</a> · <a href="#architecture">Architecture</a> · <a href="#measured-results">Measured results</a> · <a href="#questions">Questions</a> · <a href="docs/README.md">Documentation</a>
 </p>
 
 <p align="center">
@@ -87,6 +87,38 @@ Every criterion has an ID, a threshold, a way to verify it and a source in [QUAL
 
 </details>
 
+## Architecture
+
+```mermaid
+flowchart LR
+  ask["Your request"] --> router["SKILL.md<br/>routes the request"]
+  router --> wf["Workflows<br/>setup · direct · build · audit<br/>fix · verify · report · study · ingest"]
+  wf -. read .-> know["Knowledge<br/>rules, styles, reference-grade,<br/>methods, role instructions"]
+  wf --> cli["uie CLI"]
+  cli --> checks["Browser checks<br/>(Playwright + axe)"]
+  cli --> packets["Packets"] --> roles["Isolated roles<br/>9 subagents"]
+  checks --> findings["Findings<br/>merge → verify → rate blind"]
+  roles --> findings
+  findings --> gates["Gates G0–G7<br/>level L1–L4"] --> report["Report<br/>+ language lint"]
+  cli <--> ws[(".ui-evaluator/<br/>PRODUCT.md · DESIGN.md")]
+```
+
+| Part | What it does | Where it lives |
+|---|---|---|
+| Router | reads the request, picks the workflows, the depth and what the input allows | [`SKILL.md`](skills/ui-evaluator/SKILL.md) |
+| Workflows | step-by-step procedures, each with preconditions, outputs, checkpoints and exit criteria | `skills/ui-evaluator/references/workflows/` |
+| Knowledge | the rules behind every criterion (type, colour, layout, motion, components, copy, accessibility, AI tells, CJK, data), how reference teams compose a page, the style presets and platform profiles | `skills/ui-evaluator/references/knowledge/` |
+| Methods and roles | heuristic evaluation, walkthroughs, verification, blind rating, fix loop; the instructions for each isolated role | `references/methods/`, `references/evaluators/`, generated into `agents/` |
+| `uie` CLI | everything deterministic: browser checks, lint, packets for isolated roles, the findings lifecycle, gates, reports, statistics. Node, no runtime dependencies besides Playwright | `skills/ui-evaluator/scripts/` |
+| Starting stylesheet and presets | `reference.css` and the four style token files used by `build` | `skills/ui-evaluator/assets/base/` |
+| Schemas and rules | JSON Schemas for every file the skill writes; `rules.json`, built from the quality bar | `skills/ui-evaluator/assets/` |
+| Claude Code plugin | nine slash commands, nine isolated subagents, the optional lint hook | `commands/`, `agents/`, `hooks/`, `.claude-plugin/` |
+| Your project's workspace | `PRODUCT.md` and `DESIGN.md` at the root; runs (captures, tool hits, evaluator outputs, merged findings, verdicts, ratings, gates, report) and the findings register in `.ui-evaluator/` | your project |
+| Specification | the framework, the quality bar with every criterion, decisions, the evaluation plan | `docs/framework/` |
+| Evaluation | fixtures with ground truth, prompts and assertions, the bench harness, every recorded round | `evals/`, `tools/bench/` |
+
+Isolation is the point of the design: each role gets a packet with only what it may see (a black-box evaluator never sees the source; a rater never sees who found a problem), writes one schema-checked file, and the CLI merges, verifies and rates those files. The full architecture, data model and module map are in [ARCHITECTURE.md](docs/framework/ARCHITECTURE.md).
+
 ## Install
 
 **Claude Code (plugin, recommended).** The two commands in [Quick start](#quick-start) add the skill, nine slash commands, nine isolated subagents and an optional lint hook.
@@ -118,7 +150,7 @@ Audits come at three depths: quick (reaches at most L1), standard (the default, 
 |---|---|
 | `/ui-evaluator:setup` | product context, tooling, `PRODUCT.md`, journeys, scope |
 | `/ui-evaluator:direct` | design direction for new work: candidates, seeded roll, convergence tests, locked `DESIGN.md` |
-| `/ui-evaluator:build` | build to the floor: tokens first, full states, copy, responsive, accessibility, motion last, finish pass |
+| `/ui-evaluator:build` | build to the floor: tokens first (from the starting stylesheet and a style preset, if named), composed the way reference teams compose, full states, copy, responsive, accessibility, motion last, finish pass |
 | `/ui-evaluator:audit` | evidence, deterministic checks, isolated evaluators, verification, blind rating, gates, report |
 | `/ui-evaluator:study` | plan a usability test, survey or experiment |
 | `/ui-evaluator:ingest` | user feedback and study results into themes, linked findings and re-rated severity |
@@ -149,6 +181,21 @@ Run `uie <command> --help` for options. Everything the CLI writes lives in `.ui-
 
 </details>
 
+## Ask for a look
+
+Name the look you want and the skill designs in it directly. Four presets come from the research behind [reference-grade.md](skills/ui-evaluator/references/knowledge/reference-grade.md): each team's own guidance and the styles measured on its shipped pages.
+
+| Preset | Say something like | What you get |
+|---|---|---|
+| `apple` | "make it look like Apple's site", "苹果官网那种" | white and light-grey bands, the platform face at 600 weight, a 48–80 px statement headline, one blue for everything clickable, pill buttons, shadowless 28 px tiles |
+| `google` | "Google / Material style", "做成 Material 3 风格" | white with pale tonal bands, Roboto Flex at 500 weight, one filled pill and one tonal pill, 48 px chips, 28 px containers, surface tones instead of shadows |
+| `govuk` | "plain like GOV.UK", "像政府服务网站那样朴素好用" | one blue header band, 19 px Arial, bold headings, square corners, the green button and the yellow focus state, one question per page |
+| `product-dark` | "dark like Linear or Vercel", "暗色开发者工具风格" | one near-black ground, Inter with a tight display, light ink, a white primary button, 8 px corners, hairline borders, the product's own UI as the imagery |
+
+<img src="docs/assets/styles.png" width="880" alt="The same demo page in the four presets at 1280 pixels: apple with white and light-grey bands and a black booking band; google with pale blue-grey bands and a charcoal booking band; govuk with square corners, a green button and a blue band; product-dark on a near-black ground with a light booking band.">
+
+How it works: `direct` records the preset in `DESIGN.md` (`ui-evaluator.style`) instead of rolling for a look, and `build` loads the starting stylesheet `assets/base/reference.css` and then the preset's token file `assets/base/styles/<name>.css`. The product's own subject still supplies the imagery and the copy. A style borrows a way of composing, never a company's identity: no logos, product names, product photography or fake device chrome, and the accessibility floor holds under every preset (where a system's own value falls below it, such as GOV.UK's line height, the preset raises it). With no look named, the skill deals a direction from your product's world and composes it the way these teams do. Recipes, rules and how to add a preset: [styles.md](skills/ui-evaluator/references/knowledge/styles.md).
+
 ## How it avoids the AI look
 
 The generic look comes from defaults that nobody decided. The skill makes decisions visible and checkable:
@@ -158,7 +205,8 @@ The generic look comes from defaults that nobody decided. The skill makes decisi
 3. **Tells are named and counted.** A catalogue of AI tells (gradient text, tracked-caps eyebrows on every section, three equal icon cards, invented social proof, bounce easing on UI state…) is checked in code and in the render. Hard tells must be absent. Soft tells need a decision: fixed, accepted in `DESIGN.md` with a reason, disputed or deferred.
 4. **Isolated critics** judge specificity, brand fit and appeal from screenshots before they may see detector output, and never see the builder's rationale.
 5. **A ledger** stops the next project from repeating the last one's display face and page structure.
-6. **Not bare either.** Avoiding defaults must not leave a page empty. The build ends with a finish pass, and the critics' appeal verdict fails a page that is clean but plain. The subject's own materials, such as a calligraphy class's paper and seal, are references to use with the product's specifics, not tells to avoid ([ADR-035](docs/framework/DECISIONS.md#adr-035--appeal-is-judged-and-gates-g6)).
+6. **Models to compose by, not only things to avoid.** [reference-grade.md](skills/ui-evaluator/references/knowledge/reference-grade.md) records how Apple, Google, GOV.UK, Carbon, Stripe, Linear and others make a page look finished: bands instead of a card around every section, a hero with real scale, cards only for objects, the real thing in every band. The style presets above apply one of them on request.
+7. **Not bare either.** Avoiding defaults must not leave a page empty. The build ends with a finish pass, and the critics' appeal verdict fails a page that is clean but plain. The subject's own materials, such as a calligraphy class's paper and seal, are references to use with the product's specifics, not tells to avoid ([ADR-035](docs/framework/DECISIONS.md#adr-035--appeal-is-judged-and-gates-g6)).
 
 ## Measured results
 
@@ -180,14 +228,14 @@ The grader also checks the skill's own files (PRODUCT.md, DESIGN.md, the directi
 - **The skill reliably lifts what it can verify.** It costs about 2.7 times the tokens and 2.3 times the time of an unaided build, mostly in audits, gates and records.
 - **It does not yet reliably win on looks.** Runs vary widely: the same calligraphy prompt won all three questions in one run and lost all three in the other two. Model judges agreed with the person on beauty in 7 of 8 pairs, but credited the skill's concepts as less generic more often than the person did.
 
-Against the release thresholds in the [evaluation plan](docs/framework/EVALUATION-PLAN.md), version 2.0.0 meets the bars for tests, detectors and scripted accessibility checks. It misses the build-outcome bar, which asks for a blind preference for the skill of at least 70%. The [agent-level round of 2026-10-06](evals/results/agent-evals-2026-10-06/REPORT.md) measured four more: the standard audit (recall met in two runs, precision in one of them; the same model without the skill did as well on that fixture), feedback ingestion (met), honesty (met for the language lint and the level claimed) and the fix loop (not met: 2 of 3 seeded serious defects verified fixed, because the audit never found the third). A [third round](evals/results/agent-evals-2026-10-07-tool-library/REPORT.md) on a harder fixture, built so that its problems show only in use, found the same: the skill met the recall bar in both runs and the precision bar in one, while the same model without the skill, which had a browser on that machine, found every seeded problem for about 4% of the cost. A [fourth round](evals/results/agent-evals-2026-10-08-tool-library-r4/REPORT.md), three runs per arm after the fixes the third called for, met the recall bar in all three runs and the precision bar in none (0.71 to 0.78, held down by the design critics' remarks); the same model without the skill found 12 or 13 of the 13 seeded problems in every run, with a browser or without one, for about 3% of the cost. A [fifth round](evals/results/agent-evals-2026-10-12-slot-booking/REPORT.md), on a site shipped only as a minified bundle and run with 2.3.0, met both bars in all three runs for the first time (recall 13 to 14 of 14, judged precision 0.92 to 0.97, after the design critics' remarks without a stated harm became uncounted notes); the same model without the skill still read the bundle and found 12 or 13 of 14, missing only the layout shift that has to be measured. A [sixth round](evals/results/agent-evals-2026-10-16-slot-booking/REPORT.md) ran the same eval with the three fixes round 5 called for: both bars were met again in all three runs (13 of 14 each, judged precision 0.88 to 0.92), the same-cause groups stayed small and the checks that wait started first, while the tooltip defect was still missed and two faults in the fixture came to light. The [status table](evals/README.md#status-against-the-release-thresholds) has each one. All of this comes from one judge, small samples and one model family; the [decision records](docs/framework/DECISIONS.md) from ADR-035 on say what changed after each measurement.
+Against the release thresholds in the [evaluation plan](docs/framework/EVALUATION-PLAN.md), the current version meets the bars for tests, detectors, scripted accessibility checks and feedback ingestion, and the honesty checks measured so far. It misses the build-outcome bar, which asks for a blind preference for the skill of at least 70% (2.4.0's reference-grade builds are not yet blind-judged), and the fix-loop bar. The [agent-level round of 2026-10-06](evals/results/agent-evals-2026-10-06/REPORT.md) measured four more: the standard audit (recall met in two runs, precision in one of them; the same model without the skill did as well on that fixture), feedback ingestion (met), honesty (met for the language lint and the level claimed) and the fix loop (not met: 2 of 3 seeded serious defects verified fixed, because the audit never found the third). A [third round](evals/results/agent-evals-2026-10-07-tool-library/REPORT.md) on a harder fixture, built so that its problems show only in use, found the same: the skill met the recall bar in both runs and the precision bar in one, while the same model without the skill, which had a browser on that machine, found every seeded problem for about 4% of the cost. A [fourth round](evals/results/agent-evals-2026-10-08-tool-library-r4/REPORT.md), three runs per arm after the fixes the third called for, met the recall bar in all three runs and the precision bar in none (0.71 to 0.78, held down by the design critics' remarks); the same model without the skill found 12 or 13 of the 13 seeded problems in every run, with a browser or without one, for about 3% of the cost. A [fifth round](evals/results/agent-evals-2026-10-12-slot-booking/REPORT.md), on a site shipped only as a minified bundle and run with 2.3.0, met both bars in all three runs for the first time (recall 13 to 14 of 14, judged precision 0.92 to 0.97, after the design critics' remarks without a stated harm became uncounted notes); the same model without the skill still read the bundle and found 12 or 13 of 14, missing only the layout shift that has to be measured. A [sixth round](evals/results/agent-evals-2026-10-16-slot-booking/REPORT.md) ran the same eval with the three fixes round 5 called for: both bars were met again in all three runs (13 of 14 each, judged precision 0.88 to 0.92), the same-cause groups stayed small and the checks that wait started first, while the tooltip defect was still missed and two faults in the fixture came to light. The [status table](evals/README.md#status-against-the-release-thresholds) has each one. All of this comes from one judge, small samples and one model family; the [decision records](docs/framework/DECISIONS.md) from ADR-035 on say what changed after each measurement.
 
 ## Questions
 
 <details>
 <summary><b>Will it make my page beautiful?</b></summary>
 
-It makes the page meet a floor you can check: accessible, well crafted, free of AI tells and honest about its content. Isolated critics judge appeal, and a plain page fails their verdict. But in blind judgements so far, a person found the page built without the skill more beautiful more often. Beauty is the open problem, and the [measured results](#measured-results) say how open.
+It makes the page meet a floor you can check: accessible, well crafted, free of AI tells and honest about its content. Isolated critics judge appeal, and a plain page fails their verdict. Since 2.4.0 the build composes the way reference teams such as Apple and Google do, and you can name a look directly (see [Ask for a look](#ask-for-a-look)). But in blind judgements so far, a person found the page built without the skill more beautiful more often, and 2.4.0's builds have not been blind-judged yet. Beauty is the open problem, and the [measured results](#measured-results) say how open.
 
 </details>
 
@@ -251,7 +299,8 @@ Not yet. It covers web front ends; native iOS, Android and desktop apps are out 
 
 ```
 skills/ui-evaluator/      the portable skill: SKILL.md, references (workflows, methods, knowledge,
-                          evaluator roles, templates), scripts (uie CLI), assets (schemas, rules, data)
+                          evaluator roles, templates), scripts (uie CLI), assets (schemas, rules, data,
+                          base/: the starting stylesheet and the style presets)
 agents/                   Claude Code subagents generated from the evaluator roles
 commands/  hooks/         Claude Code slash commands and the optional lint hook
 .claude-plugin/           plugin manifest and marketplace entry
@@ -259,7 +308,8 @@ docs/framework/           the specification: framework, quality bar, methods, ar
                           conflict register, authoring rules, evaluation plan, traceability, glossary
 docs/research/            the evidence base: eleven research notes, 592 adopt items with sources
 docs/assets/              the images in this README and where each one comes from
-evals/                    fixtures, prompts and assertions; evals/results/ holds every benchmark round
+evals/                    fixtures, prompts and assertions; evals/results/ holds every benchmark round;
+                          fixtures-src/ holds the source of fixtures shipped as a build
 tests/                    unit and integration tests
 tools/                    maintenance scripts; bench/ runs the build benchmark, readme-media/ draws these images
 .github/                  CI, issue forms and the pull request checklist

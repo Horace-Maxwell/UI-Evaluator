@@ -20,6 +20,8 @@ Use this workflow:
 
 For an **existing** product whose identity must be kept, use the identity-lock variant (step 2) instead of a new direction.
 
+When the owner names a look ("like Apple", "Material style", "plain like GOV.UK", "dark like Linear"), use the style variant: map it to one preset in `../knowledge/styles.md`, record `ui-evaluator.style` and `direction.chosen: style:<name>` in `DESIGN.md` with the preset's token values and the reasons it asks for (the face, a non-4 px spacing scale, the themes shipped), and skip the roll for the look. Write `directions/<id>/decision.md` starting with `style: <name>`, the owner's words and why the preset fits (DEC-03 accepts it in place of a roll and candidates), add the ledger entry with `--pinned "the owner chose the <name> style"` (DEC-04), and list any tell the preset trips in `accepted_tells` with that reason. The product's referent still decides imagery, the signature moment and voice (steps 3–5 apply to those).
+
 Read `../methods/direction-process.md` for the full procedure and `../knowledge/brand-expression.md` for the levers. This file is the operational checklist. When the direction sets composition (grounds, type scale, containment, imagery, icons), take the starting values from `../knowledge/reference-grade.md`, which records how Apple, Google, GOV.UK and other reference teams compose a finished page.
 
 ## 2. Preconditions

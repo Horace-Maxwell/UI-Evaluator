@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <b>中文</b> · <a href="#快速上手">快速上手</a> · <a href="#工作方式">工作方式</a> · <a href="#实测结果">实测结果</a> · <a href="#常见问题">常见问题</a> · <a href="docs/OVERVIEW.zh-CN.md">中文总览</a>
+  <a href="README.md">English</a> · <b>中文</b> · <a href="#快速上手">快速上手</a> · <a href="#工作方式">工作方式</a> · <a href="#指定风格">指定风格</a> · <a href="#架构">架构</a> · <a href="#实测结果">实测结果</a> · <a href="#常见问题">常见问题</a> · <a href="docs/OVERVIEW.zh-CN.md">中文总览</a>
 </p>
 
 <p align="center">
@@ -87,6 +87,38 @@
 
 </details>
 
+## 架构
+
+```mermaid
+flowchart LR
+  ask["你的请求"] --> router["SKILL.md<br/>识别请求、选择流程"]
+  router --> wf["工作流<br/>setup · direct · build · audit<br/>fix · verify · report · study · ingest"]
+  wf -. 读取 .-> know["知识库<br/>规则、风格预设、参考级构图、<br/>方法、角色说明"]
+  wf --> cli["uie 命令行"]
+  cli --> checks["浏览器检查<br/>（Playwright + axe）"]
+  cli --> packets["输入包"] --> roles["隔离角色<br/>9 个子代理"]
+  checks --> findings["发现项<br/>合并 → 验证 → 盲评严重度"]
+  roles --> findings
+  findings --> gates["门槛 G0–G7<br/>等级 L1–L4"] --> report["报告<br/>+ 用语检查"]
+  cli <--> ws[(".ui-evaluator/<br/>PRODUCT.md · DESIGN.md")]
+```
+
+| 组成部分 | 作用 | 位置 |
+|---|---|---|
+| 路由 | 读懂请求，选出要跑的工作流、审计深度，以及在当前输入条件下能做到什么 | [`SKILL.md`](skills/ui-evaluator/SKILL.md) |
+| 工作流 | 分步骤的流程，每个都写明前置条件、产出、需要用户确认的节点和完成标准 | `skills/ui-evaluator/references/workflows/` |
+| 知识库 | 每条标准背后的规则（字体、颜色、布局、动效、组件、文案、无障碍、AI 痕迹、中日韩排版、数据展示），一线团队如何构图，风格预设和平台约定 | `skills/ui-evaluator/references/knowledge/` |
+| 方法与角色 | 启发式评估、认知走查、验证、盲评、修复循环；每个隔离角色的工作说明 | `references/methods/`、`references/evaluators/`，生成到 `agents/` |
+| `uie` 命令行 | 所有确定性的工作：浏览器检查、静态检查、给隔离角色打包输入、发现项的整个生命周期、门槛、报告、统计。Node 编写，除 Playwright 外没有运行时依赖 | `skills/ui-evaluator/scripts/` |
+| 起步样式表与风格预设 | `reference.css` 和四个风格令牌文件，供 `build` 使用 | `skills/ui-evaluator/assets/base/` |
+| 数据结构与规则 | 技能写出的每种文件都有 JSON Schema；`rules.json` 由质量标准生成 | `skills/ui-evaluator/assets/` |
+| Claude Code 插件 | 9 个斜杠命令、9 个隔离子代理、可选的检查钩子 | `commands/`、`agents/`、`hooks/`、`.claude-plugin/` |
+| 你项目里的工作区 | 根目录的 `PRODUCT.md` 和 `DESIGN.md`；`.ui-evaluator/` 里的每次运行（截图、工具命中、评估者产出、合并后的发现项、验证结论、评分、门槛、报告）和发现项登记册 | 你的项目 |
+| 规范 | 框架、列出每条标准的质量标准、决策记录、评估计划 | `docs/framework/` |
+| 评测 | 带标准答案的样例站点、提示和断言、评测工具、每一轮的记录 | `evals/`、`tools/bench/` |
+
+设计的关键是隔离：每个角色只拿到它该看的输入包（黑盒评估者看不到源码，评分者看不到是谁发现的问题），写出一个经 Schema 校验的文件，再由命令行合并、验证、评分。完整的架构、数据模型和模块说明见 [ARCHITECTURE.md](docs/framework/ARCHITECTURE.md)。
+
 ## 安装
 
 **Claude Code（插件，推荐）**：[快速上手](#快速上手)里的两条命令会装好技能本体、9 个斜杠命令、9 个隔离子智能体和一个可选的代码检查钩子。
@@ -118,7 +150,7 @@ npx skills add Horace-Maxwell/UI-Evaluator
 |---|---|
 | `/ui-evaluator:setup` | 产品语境、工具、`PRODUCT.md`、关键旅程、评审范围 |
 | `/ui-evaluator:direct` | 新作品的设计方向：候选方向、种子抽签、趋同测试、锁定 `DESIGN.md` |
-| `/ui-evaluator:build` | 按底线构建：先令牌、状态齐全、文案、响应式、无障碍、最后才加动效，并做完成度检查 |
+| `/ui-evaluator:build` | 按底线构建：先令牌（取自起步样式表，指定了风格时再加风格预设），按一线团队的方法构图，状态齐全、文案、响应式、无障碍、最后才加动效，并做完成度检查 |
 | `/ui-evaluator:audit` | 取证、确定性检查、隔离评估、验证、盲评、门禁、报告 |
 | `/ui-evaluator:study` | 规划可用性测试、问卷或实验 |
 | `/ui-evaluator:ingest` | 把用户反馈和研究结果变成主题、关联问题并重新评级 |
@@ -149,6 +181,21 @@ npx skills add Horace-Maxwell/UI-Evaluator
 
 </details>
 
+## 指定风格
+
+直接说出想要的风格，技能就按那种风格来设计。四个预设来自 [reference-grade.md](skills/ui-evaluator/references/knowledge/reference-grade.md) 背后的研究：各团队自己发布的设计准则，加上在他们线上页面实测的样式数值。
+
+| 预设 | 你可以这样说 | 得到的效果 |
+|---|---|---|
+| `apple` | “做成苹果官网那种”“like Apple's site” | 白色与浅灰交替的整幅色带，系统字体 600 字重，48–80 px 的陈述式大标题，所有可点击元素只用一种蓝，胶囊按钮，无阴影的 28 px 圆角块 |
+| `google` | “Google / Material 3 风格” | 白底配淡色调色带，Roboto Flex 500 字重，一个实心胶囊按钮配一个色调按钮，48 px 的 chip，28 px 圆角容器，用表面色调代替阴影 |
+| `govuk` | “像政府服务网站那样朴素好用”“plain like GOV.UK” | 一条蓝色页头，19 px Arial，粗体标题，直角，绿色主按钮和黄色焦点态，长表单一页一问 |
+| `product-dark` | “暗色开发者工具风格”“like Linear / Vercel” | 近黑色单一底色，Inter 紧排大标题，浅色文字，白色主按钮，8 px 圆角，发丝细线，用产品自己的界面当配图 |
+
+<img src="docs/assets/styles.png" width="880" alt="同一个演示页面在四个预设下的样子（1280 px）：apple 是白色与浅灰色带加一条黑色预约色带；google 是淡蓝灰色带加炭灰色预约色带；govuk 是直角、绿色按钮和蓝色色带；product-dark 是近黑底色加一条浅色预约色带。">
+
+工作方式：`direct` 把预设写进 `DESIGN.md`（`ui-evaluator.style`），不再为外观抽签；`build` 先加载起步样式表 `assets/base/reference.css`，再加载预设的令牌文件 `assets/base/styles/<名字>.css`。配图和文案仍然来自你的产品本身。风格借的是构图方法，不是公司身份：不用对方的标志、产品名、产品照片或伪造的设备外框；每个预设下无障碍底线都照样成立（某个体系自己的数值低于底线时，比如 GOV.UK 的行高，预设会把它调上来）。如果你没指定风格，技能会从你的产品所在的世界里抽取方向，再按这些团队的方法去构图。完整的配方、规则和如何新增预设，见 [styles.md](skills/ui-evaluator/references/knowledge/styles.md)。
+
 ## 它如何避免“AI 味”
 
 “AI 味”来自没人做过决定的默认值。这个技能让决定变得可见、可检查：
@@ -158,7 +205,8 @@ npx skills add Horace-Maxwell/UI-Evaluator
 3. **AI 痕迹有名字、有计数。** 渐变文字、每段都有的大写小标题、三张一样的图标卡片、编造的社会认同、界面状态上的弹跳缓动……这些痕迹在代码和渲染结果中都会被检查。硬性痕迹必须不存在；软性痕迹必须有处置：已修复、在 `DESIGN.md` 中写明理由后接受、提出异议或延后处理。
 4. **隔离的评审** 只看截图来判断设计是否专属于这个产品、是否符合品牌、是否有吸引力，必须先写下结论才能看检测器输出，并且永远看不到构建者的设计说明。
 5. **方向台账** 防止下一个项目重复上一个项目的展示字体和页面结构。
-6. **也不能光秃秃。** 避开默认值不等于把页面删空。构建最后有一道完成度检查，评审的吸引力裁定会让“干净但寡淡”的页面不通过。题材本身的材质（比如书法班的宣纸和印章）被当作要结合产品具体内容来用的参照，而不是要躲开的痕迹（[ADR-035](docs/framework/DECISIONS.md#adr-035--appeal-is-judged-and-gates-g6)）。
+6. **有可以照着做的范本，而不只是禁忌清单。** [reference-grade.md](skills/ui-evaluator/references/knowledge/reference-grade.md) 记录了 Apple、Google、GOV.UK、Carbon、Stripe、Linear 等团队怎样把页面做出完成感：用整幅色带换底色而不是每节套卡片，首屏有真正的分量，卡片只给对象，每段都展示真实的东西。上面的风格预设可以按你的要求直接套用其中一种。
+7. **也不能光秃秃。** 避开默认值不等于把页面删空。构建最后有一道完成度检查，评审的吸引力裁定会让“干净但寡淡”的页面不通过。题材本身的材质（比如书法班的宣纸和印章）被当作要结合产品具体内容来用的参照，而不是要躲开的痕迹（[ADR-035](docs/framework/DECISIONS.md#adr-035--appeal-is-judged-and-gates-g6)）。
 
 ## 实测结果
 
@@ -180,14 +228,14 @@ npx skills add Horace-Maxwell/UI-Evaluator
 - **技能稳定提升了能验证的质量。** 代价是 token 约为不用技能时的 2.7 倍、时间约 2.3 倍，主要花在审计、门禁和记录上。
 - **但在“好看”上还不能稳定取胜。** 波动很大：同一个书法班需求，有一次技能版三项全胜，另两次三项全负。Claude 评委在“美”上和真人 8 组中有 7 组一致，但比真人更常把技能版的“概念”判为不像模板。
 
-对照[评估计划](docs/framework/EVALUATION-PLAN.md)里的发布门槛，2.0.0 版达到了测试、检测器和脚本化无障碍检查这几项；没有达到“构建结果”一项（它要求真人盲评中至少 70% 偏好技能版）。[2026-10-06 的智能体评测](evals/results/agent-evals-2026-10-06/REPORT.md)又测了四项：标准深度审计（两次运行召回都达标，精确率只有一次达标；在这个测试网站上，不加载技能的同一模型表现相当）、反馈导入（达标）、诚实（报告用语检查和等级声明达标）、修复循环（未达标：3 个预埋的严重缺陷中验证修复了 2 个，第 3 个审计阶段就没有发现）。之后在一个更难的样例上又跑了[第三轮](evals/results/agent-evals-2026-10-07-tool-library/REPORT.md)（样例按“问题只在使用中显现”设计）：技能版两次运行召回都达标、精确率只有一次达标；不加载技能的同一模型因为机器上有浏览器可用，两次都找全了预埋问题，费用约为技能版的 4%。按第三轮的结论修改技能后又跑了[第四轮](evals/results/agent-evals-2026-10-08-tool-library-r4/REPORT.md)，每组三次：技能版三次召回都达标、精确率三次都没达标（0.71–0.78，主要被设计评审员的品味类意见拉低）；不加载技能的同一模型无论有没有浏览器，每次都找到 13 个预埋问题中的 12 或 13 个，费用约为技能版的 3%。[第五轮](evals/results/agent-evals-2026-10-12-slot-booking/REPORT.md)换成只交付压缩打包代码的网站、用 2.3.0 跑：技能版三次第一次同时达到两道门槛（14 个里找到 13–14 个，判定类精确率 0.92–0.97；设计评审员没写危害的意见已改为不计入的备注）；不加载技能的同一模型照样读懂了打包代码，找到 14 个里的 12 或 13 个，只漏掉必须实测才能发现的布局偏移。[第六轮](evals/results/agent-evals-2026-10-16-slot-booking/REPORT.md)带着第五轮要求的三处修复重跑同一评测：三次仍然同时达到两道门槛（每次 14 个里找到 13 个，判定类精确率 0.88–0.92），同原因分组保持很小，需要等待的检查改为最先开始；但写在提示框里的那个缺陷仍然没找到，还发现了样例本身的两处错误。每一项的情况见[门槛对照表](evals/README.md#status-against-the-release-thresholds)。以上只有一位评委、样本量小，而且都是同一家族的模型；每次测量之后改了什么，见[决策记录](docs/framework/DECISIONS.md)（ADR-035 起）。
+对照[评估计划](docs/framework/EVALUATION-PLAN.md)里的发布门槛，当前版本达到了测试、检测器、脚本化无障碍检查和反馈导入这几项，以及目前测到的诚实检查；没有达到“构建结果”（要求真人盲评中至少 70% 偏好技能版；2.4.0 的新构建还没盲评）和“修复循环”两项。[2026-10-06 的智能体评测](evals/results/agent-evals-2026-10-06/REPORT.md)又测了四项：标准深度审计（两次运行召回都达标，精确率只有一次达标；在这个测试网站上，不加载技能的同一模型表现相当）、反馈导入（达标）、诚实（报告用语检查和等级声明达标）、修复循环（未达标：3 个预埋的严重缺陷中验证修复了 2 个，第 3 个审计阶段就没有发现）。之后在一个更难的样例上又跑了[第三轮](evals/results/agent-evals-2026-10-07-tool-library/REPORT.md)（样例按“问题只在使用中显现”设计）：技能版两次运行召回都达标、精确率只有一次达标；不加载技能的同一模型因为机器上有浏览器可用，两次都找全了预埋问题，费用约为技能版的 4%。按第三轮的结论修改技能后又跑了[第四轮](evals/results/agent-evals-2026-10-08-tool-library-r4/REPORT.md)，每组三次：技能版三次召回都达标、精确率三次都没达标（0.71–0.78，主要被设计评审员的品味类意见拉低）；不加载技能的同一模型无论有没有浏览器，每次都找到 13 个预埋问题中的 12 或 13 个，费用约为技能版的 3%。[第五轮](evals/results/agent-evals-2026-10-12-slot-booking/REPORT.md)换成只交付压缩打包代码的网站、用 2.3.0 跑：技能版三次第一次同时达到两道门槛（14 个里找到 13–14 个，判定类精确率 0.92–0.97；设计评审员没写危害的意见已改为不计入的备注）；不加载技能的同一模型照样读懂了打包代码，找到 14 个里的 12 或 13 个，只漏掉必须实测才能发现的布局偏移。[第六轮](evals/results/agent-evals-2026-10-16-slot-booking/REPORT.md)带着第五轮要求的三处修复重跑同一评测：三次仍然同时达到两道门槛（每次 14 个里找到 13 个，判定类精确率 0.88–0.92），同原因分组保持很小，需要等待的检查改为最先开始；但写在提示框里的那个缺陷仍然没找到，还发现了样例本身的两处错误。每一项的情况见[门槛对照表](evals/README.md#status-against-the-release-thresholds)。以上只有一位评委、样本量小，而且都是同一家族的模型；每次测量之后改了什么，见[决策记录](docs/framework/DECISIONS.md)（ADR-035 起）。
 
 ## 常见问题
 
 <details>
 <summary><b>它能让我的页面变好看吗？</b></summary>
 
-它能让页面达到一条可以核验的底线：无障碍、做工到位、没有 AI 痕迹、内容不编造。隔离的评审会判断吸引力，寡淡的页面过不了这一关。但到目前为止的盲评中，真人更常觉得不用技能的页面更美。“好看”仍是没有解决的问题，[实测结果](#实测结果)里有具体数字。
+它能让页面达到一条可以核验的底线：无障碍、做工到位、没有 AI 痕迹、内容不编造。隔离的评审会判断吸引力，寡淡的页面过不了这一关。2.4.0 起，构建会按 Apple、Google 等一线团队的方法构图，你也可以直接指定一种风格（见[指定风格](#指定风格)）。但到目前为止的盲评中，真人更常觉得不用技能的页面更美，2.4.0 的新构建还没有经过盲评。“好看”仍是没有解决的问题，[实测结果](#实测结果)里有具体数字。
 
 </details>
 
@@ -251,14 +299,15 @@ npx skills add Horace-Maxwell/UI-Evaluator
 
 ```
 skills/ui-evaluator/      可移植的技能：SKILL.md、参考资料（工作流、方法、知识、评估角色、模板）、
-                          scripts（uie 命令行）、assets（数据结构、规则、数据）
+                          scripts（uie 命令行）、assets（数据结构、规则、数据，base/ 里是起步样式表和风格预设）
 agents/                   由评估角色自动生成的 Claude Code 子智能体
 commands/  hooks/         Claude Code 斜杠命令和可选的检查钩子
 .claude-plugin/           插件清单和插件市场条目
 docs/framework/           规范：框架、质量标准、方法、架构、决策记录、冲突登记、写作规范、评估计划、可追溯性、术语表
 docs/research/            证据基础：11 篇研究笔记，592 条带出处的采纳项
 docs/assets/              README 里的图片，以及每张图的来源说明
-evals/                    样例站点、提示和断言；evals/results/ 保存每一轮基准测试的数据
+evals/                    样例站点、提示和断言；evals/results/ 保存每一轮基准测试的数据；
+                          fixtures-src/ 保存以打包形式交付的样例的源码
 tests/                    单元与集成测试
 tools/                    维护脚本；bench/ 运行构建基准测试，readme-media/ 生成这些图片
 .github/                  自动检查、issue 表单和合并请求清单

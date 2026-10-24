@@ -9,6 +9,7 @@ The images in the two READMEs, where each one comes from, and how its numbers we
 | `workflow-en.png`, `workflow-zh.png` | the seven workflows and the loop through real users | [FRAMEWORK.md](../framework/FRAMEWORK.md) |
 | `before-after-cafe-en.png`, `before-after-cafe-zh.png` | eval 1, the repair café (English, Persuade), at 1280 px: the iteration-1 baseline against the iteration-3 skill run | [build-benchmark-2026-10-03/eval-1-build-en-repair-cafe/](../../evals/results/build-benchmark-2026-10-03/eval-1-build-en-repair-cafe/) |
 | `before-after-calligraphy-en.png`, `before-after-calligraphy-zh.png` | eval 2, the calligraphy class sign-up (Chinese), at 375 px: run 1 of each configuration in iteration 4 | [build-benchmark-2026-10-04/eval-2-build-zh-calligraphy-signup/](../../evals/results/build-benchmark-2026-10-04/eval-2-build-zh-calligraphy-signup/) |
+| `styles.png` | the same demo page (built only from `skills/ui-evaluator/assets/base/reference.css`) in the four style presets at 1280 px; each passed `uie audit --quick` with no gate-level hit beyond the reasons `DESIGN.md` records | `skills/ui-evaluator/assets/base/styles/`, captured on 2026-10-21 |
 | `audit-annotated-en.png`, `audit-annotated-zh.png` | the repair café baseline with the boxes the audit reported for five of its findings | `src/` (below), and the same baseline's grading for the counts in the footnote |
 
 ## How the numbers were read

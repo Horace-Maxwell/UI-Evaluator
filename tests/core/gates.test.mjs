@@ -105,6 +105,30 @@ test('DEC-04: first project direction is not_applicable; a repeat fails; the glo
   process.env.UIE_HOME = HERMETIC_HOME;
 });
 
+test('DEC-03 accepts a style preset the owner named in place of a roll; DEC-04 takes it as pinned', (t) => {
+  const { root, runDir } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const cfgPath = path.join(root, '.ui-evaluator', 'config.json');
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+  cfg.project.work = 'new';
+  fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
+  const dir = path.join(root, '.ui-evaluator', 'directions', 'D-0001');
+  fs.mkdirSync(dir, { recursive: true });
+  const rules = loadRules();
+  const crit = (id) => evaluateGates(loadInputs(root, runDir), rules, { target: 'L1' }).criteria[id];
+  fs.writeFileSync(path.join(dir, 'decision.md'), 'style: apple\n\nThe owner asked for "a page like Apple\'s"; the repair cafe has real objects to show, which the preset puts first.\n');
+  assert.equal(crit('DEC-03').state, 'pass');
+  assert.match(crit('DEC-03').detail, /style preset "apple"/);
+  fs.writeFileSync(path.join(dir, 'decision.md'), 'style: apple\n');
+  assert.equal(crit('DEC-03').state, 'fail', 'the owner\'s words and the fit are recorded');
+  fs.writeFileSync(path.join(dir, 'decision.md'), 'style: bauhaus\n\nThe owner asked for something like the Bauhaus archive site, which no preset covers.\n');
+  assert.match(crit('DEC-03').detail, /no preset/);
+  const ledgerPath = path.join(root, '.ui-evaluator', 'ledger.json');
+  const entry = (id, extra) => ({ id, display_face: 'system-ui', macrostructure: 'bands', at: '2026-10-01', ...extra });
+  fs.writeFileSync(ledgerPath, JSON.stringify({ version: 1, entries: [entry('D-1'), entry('D-2', { pinned: 'the owner chose the apple style' })] }));
+  assert.equal(crit('DEC-04').state, 'pass', 'a second product in the same preset is the owner\'s choice, not a repeat');
+});
+
 test('criteria about exercised behaviour never pass on an empty or unexercised scope', (t) => {
   const { root, runDir } = workspace();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

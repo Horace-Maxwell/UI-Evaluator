@@ -17,7 +17,7 @@ import { checkTokens } from '../tokens/check.mjs';
 import { checkProduct, productSurfaces, productLocales } from '../tokens/product.mjs';
 import { ledgerVariety } from '../roll/ledger.mjs';
 import { uieHome } from '../deps.mjs';
-import { version } from '../cli.mjs';
+import { version, SKILL_DIR } from '../cli.mjs';
 
 const STATE_RANK = { fail: 5, not_run: 4, degraded: 3, waived: 2, pass: 1, not_applicable: 0 };
 /** The design-panel rubric (QUALITY-BAR G6; ADR-035 added appeal). */
@@ -382,6 +382,15 @@ const E = {
     if (!dirs.length) return st('fail', 'no direction record (directions/<id>/decision.md)');
     const latest = dirs.sort().at(-1);
     const base = path.join(I.directionsDir, latest);
+    // A look the owner named is their choice, recorded as a style preset (styles.md): the decision names the preset
+    // and gives the owner's words and the fit, in place of a roll, candidates and convergence tests.
+    const decisionText = readText(path.join(base, 'decision.md'), '');
+    const style = (/^\s*style:\s*([a-z][a-z0-9-]*)\s*$/im.exec(decisionText) || [])[1];
+    if (style) {
+      if (!exists(path.join(SKILL_DIR, 'assets', 'base', 'styles', `${style}.css`))) return st('fail', `decision.md names the style "${style}", which has no preset in assets/base/styles/`, [base]);
+      const reasoned = decisionText.replace(/^\s*style:.*$/im, '').trim().length >= 40;
+      return reasoned ? st('pass', `direction record ${latest}: the owner's style preset "${style}"`, [base]) : st('fail', `direction record ${latest} names the style "${style}" but not the owner's words or why it fits`, [base]);
+    }
     const needs = ['candidates.json', 'decision.md'];
     const missing = needs.filter((n) => !exists(path.join(base, n)));
     const rolls = listDir(base).filter((n) => n.startsWith('roll-'));
