@@ -463,3 +463,48 @@ test('the time-bound detector: words that only look like a wait are not one, and
   assert.equal(timeBound({ title: 'x', locations: [{ state: 'hold-expired' }] }), true);
   assert.equal(timeBound({ title: 'x', locations: [{ state: 'placeholder-shown' }, { state: 'household-form' }] }), false, 'state names match on whole words');
 });
+
+test('identity survives a second location, a query string, a child combinator and a problem_type change', async () => {
+  const { fingerprint, legacyFingerprint } = await import('../../skills/ui-evaluator/scripts/lib/findings/core.mjs');
+  const base = { title: 'Fee hidden', problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [{ route: '/book/items', state: 'default', selector: 'main > .sum' }], found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }] };
+  const fp = fingerprint(base);
+  const variant = (patch) => fingerprint({ ...base, ...patch });
+  assert.equal(variant({ locations: [...base.locations, { route: '/book/details', selector: '.sum' }], problem_type: 'multiple_locations' }), fp);
+  assert.equal(variant({ locations: [{ ...base.locations[0], route: '/book/items?step=2' }] }), fp);
+  assert.equal(variant({ locations: [{ ...base.locations[0], selector: 'main .sum' }] }), fp);
+  assert.notEqual(variant({ criteria: [{ kind: 'heuristic', id: 'H9', primary: true }] }), fp, 'another criterion is another finding (promote flags it)');
+  assert.notEqual(legacyFingerprint(base), fp, 'the legacy fingerprint is kept for old registers');
+});
+
+test('a register written with the legacy fingerprint keeps its IDs after the identity change', async () => {
+  const { legacyFingerprint } = await import('../../skills/ui-evaluator/scripts/lib/findings/core.mjs');
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-legacy-'));
+  try {
+    const cand = { title: 'Fee hidden until payment', description: 'The fee shows only at the end.', problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [{ route: '/book/items', state: 'default', selector: 'main .sum' }], evidence: [] };
+    fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'evaluators/he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', candidates: [cand] }));
+    const first = mergeRun(runDir, {}).findings[0];
+    const register = { next_id: 13, findings: [{ ...first, id: 'F-0012', fingerprint: legacyFingerprint(first) }] };
+    assert.equal(mergeRun(runDir, { register }).findings[0].id, 'F-0012');
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
+test('a re-audit that cannot reproduce a known finding makes it stale in the register; a new ID on its element is flagged', async () => {
+  const { promote } = await import('../../skills/ui-evaluator/scripts/lib/findings/register.mjs');
+  const at = [{ route: '/', state: 'default', selector: '#book' }];
+  const known = { id: 'F-0001', status: 'open', fingerprint: 'sha1:old', title: 'A second press cancels the booking', criteria: [{ kind: 'heuristic', id: 'H5', primary: true }], locations: at, found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }], severity: { source: 'raters', mean: 4 }, priority: 'P0' };
+  const register = { next_id: 2, findings: [known] };
+  const rerun = { ...known, status: 'rejected', fingerprint: 'sha1:new', verification_check: { verdict: 'rejected', step: 'reproduction', reason: 'a second press is ignored now' } };
+  const again = { id: 'F-0002', status: 'confirmed', fingerprint: 'sha1:other', title: 'Book gives no feedback on press', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: at, found_by: [{ role: 'heuristic-evaluator', agent: 'he-2', method: 'HE' }] };
+  const out = promote(register, [rerun, again], 'run-2');
+  const f = out.register.findings.find((x) => x.id === 'F-0001');
+  assert.equal(f.status, 'stale');
+  assert.equal(f.last_run_verdict.run, 'run-2');
+  assert.deepEqual(out.stale, ['F-0001']);
+  assert.deepEqual(out.repeats, [], 'a stale finding is not active, so F-0002 is not flagged against it');
+  const out2 = promote({ next_id: 2, findings: [{ ...known, fingerprint: 'sha1:old' }] }, [{ ...known, status: 'open', fingerprint: 'sha1:new' }, again], 'run-3');
+  assert.deepEqual(out2.register.findings.find((x) => x.id === 'F-0001').previous_fingerprints, ['sha1:old']);
+  assert.deepEqual(out2.repeats.map((x) => [x.id, x.maybe]), [['F-0002', 'F-0001']]);
+});

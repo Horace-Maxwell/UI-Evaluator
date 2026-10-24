@@ -317,8 +317,10 @@ export async function run(args, ctx) {
       writeRegister(ctx.root, out.register);
       writeJson(path.join(r.dir, 'findings.json'), { schema: 'run-findings', run: r.id, findings: doc.findings.filter((f) => f.status !== 'candidate') });
       appendIndex(ctx.root, `run ${r.id}: promoted ${out.added} new and ${out.updated} updated finding(s) into the register`);
-      ctx.result({ added: out.added, updated: out.updated });
+      ctx.result({ added: out.added, updated: out.updated, stale: out.stale, repeats: out.repeats });
       ctx.print(`register: ${out.added} new, ${out.updated} updated (${out.register.findings.length} total).`);
+      if (out.stale.length) ctx.print(`not reproduced in this run, now stale (re-check, then fix review or reject): ${out.stale.join(', ')}`);
+      for (const x of out.repeats) ctx.warn(`${x.id} is on the same element as ${x.maybe}, which is still active: the same problem under another criterion? If so, the owner keeps one (\`uie findings dismiss ${x.id} --reason "same as ${x.maybe}" --by human:<name>\`).`);
       // Advisory observations and design notes stay out of the register by design (ADR-038, ADR-040).
       const pending = doc.findings.filter((f) => f.status === 'candidate' && !f.advisory && !f.design_note).length;
       if (pending) ctx.warn(`${pending} candidate(s) were not verified and were left out of the register.`);

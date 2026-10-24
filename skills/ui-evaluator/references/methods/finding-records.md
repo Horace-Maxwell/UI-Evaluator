@@ -129,7 +129,7 @@ Wording rules (FRAMEWORK §13; `uie report` lints them for EVD-06):
 
 ### 3.7 Identity and fingerprints
 
-- A judged finding's identity is its criterion + location + a normalised snippet hash, stored as `fingerprint` (FRAMEWORK §4.3). A deterministic finding is one rule on one route: its identity is the rule ID + the normalised route, however many instances (locations) it lists (ADR-033). `uie findings merge` computes the fingerprint; never write one by hand.
+- A judged finding's identity is its primary criterion + its primary location (page without the query string, state, selector with child and descendant combinators alike) + a normalised snippet hash, stored as `fingerprint` (FRAMEWORK §4.3). A second location, a query string or a change of `problem_type` keeps the identity; an earlier fingerprint stays in `previous_fingerprints`, and registers written before 2026-10-24 still match through the legacy fingerprint. `uie findings promote` lists a new finding on the element of an active one, under another criterion, for the owner to keep one (ADR-041). A deterministic finding is one rule on one route: its identity is the rule ID + the normalised route, however many instances (locations) it lists (ADR-033). `uie findings merge` computes the fingerprint; never write one by hand.
 - **No line numbers.** They move with unrelated edits and create phantom "cleared plus introduced" pairs [03 §3.3]. Volatile values (counters, timestamps, user data) stay out of the snippet for the same reason.
 - **Keep the primary criterion stable.** When a known problem is raised again under another heuristic, the lead keeps the register's primary criterion and adds the new one as corroborating; otherwise the same problem gets a new identity.
 - Identity makes runs comparable as sets: `uie diff <base> <run> --findings` reports cleared, introduced and persisting findings. A deterministic finding whose rule still fires on its route with fewer instances is persisting and partially fixed (k of n instances cleared), never cleared plus introduced; new instances on that route are introduced instances inside it. Never count fixes as "before minus after"; a count hides a regression behind a fix [03 §3.3].
@@ -169,7 +169,7 @@ Who may make each transition:
 | blocked → open / in_progress, or deferred / wont_fix / dismissed | lead, or the owner for a decision | the answer, recorded with `--answer <text>` |
 | candidate or confirmed → split | lead | the verifier's `split_required`, or the lead's own reading: `uie findings split <id> --into <parts.json>` replaces it with candidates that keep its sources (ADR-037). A rated finding is never split |
 | open → dismissed | owner | `uie findings dismiss`, which writes the dismissal ledger |
-| any → stale | freshness check | the UI under the anchor changed |
+| any → stale | freshness check, or `uie findings promote` | the UI under the anchor changed; or a later run's verifier could not reproduce a known finding on the current page (recorded in `last_run_verdict`, listed in the report under "Not reproduced in this run", no longer counted by the gates; ADR-041) |
 | stale → previous state / rejected | finding verifier | re-check against the current capture |
 
 A verifier verdict of `needs_human` leaves the finding a `candidate` until the owner answers the verifier's question; the lead then applies `confirmed` or `rejected` and records the answer. Use `uie findings set` for the manual transitions and `uie findings link` to connect feedback. Every transition lands in `status_history` with time and actor.

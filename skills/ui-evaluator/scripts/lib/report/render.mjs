@@ -207,6 +207,15 @@ export function renderReport({ I, gates, coverage, runId, agreement, diff, fixRe
     for (const f of notes) push(`| ${f.id} | ${esc(truncate(f.title, 90))} | ${new Set((f.found_by || []).map((b) => b.agent)).size} | ${[...new Set((f.locations || []).map((l) => l.route).filter(Boolean))].slice(0, 4).join(', ') || '—'} |`);
     push('');
   }
+  // Known findings this run's verifier could not reproduce on the current page: stale, waiting for a re-check or a fix
+  // review, and listed so a problem never leaves the report without the owner seeing why.
+  const gone = I.runFindings.filter((f) => f.status === 'stale' && f.verification_check?.verdict === 'rejected');
+  if (gone.length) {
+    push('### Not reproduced in this run (stale)', '', 'Findings from earlier runs that this run\'s verifier could not reproduce on the current page. They no longer count toward the gates; a fix review confirms the fix, or a re-check returns them to their previous state.', '');
+    push('| ID | Finding | Verifier\'s reason |', '|---|---|---|');
+    for (const f of gone) push(`| ${f.id} | ${esc(truncate(f.title, 80))} | ${esc(truncate(f.verification_check.reason || '—', 120))} |`);
+    push('');
+  }
   if (!reported.length && !unrated.length && !carried.length) push('No findings were reported in this run. That is not a claim that none exist (METHODS §10).', '');
   const held = I.runFindings.filter((f) => f.held);
   if (held.length) push(`Held for a second independent pass (HCI-029): ${held.map((f) => `${f.id} ${truncate(f.title, 60)}`).join('; ')}.`, '');

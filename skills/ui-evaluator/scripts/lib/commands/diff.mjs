@@ -57,8 +57,10 @@ export function instanceKey(l = {}) {
   return parts.join('|');
 }
 
+// Identity is recomputed with the current fingerprint, so a run merged before the identity change of 2026-10-24
+// compares with a later one; a split part keeps its own recorded identity (ADR-037).
 export function identityOf(f) {
-  return f.fingerprint || fingerprint(f);
+  return f.split_from && f.fingerprint ? f.fingerprint : fingerprint(f);
 }
 
 function reportable(f) {

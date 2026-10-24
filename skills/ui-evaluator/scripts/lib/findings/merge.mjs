@@ -4,7 +4,7 @@ import path from 'node:path';
 import { readJson, readJsonl, listDir, exists } from '../util/fs.mjs';
 import { normalizeSelector, words } from '../util/text.mjs';
 import { isoNow } from '../util/time.mjs';
-import { fingerprint, primaryCriterion, locationKey, applyPriorityPolicy } from './core.mjs';
+import { fingerprint, legacyFingerprint, primaryCriterion, locationKey, applyPriorityPolicy } from './core.mjs';
 
 const JUDGED_DIRS = ['evaluators', 'cw', 'panel'];
 
@@ -260,12 +260,14 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
   const all = [...toolGroups.values(), ...merged];
   const reg = register || { next_id: 1, findings: [] };
   // A re-merge of the same run keeps the IDs it gave before; the register's IDs win for known findings.
-  const byFp = new Map([...(previous || []).map((f) => [f.fingerprint, f.id]), ...(reg.findings || []).map((f) => [f.fingerprint, f.id])]);
+  // Earlier fingerprints count too: a register written before the identity change of 2026-10-24 (legacy) or one that
+  // recorded a finding's previous fingerprints still finds its IDs.
+  const byFp = new Map([...(previous || []).map((f) => [f.fingerprint, f.id]), ...(reg.findings || []).flatMap((f) => [f.fingerprint, ...(f.previous_fingerprints || [])].map((fp) => [fp, f.id]))]);
   let next = Math.max(reg.next_id || 1, ...(previous || []).map((f) => Number(String(f.id).replace(/\D/g, '')) + 1 || 1));
   const used = new Set();
   for (const f of all) {
     f.fingerprint = fingerprint(f);
-    const known = byFp.get(f.fingerprint);
+    const known = byFp.get(f.fingerprint) || byFp.get(legacyFingerprint(f));
     if (known && !used.has(known)) f.id = known;
     else {
       f.id = `F-${String(next).padStart(4, '0')}`;

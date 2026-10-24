@@ -461,3 +461,21 @@ test('verifier passes write their own files; USE-03 reads them all and fails on 
   assert.deepEqual(merged.findings.map((x) => x.status), ['confirmed', 'confirmed']);
   assert.equal(use03().state, 'pass');
 });
+
+test('the gates take a re-audit\'s newer verdict and the register\'s rated severity (review M1)', (t) => {
+  const { root, runDir } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const rules = loadRules();
+  const f = (id, extra) => ({ id, title: `Problem ${id}`, problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H5', primary: true }], locations: [{ route: '/', state: 'default', selector: `#${id}` }], found_by: [{ role: 'heuristic-evaluator', agent: 'he-1', method: 'HE' }], ...extra });
+  fs.writeFileSync(path.join(root, '.ui-evaluator', 'findings.json'), JSON.stringify({ version: 1, next_id: 3, findings: [
+    f('F-0001', { status: 'open', priority: 'P0', severity: { source: 'raters', mean: 4 } }),
+    f('F-0002', { status: 'open', priority: 'P0', severity: { source: 'raters', mean: 4 } }),
+  ] }));
+  fs.writeFileSync(path.join(runDir, 'merged.json'), JSON.stringify({ schema: 'merged', findings: [
+    f('F-0001', { status: 'rejected', verification_check: { verdict: 'rejected', step: 'reproduction', reason: 'fixed on the current page' } }),
+    f('F-0002', { status: 'confirmed', verification_check: { verdict: 'confirmed', step: 'none' } }),
+  ], proposals: [] }));
+  const use05 = evaluateGates(loadInputs(root, runDir), rules, { target: 'L2' }).criteria['USE-05'];
+  assert.equal(use05.state, 'fail');
+  assert.deepEqual(use05.evidence, ['F-0002'], 'F-0001 was not reproduced (stale); F-0002 keeps the register\'s severity 4');
+});

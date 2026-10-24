@@ -8,9 +8,9 @@ import { sha256 } from '../util/hash.mjs';
 import { hoursSince } from '../util/time.mjs';
 import { validate, loadSchema } from '../schema.mjs';
 import { paths, loadConfig, readRegister, readWaivers, loadJourneys, verifierFiles } from '../project.mjs';
-import { unverifiedCandidates } from '../findings/register.mjs';
+import { unverifiedCandidates, notReproduced } from '../findings/register.mjs';
 import { readJudgedOutputs } from '../findings/merge.mjs';
-import { primaryCriterion, isDeterministic } from '../findings/core.mjs';
+import { primaryCriterion, isDeterministic, ACTIVE } from '../findings/core.mjs';
 import { GATES, loadTells } from './rules.mjs';
 import { parseDesign, acceptedTells } from '../tokens/design.mjs';
 import { checkTokens } from '../tokens/check.mjs';
@@ -59,7 +59,12 @@ export function loadInputs(root, runDir) {
   // Findings for this run, with lifecycle decisions taken from the register (decisions are made after the audit).
   const runFindings = (merged ? merged.findings : toolHits.map((h, i) => ({ ...h, id: `T-${i + 1}`, status: 'confirmed', severity: { source: 'rule', mean: h.severity?.value ?? 2 } }))).map((f) => {
     const r = regById.get(f.id);
-    return r ? { ...f, status: r.status, deferral: r.deferral, notes: r.notes, priority: r.priority || f.priority, blocked: r.blocked } : f;
+    if (!r) return f;
+    // This run's newer decision wins: a known finding its verifier could not reproduce is stale, not still open; and a
+    // copy this run did not rate takes the register's rated severity, so the gates and the fix queue agree (review M1).
+    const status = notReproduced(f) && ACTIVE.has(r.status) ? 'stale' : r.status;
+    const severity = ['raters', 'rule'].includes(f.severity?.source) ? f.severity : r.severity || f.severity;
+    return { ...f, status, severity, deferral: r.deferral, notes: r.notes, priority: r.priority || f.priority, blocked: r.blocked };
   });
   // Judged findings from earlier runs that this run did not re-examine (a verify or fix run has no evaluators). They stay
   // open in the register until a fix review or a person closes them, so USE-05 and USE-06 still count them.
@@ -461,7 +466,9 @@ const E = {
     return bad.length ? st('fail', `${bad.length} open P0 finding(s)`, bad.map((f) => f.id)) : st('pass', 'no open P0');
   },
   'p1-decisions'(I) {
-    const p1 = [...I.runFindings, ...(I.carried || [])].filter((f) => f.priority === 'P1' && !['rejected', 'candidate', 'split'].includes(f.status));
+    // A stale finding was not reproduced by an isolated verifier on the current page: it waits for a re-check, as in
+    // USE-05 and the fix queue, not for a P1 decision.
+    const p1 = [...I.runFindings, ...(I.carried || [])].filter((f) => f.priority === 'P1' && !['rejected', 'candidate', 'split', 'stale'].includes(f.status));
     const undecided = p1.filter((f) => {
       if (!DECIDED_P1.has(f.status)) return true;
       if (f.status === 'deferred') return !(f.deferral && f.deferral.reason && f.deferral.owner && f.deferral.trigger);

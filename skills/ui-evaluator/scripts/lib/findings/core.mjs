@@ -69,11 +69,36 @@ export function isDeterministic(f) {
   return (f.found_by || []).some((b) => b.method === 'tool') && (f.found_by || []).every((b) => b.method === 'tool');
 }
 
+/** The page a route names, without its query or hash; "/index.html" is "/". */
+export function pageOf(route) {
+  const p = String(route || '').split(/[?#]/)[0];
+  return p === '/index.html' ? '/' : p;
+}
+
+/** A selector for identity: child and descendant combinators alike ("main > .sum" is "main .sum"). */
+export function identitySelector(sel) {
+  return normalizeSelector(sel || '').replace(/>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /**
  * Identity fingerprint (FRAMEWORK §4.3): criterion + location + normalised snippet, never line numbers.
  * Deterministic findings are grouped per rule and route, so their identity is rule + routes.
+ * A judged finding's identity is its primary location (the page without its query, the state, the selector with
+ * combinators alike) and its primary criterion. A second location, a query string, a child combinator or a change
+ * of problem_type used to give the same problem a new ID on a re-audit, and the old one kept counting against the
+ * gates (review of 2026-10-24, M2).
  */
 export function fingerprint(f) {
+  const c = primaryCriterion(f);
+  if (isDeterministic(f)) return legacyFingerprint(f);
+  const loc = (f.locations || [])[0] || {};
+  const sel = identitySelector(loc.selector);
+  const basis = ['v2', c.kind, c.id, pageOf(loc.route), loc.state || 'default', sel, sel ? '' : normalizeSnippet(f.title || ''), normalizeSnippet(loc.snippet || '')];
+  return `sha1:${sha1(basis.join('##'))}`;
+}
+
+/** The fingerprint used before 2026-10-24, so registers, dismissals and runs recorded with it still match. */
+export function legacyFingerprint(f) {
   const c = primaryCriterion(f);
   if (isDeterministic(f)) {
     const routes = [...new Set((f.locations || []).map((l) => l.route || ''))].sort();

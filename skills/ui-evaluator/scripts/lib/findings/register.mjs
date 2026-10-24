@@ -3,7 +3,7 @@
 import { isoNow } from '../util/time.mjs';
 import { normalizeSelector, normalizeSnippet } from '../util/text.mjs';
 import { sha1 } from '../util/hash.mjs';
-import { setStatus, applyPriorityPolicy, primaryCriterion, aggregateRatings, priorityFromMean, ACTIVE, isDeterministic, fingerprint } from './core.mjs';
+import { setStatus, applyPriorityPolicy, primaryCriterion, aggregateRatings, priorityFromMean, ACTIVE, isDeterministic, fingerprint, legacyFingerprint, pageOf, identitySelector } from './core.mjs';
 
 /** Statuses that are copied into the register when a run is promoted. */
 // A split finding is not promoted: its parts are (ADR-037).
@@ -13,15 +13,43 @@ const PROMOTABLE = new Set(['confirmed', 'open', 'in_progress', 'blocked', 'fixe
  * Copy a run's findings into the register. Matching fingerprints update the existing entry
  * (locations, evidence, severity, detection, last_seen_run); new ones are appended.
  */
+/** A run's verifier found the problem gone: rejected at reproduction against the current page. */
+export function notReproduced(f) {
+  // The schema's step is "reproduction"; the verifier's instructions name the outcome "not_reproduced".
+  return f.status === 'rejected' && f.verification_check?.verdict === 'rejected' && ['reproduction', 'not_reproduced'].includes(f.verification_check?.step);
+}
+
+const elementKey = (f) => {
+  const l = (f.locations || [])[0] || {};
+  const sel = identitySelector(l.selector);
+  return sel ? [pageOf(l.route), l.state || 'default', sel].join('|') : null;
+};
+
 export function promote(register, runFindings, runId) {
   const reg = { version: 1, next_id: 1, findings: [], ...register };
   const byId = new Map(reg.findings.map((f) => [f.id, f]));
   let added = 0;
   let updated = 0;
+  const stale = [];
+  const repeats = [];
   for (const f of runFindings) {
-    if (!PROMOTABLE.has(f.status)) continue;
     const existing = byId.get(f.id);
+    // A re-audit's verdict reaches the register: a known finding the verifier could not reproduce on the current page
+    // is stale (FRAMEWORK lifecycle: re-check, then its previous state or rejected), not still open (review M1).
+    if (existing && notReproduced(f) && ACTIVE.has(existing.status)) {
+      setStatus(existing, 'stale', { by: 'uie promote', note: `not reproduced in run ${runId}: ${f.verification_check.reason || 'the verifier could not reproduce it'}`, force: true });
+      existing.last_run_verdict = { run: runId, verdict: 'rejected', step: 'reproduction', reason: f.verification_check.reason || null };
+      existing.last_seen_run = runId;
+      stale.push(existing.id);
+      continue;
+    }
+    if (!PROMOTABLE.has(f.status)) continue;
     if (!existing) {
+      // A new ID on an element where the register already has an active finding may be that finding again under
+      // another criterion; the owner decides (they are listed, never merged here).
+      const key = elementKey(f);
+      const same = key && reg.findings.find((x) => ACTIVE.has(x.status) && x.id !== f.id && !isDeterministic(x) && elementKey(x) === key);
+      if (same && !isDeterministic(f)) repeats.push({ id: f.id, maybe: same.id, title: f.title });
       const copy = { ...f, first_seen_run: runId, last_seen_run: runId, runs: [runId] };
       if (copy.status === 'confirmed') setStatus(copy, 'open', { by: 'uie promote' });
       reg.findings.push(copy);
@@ -31,6 +59,11 @@ export function promote(register, runFindings, runId) {
     }
     // Keep lifecycle state from the register unless the run moved it forward.
     const keepStatus = existing.status;
+    if (f.fingerprint && existing.fingerprint && f.fingerprint !== existing.fingerprint) {
+      existing.previous_fingerprints = [...new Set([...(existing.previous_fingerprints || []), existing.fingerprint])];
+      existing.fingerprint = f.fingerprint;
+    }
+    if (f.verification_check) existing.last_run_verdict = { run: runId, verdict: f.verification_check.verdict, step: f.verification_check.step || null, reason: f.verification_check.reason || null };
     Object.assign(existing, {
       title: f.title,
       description: f.description,
@@ -61,7 +94,7 @@ export function promote(register, runFindings, runId) {
   }
   const maxNum = reg.findings.reduce((m, f) => Math.max(m, Number(String(f.id).replace(/\D/g, '')) || 0), 0);
   reg.next_id = Math.max(reg.next_id || 1, maxNum + 1);
-  return { register: reg, added, updated };
+  return { register: reg, added, updated, stale, repeats };
 }
 
 const EV_ORDER = ['E0', 'E1', 'E2', 'E3', 'E4', 'E5'];
@@ -97,7 +130,7 @@ export function matchesDismissal(f, dismissals) {
   const loc = (f.locations || [])[0] || {};
   const sel = normalizeSelector(loc.selector || '');
   return (dismissals.entries || []).find((d) => {
-    if (d.fingerprint && d.fingerprint === f.fingerprint) return true;
+    if (d.fingerprint && (d.fingerprint === f.fingerprint || d.fingerprint === legacyFingerprint(f))) return true;
     if (!sel || !d.selector) return false;
     const sameElement = d.route === (loc.route || '') && normalizeSelector(d.selector) === sel && (!d.state || d.state === (loc.state || 'default'));
     return sameElement && (d.criterion === primaryCriterion(f).id || sameMechanism(d.title, f.title));
