@@ -121,14 +121,33 @@ function criteriaOf(f) {
 function routesOf(f) {
   return new Set((f.locations || []).map((l) => normRoute(l.route)));
 }
+// One finding explains at most one defect (a maximum matching): several defects share a criterion and route in every
+// fixture, and one finding used to "find" four of them (round 6 run 3: F-0023 for D06, D08, D09 and D12).
 function matchDefects(defects, findings) {
-  const matched = [];
-  for (const d of defects) {
+  const fits = (d, f) => {
     const want = new Set([d.criterion, ...(d.also_criteria || [])]);
-    const hit = findings.find((f) => [...criteriaOf(f)].some((c) => want.has(c)) && (d.route === '*' || [...routesOf(f)].some((r) => r === '*' || r === normRoute(d.route))));
-    if (hit) matched.push({ defect: d.id, finding: hit.id, mean: hit.severity?.mean ?? null, band: d.expected_severity_band });
-  }
-  return matched;
+    return [...criteriaOf(f)].some((c) => want.has(c)) && (d.route === '*' || [...routesOf(f)].some((r) => r === '*' || r === normRoute(d.route)));
+  };
+  const options = defects.map((d) => findings.filter((f) => fits(d, f)));
+  const owner = new Map(); // finding id → defect index
+  const assign = (i, seen) => {
+    for (const f of options[i]) {
+      if (seen.has(f.id)) continue;
+      seen.add(f.id);
+      if (!owner.has(f.id) || assign(owner.get(f.id), seen)) {
+        owner.set(f.id, i);
+        return true;
+      }
+    }
+    return false;
+  };
+  defects.forEach((_, i) => assign(i, new Set()));
+  const byDefect = new Map([...owner].map(([fid, i]) => [i, fid]));
+  return defects.flatMap((d, i) => {
+    if (!byDefect.has(i)) return [];
+    const hit = findings.find((f) => f.id === byDefect.get(i));
+    return [{ defect: d.id, finding: hit.id, mean: hit.severity?.mean ?? null, band: d.expected_severity_band }];
+  });
 }
 
 // A ground truth can hold found defects: problems the fixture did not seed, added after a second labeller
@@ -268,6 +287,11 @@ function mappingMetrics(mapping, truth, keep = () => true) {
     not_a_problem: items.length - seeded.length - real.length,
     precision: rate(seeded.length + real.length, items.length),
     precision_strict: rate(seeded.length, items.length),
+    // Duplicates are not rewarded here: the items mapped to one defect count once (items mapped as real but not in the
+    // ground truth cannot be told apart and count each), so arms that report a problem once and arms that report it
+    // five times compare on one basis (review of 2026-10-24, M8).
+    precision_dedup: rate(found.length + real.length, found.length + real.length + (items.length - seeded.length - real.length)),
+    items_per_defect: found.length ? Math.round((seeded.length / found.length) * 100) / 100 : null,
     recall_by_meaning: rate(seededFound.length, seededTotal),
     ...(seededTotal < truth.defects.length ? { recall_by_meaning_all: rate(found.length, truth.defects.length) } : {}),
     defects_found: found,
