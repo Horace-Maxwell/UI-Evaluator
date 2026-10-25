@@ -33,6 +33,26 @@ export function readJudgedOutputs(runDir) {
   return outs;
 }
 
+/**
+ * Each role echoes its packet's hash; compare it with the hash `uie packet` logged for that agent, so the record
+ * shows which packet each output was written from (review of 2026-10-24, S3: the hash was asked for and never read).
+ */
+export function packetHashCheck(runDir, outputs) {
+  const log = readJson(path.join(runDir, 'packets', '.log.json'), { packets: [] });
+  const latest = new Map();
+  for (const e of log.packets || []) if (e.agent && e.hash) latest.set(e.agent, e.hash);
+  const out = { checked: 0, matched: 0, mismatched: [], missing: [] };
+  for (const o of outputs) {
+    if (o.role === 'feedback' || !latest.has(o.agent) || /-locate\.json$/.test(o.file) || o.doc?.phase === 'locate') continue;
+    out.checked += 1;
+    const said = o.doc?.packet_hash;
+    if (!said || said === '{{PACKET_HASH}}') out.missing.push(o.agent);
+    else if (said !== latest.get(o.agent)) out.mismatched.push(o.agent);
+    else out.matched += 1;
+  }
+  return out;
+}
+
 function uniqBy(arr, keyFn) {
   const seen = new Set();
   const out = [];
@@ -320,6 +340,7 @@ export function mergeRun(runDir, { rules = {}, register, skip = new Set(), previ
     proposals,
     next_id: next,
     inputs: { tool_hits: toolHits.length, judged_outputs: N, judged_candidates: judged.length - toolCandidates, tool_candidates: toolCandidates, feedback_outputs: outputs.length - N, merged_judged: merged.length, tool_findings: toolGroups.size },
+    packet_hashes: packetHashCheck(runDir, outputs),
   };
 }
 

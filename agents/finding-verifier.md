@@ -68,7 +68,7 @@ Otherwise → **`confirmed`**, with your reproduction evidence attached. Confirm
 
 ## Also check, without rejecting
 
-- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description; the lead turns them into candidates with `uie findings split`. A candidate with `merged_texts` was merged from several reports on one element under one criterion: read every text, and when they describe different problems, split it the same way.
+- **One problem per record:** if a candidate bundles several problems, mark `split_required` and list the parts in `split_into`, each with a title and a one-sentence description. Then check each part in the same pass, as you would a candidate, and give it its own `verdict` (`confirmed`, `rejected` or `needs_human`), `step`, `reason` and `evidence` in its `split_into` entry: the lead splits with `uie findings split <id> --from-verdict`, and judged parts need no second verifier pass. Leave a part's verdict out only when you could not check it. A candidate with `merged_texts` was merged from several reports on one element under one criterion: read every text, and when they describe different problems, split it the same way.
 - **Principle fit:** if the cited heuristic is clearly wrong but the problem is real, confirm it and suggest the correct criterion in `note`.
 - **Wording:** flag descriptions that overstate the evidence (e.g. "users will abandon"); when the problem is real, give the corrected claim in `corrected_description` rather than rejecting it.
 

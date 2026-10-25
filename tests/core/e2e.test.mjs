@@ -378,3 +378,15 @@ test('the report lists confirmed findings that no rater has scored yet', (t) => 
   assert.match(md, /### Not yet rated/);
   assert.match(md, /No way to withdraw a sign-up/);
 });
+
+test('an option one edit from a known one is an error; any other unknown option a warning', (t) => {
+  const { root, uie } = project();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  assert.equal(uie('init', '--quiet').code, 0);
+  const typo = uie('packet', '--role', 'finding-verifier', '--part', '2');
+  assert.equal(typo.code, 1);
+  assert.match(typo.err, /unknown option --part; did you mean --parts\?/);
+  const other = uie('findings', 'queue', '--frobnicate');
+  assert.equal(other.code, 0);
+  assert.match(other.err, /--frobnicate is not an option of this command/);
+});

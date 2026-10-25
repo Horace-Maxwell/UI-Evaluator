@@ -2,6 +2,17 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
+## Unreleased
+
+The rest of the review of 2026-10-24.
+
+- **The verifier judges a split's parts in the same pass (ADR-037, amended).** It gives each part in `split_into` its own verdict; `uie findings split <id> --from-verdict` splits the candidate and applies them, and `apply-verdicts` re-applies them after a re-merge through `splits.json`. Only parts without a verdict need another verifier, where rounds 5 and 6 spent 1.4 to 16.5 minutes and a subagent per run on a second pass.
+- **`uie next`** reads a run and says which audit step comes next, with the command in the form the sandbox accepts; SKILL.md says to write the absolute path every time, without variables, `cd` or loops.
+- **The passing path is tested.** A clean, fully checked project, verified in two parallel parts and rated blind, reaches L2 through the CLI (`tests/core/positive-path.test.mjs`); every agent-level round so far computed "none", so no test had shown a gate could pass.
+- **An option the command does not know is no longer ignored.** One edit from a known option (`--part` for `--parts`) is an error that names the right one; any other unknown option is a warning.
+- **The packet hash each role echoes is checked** at merge against the hash its packet was built with; mismatches and missing hashes are listed and recorded in the manifest.
+- **Smaller fixes:** a lint finding counts as re-checked only when the run scanned its file (lint records the files it scanned); the detector scorer lists the hits that only a judged defect explains (two on `slot-booking`) instead of skipping them; the verifier's unused blind-map lookup is gone; the READMEs say that the build table's page checks and tells are the skill's own rules, which the build without the skill never saw.
+
 ## 3.0.0 — 2026-10-24
 
 Gates that judge what the run recorded, and looks the owner can name. A major version: an independent review on 2026-10-24 reproduced gates that passed or failed on whether a file existed rather than on what it held, and the fixes make some earlier passes fail (ADR-041). USE-03 fails on a candidate that got no verdict; a critic's sealed verdict needs `written_at` and may not change after unsealing (DES-01), and DES-02 reads it; EVD-07 no longer takes "unknown" as a recorded model or isolation; the report lint catches more over-claims (EVD-06); a dismissal never waives a WCAG or tool finding; a known finding a re-audit cannot reproduce stops counting. File formats change: `critic-verdict.schema.json` requires `written_at`; a later verifier pass writes `verifier-s<n>.json`; findings gain `merged_texts`, `previous_fingerprints`, `last_run_verdict` and `dismissal_match`; a judged finding's fingerprint changes, and the legacy one still matches registers, dismissals and runs recorded before. New: `uie wait`, four style presets, and a bench that compares arms on one basis. No agent-level round has run on this version yet; the release bars that remain unmet are listed in `evals/README.md`.

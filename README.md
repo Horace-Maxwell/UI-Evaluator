@@ -222,7 +222,7 @@ Four build iterations on four prompts, 14 runs with the skill and 8 without, all
 | Blind human judgement: would publish | 2 of 8 (1 tie) | 5 of 8 |
 | Median cost of one build | about 860k tokens, 94 min | about 315k tokens, 41 min |
 
-The grader also checks the skill's own files (PRODUCT.md, DESIGN.md, the direction roll, the ledger), which a build without the skill cannot have. Counting those as well gives 90–100% against 0–64%, but that gap is partly built in, so the table leaves them out.
+The grader also checks the skill's own files (PRODUCT.md, DESIGN.md, the direction roll, the ledger), which a build without the skill cannot have. Counting those as well gives 90–100% against 0–64%, but that gap is partly built in, so the table leaves them out. The first two rows are partly built in too: the page checks run the skill's own audit and lint, and the tells are the skill's own catalogue, none of which the build without the skill ever saw, so they show conformance to the skill's rules as much as quality. The blind human judgement is the measure neither side was shown, and on it the skill's builds have so far lost.
 
 - **The detectors find their seeded defects.** On six fixtures at 320, 768 and 1280 px, the audit and lint found all 51 deterministic seeded defects and reported no false positive on the clean control page. The fixtures are small, so this does not estimate precision on real sites.
 - **The skill reliably lifts what it can verify.** It costs about 2.7 times the tokens and 2.3 times the time of an unaided build, mostly in audits, gates and records.

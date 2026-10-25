@@ -83,7 +83,8 @@ function recordRun(run, res, info) {
     state: 'ran',
     at: isoNow(),
     partial: info.explicit || !!info.rules || crashed.length > 0,
-    coverage: { files: res.files, routes: [], states: [], widths: [], themes: [] },
+    // The files scanned, by project path, so a verify run can tell whether a lint finding's file was re-checked.
+    coverage: { files: res.files, paths: (info.paths || []).slice(0, 20000), routes: [], states: [], widths: [], themes: [] },
     engine: { name: 'uie-lint', version: info.version },
     hits: fresh.length,
     errors: res.errors.slice(0, 20).map((e) => `${e.file || ''}${e.family ? ` [${e.family}]` : ''}: ${e.error}`),
@@ -118,7 +119,7 @@ export async function run(args, ctx) {
   if (args.record || args.run) {
     // `--run <id>` implies --record; a bare `--run` records into the latest run.
     const r = resolveRun(root, args.run && args.run !== true ? String(args.run) : 'latest');
-    recorded = recordRun(r, res, { explicit: found.explicit, rules: filter, version: v });
+    recorded = recordRun(r, res, { explicit: found.explicit, rules: filter, version: v, paths: found.files.map((f) => f.rel) });
   }
 
   const crashed = res.errors.filter((e) => e.family);

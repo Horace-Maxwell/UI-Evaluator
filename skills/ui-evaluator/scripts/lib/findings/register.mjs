@@ -155,6 +155,26 @@ export function addDismissal(dismissals, f, { reason, by }) {
 }
 
 /**
+ * Verdicts the verifier gave the parts of a candidate it split (`split_into` items with their own `verdict`), mapped to
+ * the parts' IDs through the recorded splits, so the parts need no second verifier pass (review of 2026-10-24, S1;
+ * ADR-037, amended). The verdicts are rebuilt from the verifier files each time, so they survive a re-merge.
+ */
+export function partVerdicts(verdicts, splits) {
+  const out = [];
+  for (const v of verdicts || []) {
+    if (v.verdict !== 'split_required' || !Array.isArray(v.split_into)) continue;
+    const original = v.candidate_id || v.finding_id || v.id;
+    const record = [...(splits || [])].reverse().find((s) => s.original === original);
+    if (!record) continue;
+    v.split_into.forEach((p, i) => {
+      const part = (record.parts || [])[i];
+      if (part && p && ['confirmed', 'rejected', 'needs_human'].includes(p.verdict)) out.push({ candidate_id: part.id, verdict: p.verdict, step: p.step || 'reproduction', reason: p.reason || null, evidence: p.evidence || [], ...(p.corrected_description ? { corrected_description: p.corrected_description } : {}) });
+    });
+  }
+  return out;
+}
+
+/**
  * Judged candidates that no verifier file gave a verdict: never checked, as opposed to checked and left for a human
  * (needs_human) or for a split. Design notes and tool findings are not verified (ADR-038, ADR-040).
  */

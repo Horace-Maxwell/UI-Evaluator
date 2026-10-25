@@ -51,7 +51,7 @@ All mechanical work goes through one command-line tool. Everywhere in this skill
 node <skill-dir>/scripts/uie.mjs <command>
 ```
 
-where `<skill-dir>` is the directory containing this `SKILL.md`. Run `uie --help` or `uie <command> --help` for options.
+where `<skill-dir>` is the directory containing this `SKILL.md`. Run `uie --help` or `uie <command> --help` for options. Write the absolute path every time, with no shell variables, `cd` or loops: the sandbox refuses those, and each refusal costs a turn. During an audit, `uie next` says which step comes next and prints its command; `uie wait <files>` waits for background subagents inside the turn.
 
 **Exit codes:**
 - `0`: ran, clean.

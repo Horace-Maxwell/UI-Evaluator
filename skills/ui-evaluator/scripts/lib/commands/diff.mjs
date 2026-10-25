@@ -116,7 +116,14 @@ export function coverageFor(f, checks) {
   // because some page states did not load is trusted on the states that did (they are listed in `unevaluated`).
   if (e.partial && e.partial_scope !== 'load') return { covered: false, check, reason: `the ${check} check ran with partial coverage` };
   const unevaluated = Array.isArray(e.unevaluated) ? e.unevaluated : [];
-  if (check === 'lint') return { covered: true, check };
+  // Lint covers files, not routes: the finding's files must be among those this run scanned (when the run recorded
+  // them; an older run records only the count).
+  if (check === 'lint') {
+    if (!e.coverage?.files) return { covered: false, check, reason: 'the lint check scanned no files in this run' };
+    const scanned = Array.isArray(e.coverage.paths) && e.coverage.paths.length ? new Set(e.coverage.paths) : null;
+    const missed = scanned ? (f.locations || []).map((l) => l.source?.file).filter((file) => file && !scanned.has(file)) : [];
+    return missed.length ? { covered: false, check, reason: `the lint check did not scan ${missed[0]}` } : { covered: true, check };
+  }
   const cov = e.coverage || {};
   for (const l of f.locations || []) {
     const route = l.route || '';

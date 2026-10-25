@@ -6,7 +6,7 @@ import { list, intOpt, UsageError } from '../util/args.mjs';
 import { validate, loadSchema, guessSchema } from '../schema.mjs';
 import { paths, resolveRun, readRegister, writeRegister, readDismissals, appendIndex, updateManifest, verifierFiles } from '../project.mjs';
 import { mergeRun, acceptProposals, readJudgedOutputs, sameCauseProposals } from '../findings/merge.mjs';
-import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits, unverifiedCandidates } from '../findings/register.mjs';
+import { applyVerifierVerdicts, applyRatings, applyFixReview, promote, addDismissal, planSplit, applySplit, reapplySplits, unverifiedCandidates, partVerdicts } from '../findings/register.mjs';
 import { setStatus, buildQueue, primaryCriterion, STATUSES, applyPriorityPolicy } from '../findings/core.mjs';
 import { anyTwoAgreement, discoveryEstimate } from '../study/stats.mjs';
 import { loadRules } from '../gates/rules.mjs';
@@ -27,8 +27,11 @@ export const help = `uie findings <subcommand> [options]
                                           same-cause proposals: findings located at one source line (ADR-039)
   split <id> --into <parts.json> [--run <id>]   replace a candidate or confirmed finding with ≥ 2 parts, which go
                                           back through verification (ADR-037); recorded in runs/<id>/splits.json
-  apply-verdicts [--run <id>]             apply runs/<id>/verifier.json, or verifier-p<k>.json from parallel
-                                          verifiers (uie packet --role finding-verifier --parts n), to merged findings
+        [--from-verdict]                  instead of --into: the parts the verifier wrote in split_into, with the
+                                          verdicts it gave them, so judged parts skip a second verifier pass
+  apply-verdicts [--run <id>]             apply runs/<id>/verifier.json, verifier-p<k>.json from parallel verifiers
+                                          and verifier-s<n>.json from later passes, to merged findings; exit 2 when a
+                                          candidate got no verdict
         [--fix-review]                    apply runs/<id>/fix-review.json to the register instead
   rate [--run <id>] [--iteration <n>]     aggregate blind ratings from runs/<id>/ratings/*.json
   agreement [--run <id>]                  any-two agreement, detection counts, undiscovered-problem estimate
@@ -174,11 +177,16 @@ export async function run(args, ctx) {
         if (i >= 0) ev[i] = { ...ev[i], ...patch };
         else ev.push({ provider: 'unknown', model: o.model || 'unknown', isolation: o.isolation || 'unknown', ...patch });
       }
-      updateManifest(r.dir, { evaluators: ev, merge: { at: doc.created_at, ...res.inputs, proposals: res.proposals.length } });
+      updateManifest(r.dir, { evaluators: ev, merge: { at: doc.created_at, ...res.inputs, proposals: res.proposals.length, packet_hashes: res.packet_hashes } });
       ctx.result({ run: r.id, ...res.inputs, proposals: res.proposals.length });
       ctx.print(
         `merged run ${r.id}: ${res.inputs.tool_findings} deterministic finding(s) from ${res.inputs.tool_hits} hit(s); ` +
           `${res.inputs.merged_judged} judged candidate(s) from ${res.inputs.judged_candidates} across ${res.inputs.judged_outputs} output(s).`,
+      );
+      const ph = res.packet_hashes;
+      if (ph && (ph.mismatched.length || ph.missing.length)) ctx.warn(`packet hash: ${ph.mismatched.length ? `${ph.mismatched.join(', ')} echoed a hash that is not their latest packet's (an earlier packet, or another agent's)` : ''}${ph.mismatched.length && ph.missing.length ? '; ' : ''}${ph.missing.length ? `${ph.missing.join(', ')} echoed none` : ''}`);
+      ctx.print(
+        `packet hashes: ${ph ? `${ph.matched} of ${ph.checked} output(s) match their packet` : 'not checked'}.`,
         `${res.proposals.length} merge proposal(s) to review in merged.json (accept true duplicates with --accept).`,
       );
       return 0;
@@ -214,14 +222,13 @@ export async function run(args, ctx) {
       const vFiles = verifierFiles(r.dir);
       if (!vFiles.length) throw new UsageError(`no verifier.json (or verifier-p<k>.json, verifier-s<n>.json) in ${r.dir}`);
       const doc = loadMerged(r.dir);
-      const blind = readJson(path.join(r.dir, 'packets', '.blind-map-verifier.json'), {});
+      // The verifier's packet carries the candidates' own IDs (it hides who raised them, not which finding it is).
       const vdocs = vFiles.map((n) => readJson(path.join(r.dir, n)));
       const vdoc = { ...vdocs[0], verdicts: vdocs.flatMap((d) => d.verdicts || []) };
-      for (const v of vdoc.verdicts) {
-        const key = v.candidate_id || v.finding_id || v.id;
-        if (blind[key]) v.candidate_id = blind[key];
-      }
       const counts = applyVerifierVerdicts(doc.findings, vdoc, { dismissals: readDismissals(ctx.root) });
+      // Parts of a split the verifier already judged in the same pass (split_into items with a verdict).
+      const parts = partVerdicts(vdoc.verdicts, readJson(path.join(r.dir, 'splits.json'), { splits: [] }).splits);
+      if (parts.length) for (const [k, n] of Object.entries(applyVerifierVerdicts(doc.findings, { verdicts: parts }))) counts[k] = (counts[k] || 0) + n;
       saveMerged(r.dir, doc);
       for (const d of vdocs) recordSelfReport(r.dir, { role: 'finding-verifier', agent: d.agent, model: d.model, isolation: d.isolation });
       // A candidate with no verdict in any file was never checked: a verifier part that did not return, or one that
@@ -435,12 +442,24 @@ export async function run(args, ctx) {
 
     case 'split': {
       const id = rest[0];
-      if (!id || !args.into || args.into === true) throw new UsageError('usage: uie findings split <id> --into <parts.json> [--run <id>]');
+      const fromVerdict = !!args['from-verdict'];
+      if (!id || (!fromVerdict && (!args.into || args.into === true))) throw new UsageError('usage: uie findings split <id> --into <parts.json> | --from-verdict [--run <id>]');
       const r = resolveRun(ctx.root, args.run);
       const doc = loadMerged(r.dir);
-      const file = path.resolve(ctx.root, String(args.into));
-      if (!exists(file)) throw new UsageError(`--into: ${args.into} not found`);
-      let parts = readJson(file, null);
+      // --from-verdict takes the parts the verifier wrote in its split_required verdict (split_into), with the verdicts
+      // it gave each part, so they need no second verifier pass.
+      let verdicts = [];
+      let parts;
+      if (fromVerdict) {
+        verdicts = verifierFiles(r.dir).flatMap((n) => readJson(path.join(r.dir, n), {}).verdicts || []);
+        const v = [...verdicts].reverse().find((x) => (x.candidate_id || x.finding_id || x.id) === id && x.verdict === 'split_required' && Array.isArray(x.split_into));
+        if (!v) throw new UsageError(`no split_required verdict with split_into for ${id} in ${verifierFiles(r.dir).join(', ') || 'this run'}`);
+        parts = v.split_into.map(({ title, description, criteria, locations }) => ({ title, description, ...(criteria ? { criteria } : {}), ...(locations ? { locations } : {}) }));
+      } else {
+        const file = path.resolve(ctx.root, String(args.into));
+        if (!exists(file)) throw new UsageError(`--into: ${args.into} not found`);
+        parts = readJson(file, null);
+      }
       if (parts && !Array.isArray(parts)) parts = parts.parts;
       if (!Array.isArray(parts)) throw new UsageError(`${args.into}: give a JSON array of parts, or {"parts": [...]}, each with a title and a description`);
       const by = args.by ? String(args.by) : 'lead';
@@ -467,8 +486,18 @@ export async function run(args, ctx) {
       reg.next_id = Math.max(reg.next_id || 1, plan.next);
       writeRegister(ctx.root, reg);
       const ids = plan.parts.map((x) => x.id);
-      ctx.result({ run: r.id, original: id, parts: ids });
-      ctx.print(`split ${id} into ${ids.join(', ')}; the parts are candidates. Verify them: uie packet --role finding-verifier, then uie findings apply-verdicts.`);
+      let judged = 0;
+      if (fromVerdict) {
+        const pv = partVerdicts(verdicts, log.splits).filter((x) => ids.includes(x.candidate_id));
+        if (pv.length) {
+          applyVerifierVerdicts(doc.findings, { verdicts: pv });
+          saveMerged(r.dir, doc);
+          judged = pv.length;
+        }
+      }
+      ctx.result({ run: r.id, original: id, parts: ids, judged });
+      const left = ids.length - judged;
+      ctx.print(`split ${id} into ${ids.join(', ')}${judged ? `; the verifier's verdicts for ${judged} part(s) are applied` : ''}.${left ? ` ${left} part(s) are candidates: verify them (uie packet --role finding-verifier, then uie findings apply-verdicts).` : ''}`);
       return 0;
     }
 

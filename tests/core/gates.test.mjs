@@ -479,3 +479,29 @@ test('the gates take a re-audit\'s newer verdict and the register\'s rated sever
   assert.equal(use05.state, 'fail');
   assert.deepEqual(use05.evidence, ['F-0002'], 'F-0001 was not reproduced (stale); F-0002 keeps the register\'s severity 4');
 });
+
+test('a split the verifier judged in the same pass needs no second verifier pass, and survives a re-merge', (t) => {
+  const { root, runDir, env } = workspace();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const run = (...a) => spawnSync(process.execPath, [UIE, ...a], { cwd: root, env, encoding: 'utf8' });
+  fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+  const cand = { title: 'The done page lacks the booking and Book gives no feedback', description: 'Two problems.', problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [{ route: '/done.html', state: 'default', selector: 'main' }], evidence: [] };
+  fs.writeFileSync(path.join(runDir, 'evaluators', 'he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', model: 'm', isolation: 'subagent', candidates: [cand] }));
+  assert.equal(run('findings', 'merge').status, 0);
+  const id = JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8')).findings[0].id;
+  fs.writeFileSync(path.join(runDir, 'verifier.json'), JSON.stringify({ agent: 'verifier', model: 'm', isolation: 'subagent', verdicts: [{ candidate_id: id, verdict: 'split_required', step: 'none', reason: 'two problems', split_into: [
+    { title: 'The done page omits the day and the slot', description: 'Only a reference is shown.', verdict: 'confirmed', step: 'reproduction', reason: 'reproduced at 375 px' },
+    { title: 'Book gives no feedback while it submits', description: 'Nothing changes for 1.5 s.', verdict: 'rejected', step: 'reproduction', reason: 'a spinner appears' },
+  ] }] }));
+  run('findings', 'apply-verdicts');
+  const split = run('findings', 'split', id, '--from-verdict');
+  assert.equal(split.status, 0, split.stderr);
+  assert.match(split.stdout, /verdicts for 2 part\(s\) are applied/);
+  const statuses = () => JSON.parse(fs.readFileSync(path.join(runDir, 'merged.json'), 'utf8')).findings.map((f) => f.status).sort();
+  assert.deepEqual(statuses(), ['confirmed', 'rejected', 'split']);
+  // A re-merge brings the parts back as candidates; apply-verdicts gives them the verifier's verdicts again.
+  assert.equal(run('findings', 'merge').status, 0);
+  assert.equal(run('findings', 'apply-verdicts').status, 0);
+  assert.deepEqual(statuses(), ['confirmed', 'rejected', 'split']);
+  assert.equal(JSON.parse(run('gates', '--json').stdout).criteria['USE-03'].state, 'pass');
+});

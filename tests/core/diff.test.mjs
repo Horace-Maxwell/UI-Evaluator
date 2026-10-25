@@ -28,3 +28,12 @@ test('a load-only partial run covers the states that loaded and not the ones tha
   assert.equal(coverageFor(finding('/', 1280), sameRouteOtherWidth).covered, true);
   assert.equal(coverageFor(finding('/', 320), sameRouteOtherWidth).covered, false);
 });
+
+test('a lint finding is re-checked only when this run scanned its file', () => {
+  const lintFinding = { criteria: [{ kind: 'rule', id: 'MOT-02', primary: true }], found_by: [{ role: 'tool', method: 'tool', check: 'lint' }], locations: [{ route: '', source: { file: 'src/styles.css', line: 12 } }] };
+  const checks = (coverage) => ({ lint: { state: 'ran', partial: false, coverage } });
+  assert.equal(coverageFor(lintFinding, checks({ files: 3, paths: ['src/styles.css', 'index.html', 'app.js'] })).covered, true);
+  assert.match(coverageFor(lintFinding, checks({ files: 2, paths: ['index.html', 'app.js'] })).reason, /did not scan src\/styles\.css/);
+  assert.equal(coverageFor(lintFinding, checks({ files: 0, paths: [] })).covered, false, 'a scan of no files re-checked nothing');
+  assert.equal(coverageFor(lintFinding, checks({ files: 3 })).covered, true, 'an older run recorded only the count');
+});

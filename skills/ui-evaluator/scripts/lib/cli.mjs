@@ -1,4 +1,5 @@
 // Command dispatcher for `uie`.
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, UsageError } from './util/args.mjs';
@@ -19,6 +20,7 @@ export const COMMANDS = {
   lint: { file: 'lint', summary: 'static source scan for tells, motion, token drift and a11y source rules' },
   packet: { file: 'packet', summary: 'build the input packet for an isolated role' },
   wait: { file: 'wait', summary: 'wait inside the turn until subagents\' output files arrive' },
+  next: { file: 'next', summary: 'where the audit run stands, and the next command to run' },
   probe: { file: 'probe', summary: 'perform an interaction recipe and record evidence', browser: true },
   journey: { file: 'journey', summary: 'replay a journey and check its success condition', browser: true },
   findings: { file: 'findings', summary: 'validate|merge|split|apply-verdicts|rate|queue|set|dismiss|link|list|show|agreement|promote' },
@@ -105,6 +107,16 @@ export async function main(argv) {
   }
   const mod = await import(`./commands/${spec.file}.mjs`);
   const args = parseArgs(rest, mod.argSpec || {});
+  // An option the command does not know used to be ignored without a word: `--part 2` built one packet, `--levle L2`
+  // checked L3 (review of 2026-10-24, L2). A near miss of a known option is an error; any other unknown option a warning.
+  const known = knownOptions(spec, mod);
+  const unknown = Object.keys(args).filter((k) => k !== '_' && !known.has(k));
+  const typos = unknown.map((k) => [k, nearest(k, known)]).filter(([, near]) => near);
+  if (typos.length) {
+    for (const [k, near] of typos) process.stderr.write(`uie ${cmd}: unknown option --${k}; did you mean --${near}?\n`);
+    return 1;
+  }
+  for (const k of unknown) process.stderr.write(`uie ${cmd}: --${k} is not an option of this command and may be ignored (see \`uie ${cmd} --help\`)\n`);
   if (args.help || args.h) {
     process.stdout.write(`${mod.help || spec.summary}\n`);
     return 0;
@@ -120,6 +132,50 @@ export async function main(argv) {
     }
     throw err;
   }
+}
+
+/** The options a command reads: those its help names, those its argSpec declares, those its source reads, the global ones. */
+function knownOptions(spec, mod) {
+  const known = new Set(['json', 'quiet', 'root', 'help', 'h']);
+  for (const m of String(mod.help || '').matchAll(/--([a-z][a-z0-9-]*)/g)) known.add(m[1]);
+  for (const k of [...(mod.argSpec?.boolean || []), ...(mod.argSpec?.multi || []), ...Object.values(mod.argSpec?.alias || {})]) known.add(k);
+  try {
+    const src = fs.readFileSync(path.join(HERE, 'commands', `${spec.file}.mjs`), 'utf8');
+    // Helpers that take the parsed arguments as opts or options read them there.
+    for (const m of src.matchAll(/\b(?:args|opts|options)\.([a-zA-Z_]\w*)|\b(?:args|opts|options)\[['"]([\w-]+)['"]\]/g)) known.add(m[1] || m[2]);
+  } catch {
+    /* the help and argSpec still apply */
+  }
+  return known;
+}
+
+/** The known option one or two edits away from an unknown one, if any (a typo, not a different option). */
+function nearest(key, known) {
+  let best = null;
+  let bestD = 3;
+  for (const k of known) {
+    if (k.length < 3) continue;
+    const d = editDistance(key, k);
+    if (d > 0 && d < bestD) {
+      best = k;
+      bestD = d;
+    }
+  }
+  return best;
+}
+
+function editDistance(a, b) {
+  const row = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i += 1) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const tmp = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return row[b.length];
 }
 
 export { UsageError };

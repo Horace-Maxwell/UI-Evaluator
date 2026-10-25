@@ -508,3 +508,17 @@ test('a re-audit that cannot reproduce a known finding makes it stale in the reg
   assert.deepEqual(out2.register.findings.find((x) => x.id === 'F-0001').previous_fingerprints, ['sha1:old']);
   assert.deepEqual(out2.repeats.map((x) => [x.id, x.maybe]), [['F-0002', 'F-0001']]);
 });
+
+test('merge compares the packet hash each role echoed with the one its packet was built with', async () => {
+  const { packetHashCheck } = await import('../../skills/ui-evaluator/scripts/lib/findings/merge.mjs');
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-hash-'));
+  try {
+    fs.mkdirSync(path.join(runDir, 'packets'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'packets', '.log.json'), JSON.stringify({ packets: [{ agent: 'he-1', hash: 'aaa' }, { agent: 'he-2', hash: 'old' }, { agent: 'he-2', hash: 'bbb' }, { agent: 'he-3', hash: 'ccc' }] }));
+    const o = (agent, packet_hash) => ({ file: `${agent}.json`, role: 'heuristic-evaluator', agent, doc: packet_hash === undefined ? {} : { packet_hash } });
+    const r = packetHashCheck(runDir, [o('he-1', 'aaa'), o('he-2', 'old'), o('he-3'), o('cw-9', 'zzz')]);
+    assert.deepEqual(r, { checked: 3, matched: 1, mismatched: ['he-2'], missing: ['he-3'] }, 'he-2 used an earlier packet; cw-9 had no packet logged');
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});

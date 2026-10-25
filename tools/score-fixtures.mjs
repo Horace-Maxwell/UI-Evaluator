@@ -237,11 +237,18 @@ function evaluate(results) {
     }
     let fp = 0;
     const extra = [];
+    // A gate-level hit that only a judged defect explains (a detector firing on the mechanism of a problem the ground
+    // truth expects a person to judge) is neither a true positive nor a false one; it is listed so the precision
+    // figure, measured on criterion × route, says what it leaves out (review of 2026-10-24, M7).
+    const byJudged = [];
     for (const x of r.detections) {
       if (matched.has(x)) continue;
       if (!['gate', 'hard', 'soft'].includes(x.level)) continue;
-      const explained = defects.some((d) => [d.criterion, ...(d.also_criteria || [])].some((id) => x.ids.has(id)) && routeMatches(x.route, d.route));
-      if (explained) continue;
+      const explainedBy = defects.filter((d) => [d.criterion, ...(d.also_criteria || [])].some((id) => x.ids.has(id)) && routeMatches(x.route, d.route));
+      if (explainedBy.length) {
+        if (!explainedBy.some((d) => (d.kind || 'judged') !== 'judged' || det.includes(d))) byJudged.push({ criterion: x.criterion, route: x.route, defects: explainedBy.map((d) => d.id) });
+        continue;
+      }
       fp += 1;
       const rr = rule(x.criterion);
       rr.fp += 1;
@@ -260,6 +267,7 @@ function evaluate(results) {
       recall: det.length ? tp / det.length : null,
       problems: r.problems,
       false_positives: extra.map((x) => ({ criterion: x.criterion, route: x.route, check: [...x.checks].join(','), title: x.titles[0] })),
+      explained_only_by_judged: byJudged,
     });
   }
   const rules = [...perRule.values()].map((x) => ({
@@ -332,6 +340,7 @@ async function main() {
       console.log(`  ${f.fixture.padEnd(15)} defects ${String(f.deterministic_defects).padStart(2)} (+${f.judged_defects} judged)  TP ${String(f.tp).padStart(2)}  FN ${String(f.fn).padStart(2)}  FP ${String(f.fp).padStart(2)}  precision ${fmt(f.precision)}  recall ${fmt(f.recall)}`);
       for (const p of f.problems) console.log(`      ! ${p}`);
       for (const x of f.false_positives.slice(0, 8)) console.log(`      FP ${x.criterion} ${x.route} [${x.check}] ${x.title || ''}`.slice(0, 180));
+      for (const x of f.explained_only_by_judged || []) console.log(`      judged-only ${x.criterion} ${x.route} (${x.defects.join(', ')}): not counted as a true or a false positive`.slice(0, 180));
     }
     console.log('\nPer rule');
     for (const r of scored.rules) {

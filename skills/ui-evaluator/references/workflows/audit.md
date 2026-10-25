@@ -28,7 +28,7 @@ Use this workflow:
 
 Tell the owner the depth and its approximate cost before starting. Record the depth in the run. Measured cost of a standard audit of a four-page flow (rounds 4 to 6, 2026-10, one model): 39 to 68 minutes and $25 to $37 of model usage; rounds 5 and 6 also counted 35 to 43 million tokens (most of them cached) and 16 to 18 subagents. A quick audit spawns two to three subagents; it has not been measured in an agent-level round. A plain session without the skill found about as many of the seeded problems in 3 to 4 minutes for about $1 (evals/README.md); say so when the owner only wants a list of problems.
 
-**Run the CLI in a form the sandbox accepts.** Call `node <skill-dir>/scripts/uie.mjs <command>` with the absolute path every time: no shell variables (`UIE=…`), no `cd … &&`, no loops or pipes into loops, no `$(…)`. Each refused command costs a turn, and in interactive use a permission prompt; rounds 4 to 6 counted 15 to 36 refusals a run, mostly wrappers and variables. Wait for subagents with `uie wait`, not a polling loop.
+**Run the CLI in a form the sandbox accepts.** Call `node <skill-dir>/scripts/uie.mjs <command>` with the absolute path every time: no shell variables (`UIE=…`), no `cd … &&`, no loops or pipes into loops, no `$(…)`. Each refused command costs a turn, and in interactive use a permission prompt; rounds 4 to 6 counted 15 to 36 refusals a run, mostly wrappers and variables. Wait for subagents with `uie wait`, not a polling loop. When unsure which step comes next, `uie next` reads the run and prints the next command.
 
 ## 2. Preconditions
 
@@ -110,7 +110,7 @@ Tell the owner the depth and its approximate cost before starting. Record the de
    6. dismissal ledger;
    7. confidence-ceiling flag (iteration ≥ 2, single pass); the flag does not change the verdict, and the ceiling is applied after rating (step 10).
 
-   Rejected candidates are kept for statistics, never reported as findings. A candidate marked `split_required` bundles several problems: write its parts (title and description each) to a file, run `uie findings split <id> --into <file>`, and send only the parts to a fresh verifier; don't re-merge, which resets every verdict (ADR-037). Read `../methods/verification.md`.
+   Rejected candidates are kept for statistics, never reported as findings. A candidate marked `split_required` bundles several problems. When the verifier gave each part in `split_into` its own verdict, run `uie findings split <id> --from-verdict`: it splits the candidate and applies those verdicts, and no second verifier pass is needed (rounds 5 and 6 spent 1 to 16 minutes on one). Only parts without a verdict go to a verifier; for those, or to split it yourself, write the parts to a file and run `uie findings split <id> --into <file>`. Don't hand-edit outputs; a re-merge keeps the split and `apply-verdicts` re-applies the parts' verdicts (ADR-037). Read `../methods/verification.md`.
 
 9. **Locate and estimate ease of fix.** Confirmed findings from black-box roles still lack source locations and ease-of-fix estimates.
    - Run `uie packet --role code-reviewer --phase locate`, and spawn the code reviewer again for a short second pass. It attaches file:line to the confirmed element-level findings and estimates ease of fix (1–4) for every confirmed finding.
