@@ -11,6 +11,7 @@ The rest of the review of 2026-10-24.
 - **The passing path is tested.** A clean, fully checked project, verified in two parallel parts and rated blind, reaches L2 through the CLI (`tests/core/positive-path.test.mjs`); every agent-level round so far computed "none", so no test had shown a gate could pass.
 - **An option the command does not know is no longer ignored.** One edit from a known option (`--part` for `--parts`) is an error that names the right one; any other unknown option is a warning.
 - **The packet hash each role echoes is checked** at merge against the hash its packet was built with; mismatches and missing hashes are listed and recorded in the manifest.
+- **The honesty bar is stated against the current lint.** The READMEs and the status table had kept "0 violations in every final report"; re-linting the six skill runs of rounds 5 and 6 with the 3.0.0 lint finds one claim about users in three of them (ADR-041), so the bar is described as met under the lint each run used and not yet shown under the current one.
 - **Smaller fixes:** a lint finding counts as re-checked only when the run scanned its file (lint records the files it scanned); the detector scorer lists the hits that only a judged defect explains (two on `slot-booking`) instead of skipping them; the verifier's unused blind-map lookup is gone; the READMEs say that the build table's page checks and tells are the skill's own rules, which the build without the skill never saw.
 
 ## 3.0.0 — 2026-10-24

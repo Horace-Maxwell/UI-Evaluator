@@ -70,6 +70,9 @@ function summarise(file) {
     duration_ms: result ? durationMs : null,
     total_duration_seconds: result ? Math.round(durationMs / 100) / 10 : null,
     turns_ended: turnsEnded,
+    // Unlike duration and turns, each result event's cost is the session's running total, so the last one is the
+    // run's cost: round 6 run 1, recorded from its last event alone (2 minutes, 14 turns), still read $25.44, in line
+    // with the other runs' $25 to $28 (checked 2026-10-25).
     total_cost_usd: result?.total_cost_usd ?? null,
     num_turns: result ? numTurns : null,
     is_error: result?.is_error ?? null,
