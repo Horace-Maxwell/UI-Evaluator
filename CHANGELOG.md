@@ -2,9 +2,9 @@
 
 All notable changes are recorded here. The project follows [Semantic Versioning](https://semver.org/): a change to a gate, a threshold or a file format that makes an earlier pass fail is a major change and needs a decision record.
 
-## Unreleased
+## 3.0.1 — 2026-11-04
 
-The rest of the review of 2026-10-24.
+The rest of the review of 2026-10-24: a verifier that judges a split's parts in one pass, `uie next`, a test of the passing path, and the honesty bar stated against the current lint. No gate or threshold changes, and file formats change only by addition (a part in `split_into` may carry its own verdict; lint records the files it scanned). One command-line behaviour is stricter: an option one edit from a known option is now an error. No agent-level round has run on 3.0.0 or this version yet; the release bars that remain unmet are listed in `evals/README.md`.
 
 - **The verifier judges a split's parts in the same pass (ADR-037, amended).** It gives each part in `split_into` its own verdict; `uie findings split <id> --from-verdict` splits the candidate and applies them, and `apply-verdicts` re-applies them after a re-merge through `splits.json`. Only parts without a verdict need another verifier, where rounds 5 and 6 spent 1.4 to 16.5 minutes and a subagent per run on a second pass.
 - **`uie next`** reads a run and says which audit step comes next, with the command in the form the sandbox accepts; SKILL.md says to write the absolute path every time, without variables, `cd` or loops.
