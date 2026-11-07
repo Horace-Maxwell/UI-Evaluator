@@ -118,6 +118,7 @@ function mergeInto(target, src) {
   // A design note joined by anything that is not a note becomes a finding (ADR-040); a harm named by either is kept.
   if (target.design_note && !src.design_note) delete target.design_note;
   if (!target.harm && src.harm) target.harm = src.harm;
+  if (src.time_bound === true) target.time_bound = true;
   if (!target.recommendation && src.recommendation) target.recommendation = src.recommendation;
   target.merged_from = [...(target.merged_from || []), ...(src.merged_from || [src._tmp])].filter(Boolean);
   if ((target.locations || []).length > 1 && target.problem_type === 'single_location') target.problem_type = 'multiple_locations';

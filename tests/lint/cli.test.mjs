@@ -21,7 +21,7 @@ function project(files = {}) {
 }
 
 test('exit 0 on a clean project, 2 on gate-level hits, 1 on a bad path or an unknown rule', () => {
-  const clean = uie(['lint'], { cwd: GOOD });
+  const clean = uie(['lint', '--root', GOOD], { cwd: GOOD });
   assert.equal(clean.code, 0, clean.out + clean.err);
   assert.match(clean.out, /0 gate-level/);
   const dirty = uie(['lint', BAD]);

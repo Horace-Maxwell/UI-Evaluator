@@ -27,7 +27,7 @@ In a Claude Code session:
 /plugin install ui-evaluator@ui-evaluator
 ```
 
-Then ask as you normally would: "Review this checkout page for usability and accessibility before we ship", or "Build a sign-up page for our evening classes; here is what it needs to do". The first time it needs a browser, the skill asks before it downloads Playwright's Chromium (about 110 MB). For other agents, see [Install](#install).
+Then ask as you normally would: "Review this checkout page for usability and accessibility before we ship", or "Build a sign-up page for our evening classes; here is what it needs to do". The first time it needs a browser, the skill asks before it downloads Playwright's Chromium (about 110 MB). The review request starts a standard audit, which took about an hour in the benchmark; ask for a quick look if you want less. For other agents, see [Install](#install).
 
 ## Before and after
 
@@ -249,7 +249,9 @@ Not many more of the seeded ones, so far. On three audit fixtures over five roun
 <details>
 <summary><b>What does it cost?</b></summary>
 
-In the benchmark, a full build with the skill took about 2.7 times the tokens and 2.3 times the time of an unaided build: medians of about 860k tokens and 94 minutes against 315k and 41. Most of it goes to audits, gates and records. An audit costs what its depth asks for, and the skill states the depth and its cost before it starts.
+In the benchmark, a full build with the skill took about 2.7 times the tokens and 2.3 times the time of an unaided build: medians of about 860k tokens and 94 minutes against 315k and 41. Most of it goes to audits, gates and records.
+
+A standard audit of a four- or five-page flow took 39 to 68 minutes and $25 to $37 at API prices (the nine complete runs of rounds 4 to 6: 35 to 59 million tokens, most of them cached). A plain session given the same request took 2 to 4 minutes and about $1, and on recall the arms sat close together; see [the benchmark](evals/README.md). `quick` depth has not been measured. The skill states the depth and its cost before it starts.
 
 </details>
 

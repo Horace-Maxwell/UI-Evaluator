@@ -186,7 +186,7 @@ Every agent writes a schema-valid JSON file, validates it with `uie findings val
 | `uie capture` | Deterministic screenshots and ARIA snapshots over routes × states × widths × themes × emulations; CVD and forced-colour evidence | `evidence/screens`, `evidence/aria` | yes |
 | `uie audit [--checks …] [--quick]` | Page audits: axe, keyboard walk, focus visibility and obscuring, dialog contract, reflow, text spacing, text resize, targets, contrast, forms probe, live regions, lang, cross-page consistency, style census, DOM tell detection, motion inspection, vitals | `tool-findings.jsonl`, `evidence/dom`, `evidence/axe` | yes |
 | `uie lint [paths…] [--changed f]` | Static source scan: hard tells, token drift, motion rules, a11y source rules (outline removal, `user-scalable=no`, positive tabindex, down-event activation, single-key shortcuts), IME guard, CJK font stacks, restricted fonts, copy tells | findings on stdout or appended to the run | no |
-| `uie packet --role <role>` | Build the role-specific input packet with only the materials that role may see; `--parts <n>` splits the verifier's candidates between parallel verifiers, a page's candidates kept together (query strings aside) and the ones whose check may have to wait (`time_bound`) in the first part; a packet built again for the same agent keeps the one it replaces as `<folder>.<n>`; every packet's screen list names each screenshot by its route, with the evidence folder as `slug` | `runs/<id>/packets/<role>/` | no |
+| `uie packet --role <role>` | Build the role-specific input packet with only the materials that role may see; `--parts <n>` splits the verifier's candidates between parallel verifiers, a page's candidates kept together (query strings aside) and the ones whose check may have to wait (`time_bound`) in the first part; a packet built again for the same agent keeps the one it replaces as `<folder>.<n>`; every packet's screen list names each screenshot by its route, with the evidence folder as `slug` | `runs/<id>/packets/<role>-<n>/` (a rebuilt packet keeps the one it replaces as `<folder>.<n>`) | no |
 | `uie wait <file>...` | Wait inside the turn until the named output files of background subagents exist and parse; an output older than the packet that names it does not count; exit 2 after `--timeout` (110 s by default) with the ones still missing, so the lead runs it again instead of ending its turn | — | no |
 | `uie next [--run <id>]` | Read the run and report each audit step as done or not (captures, checks, inspector outputs, merge, proposals, verification, splits, ratings, promote, report, gates) and print the next command; reads files only | — | no |
 | `uie probe --url … --actions …` | Perform an interaction recipe and return screenshots, ARIA snapshot, console and network summary, and timing. Used by evaluators and the verifier to exercise behaviour | `runs/<id>/probes/<n>/` | yes |
@@ -261,7 +261,7 @@ Browser-layer packages are resolved in this order:
     ├── runs/<run-id>/
     │   ├── manifest.json
     │   ├── evidence/{screens,aria,dom,axe,crops}/
-    │   ├── packets/<role>/
+    │   ├── packets/<role>-<n>/
     │   ├── probes/<n>/
     │   ├── tool-findings.jsonl
     │   ├── evaluators/*.json

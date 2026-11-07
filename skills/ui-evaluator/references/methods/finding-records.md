@@ -234,6 +234,7 @@ Bad candidates, and what to do instead:
 | `design_note` | `true` on a design critic's remark that names no harm to the product's users and no PRODUCT.md or DESIGN.md line it breaks. Like an advisory observation it stays a candidate, is listed apart in the report and is never verified, rated, promoted or counted; it becomes a finding when another inspector's finding merges with it (ADR-040) |
 | `description_as_reported` | the inspector's own wording, kept when the verifier confirmed the problem with a `corrected_description` because one clause overstated it |
 | `harm` | on a design critic's finding: `kind` (`task`, `misread`, `trust` or `requirement`), `statement` (who is harmed and how) and, for a requirement, the quoted line. The verifier checks the harm, not only the page (ADR-040) |
+| `time_bound` | `true` when checking the candidate means waiting for time to pass (a hold or session that expires, a message that arrives late) and the title, description and state do not say so. `uie packet` also marks the candidates whose wording or state says so; the marked ones go first in the verifier's packet and, with `--parts`, in the first part |
 | `severity`, `priority`, `criticality` | `uie findings rate`, from the rater files (`severity-rating.md`) |
 | `status`, `status_history` | the transitions in §3.8 |
 | `verification` | the fix and verify workflows |

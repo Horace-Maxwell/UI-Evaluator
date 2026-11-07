@@ -437,6 +437,22 @@ test('a dismissal never waives a WCAG or tool finding, and only catches the same
   assert.deepEqual([counts.confirmed, counts.rejected], [1, 1], 'each finding is counted once');
 });
 
+test('an inspector can mark a check that waits, and a merge keeps the mark', () => {
+  const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-waits-'));
+  try {
+    const loc = { route: '/', state: 'default', selector: 'button#next', viewport: { width: 375, height: 812 } };
+    const cand = (extra) => ({ title: 'Next gives no sign it worked', description: 'Nothing changes after the press.', problem_type: 'single_location', criteria: [{ kind: 'heuristic', id: 'H1', primary: true }], locations: [loc], evidence: [], ...extra });
+    fs.mkdirSync(path.join(runDir, 'evaluators'), { recursive: true });
+    fs.writeFileSync(path.join(runDir, 'evaluators/he-1.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-1', candidates: [cand({})] }));
+    fs.writeFileSync(path.join(runDir, 'evaluators/he-2.json'), JSON.stringify({ role: 'heuristic-evaluator', agent: 'he-2', candidates: [cand({ time_bound: true })] }));
+    const found = mergeRun(runDir, {}).findings.filter((x) => x.locations.some((l) => l.selector === 'button#next'));
+    assert.equal(found.length, 1, 'the two reports merge');
+    assert.equal(found[0].time_bound, true, 'the second report marked it, and the merge keeps that');
+  } finally {
+    fs.rmSync(runDir, { recursive: true, force: true });
+  }
+});
+
 test('a merge on one element and criterion keeps what each report said, for the verifier to split', () => {
   const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-texts-'));
   try {
