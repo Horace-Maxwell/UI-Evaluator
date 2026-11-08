@@ -220,7 +220,7 @@ Record the choice and its rationale in the decisions log (DEC-03). Choosing the 
 2. After locking, run `uie ledger add` with the fields of `ledger.schema.json`: date, project, brief hash, direction summary, faces, accent hue bucket, colour strategy, macrostructure fingerprint (the planned section sequence), fold class, seed.
 3. The cross-project ledger (`~/.ui-evaluator/ledger.json`) is opt-in and advisory: `uie ledger check` lists repeats found there in DEC-04's detail, and they never change its state, so one client's history never gates another client's work (ADR-013, ADR-034).
 
-The ledger also feeds convergence monitoring across outputs: similarity of screenshots and of section structure across different briefs [CRAFT-029]. Its alert thresholds are not yet set [calibrating].
+Convergence across outputs (similarity of screenshots and of section structure across different briefs) is measured on the project's benchmark builds, not yet from the ledger [CRAFT-029]. Its alert thresholds are not yet set [calibrating].
 
 ### 3.12 Existing products: the variant procedure
 

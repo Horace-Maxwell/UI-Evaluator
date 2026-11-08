@@ -16,7 +16,9 @@ The same prompt built with and without the skill, graded by one script, and judg
 | 6 | `judge-page.mjs <round> --seed <n> [--lang en]`; send `judge.html` to the person | `judge.html`, `judge-key.json` |
 | 7 | `record-round.mjs <round> --date <YYYY-MM-DD> --human "<their line>" --judge "<who>"` | the round under `evals/results/build-benchmark-<date>/` |
 
-Grading needs the browser runtime: `node skills/ui-evaluator/scripts/uie.mjs doctor --install`. `lib.mjs` and `strip-comments.mjs` hold the shared helpers; `tests/core/bench-tools.test.mjs` tests them.
+For the variety bar, after step 3: `variety.mjs <round> [<round> …] --out <round>/variety.json` renders each run's landing page, reads its macrostructure from the DOM and compares pages across briefs within each configuration (Jaccard over the block and component sequences, a bootstrap over briefs for the interval). Step 7 stores the file with the round. The bar needs at least 10 briefs.
+
+Grading needs the browser runtime: `node skills/ui-evaluator/scripts/uie.mjs doctor --install`. `lib.mjs` (the round layout, serving a built site, seeded shuffles, the verdict line) and `strip-comments.mjs` hold the shared helpers; `tests/core/bench-tools.test.mjs` tests them and the variety arithmetic, and `tests/browser/variety.test.mjs` tests the macrostructure read from a page.
 
 ## Agent-level evals
 

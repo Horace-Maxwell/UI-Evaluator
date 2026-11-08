@@ -74,7 +74,7 @@ Ground truth for analytical defects is set by two people independently, with dis
 ### 4.2 Build outcomes (with vs without the skill)
 - Deterministic: hard-tell count, soft-tell density tier, G3 criteria failed, axe violations, gate pass rates, achieved level.
 - Human: blind pairwise preference aggregated with Bradley–Terry, with a CI; swap-test verdicts ("could another product use this unchanged?"); share choosing ≥ 1 on-brand reaction word (small panel).
-- Variety: across ≥ 10 different briefs, the mean pairwise structural similarity (section and component-sequence Jaccard) and image-embedding similarity. Lower is better. Report the difference between conditions with a CI [CRAFT-029].
+- Variety: across ≥ 10 different briefs, the mean pairwise structural similarity (section and component-sequence Jaccard) and image-embedding similarity. Lower is better. Report the difference between conditions with a CI [CRAFT-029]. `tools/bench/variety.mjs` computes the structural part, with a bootstrap over briefs for the CI; image-embedding similarity is not computed yet.
 
 ### 4.3 Fix loop
 Resolution rate of P0/P1 seeded defects; regression rate (introduced findings per fix); re-fix ratio; attempts per finding; risk-score stops; the share of fixes the fresh reviewer scores `confirmed_fixed`.

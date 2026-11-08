@@ -4,7 +4,10 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## Unreleased
 
-Small fixes left from the review of 2026-10-24. No gate or threshold changes.
+Small fixes left from the review of 2026-10-24, and a measure for the variety bar. No gate or threshold changes.
+
+- **The variety bar has an instrument.** `tools/bench/variety.mjs` renders each build's landing page and reads its macrostructure from the DOM: the top-level blocks in order, each typed by what it holds. It compares pages from different briefs within each configuration by Jaccard similarity over the block and component sequences, and gives the difference between configurations with a 95% interval from a bootstrap over briefs. `record-round.mjs` stores its file with the round. The bar is still not measured: the build rounds cover 4 briefs and it needs 10, and image-embedding similarity is not computed. The ledger's `macrostructure_measured` is now described as reserved, since no command writes it. `direction-process.md` no longer says the ledger feeds convergence monitoring.
+- **`grade-build.mjs` and `variety.mjs` share the code that serves a built site** (`tools/bench/lib.mjs`). A regrade of a server-app run gives the same metrics as before.
 
 - **A check that waits stays marked through a merge.** `time_bound` was dropped when its candidate merged into another, so the verifier could meet that check late. It is now documented for inspectors in `finding-records.md` and in the evaluator output and finding schemas.
 - **The READMEs state what an audit costs:** 39 to 68 minutes and $25 to $37 for a standard audit in rounds 4 to 6, against 2 to 4 minutes and about $1 for a plain session. `quick` depth has not been measured. Quick start says the review request starts a standard audit.

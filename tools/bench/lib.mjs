@@ -1,7 +1,9 @@
-// Shared helpers for the build benchmark (tools/bench/*): repository paths, the round layout, seeded shuffles,
-// assertion kinds and the person's verdict line from the judging page.
+// Shared helpers for the build benchmark (tools/bench/*): repository paths, the round layout, serving a built site,
+// seeded shuffles, assertion kinds and the person's verdict line from the judging page.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -91,6 +93,71 @@ export function listRuns(round) {
     }
   }
   return out.sort((a, b) => a.eval.localeCompare(b.eval) || a.config.localeCompare(b.config) || a.run - b.run);
+}
+
+const SKIP_DIRS = new Set(['.ui-evaluator', 'node_modules', '.git', 'runs']);
+
+/** Files under `dir`, skipping the workspace, dependencies, dot folders and run folders. */
+export function walkFiles(dir, acc = [], depth = 0) {
+  if (!fs.existsSync(dir) || depth > 6) return acc;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(ent.name) || ent.name.startsWith('.')) continue;
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) walkFiles(p, acc, depth + 1);
+    else acc.push(p);
+  }
+  return acc;
+}
+
+/** The site root of a built project: the shallowest folder holding an index.html (or the only .html files). */
+export function findSiteRoot(project) {
+  const html = walkFiles(project).filter((f) => /\.html?$/i.test(f));
+  if (!html.length) return null;
+  const idx = html.filter((f) => /index\.html?$/i.test(path.basename(f))).sort((a, b) => a.split(path.sep).length - b.split(path.sep).length);
+  return path.dirname(idx[0] || html.sort((a, b) => a.split(path.sep).length - b.split(path.sep).length)[0]);
+}
+
+/** A Node app that renders its pages (no static index.html): its start command, run on a free port. */
+export function findServerApp(project) {
+  const pkg = readJson(path.join(project, 'package.json'), null);
+  if (pkg?.scripts?.start && /^node\s+[\w./-]+\.m?js$/.test(pkg.scripts.start.trim())) return { args: [pkg.scripts.start.trim().split(/\s+/)[1]] };
+  // A server file next to a static folder still owns the dynamic routes (booking, owner lists): run the server.
+  for (const f of ['server.js', 'server.mjs']) if (fs.existsSync(path.join(project, f))) return { args: [f] };
+  return null;
+}
+
+export async function freePort() {
+  const net = await import('node:net');
+  return new Promise((resolve) => {
+    const srv = net.createServer();
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+/** Run a copy of the project's server on 127.0.0.1; returns { url, dir, close() }. */
+export async function startServerApp(project, app) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-grade-app-'));
+  for (const f of walkFiles(project)) {
+    const rel = path.relative(project, f);
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.copyFileSync(f, path.join(dir, rel));
+  }
+  const port = await freePort();
+  const child = spawn(process.execPath, app.args, { cwd: dir, env: { ...process.env, PORT: String(port), HOST: '127.0.0.1' }, stdio: 'ignore' });
+  const url = `http://127.0.0.1:${port}/`;
+  for (let i = 0; i < 100; i += 1) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) break;
+    } catch {
+      /* not up yet */
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return { url, dir, close: async () => { child.kill(); fs.rmSync(dir, { recursive: true, force: true }); } };
 }
 
 /**

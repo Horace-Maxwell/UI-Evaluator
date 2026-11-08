@@ -15,7 +15,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { SKILL_DIR, assertionKind, scoreOf, usage } from './lib.mjs';
+import { SKILL_DIR, assertionKind, findServerApp, findSiteRoot, scoreOf, startServerApp, usage, walkFiles as walk } from './lib.mjs';
 import { stripComments } from './strip-comments.mjs';
 
 const UIE = path.join(SKILL_DIR, 'scripts/uie.mjs');
@@ -26,7 +26,6 @@ const evalId = Number(evalIdArg);
 const outputs = path.join(runDir, 'outputs');
 const project = path.join(outputs, 'project');
 const SITE_EXT = /\.(html?|css|js|mjs|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|otf|json|webmanifest)$/i;
-const SKIP_DIRS = new Set(['.ui-evaluator', 'node_modules', '.git', 'runs']);
 
 const uie = (cwd, ...a) => new Promise((resolve) => {
   const child = spawn(process.execPath, [UIE, ...a], { cwd, env: { ...process.env, UIE_HOME: path.join(cwd, '.home') } });
@@ -37,76 +36,10 @@ const uie = (cwd, ...a) => new Promise((resolve) => {
   child.on('close', (code) => resolve({ code, out, err }));
 });
 
-function walk(dir, acc = [], depth = 0) {
-  if (!fs.existsSync(dir) || depth > 6) return acc;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (SKIP_DIRS.has(ent.name) || ent.name.startsWith('.')) continue;
-    const p = path.join(dir, ent.name);
-    if (ent.isDirectory()) walk(p, acc, depth + 1);
-    else acc.push(p);
-  }
-  return acc;
-}
-
-/** The site root: the shallowest folder holding an index.html (or the only .html files). */
-function findSiteRoot() {
-  const html = walk(project).filter((f) => /\.html?$/i.test(f));
-  if (!html.length) return null;
-  const idx = html.filter((f) => /index\.html?$/i.test(path.basename(f))).sort((a, b) => a.split(path.sep).length - b.split(path.sep).length);
-  return path.dirname(idx[0] || html.sort((a, b) => a.split(path.sep).length - b.split(path.sep).length)[0]);
-}
-
-/** A Node app that renders its pages (no static index.html): its start command, run on a free port. */
-function findServerApp() {
-  let pkg = null;
-  try {
-    pkg = JSON.parse(fs.readFileSync(path.join(project, 'package.json'), 'utf8'));
-  } catch {
-    pkg = null;
-  }
-  if (pkg?.scripts?.start && /^node\s+[\w./-]+\.m?js$/.test(pkg.scripts.start.trim())) return { args: [pkg.scripts.start.trim().split(/\s+/)[1]] };
-  // A server file next to a static folder still owns the dynamic routes (booking, owner lists): run the server.
-  for (const f of ['server.js', 'server.mjs']) if (fs.existsSync(path.join(project, f))) return { args: [f] };
-  return null;
-}
-
-async function freePort() {
-  const net = await import('node:net');
-  return new Promise((resolve) => {
-    const srv = net.createServer();
-    srv.listen(0, '127.0.0.1', () => {
-      const { port } = srv.address();
-      srv.close(() => resolve(port));
-    });
-  });
-}
-
-async function startServerApp(app) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uie-grade-app-'));
-  for (const f of walk(project)) {
-    const rel = path.relative(project, f);
-    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
-    fs.copyFileSync(f, path.join(dir, rel));
-  }
-  const port = await freePort();
-  const child = spawn(process.execPath, app.args, { cwd: dir, env: { ...process.env, PORT: String(port), HOST: '127.0.0.1' }, stdio: 'ignore' });
-  const url = `http://127.0.0.1:${port}/`;
-  for (let i = 0; i < 100; i += 1) {
-    try {
-      const r = await fetch(url);
-      if (r.ok) break;
-    } catch {
-      /* not up yet */
-    }
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  return { url, dir, close: async () => { child.kill(); fs.rmSync(dir, { recursive: true, force: true }); } };
-}
-
 async function main() {
   // An app with a start script is served by its own server (its forms post to it); otherwise the static files.
-  const serverApp = findServerApp();
-  let siteRoot = serverApp ? null : findSiteRoot();
+  const serverApp = findServerApp(project);
+  let siteRoot = serverApp ? null : findSiteRoot(project);
   const metrics = { run: runDir, site_root: siteRoot ? path.relative(project, siteRoot) || '.' : serverApp ? `server: node ${serverApp.args.join(' ')}` : null, problems: [] };
   if (serverApp) siteRoot = project;
   if (!siteRoot) {
@@ -131,7 +64,7 @@ async function main() {
   const cssText = files.filter((f) => /\.(css|html?)$/i.test(f)).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
   const themes = /prefers-color-scheme:\s*dark/.test(cssText) ? ['light', 'dark'] : ['light'];
   const { serveStatic } = await lib('browser/static-server.mjs');
-  const srv = serverApp ? await startServerApp(serverApp) : await serveStatic(site);
+  const srv = serverApp ? await startServerApp(project, serverApp) : await serveStatic(site);
   try {
     await uie(tmp, 'init', '--quiet');
     const cfgPath = path.join(tmp, '.ui-evaluator/config.json');

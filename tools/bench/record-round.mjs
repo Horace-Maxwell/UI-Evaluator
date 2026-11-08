@@ -8,6 +8,7 @@
 //   pairs.json, judge-key.json    the keys
 //   <eval>/<config>/run-<n>/      grading.json, timing.json (when the harness gave one), screen-375.png, screen-1280.png
 //   <eval>/stage1-pair-<n>.json   each comparator's verdict as written
+//   variety.json                  when the round has one (variety.mjs --out <round>/variety.json): cross-brief variety
 //   human-judgement.json          with --human: the verdicts, the tally, the comparators' verdicts and the agreement
 //   model-judgement.json          without --human: the comparators' verdicts and their tally
 import fs from 'node:fs';
@@ -73,6 +74,7 @@ for (const r of listRuns(round)) {
 writeJson(path.join(out, 'runs.json'), runs);
 copy(path.join(round, 'pairs.json'), path.join(out, 'pairs.json'));
 if (fs.existsSync(path.join(round, 'judge-key.json'))) copy(path.join(round, 'judge-key.json'), path.join(out, 'judge-key.json'));
+if (fs.existsSync(path.join(round, 'variety.json'))) copy(path.join(round, 'variety.json'), path.join(out, 'variety.json'));
 
 const caveats = opts.caveat || [];
 let human = null;

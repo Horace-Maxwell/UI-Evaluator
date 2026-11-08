@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { stripComments, stripJsComments } from '../../tools/bench/strip-comments.mjs';
 import { assertionKind, parseVerdictLine, rng, scoreOf, shuffle, tally } from '../../tools/bench/lib.mjs';
+import { crossBriefVariety, jaccard, pageSimilarity, shingles } from '../../tools/bench/variety.mjs';
 
 test('JS comments go; strings, template literals, regex literals and division stay', () => {
   const src = [
@@ -71,3 +72,43 @@ test('the verdict line is unblinded with the page key, notes included', () => {
   assert.throws(() => parseVerdictLine('x | p9(a#1) 更美=X；更不像模板=X；会发布=X', key), /p9/);
   assert.throws(() => parseVerdictLine('x | p1(a#1) 更美=X；更不像模板=X', key), /better_overall/);
 });
+
+test('variety: shingles keep order and ends, Jaccard compares them', () => {
+  assert.deepEqual([...shingles(['header', 'h1', 'footer'])].sort(), ['^ header', 'footer', 'footer $', 'h1', 'h1 footer', 'header', 'header h1'].sort());
+  assert.equal(jaccard(new Set(), new Set()), 1);
+  assert.equal(jaccard(new Set(['a', 'b']), new Set(['b', 'c'])), 1 / 3);
+  const a = { sections: ['header', 'h1+media', 'heading+cards', 'footer'], components: ['header', 'h1', 'media', 'heading', 'cards', 'footer'] };
+  assert.deepEqual(pageSimilarity(a, a), { sections: 1, components: 1, structure: 1 });
+  // The same blocks in another order are less alike than the same page, and more alike than a different one.
+  const shuffled = { sections: ['header', 'heading+cards', 'h1+media', 'footer'], components: ['header', 'heading', 'cards', 'h1', 'media', 'footer'] };
+  const other = { sections: ['h1+form+action', 'table'], components: ['h1', 'form', 'action', 'table'] };
+  const s1 = pageSimilarity(a, shuffled).structure;
+  assert.ok(s1 < 1 && s1 > pageSimilarity(a, other).structure);
+});
+
+test('variety: cross-brief means per configuration, the difference and a bootstrap over briefs', () => {
+  const template = { sections: ['header', 'h1+media+action', 'heading+cards', 'heading+faq', 'footer'], components: ['header', 'h1', 'media', 'action', 'heading', 'cards', 'heading', 'faq', 'footer'] };
+  const own = (i) => ({ sections: [`b${i}`, `c${i}`, 'footer'], components: [`b${i}`, `c${i}`, 'footer'] });
+  const pagesFor = (n) => Array.from({ length: n }, (_, i) => [
+    { brief: `brief-${i}`, config: 'with_skill', outline: own(i) },
+    { brief: `brief-${i}`, config: 'without_skill', outline: template },
+  ]).flat();
+  const ten = crossBriefVariety(pagesFor(10), { seed: 7, reps: 400 });
+  assert.equal(ten.briefs, 10);
+  assert.deepEqual(ten.page_counts, { with_skill: 10, without_skill: 10 });
+  assert.equal(ten.measures.structure.without_skill, 1, 'the same template on every brief');
+  assert.ok(ten.measures.structure.with_skill < 0.2);
+  assert.equal(ten.measures.structure.pairs.with_skill, 45, 'pairs across briefs only');
+  assert.ok(ten.measures.structure.ci95[0] > 0);
+  assert.equal(ten.bar.met, true);
+  assert.equal(ten.bar.note, null);
+  // The same seed gives the same interval; four briefs are a pilot, whatever the interval says.
+  assert.deepEqual(crossBriefVariety(pagesFor(10), { seed: 7, reps: 400 }).measures.structure.ci95, ten.measures.structure.ci95);
+  const four = crossBriefVariety(pagesFor(4), { seed: 7, reps: 400 });
+  assert.equal(four.bar.met, false);
+  assert.match(four.bar.note, /pilot: 4 briefs/);
+  // Two runs of one brief are never compared with each other.
+  const twoRuns = [...pagesFor(2), { brief: 'brief-0', config: 'with_skill', outline: own(0) }];
+  assert.equal(crossBriefVariety(twoRuns, { reps: 10 }).measures.structure.pairs.with_skill, 2);
+});
+
