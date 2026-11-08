@@ -15,6 +15,12 @@ const META = {
   'build-zh-calligraphy-signup': { kind: 'web pages', label: 'Page', distinct: 'specific to a calligraphy class at a university for older people, or a generic template', chinese: true },
   'build-en-food-bank-tool': { kind: 'web tools', label: 'Tool', distinct: 'specific to this food bank front desk, or a generic admin template that any inventory app could swap its name into' },
   'build-zh-watch-repair': { kind: 'web pages', label: 'Page', distinct: 'specific to this three-generation watch repair shop in the old town, or a generic template', chinese: true },
+  'build-en-mobile-library-timetable': { kind: 'web pages', label: 'Page', distinct: 'specific to a county mobile library van and its retired borrowers, or a generic schedule widget that any service could swap its name into' },
+  'build-zh-mountain-guesthouse': { kind: 'web pages', label: 'Page', distinct: 'specific to a three-room guesthouse run by a couple in the mountains of western Zhejiang, or a generic hotel template', chinese: true },
+  'build-en-bookkeeping-service': { kind: 'websites', label: 'Site', distinct: 'specific to one freelance bookkeeper working for small charities, or a generic professional-services template that any firm could swap its name into' },
+  'build-zh-badminton-court-booking': { kind: 'web tools', label: 'Tool', distinct: 'specific to the front desk of a neighbourhood sports centre with four badminton courts, or a generic booking-admin template', chinese: true },
+  'build-en-letter-carver-portfolio': { kind: 'websites', label: 'Site', distinct: 'specific to a letter carver who cuts inscriptions in stone and slate by hand, or a generic portfolio template that any maker could swap their name into' },
+  'build-zh-cafe-qr-menu': { kind: 'web pages', label: 'Page', distinct: 'specific to a small cafe in a university town, read on a phone from a table QR code, or a generic menu template', chinese: true },
 };
 const fallback = (name) => ({ kind: 'web pages', label: 'Page', distinct: 'specific to this request, or a generic template that could carry any name', chinese: /-zh-/.test(name) });
 
